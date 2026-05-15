@@ -1,0 +1,47 @@
+{
+  "name": "vue-layerx",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vue 3 hook factory for declarative + imperative layered UI (dialogs, drawers, etc.)",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "playground": "pnpm --filter playground dev"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "dialog",
+    "modal",
+    "layer",
+    "composable"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.1.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "vue": "^3.5.16"
+  }
+}
