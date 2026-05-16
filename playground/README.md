@@ -1,6 +1,6 @@
 # vue-layerx playground
 
-Vite + Vue 3 + TypeScript + Element Plus，演示 `createLayers(ElDialog)` 的用法。
+Vite + Vue 3 + TypeScript + Element Plus，演示 `createLayerx(ElDialog)` 的用法。
 
 ## 运行
 
@@ -14,7 +14,7 @@ cd playground && pnpm dev
 
 ## 示例结构
 
-- `src/layers.ts` — 仅 `createLayers(ElDialog)`，导出 `useDialog`
+- `src/layers.ts` — 仅 `createLayerx(ElDialog)`，导出 `useDialog`
 - `src/components/UserList.vue` — 在 `setup` 内 `useDialog(CreateForm, …)`，命令式 `show()`
 - `src/components/CreateForm.vue` — 弹层内表单，`success` / `cancel` 触发关闭
 

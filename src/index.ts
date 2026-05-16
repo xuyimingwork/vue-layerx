@@ -1,4 +1,4 @@
-export { createLayers } from './createLayers'
+export { createLayerx } from './create-layerx'
 export type {
   LayerComponent,
   LayerController,

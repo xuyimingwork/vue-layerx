@@ -9,36 +9,12 @@ interface User {
   name: string
 }
 
-const CreateUserDialog = useDialog(CreateForm, {
-  props: { mode: 'create' as const },
-  closeOn: ['success', 'cancel'],
-  shellProps: { title: '新建用户' },
-})
-
-const EditUserDialog = useDialog(CreateForm, {
-  props: { mode: 'edit' as const },
-  closeOn: ['success', 'cancel'],
-  shellProps: { title: '编辑用户' },
-})
-
 const users = ref<User[]>([
   { id: 1, name: 'Alice' },
   { id: 2, name: 'Bob' },
 ])
 
 const editingRow = ref<User | null>(null)
-
-function openCreate() {
-  CreateUserDialog.show()
-}
-
-function openEdit(row: User) {
-  editingRow.value = row
-  EditUserDialog.show({
-    recordId: row.id,
-    initialName: row.name,
-  })
-}
 
 function onSuccess(name: string) {
   if (editingRow.value) {
@@ -50,6 +26,29 @@ function onSuccess(name: string) {
     ? Math.max(...users.value.map((u) => u.id)) + 1
     : 1
   users.value.push({ id, name })
+}
+
+/** 无 template：仅 show()，事件在 useDialog 配置里绑定 */
+const CreateUserDialog = useDialog(CreateForm, {
+  props: { mode: 'create' as const, onSuccess },
+  closeOn: ['success', 'cancel'],
+  shellProps: { title: '新建用户' },
+})
+
+/** 有 template：透传响应式 attrs / @success */
+const EditUserDialog = useDialog(CreateForm, {
+  props: { mode: 'edit' as const },
+  closeOn: ['success', 'cancel'],
+  shellProps: { title: '编辑用户' },
+})
+
+function openCreate() {
+  CreateUserDialog.show()
+}
+
+function openEdit(row: User) {
+  editingRow.value = row
+  EditUserDialog.show()
 }
 </script>
 
@@ -70,7 +69,7 @@ function onSuccess(name: string) {
       </ElTableColumn>
     </ElTable>
 
-    <CreateUserDialog @success="onSuccess" />
+    <!-- 编辑：template 挂载，透传响应式参数与事件 -->
     <EditUserDialog
       :record-id="editingRow?.id"
       :initial-name="editingRow?.name"
