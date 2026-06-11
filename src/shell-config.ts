@@ -1,18 +1,20 @@
-import type { LayerShellOptions } from './types'
+import type { LayerProps, LayerShellOptions, VisibleProtocol } from './types'
 
 export interface ResolvedShellConfig {
   visibleProp: string
   visibleEvent: string
-  shellDefaults: LayerShellOptions
+  shellDefaults: LayerProps
 }
 
+const DEFAULT_VISIBLE: VisibleProtocol = ['modelValue', 'onUpdate:modelValue']
+
 export function resolveShellConfig(
-  shellDefaults: LayerShellOptions = {},
+  options: LayerShellOptions = {},
 ): ResolvedShellConfig {
-  const visibleProp = shellDefaults.visibleProp ?? 'modelValue'
+  const [visibleProp, visibleEvent] = options.visible ?? DEFAULT_VISIBLE
   return {
     visibleProp,
-    visibleEvent: shellDefaults.visibleEvent ?? `update:${visibleProp}`,
-    shellDefaults,
+    visibleEvent,
+    shellDefaults: options.props ?? {},
   }
 }

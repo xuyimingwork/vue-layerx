@@ -1,46 +1,80 @@
 import {
+  defineComponent,
   getCurrentInstance,
+  h,
+  inject,
   onUnmounted,
+  provide,
   reactive,
   ref,
   shallowRef,
   type Component,
 } from 'vue'
-import { buildLayerVNode } from './build-vnode'
+import {
+  buildLayerVNode,
+  createLayerBindKey,
+  LAYER_SLOT_CONTEXT_KEY,
+  type LayerBindRegistry,
+} from './build-vnode'
 import { createBodyRenderer } from './body-renderer'
-import { defineLayerComponent } from './define-layer-component'
 import type { ResolvedShellConfig } from './shell-config'
 import type {
-  LayerComponent,
-  LayerInstanceOptions,
+  LayerBindOptions,
+  LayerInstance,
   LayerProps,
-  SlotRenderFn,
+  LayerShowPayload,
+  LayerUseOptions,
 } from './types'
-
-interface LayerState {
-  visible: boolean
-  imperativeProps: LayerProps
-}
 
 export interface UseLayerFactoryContext extends ResolvedShellConfig {
   Shell: Component
 }
 
+function extractShowPayload(payload: LayerShowPayload = {}) {
+  const { layer, hideOn, ...innerProps } = payload
+  return {
+    innerProps,
+    layerProps: layer?.props ?? {},
+    hideOn: hideOn as string[] | undefined,
+  }
+}
+
+function mergeUseOptions(
+  base: LayerUseOptions,
+  partial?: LayerUseOptions,
+): LayerUseOptions {
+  if (!partial) return { ...base }
+  return {
+    props: { ...base.props, ...partial.props },
+    layer: {
+      props: { ...base.layer?.props, ...partial.layer?.props },
+    },
+    hideOn: partial.hideOn ?? base.hideOn,
+  }
+}
+
 export function createUseLayer(ctx: UseLayerFactoryContext) {
   const { Shell, shellDefaults, visibleProp, visibleEvent } = ctx
+  const bindKey = createLayerBindKey()
 
-  return function useLayer(
+  function bind(options: LayerBindOptions = {}) {
+    const registry = inject(bindKey, null)
+    if (registry) registry.registerBind(options)
+  }
+
+  function useLayer(
     Inner: Component,
-    instanceDefaults: LayerInstanceOptions = {},
-  ): LayerComponent {
-    const state = reactive<LayerState>({
+    useOptions: LayerUseOptions = {},
+  ): LayerInstance {
+    const state = reactive({
       visible: false,
-      imperativeProps: {},
+      showPayload: {} as LayerProps,
+      showLayerProps: {} as LayerProps,
+      showHideOn: undefined as string[] | undefined,
     })
 
-    const templateAttrs = shallowRef<LayerProps>({})
-    const templateSlots = shallowRef<Record<string, SlotRenderFn>>({})
-    const bridged = ref(false)
+    const bindConfig = shallowRef<LayerBindOptions | null>(null)
+    const slotsVersion = ref(0)
 
     const instance = getCurrentInstance()
     const bodyRenderer = createBodyRenderer(instance?.appContext ?? null)
@@ -50,52 +84,72 @@ export function createUseLayer(ctx: UseLayerFactoryContext) {
       bodyRenderer.teardown()
     }
 
-    const buildContext = () => ({
-      Shell,
-      Inner,
-      shellDefaults,
-      instanceDefaults,
-      visibleProp,
-      visibleEvent,
-      imperativeProps: state.imperativeProps,
-      templateAttrs: templateAttrs.value,
-      templateSlots: templateSlots.value,
-      hide,
+    const LayerRoot = defineComponent({
+      name: `LayerRoot_${(Inner as { name?: string }).name ?? 'Anonymous'}`,
+      setup() {
+        provide(bindKey, {
+          registerBind: (config: LayerBindOptions) => {
+            bindConfig.value = config
+          },
+        } satisfies LayerBindRegistry)
+
+        provide(LAYER_SLOT_CONTEXT_KEY, {
+          bumpSlots: () => {
+            slotsVersion.value++
+          },
+        })
+
+        return () => {
+          if (!state.visible) return null
+          return buildLayerVNode({
+            Shell,
+            Inner,
+            visible: true,
+            visibleProp,
+            visibleEvent,
+            shellDefaults,
+            bindConfig: bindConfig.value,
+            useOptions,
+            showPayload: state.showPayload,
+            showLayerProps: state.showLayerProps,
+            showHideOn: state.showHideOn,
+            slotsVersion: slotsVersion.value,
+            hide,
+            provideContext: (inner) => inner,
+          })
+        }
+      },
     })
 
-    const renderToBody = () => {
-      if (!state.visible || bridged.value) return
-      bodyRenderer.render(buildLayerVNode(buildContext()))
+    const show = (payload?: LayerShowPayload) => {
+      if (payload) {
+        const extracted = extractShowPayload(payload)
+        state.showPayload = extracted.innerProps
+        state.showLayerProps = extracted.layerProps
+        state.showHideOn = extracted.hideOn
+      }
+      state.visible = true
+      bodyRenderer.render(h(LayerRoot))
     }
 
-    const show = (payload?: LayerProps) => {
-      if (payload) state.imperativeProps = { ...payload }
-      state.visible = true
-      if (!bridged.value) renderToBody()
-    }
+    const clone = (partial?: LayerUseOptions): LayerInstance =>
+      useLayer(Inner, mergeUseOptions(useOptions, partial))
 
     if (instance) {
       onUnmounted(hide)
     }
 
-    const Layer = defineLayerComponent({
-      Inner,
-      bridged,
-      isVisible: () => state.visible,
-      templateAttrs,
-      templateSlots,
-      buildContext,
-      bodyRenderer,
-      renderToBody,
-    })
-
-    const layer = Layer as unknown as LayerComponent
-    layer.show = show
-    layer.hide = hide
-    Object.defineProperty(layer, 'visible', {
-      get: () => state.visible,
-    })
-
-    return layer
+    return {
+      show,
+      hide,
+      clone,
+      get visible() {
+        return state.visible
+      },
+    }
   }
+
+  useLayer.bind = bind
+
+  return useLayer
 }

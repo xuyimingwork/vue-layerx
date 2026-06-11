@@ -1,53 +1,83 @@
-import { h, type Component, type VNode } from 'vue'
-import type {
-  LayerInstanceOptions,
-  LayerProps,
-  LayerShellOptions,
-  SlotRenderFn,
-} from './types'
-import { bindCloseOn } from './utils/bind-close-on'
-import { collectSlots } from './utils/collect-slots'
-import { mergeProps } from './utils/merge-props'
+import { h, type Component, type InjectionKey, type VNode } from 'vue'
+import { bindHideOn } from './utils/bind-hide-on'
+import { mergeLayerConfig, type MergeContext } from './utils/merge-config'
+import type { LayerBindOptions, LayerProps } from './types'
 
-export interface BuildVNodeContext {
+export interface BuildVNodeOptions {
   Shell: Component
   Inner: Component
-  shellDefaults: LayerShellOptions
-  instanceDefaults: LayerInstanceOptions
+  visible: boolean
   visibleProp: string
   visibleEvent: string
-  imperativeProps: LayerProps
-  templateAttrs: LayerProps
-  templateSlots: Record<string, SlotRenderFn>
+  shellDefaults: LayerProps
+  bindConfig: LayerBindOptions | null
+  useOptions: MergeContext['useOptions']
+  showPayload: LayerProps
+  showLayerProps: LayerProps
+  showHideOn: string[] | undefined
+  slotsVersion: number
   hide: () => void
+  provideContext: (inner: VNode) => VNode
 }
 
-export function buildLayerVNode(ctx: BuildVNodeContext): VNode {
-  const hideHandler = () => ctx.hide()
+function buildShellSlots(
+  bindConfig: LayerBindOptions | null,
+  slotsVersion: number,
+): Record<string, () => VNode | VNode[] | null> {
+  if (!bindConfig?.slots) return {}
+  const shellSlots: Record<string, () => VNode | VNode[] | null> = {}
+  for (const [name, slotRef] of Object.entries(bindConfig.slots)) {
+    shellSlots[name] = () => {
+      void slotsVersion
+      return slotRef.value?.render() ?? null
+    }
+  }
+  return shellSlots
+}
 
-  const innerProps = bindCloseOn(
-    mergeProps(
-      ctx.instanceDefaults.props,
-      ctx.imperativeProps,
-      ctx.templateAttrs,
-    ),
-    ctx.instanceDefaults.closeOn,
-    hideHandler,
-  )
+export function buildLayerVNode(options: BuildVNodeOptions): VNode {
+  const { shellProps, innerProps, hideOn } = mergeLayerConfig({
+    shellDefaults: options.shellDefaults,
+    bindConfig: options.bindConfig,
+    useOptions: options.useOptions,
+    showPayload: options.showPayload,
+    showLayerProps: options.showLayerProps,
+    showHideOn: options.showHideOn,
+  })
 
-  const shellProps = mergeProps(
-    ctx.shellDefaults.props,
-    ctx.instanceDefaults.shellProps,
+  const hideHandler = () => options.hide()
+
+  const boundInnerProps = bindHideOn(innerProps, hideOn, hideHandler)
+
+  const shellVNodeProps = {
+    ...shellProps,
+    [options.visibleProp]: options.visible,
+    [options.visibleEvent]: (value: unknown) => {
+      if (value === false || value === undefined) hideHandler()
+    },
+  }
+
+  const innerVNode = h(options.Inner, boundInnerProps)
+  const wrappedInner = options.provideContext(innerVNode)
+
+  return h(
+    options.Shell,
+    shellVNodeProps,
     {
-      [ctx.visibleProp]: true,
-      [ctx.visibleEvent]: (value: unknown) => {
-        if (value === false || value === undefined) hideHandler()
-      },
+      default: () => wrappedInner,
+      ...buildShellSlots(options.bindConfig, options.slotsVersion),
     },
   )
-
-  return h(ctx.Shell, shellProps, {
-    default: () =>
-      h(ctx.Inner, innerProps, collectSlots(ctx.templateSlots)),
-  })
 }
+
+export type LayerBindRegistry = {
+  registerBind: (config: LayerBindOptions) => void
+}
+
+export function createLayerBindKey(): InjectionKey<LayerBindRegistry> {
+  return Symbol('layerx-bind') as InjectionKey<LayerBindRegistry>
+}
+
+export const LAYER_SLOT_CONTEXT_KEY = Symbol('layerx-slot-context') as InjectionKey<{
+  bumpSlots: () => void
+}>

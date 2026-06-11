@@ -14,41 +14,35 @@ const users = ref<User[]>([
   { id: 2, name: 'Bob' },
 ])
 
-const editingRow = ref<User | null>(null)
-
-function onSuccess(name: string) {
-  if (editingRow.value) {
-    editingRow.value.name = name
-    editingRow.value = null
-    return
-  }
-  const id = users.value.length
-    ? Math.max(...users.value.map((u) => u.id)) + 1
-    : 1
-  users.value.push({ id, name })
-}
-
-/** 无 template：仅 show()，事件在 useDialog 配置里绑定 */
-const CreateUserDialog = useDialog(CreateForm, {
-  props: { mode: 'create' as const, onSuccess },
-  closeOn: ['success', 'cancel'],
-  shellProps: { title: '新建用户' },
+const createDialog = useDialog(CreateForm, {
+  props: { mode: 'create' as const },
+  layer: { props: { title: '新建用户' } },
 })
 
-/** 有 template：透传响应式 attrs / @success */
-const EditUserDialog = useDialog(CreateForm, {
+const editDialog = createDialog.clone({
   props: { mode: 'edit' as const },
-  closeOn: ['success', 'cancel'],
-  shellProps: { title: '编辑用户' },
+  layer: { props: { title: '编辑用户' } },
 })
 
 function openCreate() {
-  CreateUserDialog.show()
+  createDialog.show({
+    onSuccess: (name: string) => {
+      const id = users.value.length
+        ? Math.max(...users.value.map((u) => u.id)) + 1
+        : 1
+      users.value.push({ id, name })
+    },
+  })
 }
 
 function openEdit(row: User) {
-  editingRow.value = row
-  EditUserDialog.show()
+  editDialog.show({
+    recordId: row.id,
+    initialName: row.name,
+    onSuccess: (name: string) => {
+      row.name = name
+    },
+  })
 }
 </script>
 
@@ -68,13 +62,6 @@ function openEdit(row: User) {
         </template>
       </ElTableColumn>
     </ElTable>
-
-    <!-- 编辑：template 挂载，透传响应式参数与事件 -->
-    <EditUserDialog
-      :record-id="editingRow?.id"
-      :initial-name="editingRow?.name"
-      @success="onSuccess"
-    />
   </section>
 </template>
 

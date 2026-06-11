@@ -1,6 +1,6 @@
 import type { LayerProps } from '../types'
 
-export function bindCloseOn(
+export function bindHideOn(
   innerProps: LayerProps,
   events: string[] | undefined,
   hide: () => void,

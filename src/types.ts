@@ -1,34 +1,53 @@
-import type { Component, VNode } from 'vue'
+import type { Component, Ref, VNode } from 'vue'
 
 export type LayerProps = Record<string, unknown>
 
+/** [visibleProp, visibleEventHandlerProp] e.g. ['modelValue', 'onUpdate:modelValue'] */
+export type VisibleProtocol = [string, string]
+
 export interface LayerShellOptions {
-  /** Props merged into the shell on every open (e.g. ElDialog title, width). */
+  /** Shell visibility prop / event protocol */
+  visible?: VisibleProtocol
+  /** Default props passed to Shell */
   props?: LayerProps
-  /** Prop on the shell that controls visibility; default `modelValue`. */
-  visibleProp?: string
-  /** Event emitted when the shell requests close; default `update:modelValue`. */
-  visibleEvent?: string
 }
 
-export interface LayerInstanceOptions {
-  /** Default props for the inner component. */
+export interface LayerBindOptions {
+  /** Shell default props (definition side) */
   props?: LayerProps
-  /**
-   * Inner component event names that close the layer when emitted.
-   * @example ['submit', 'cancel']
-   */
-  closeOn?: string[]
-  /** Extra props for the shell on this instance only. */
-  shellProps?: LayerProps
+  /** Shell slot name → LayerSlot ref */
+  slots?: Record<string, Ref<LayerSlotInstance | undefined>>
+  /** Inner emit names that auto-hide the layer */
+  hideOn?: string[]
 }
 
-export interface LayerController {
-  show: (payload?: LayerProps) => void
+export interface LayerUseOptions {
+  /** Inner default props */
+  props?: LayerProps
+  /** Shell props override */
+  layer?: { props?: LayerProps }
+  /** Override bind hideOn behavior */
+  hideOn?: string[]
+}
+
+export interface LayerShowPayload extends LayerProps {
+  layer?: { props?: LayerProps }
+  hideOn?: string[]
+}
+
+export interface LayerSlotInstance {
+  render: () => VNode | VNode[] | null
+}
+
+export interface LayerInstance {
+  show: (payload?: LayerShowPayload) => void
   hide: () => void
+  clone: (partial?: LayerUseOptions) => LayerInstance
   readonly visible: boolean
 }
 
-export type LayerComponent = Component & LayerController
-
-export type SlotRenderFn = () => VNode | VNode[] | null
+export interface LayerContext {
+  registerBind: (config: LayerBindOptions) => void
+  bumpSlots: () => void
+  readonly slotsVersion: number
+}

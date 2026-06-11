@@ -3,12 +3,7 @@ import { resolveShellConfig } from './shell-config'
 import { createUseLayer } from './use-layer'
 import type { LayerShellOptions } from './types'
 
-export function createLayerx(
-  container: Component,
-  shellDefaults: LayerShellOptions = {},
-) {
-  return createUseLayer({
-    Shell: container,
-    ...resolveShellConfig(shellDefaults),
-  })
+export function createLayerx(Shell: Component, options: LayerShellOptions = {}) {
+  const resolved = resolveShellConfig(options)
+  return createUseLayer({ Shell, ...resolved })
 }
