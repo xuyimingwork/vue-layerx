@@ -4,11 +4,11 @@ import { createUseLayer } from './use-layer'
 import type { LayerShellOptions } from './types'
 
 export function createLayerx(
-  Shell: Component,
+  container: Component,
   shellDefaults: LayerShellOptions = {},
 ) {
   return createUseLayer({
-    Shell,
+    Shell: container,
     ...resolveShellConfig(shellDefaults),
   })
 }
