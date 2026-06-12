@@ -9,6 +9,7 @@ export type {
   LayerProps,
   LayerShowPayload,
   LayerSlotInstance,
+  LayerSlotScope,
   LayerSlots,
   LayerUseOptions,
   VisibleProtocol,

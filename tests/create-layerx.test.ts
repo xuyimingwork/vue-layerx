@@ -260,4 +260,72 @@ describe('createLayerx', () => {
     expect(wrapper.find('.footer-btn').exists()).toBe(false)
     expect(wrapper.find('.done').exists()).toBe(true)
   })
+
+  it('visible-outside renders slot content when content used outside layer', () => {
+    const Content = defineComponent({
+      name: 'ContentWithVisibleOutside',
+      setup() {
+        return () =>
+          h('div', { class: 'page' }, [
+            h(
+              LayerSlot,
+              { visibleOutside: true },
+              ({ inOutside, inLayer }: { inOutside: boolean; inLayer: boolean }) => [
+                h('span', { class: 'scope-outside' }, String(inOutside)),
+                h('span', { class: 'scope-layer' }, String(inLayer)),
+                h('button', { class: 'footer-btn' }, 'footer'),
+              ],
+            ),
+          ])
+      },
+    })
+
+    const wrapper = mount(Content)
+    expect(wrapper.find('.footer-btn').exists()).toBe(true)
+    expect(wrapper.find('.scope-outside').text()).toBe('true')
+    expect(wrapper.find('.scope-layer').text()).toBe('false')
+  })
+
+  it('render() passes inLayer scope when LayerSlot content is rendered into layer slot', async () => {
+    const useLayer = createLayerx(LayerComponent)
+    let capturedScope: { inOutside: boolean; inLayer: boolean } | undefined
+
+    const Content = defineComponent({
+      name: 'ContentWithScopeCapture',
+      props: { message: String },
+      setup(props) {
+        const footerRef = ref()
+
+        useLayer.layer({ slots: { footer: footerRef } })
+
+        return () =>
+          h('motion-div', { class: 'content' }, [
+            h('span', { class: 'msg' }, props.message),
+            h(
+              LayerSlot,
+              { ref: footerRef },
+              (scope: { inOutside: boolean; inLayer: boolean }) => {
+                capturedScope = scope
+                return h('button', { class: 'footer-btn' }, 'footer')
+              },
+            ),
+          ])
+      },
+    })
+
+    let dialog!: LayerInstance
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        onMounted(() => dialog.show({ props: { message: 'scope' } }))
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.footer-btn')).toBeTruthy()
+    expect(capturedScope).toEqual({ inLayer: true, inOutside: false })
+  })
 })

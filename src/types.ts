@@ -38,6 +38,11 @@ export interface ContentInstanceOptions {
 export type LayerUseOptions = ContentInstanceOptions
 export type LayerShowPayload = ContentInstanceOptions
 
+export interface LayerSlotScope {
+  inLayer: boolean
+  inOutside: boolean
+}
+
 export interface LayerSlotInstance {
   render: () => VNode | VNode[] | null
 }
