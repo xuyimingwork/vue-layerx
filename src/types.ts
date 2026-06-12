@@ -1,39 +1,42 @@
-import type { Component, Ref, VNode } from 'vue'
+import type { Ref, VNode } from 'vue'
 
 export type LayerProps = Record<string, unknown>
 
 /** [visibleProp, visibleEventHandlerProp] e.g. ['modelValue', 'onUpdate:modelValue'] */
 export type VisibleProtocol = [string, string]
 
-export interface LayerShellOptions {
-  /** Shell visibility prop / event protocol */
+export type LayerSlots = Record<string, Ref<LayerSlotInstance | undefined>>
+
+/** Content props nested under layer definition */
+export interface ContentConfig {
+  props?: LayerProps
+}
+
+/** createLayerx & useLayer.layer() — layer-level options */
+export interface LayerDefinitionOptions {
   visible?: VisibleProtocol
-  /** Default props passed to Shell */
+  /** Layer component props */
   props?: LayerProps
+  /** Layer slot name → LayerSlot ref */
+  slots?: LayerSlots
+  /** Default content props */
+  content?: ContentConfig
 }
 
-export interface LayerBindOptions {
-  /** Shell default props (definition side) */
+/** createLayerx options — same as LayerDefinitionOptions */
+export type CreateLayerxOptions = LayerDefinitionOptions
+
+/** useLayer(Content) & show() — content-level options */
+export interface ContentInstanceOptions {
+  /** Content component props */
   props?: LayerProps
-  /** Shell slot name → LayerSlot ref */
-  slots?: Record<string, Ref<LayerSlotInstance | undefined>>
-  /** Inner emit names that auto-hide the layer */
+  slots?: LayerSlots
   hideOn?: string[]
+  layer?: LayerDefinitionOptions
 }
 
-export interface LayerUseOptions {
-  /** Inner default props */
-  props?: LayerProps
-  /** Shell props override */
-  layer?: { props?: LayerProps }
-  /** Override bind hideOn behavior */
-  hideOn?: string[]
-}
-
-export interface LayerShowPayload extends LayerProps {
-  layer?: { props?: LayerProps }
-  hideOn?: string[]
-}
+export type LayerUseOptions = ContentInstanceOptions
+export type LayerShowPayload = ContentInstanceOptions
 
 export interface LayerSlotInstance {
   render: () => VNode | VNode[] | null
@@ -46,8 +49,6 @@ export interface LayerInstance {
   readonly visible: boolean
 }
 
-export interface LayerContext {
-  registerBind: (config: LayerBindOptions) => void
+export interface LayerSlotContext {
   bumpSlots: () => void
-  readonly slotsVersion: number
 }

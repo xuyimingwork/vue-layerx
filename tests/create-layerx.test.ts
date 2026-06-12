@@ -4,8 +4,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createLayerx, LayerSlot } from '../src'
 import type { LayerInstance } from '../src/types'
 
-const Shell = defineComponent({
-  name: 'Shell',
+const LayerComponent = defineComponent({
+  name: 'LayerComponent',
   props: { modelValue: Boolean, title: String, width: String },
   emits: ['update:modelValue'],
   setup(props, { slots }) {
@@ -19,26 +19,25 @@ const Shell = defineComponent({
   },
 })
 
-function makeInner(useLayer: ReturnType<typeof createLayerx>, withBind = false) {
+function makeContent(useLayer: ReturnType<typeof createLayerx>, withLayer = false) {
   return defineComponent({
-    name: 'Inner',
+    name: 'Content',
     props: { message: String },
     emits: ['done', 'cancel'],
     setup(props, { emit }) {
       const footerRef = ref()
 
-      if (withBind) {
-        useLayer.bind({
-          props: { title: 'FromBind', width: '600px' },
+      if (withLayer) {
+        useLayer.layer({
+          props: { title: 'FromLayer', width: '600px' },
           slots: { footer: footerRef },
-          hideOn: ['done'],
         })
       }
 
       return () =>
-        h('motion-div', { class: 'inner' }, [
+        h('motion-div', { class: 'content' }, [
           h('span', { class: 'msg' }, props.message),
-          withBind
+          withLayer
             ? h(LayerSlot, { ref: footerRef }, () =>
                 h('button', { class: 'footer-btn' }, 'footer'),
               )
@@ -60,14 +59,16 @@ afterEach(() => {
 
 describe('createLayerx', () => {
   it('opens via .show() without template (body)', async () => {
-    const useLayer = createLayerx(Shell, { props: { title: 'Create', width: '400px' } })
-    const Inner = makeInner(useLayer)
+    const useLayer = createLayerx(LayerComponent, {
+      props: { title: 'Create', width: '400px' },
+    })
+    const Content = makeContent(useLayer)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Inner)
-        onMounted(() => dialog.show({ message: 'hello' }))
+        dialog = useLayer(Content)
+        onMounted(() => dialog.show({ props: { message: 'hello' } }))
         return () => h('motion-host')
       },
     })
@@ -81,21 +82,21 @@ describe('createLayerx', () => {
     expect(queryBodyDialog()?.getAttribute('data-width')).toBe('400px')
   })
 
-  it('merges config: show > useDialog > bind > createLayerx', async () => {
-    const useLayer = createLayerx(Shell, {
+  it('merges config: show > useDialog > layer() > createLayerx', async () => {
+    const useLayer = createLayerx(LayerComponent, {
       props: { title: 'Default', width: '400px' },
     })
-    const Inner = makeInner(useLayer, true)
+    const Content = makeContent(useLayer, true)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Inner, {
+        dialog = useLayer(Content, {
           layer: { props: { width: '640px' } },
         })
         onMounted(() =>
           dialog.show({
-            message: 'merged',
+            props: { message: 'merged' },
             layer: { props: { title: 'FromShow' } },
           }),
         )
@@ -111,15 +112,36 @@ describe('createLayerx', () => {
     expect(el?.getAttribute('data-width')).toBe('640px')
   })
 
-  it('renders bind LayerSlot content into shell slot', async () => {
-    const useLayer = createLayerx(Shell)
-    const Inner = makeInner(useLayer, true)
+  it('merges default content props from createLayerx', async () => {
+    const useLayer = createLayerx(LayerComponent, {
+      content: { props: { message: 'default-msg' } },
+    })
+    const Content = makeContent(useLayer)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Inner)
-        onMounted(() => dialog.show({ message: 'slot' }))
+        dialog = useLayer(Content)
+        onMounted(() => dialog.show())
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.msg')?.textContent).toBe('default-msg')
+  })
+
+  it('renders layer() LayerSlot content into layer slot', async () => {
+    const useLayer = createLayerx(LayerComponent)
+    const Content = makeContent(useLayer, true)
+    let dialog!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        onMounted(() => dialog.show({ props: { message: 'slot' } }))
         return () => h('motion-host')
       },
     })
@@ -128,23 +150,23 @@ describe('createLayerx', () => {
     await new Promise((r) => setTimeout(r, 0))
 
     expect(document.body.querySelector('.footer-btn')).toBeTruthy()
-    expect(document.querySelector('.inner .footer-btn')).toBeFalsy()
+    expect(document.querySelector('.content .footer-btn')).toBeFalsy()
   })
 
-  it('closes on hideOn inner events', async () => {
-    const useLayer = createLayerx(Shell)
-    const Inner = makeInner(useLayer)
+  it('closes on hideOn content events', async () => {
+    const useLayer = createLayerx(LayerComponent)
+    const Content = makeContent(useLayer)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Inner, { hideOn: ['done'] })
+        dialog = useLayer(Content, { hideOn: ['done'] })
         return () => h('motion-host')
       },
     })
 
     const wrapper = mount(Host)
-    dialog.show({ message: 'x' })
+    dialog.show({ props: { message: 'x' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -154,20 +176,20 @@ describe('createLayerx', () => {
     expect(queryBodyDialog()).toBeFalsy()
   })
 
-  it('bind hideOn works when useDialog has no hideOn', async () => {
-    const useLayer = createLayerx(Shell)
-    const Inner = makeInner(useLayer, true)
+  it('show hideOn works when useDialog has no hideOn', async () => {
+    const useLayer = createLayerx(LayerComponent)
+    const Content = makeContent(useLayer)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Inner)
+        dialog = useLayer(Content)
         return () => h('motion-host')
       },
     })
 
     const wrapper = mount(Host)
-    dialog.show({ message: 'x' })
+    dialog.show({ props: { message: 'x' }, hideOn: ['done'] })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -178,19 +200,19 @@ describe('createLayerx', () => {
   })
 
   it('exposes .hide()', async () => {
-    const useLayer = createLayerx(Shell)
-    const Inner = makeInner(useLayer)
+    const useLayer = createLayerx(LayerComponent)
+    const Content = makeContent(useLayer)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Inner)
+        dialog = useLayer(Content)
         return () => h('motion-host')
       },
     })
 
     const wrapper = mount(Host)
-    dialog.show({ message: 'a' })
+    dialog.show({ props: { message: 'a' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(queryBodyDialog()).toBeTruthy()
@@ -201,21 +223,21 @@ describe('createLayerx', () => {
   })
 
   it('clone() creates independent instance', async () => {
-    const useLayer = createLayerx(Shell, { props: { title: 'Base' } })
-    const Inner = makeInner(useLayer)
+    const useLayer = createLayerx(LayerComponent, { props: { title: 'Base' } })
+    const Content = makeContent(useLayer)
     let base!: LayerInstance
     let cloned!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        base = useLayer(Inner, { layer: { props: { title: 'Base' } } })
+        base = useLayer(Content, { layer: { props: { title: 'Base' } } })
         cloned = base.clone({ layer: { props: { title: 'Cloned' } } })
         return () => h('motion-host')
       },
     })
 
     const wrapper = mount(Host)
-    base.show({ message: 'base' })
+    base.show({ props: { message: 'base' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Base')
@@ -223,18 +245,18 @@ describe('createLayerx', () => {
     base.hide()
     await wrapper.vm.$nextTick()
 
-    cloned.show({ message: 'cloned' })
+    cloned.show({ props: { message: 'cloned' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Cloned')
     expect(document.body.querySelector('.msg')?.textContent).toBe('cloned')
   })
 
-  it('bind does not activate when Inner used outside layer', () => {
-    const useLayer = createLayerx(Shell)
-    const Inner = makeInner(useLayer, true)
+  it('layer() does not activate when content used outside layer', () => {
+    const useLayer = createLayerx(LayerComponent)
+    const Content = makeContent(useLayer, true)
 
-    const wrapper = mount(Inner, { props: { message: 'page' } })
+    const wrapper = mount(Content, { props: { message: 'page' } })
     expect(wrapper.find('.footer-btn').exists()).toBe(false)
     expect(wrapper.find('.done').exists()).toBe(true)
   })

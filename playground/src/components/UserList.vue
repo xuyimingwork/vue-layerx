@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ElButton, ElTable, ElTableColumn } from 'element-plus'
+import { ElButton, ElTable, ElTableColumn, ElTag } from 'element-plus'
+import { LayerSlot } from 'vue-layerx'
 import { useDialog } from '../layers'
 import CreateForm from './CreateForm.vue'
 
@@ -14,9 +15,14 @@ const users = ref<User[]>([
   { id: 2, name: 'Bob' },
 ])
 
+/** useDialog.slots → CreateForm #header（表单内 slot，不是 layer slot） */
+const createHeaderRef = ref()
+
 const createDialog = useDialog(CreateForm, {
   props: { mode: 'create' as const },
   layer: { props: { title: '新建用户' } },
+  slots: { header: createHeaderRef },
+  hideOn: ['success', 'cancel'],
 })
 
 const editDialog = createDialog.clone({
@@ -26,21 +32,25 @@ const editDialog = createDialog.clone({
 
 function openCreate() {
   createDialog.show({
-    onSuccess: (name: string) => {
-      const id = users.value.length
-        ? Math.max(...users.value.map((u) => u.id)) + 1
-        : 1
-      users.value.push({ id, name })
+    props: {
+      onSuccess: (name: string) => {
+        const id = users.value.length
+          ? Math.max(...users.value.map((u) => u.id)) + 1
+          : 1
+        users.value.push({ id, name })
+      },
     },
   })
 }
 
 function openEdit(row: User) {
   editDialog.show({
-    recordId: row.id,
-    initialName: row.name,
-    onSuccess: (name: string) => {
-      row.name = name
+    props: {
+      recordId: row.id,
+      initialName: row.name,
+      onSuccess: (name: string) => {
+        row.name = name
+      },
     },
   })
 }
@@ -62,6 +72,10 @@ function openEdit(row: User) {
         </template>
       </ElTableColumn>
     </ElTable>
+
+    <LayerSlot ref="createHeaderRef">
+      <ElTag type="success" size="small">UserList 注入的 header</ElTag>
+    </LayerSlot>
   </section>
 </template>
 

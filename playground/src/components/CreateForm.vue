@@ -18,12 +18,11 @@ const emit = defineEmits<{
 const name = ref(props.initialName ?? '')
 const footerRef = ref()
 
-useDialog.bind({
+useDialog.layer({
   props: {
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
   },
   slots: { footer: footerRef },
-  hideOn: ['success', 'cancel'],
 })
 
 watch(
@@ -45,6 +44,11 @@ function cancel() {
 
 <template>
   <ElForm label-width="72px" @submit.prevent="submit">
+    <ElFormItem>
+      <slot name="header">
+        <span class="form-header">请填写用户信息</span>
+      </slot>
+    </ElFormItem>
     <ElFormItem v-if="recordId" label="ID">
       <span>{{ recordId }}</span>
     </ElFormItem>
@@ -60,3 +64,10 @@ function cancel() {
     <ElButton @click="cancel">取消</ElButton>
   </LayerSlot>
 </template>
+
+<style scoped>
+.form-header {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+}
+</style>

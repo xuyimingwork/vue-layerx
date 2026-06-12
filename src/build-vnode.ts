@@ -1,81 +1,73 @@
 import { h, type Component, type InjectionKey, type VNode } from 'vue'
 import { bindHideOn } from './utils/bind-hide-on'
-import { mergeLayerConfig, type MergeContext } from './utils/merge-config'
-import type { LayerBindOptions, LayerProps } from './types'
+import { mergeConfig, type MergeContext } from './utils/merge-config'
+import type { CreateLayerxOptions, LayerDefinitionOptions, LayerSlots } from './types'
 
 export interface BuildVNodeOptions {
-  Shell: Component
-  Inner: Component
+  Layer: Component
+  Content: Component
   visible: boolean
   visibleProp: string
   visibleEvent: string
-  shellDefaults: LayerProps
-  bindConfig: LayerBindOptions | null
+  factoryOptions: CreateLayerxOptions
+  layerDefinition: MergeContext['layerDefinition']
   useOptions: MergeContext['useOptions']
-  showPayload: LayerProps
-  showLayerProps: LayerProps
-  showHideOn: string[] | undefined
+  showOptions: MergeContext['showOptions']
   slotsVersion: number
   hide: () => void
-  provideContext: (inner: VNode) => VNode
 }
 
-function buildShellSlots(
-  bindConfig: LayerBindOptions | null,
+function buildSlotFns(
+  slots: LayerSlots,
   slotsVersion: number,
 ): Record<string, () => VNode | VNode[] | null> {
-  if (!bindConfig?.slots) return {}
-  const shellSlots: Record<string, () => VNode | VNode[] | null> = {}
-  for (const [name, slotRef] of Object.entries(bindConfig.slots)) {
-    shellSlots[name] = () => {
+  const slotFns: Record<string, () => VNode | VNode[] | null> = {}
+  for (const [name, slotRef] of Object.entries(slots)) {
+    slotFns[name] = () => {
       void slotsVersion
-      return slotRef.value?.render() ?? null
+      return slotRef?.value?.render() ?? null
     }
   }
-  return shellSlots
+  return slotFns
 }
 
 export function buildLayerVNode(options: BuildVNodeOptions): VNode {
-  const { shellProps, innerProps, hideOn } = mergeLayerConfig({
-    shellDefaults: options.shellDefaults,
-    bindConfig: options.bindConfig,
+  const { layerProps, contentProps, hideOn, contentSlots, layerSlots } = mergeConfig({
+    factoryOptions: options.factoryOptions,
+    layerDefinition: options.layerDefinition,
     useOptions: options.useOptions,
-    showPayload: options.showPayload,
-    showLayerProps: options.showLayerProps,
-    showHideOn: options.showHideOn,
+    showOptions: options.showOptions,
   })
 
   const hideHandler = () => options.hide()
 
-  const boundInnerProps = bindHideOn(innerProps, hideOn, hideHandler)
+  const boundContentProps = bindHideOn(contentProps, hideOn, hideHandler)
 
-  const shellVNodeProps = {
-    ...shellProps,
+  const layerVNodeProps = {
+    ...layerProps,
     [options.visibleProp]: options.visible,
     [options.visibleEvent]: (value: unknown) => {
       if (value === false || value === undefined) hideHandler()
     },
   }
 
-  const innerVNode = h(options.Inner, boundInnerProps)
-  const wrappedInner = options.provideContext(innerVNode)
-
   return h(
-    options.Shell,
-    shellVNodeProps,
+    options.Layer,
+    layerVNodeProps,
     {
-      default: () => wrappedInner,
-      ...buildShellSlots(options.bindConfig, options.slotsVersion),
+      default: () =>
+        h(options.Content, boundContentProps, buildSlotFns(contentSlots, options.slotsVersion)),
+      ...buildSlotFns(layerSlots, options.slotsVersion),
     },
   )
 }
 
-export type LayerBindRegistry = {
-  registerBind: (config: LayerBindOptions) => void
+export type LayerDefinitionRegistry = {
+  registerLayer: (config: LayerDefinitionOptions) => void
 }
 
-export function createLayerBindKey(): InjectionKey<LayerBindRegistry> {
-  return Symbol('layerx-bind') as InjectionKey<LayerBindRegistry>
+export function createLayerDefinitionKey(): InjectionKey<LayerDefinitionRegistry> {
+  return Symbol('layerx-definition') as InjectionKey<LayerDefinitionRegistry>
 }
 
 export const LAYER_SLOT_CONTEXT_KEY = Symbol('layerx-slot-context') as InjectionKey<{
