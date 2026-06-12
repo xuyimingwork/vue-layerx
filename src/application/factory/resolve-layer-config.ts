@@ -1,12 +1,11 @@
-import type { CreateLayerxOptions, VisibleProtocol } from './types'
+import { DEFAULT_VISIBLE } from '../../domain/constants/visible'
+import type { CreateLayerxOptions } from '../../domain/types'
 
 export interface ResolvedLayerConfig {
   visibleProp: string
   visibleEvent: string
   factoryOptions: CreateLayerxOptions
 }
-
-const DEFAULT_VISIBLE: VisibleProtocol = ['modelValue', 'onUpdate:modelValue']
 
 export function resolveLayerConfig(
   options: CreateLayerxOptions = {},

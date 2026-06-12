@@ -1,5 +1,5 @@
-export { createLayerx } from './create-layerx'
-export { LayerSlot } from './layer-slot'
+export { createLayerx } from './public/create-layerx'
+export { LayerSlot } from './presentation/components/layer-slot'
 export type {
   ContentConfig,
   ContentInstanceOptions,
@@ -13,4 +13,4 @@ export type {
   LayerSlots,
   LayerUseOptions,
   VisibleProtocol,
-} from './types'
+} from './domain/types'

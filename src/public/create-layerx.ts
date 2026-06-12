@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
-import { resolveLayerConfig } from './layer-config'
-import { createUseLayer } from './use-layer'
-import type { CreateLayerxOptions } from './types'
+import { createUseLayer } from '../application/factory/create-use-layer'
+import { resolveLayerConfig } from '../application/factory/resolve-layer-config'
+import type { CreateLayerxOptions } from '../domain/types'
 
 export function createLayerx(
   Layer: Component,

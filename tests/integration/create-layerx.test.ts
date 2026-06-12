@@ -1,63 +1,15 @@
 import { defineComponent, h, onMounted, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayerx, LayerSlot } from '../src'
-import type { LayerInstance } from '../src/types'
-
-const LayerComponent = defineComponent({
-  name: 'LayerComponent',
-  props: { modelValue: Boolean, title: String, width: String },
-  emits: ['update:modelValue'],
-  setup(props, { slots }) {
-    return () =>
-      props.modelValue
-        ? h('motion-dialog', { 'data-title': props.title, 'data-width': props.width }, [
-            slots.default?.(),
-            slots.footer?.(),
-          ])
-        : null
-  },
-})
-
-function makeContent(useLayer: ReturnType<typeof createLayerx>, withLayer = false) {
-  return defineComponent({
-    name: 'Content',
-    props: { message: String },
-    emits: ['done', 'cancel'],
-    setup(props, { emit }) {
-      const footerRef = ref()
-
-      if (withLayer) {
-        useLayer.layer({
-          props: { title: 'FromLayer', width: '600px' },
-          slots: { footer: footerRef },
-        })
-      }
-
-      return () =>
-        h('motion-div', { class: 'content' }, [
-          h('span', { class: 'msg' }, props.message),
-          withLayer
-            ? h(LayerSlot, { ref: footerRef }, () =>
-                h('button', { class: 'footer-btn' }, 'footer'),
-              )
-            : null,
-          h('button', { class: 'done', onClick: () => emit('done') }, 'done'),
-          h('button', { class: 'cancel', onClick: () => emit('cancel') }, 'cancel'),
-        ])
-    },
-  })
-}
-
-function queryBodyDialog() {
-  return document.body.querySelector('motion-dialog')
-}
+import { createLayerx, LayerSlot } from '../../src'
+import type { LayerInstance } from '../../src/domain/types'
+import { LayerComponent, makeContent, queryBodyDialog } from '../fixtures/components'
 
 afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('createLayerx', () => {
+describe('createLayerx (integration)', () => {
   it('opens via .show() without template (body)', async () => {
     const useLayer = createLayerx(LayerComponent, {
       props: { title: 'Create', width: '400px' },
@@ -82,7 +34,7 @@ describe('createLayerx', () => {
     expect(queryBodyDialog()?.getAttribute('data-width')).toBe('400px')
   })
 
-  it('merges config: show > useDialog > layer() > createLayerx', async () => {
+  it('merges config across all layers end-to-end', async () => {
     const useLayer = createLayerx(LayerComponent, {
       props: { title: 'Default', width: '400px' },
     })
@@ -261,29 +213,73 @@ describe('createLayerx', () => {
     expect(wrapper.find('.done').exists()).toBe(true)
   })
 
-  it('visible-outside renders slot content when content used outside layer', () => {
-    const Content = defineComponent({
-      name: 'ContentWithVisibleOutside',
+  it('nested content layer() and LayerSlot do not bind to parent layer', async () => {
+    const useLayer = createLayerx(LayerComponent)
+
+    const InnerContent = defineComponent({
+      name: 'InnerContent',
       setup() {
+        const footerRef = ref()
+
+        useLayer.layer({
+          props: { title: 'InnerShouldNotApply' },
+          slots: { footer: footerRef },
+        })
+
         return () =>
-          h('div', { class: 'page' }, [
+          h('div', { class: 'inner' }, [
             h(
               LayerSlot,
-              { visibleOutside: true },
-              ({ inOutside, inLayer }: { inOutside: boolean; inLayer: boolean }) => [
-                h('span', { class: 'scope-outside' }, String(inOutside)),
-                h('span', { class: 'scope-layer' }, String(inLayer)),
-                h('button', { class: 'footer-btn' }, 'footer'),
+              { ref: footerRef, visibleOutside: true },
+              ({ inLayer, inOutside }: { inLayer: boolean; inOutside: boolean }) => [
+                h('span', { class: 'inner-in-layer' }, String(inLayer)),
+                h('span', { class: 'inner-in-outside' }, String(inOutside)),
+                h('button', { class: 'inner-footer' }, 'inner'),
               ],
             ),
           ])
       },
     })
 
-    const wrapper = mount(Content)
-    expect(wrapper.find('.footer-btn').exists()).toBe(true)
-    expect(wrapper.find('.scope-outside').text()).toBe('true')
-    expect(wrapper.find('.scope-layer').text()).toBe('false')
+    const OuterContent = defineComponent({
+      name: 'OuterContent',
+      setup() {
+        const footerRef = ref()
+
+        useLayer.layer({
+          props: { title: 'OuterTitle' },
+          slots: { footer: footerRef },
+        })
+
+        return () =>
+          h('div', { class: 'outer' }, [
+            h('span', { class: 'outer-msg' }, 'outer'),
+            h(InnerContent),
+            h(LayerSlot, { ref: footerRef }, () =>
+              h('button', { class: 'outer-footer' }, 'outer'),
+            ),
+          ])
+      },
+    })
+
+    let dialog!: LayerInstance
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(OuterContent)
+        onMounted(() => dialog.show())
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(queryBodyDialog()?.getAttribute('data-title')).toBe('OuterTitle')
+    expect(document.body.querySelector('.outer-footer')).toBeTruthy()
+    expect(document.body.querySelector('.inner-in-layer')?.textContent).toBe('false')
+    expect(document.body.querySelector('.inner-in-outside')?.textContent).toBe('true')
+    expect(document.body.querySelector('.inner .inner-footer')).toBeTruthy()
+    expect(document.body.querySelector('.inner-footer')?.closest('.inner')).toBeTruthy()
   })
 
   it('render() passes inLayer scope when LayerSlot content is rendered into layer slot', async () => {

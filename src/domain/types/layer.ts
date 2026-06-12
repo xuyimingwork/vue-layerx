@@ -1,4 +1,5 @@
-import type { Ref, VNode } from 'vue'
+import type { Ref } from 'vue'
+import type { LayerSlotInstance } from './instance'
 
 export type LayerProps = Record<string, unknown>
 
@@ -25,35 +26,3 @@ export interface LayerDefinitionOptions {
 
 /** createLayerx options — same as LayerDefinitionOptions */
 export type CreateLayerxOptions = LayerDefinitionOptions
-
-/** useLayer(Content) & show() — content-level options */
-export interface ContentInstanceOptions {
-  /** Content component props */
-  props?: LayerProps
-  slots?: LayerSlots
-  hideOn?: string[]
-  layer?: LayerDefinitionOptions
-}
-
-export type LayerUseOptions = ContentInstanceOptions
-export type LayerShowPayload = ContentInstanceOptions
-
-export interface LayerSlotScope {
-  inLayer: boolean
-  inOutside: boolean
-}
-
-export interface LayerSlotInstance {
-  render: () => VNode | VNode[] | null
-}
-
-export interface LayerInstance {
-  show: (payload?: LayerShowPayload) => void
-  hide: () => void
-  clone: (partial?: LayerUseOptions) => LayerInstance
-  readonly visible: boolean
-}
-
-export interface LayerSlotContext {
-  bumpSlots: () => void
-}
