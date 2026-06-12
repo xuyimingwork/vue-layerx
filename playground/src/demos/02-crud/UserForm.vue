@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { ElButton, ElForm, ElFormItem, ElInput } from 'element-plus'
+import { ElButton, ElForm, ElFormItem, ElInput, ElTag } from 'element-plus'
 import { LayerSlot } from 'vue-layerx'
-import { useDialog } from '../layers'
+import { useDialog } from '../../core/layers'
 
 const props = defineProps<{
   mode?: 'create' | 'edit'
@@ -57,11 +57,23 @@ function cancel() {
     </ElFormItem>
   </ElForm>
 
-  <LayerSlot ref="footerRef">
-    <ElButton type="primary" @click="submit">
-      {{ mode === 'edit' ? '保存' : '创建' }}
-    </ElButton>
-    <ElButton @click="cancel">取消</ElButton>
+  <LayerSlot ref="footerRef" visible-outside>
+    <template #default="{ inLayer, inOutside }">
+      <div :class="['form-footer', { 'form-footer--inline': inOutside }]">
+        <ElTag v-if="inOutside" size="small" type="info" effect="plain">
+          页内 footer · inOutside
+        </ElTag>
+        <ElTag v-else-if="inLayer" size="small" type="success" effect="plain">
+          弹层 footer · inLayer
+        </ElTag>
+        <div class="form-footer__actions">
+          <ElButton type="primary" @click="submit">
+            {{ mode === 'edit' ? '保存' : '创建' }}
+          </ElButton>
+          <ElButton @click="cancel">取消</ElButton>
+        </div>
+      </div>
+    </template>
   </LayerSlot>
 </template>
 
@@ -69,5 +81,22 @@ function cancel() {
 .form-header {
   font-size: 14px;
   color: var(--el-text-color-secondary);
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-footer--inline {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.form-footer__actions {
+  display: flex;
+  gap: 8px;
 }
 </style>

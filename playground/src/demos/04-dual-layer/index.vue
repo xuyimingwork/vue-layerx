@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElTag } from 'element-plus'
-import { useDrawer } from '../../layers'
-import FilterForm from '../contents/FilterForm.vue'
+import { useDialog, useDrawer } from '../../core/layers'
+import FilterContent from './FilterContent.vue'
 
 const activeFilters = ref<string[]>(['active'])
 
-const filterDrawer = useDrawer(FilterForm, {
+const filterDialog = useDialog(FilterContent, {
   hideOn: ['apply', 'reset'],
 })
 
-function openFilter() {
-  filterDrawer.show({
+const filterDrawer = useDrawer(FilterContent, {
+  hideOn: ['apply', 'reset'],
+})
+
+function buildPayload() {
+  return {
     props: {
       initialStatus: activeFilters.value,
       onApply: (status: string[]) => {
@@ -21,31 +25,49 @@ function openFilter() {
         activeFilters.value = []
       },
     },
-  })
+  }
+}
+
+function openDialog() {
+  filterDialog.show(buildPayload())
+}
+
+function openDrawer() {
+  filterDrawer.show(buildPayload())
 }
 </script>
 
 <template>
-  <div class="filter-panel">
-    <div class="filter-panel__bar">
+  <div class="dual-layer">
+    <div class="dual-layer__status">
       <span>当前筛选：</span>
       <ElTag v-for="s in activeFilters" :key="s" size="small">{{ s }}</ElTag>
       <span v-if="!activeFilters.length" class="empty">（无）</span>
-      <ElButton type="primary" plain @click="openFilter">打开筛选 Drawer</ElButton>
+    </div>
+    <div class="dual-layer__actions">
+      <ElButton type="primary" @click="openDialog">Dialog 打开</ElButton>
+      <ElButton type="primary" plain @click="openDrawer">Drawer 打开</ElButton>
     </div>
   </div>
 </template>
 
 <style scoped>
-.filter-panel__bar {
+.dual-layer__status {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  margin-bottom: 12px;
   font-size: 14px;
 }
 
 .empty {
   color: var(--el-text-color-placeholder);
+}
+
+.dual-layer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>

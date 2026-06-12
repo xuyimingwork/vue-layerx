@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 import { ElButton, ElTag } from 'element-plus'
-import { useAlertDialog } from '../../layers'
-import AlertBox from '../contents/AlertBox.vue'
+import { useAlertDialog } from '../../core/layers'
+import AlertContent from './AlertContent.vue'
 
 const AUTO_CLOSE_SECONDS = 5
 
-/** 故意不在 useDialog 设 hideOn，改在 show() 传入 */
-const alertDialog = useAlertDialog(AlertBox)
+const alertDialog = useAlertDialog(AlertContent)
 
 const countdown = ref(0)
 let autoCloseTimer: ReturnType<typeof setInterval> | null = null
@@ -52,14 +51,13 @@ function openWarning() {
   })
 }
 
-/** 模拟组件卸载等外部生命周期：由调用方定时 hide()，非正常弹窗内关闭 */
 function openAutoClose() {
   clearAutoClose()
   alertDialog.show({
     hideOn: ['confirm'],
     props: {
       tone: 'info',
-      message: `弹窗内可点「知道了」正常关闭；若不理会，${AUTO_CLOSE_SECONDS}s 后由外部 countdown 调用 hide()（模拟路由离开、组件卸载）。`,
+      message: `可点「知道了」正常关闭；或等待 ${AUTO_CLOSE_SECONDS}s 由外部 hide() 收尾（模拟卸载）。`,
       onConfirm: clearAutoClose,
     },
   })
@@ -80,17 +78,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="programmatic-panel">
+  <div class="lifecycle">
     <div class="status">
       <span>实例状态：</span>
       <ElTag :type="statusType" size="small">{{ statusLabel }}</ElTag>
-      <code>alertDialog.visible</code>
     </div>
     <div class="actions">
-      <ElButton @click="openInfo">打开（工厂默认 tone）</ElButton>
-      <ElButton type="warning" @click="openWarning">打开（show 覆盖）</ElButton>
+      <ElButton @click="openInfo">工厂默认 tone</ElButton>
+      <ElButton type="warning" @click="openWarning">show 覆盖</ElButton>
       <ElButton type="primary" plain @click="openAutoClose">
-        打开（{{ AUTO_CLOSE_SECONDS }}s 倒计时 hide）
+        {{ AUTO_CLOSE_SECONDS }}s 倒计时 hide
       </ElButton>
     </div>
   </div>
@@ -103,14 +100,6 @@ onUnmounted(() => {
   gap: 8px;
   margin-bottom: 12px;
   font-size: 14px;
-}
-
-.status code {
-  padding: 1px 4px;
-  border-radius: 3px;
-  background: var(--el-fill-color-light);
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
 }
 
 .actions {

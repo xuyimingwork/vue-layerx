@@ -3,6 +3,7 @@ import { ElTag } from 'element-plus'
 
 defineProps<{
   id: string
+  level: number
   title: string
   description: string
   tags: string[]
@@ -12,7 +13,10 @@ defineProps<{
 <template>
   <section :id="id" class="demo-section">
     <header class="demo-section__meta">
-      <h2>{{ title }}</h2>
+      <div class="demo-section__heading">
+        <span class="demo-section__level">Lv.{{ level }}</span>
+        <h2>{{ title }}</h2>
+      </div>
       <p>{{ description }}</p>
       <div class="demo-section__tags">
         <ElTag v-for="tag in tags" :key="tag" size="small" type="info" effect="plain">
@@ -31,12 +35,25 @@ defineProps<{
   scroll-margin-top: 24px;
 }
 
-.demo-section__meta {
-  margin-bottom: 16px;
+.demo-section__heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.demo-section__level {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .demo-section__meta h2 {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 1.125rem;
 }
 

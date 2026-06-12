@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { ElButton, ElCheckbox, ElCheckboxGroup, ElForm, ElFormItem } from 'element-plus'
 import { LayerSlot } from 'vue-layerx'
-import { useDrawer } from '../../layers'
+import { useDialog, useDrawer } from '../../core/layers'
 
 const props = defineProps<{
   initialStatus?: string[]
@@ -16,8 +16,17 @@ const emit = defineEmits<{
 const footerRef = ref()
 const status = ref<string[]>([...(props.initialStatus ?? ['active'])])
 
+/**
+ * 同时声明两套 layer 配置，共用 footer LayerSlot。
+ * 实际渲染时只有与当前 useDialog / useDrawer 匹配的 layer() 会 inject 成功。
+ */
+useDialog.layer({
+  props: { title: '筛选条件', width: '420px' },
+  slots: { footer: footerRef },
+})
+
 useDrawer.layer({
-  props: { title: '筛选用户' },
+  props: { title: '筛选条件', size: '360px', direction: 'rtl' },
   slots: { footer: footerRef },
 })
 

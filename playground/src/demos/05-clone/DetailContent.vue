@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { ElButton, ElDescriptions, ElDescriptionsItem } from 'element-plus'
 import { LayerSlot } from 'vue-layerx'
-import { useDialog } from '../../layers'
+import { useDialog } from '../../core/layers'
 
 defineProps<{
   name: string

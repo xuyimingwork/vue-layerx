@@ -2,11 +2,10 @@
 import { computed, ref } from 'vue'
 import { ElButton } from 'element-plus'
 import { LayerSlot } from 'vue-layerx'
-import { useAlertDialog } from '../../layers'
+import { useAlertDialog } from '../../core/layers'
 
 const props = withDefaults(
   defineProps<{
-    /** 工厂默认 info，可在 show 时覆盖 */
     tone?: 'info' | 'success' | 'warning'
     message?: string
   }>(),

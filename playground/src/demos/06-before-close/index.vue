@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElMessage } from 'element-plus'
-import { useDialog } from '../../layers'
-import DraftNote from '../contents/DraftNote.vue'
+import { useDialog } from '../../core/layers'
+import DraftContent from './DraftContent.vue'
 
 const savedDraft = ref('欢迎使用 vue-layerx')
 
-const draftDialog = useDialog(DraftNote, {
+const draftDialog = useDialog(DraftContent, {
   hideOn: ['save', 'cancel'],
 })
 
@@ -24,10 +24,8 @@ function openDraft() {
 </script>
 
 <template>
-  <div class="guard-panel">
-    <p class="draft-preview">当前草稿：{{ savedDraft }}</p>
-    <ElButton type="primary" @click="openDraft">编辑草稿</ElButton>
-  </div>
+  <p class="draft-preview">当前草稿：{{ savedDraft }}</p>
+  <ElButton type="primary" @click="openDraft">编辑草稿</ElButton>
 </template>
 
 <style scoped>

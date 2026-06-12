@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { ElButton, ElInput, ElMessageBox } from 'element-plus'
 import { LayerSlot } from 'vue-layerx'
-import { useDialog } from '../../layers'
+import { useDialog } from '../../core/layers'
 
 const props = defineProps<{
   initialContent?: string
@@ -49,14 +49,9 @@ function cancel() {
 
 <template>
   <p class="hint">
-    修改下方内容后，点右上角 X 或遮罩关闭，会触发 <code>beforeClose</code> 二次确认。
+    修改内容后点 X 或遮罩关闭，触发 <code>beforeClose</code> 二次确认。
   </p>
-  <ElInput
-    v-model="content"
-    type="textarea"
-    :rows="4"
-    placeholder="写点什么..."
-  />
+  <ElInput v-model="content" type="textarea" :rows="4" placeholder="写点什么..." />
   <p v-if="dirty" class="dirty">● 有未保存修改</p>
 
   <LayerSlot ref="footerRef">
