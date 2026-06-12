@@ -15,24 +15,18 @@ const users = ref<User[]>([
   { id: 2, name: 'Bob' },
 ])
 
-/** useDialog.slots → CreateForm #header（表单内 slot，不是 layer slot） */
+/** slots.header → CreateForm 内 #header（表单 slot，非 layer slot） */
 const createHeaderRef = ref()
 
-const createDialog = useDialog(CreateForm, {
-  props: { mode: 'create' as const },
-  layer: { props: { title: '新建用户' } },
+const userDialog = useDialog(CreateForm, {
   slots: { header: createHeaderRef },
   hideOn: ['success', 'cancel'],
 })
 
-const editDialog = createDialog.clone({
-  props: { mode: 'edit' as const },
-  layer: { props: { title: '编辑用户' } },
-})
-
 function openCreate() {
-  createDialog.show({
+  userDialog.show({
     props: {
+      mode: 'create',
       onSuccess: (name: string) => {
         const id = users.value.length
           ? Math.max(...users.value.map((u) => u.id)) + 1
@@ -44,8 +38,9 @@ function openCreate() {
 }
 
 function openEdit(row: User) {
-  editDialog.show({
+  userDialog.show({
     props: {
+      mode: 'edit',
       recordId: row.id,
       initialName: row.name,
       onSuccess: (name: string) => {
@@ -81,8 +76,7 @@ function openEdit(row: User) {
 
 <style scoped>
 .panel {
-  max-width: 640px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .panel-header {
