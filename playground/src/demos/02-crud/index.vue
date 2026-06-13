@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElTable, ElTableColumn, ElTag } from 'element-plus'
-import { LayerSlot } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../core/layers'
 import UserForm from './UserForm.vue'
 
@@ -65,9 +65,9 @@ function openEdit(row: User) {
     </ElTableColumn>
   </ElTable>
 
-  <LayerSlot ref="headerRef">
+  <LayerTemplate ref="headerRef">
     <ElTag type="success" size="small">调用方注入 header</ElTag>
-  </LayerSlot>
+  </LayerTemplate>
 </template>
 
 <style scoped>

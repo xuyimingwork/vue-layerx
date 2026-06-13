@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElCheckbox, ElCheckboxGroup, ElForm, ElFormItem } from 'element-plus'
-import { LayerSlot } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog, useDrawer } from '../../core/layers'
 
 const props = defineProps<{
@@ -17,7 +17,7 @@ const footerRef = ref()
 const status = ref<string[]>([...(props.initialStatus ?? ['active'])])
 
 /**
- * 同时声明两套 layer 配置，共用 footer LayerSlot。
+ * 同时声明两套 layer 配置，共用 footer LayerTemplate。
  * 实际渲染时只有与当前 useDialog / useDrawer 匹配的 layer() 会 inject 成功。
  */
 useDialog.layer({
@@ -51,8 +51,8 @@ function reset() {
     </ElFormItem>
   </ElForm>
 
-  <LayerSlot ref="footerRef">
+  <LayerTemplate ref="footerRef">
     <ElButton type="primary" @click="apply">应用</ElButton>
     <ElButton @click="reset">重置</ElButton>
-  </LayerSlot>
+  </LayerTemplate>
 </template>

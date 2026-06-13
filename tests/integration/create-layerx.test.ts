@@ -1,7 +1,7 @@
 import { defineComponent, h, onMounted, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayerx, LayerSlot } from '../../src'
+import { createLayerx, LayerTemplate } from '../../src'
 import type { LayerInstance } from '../../src/domain/types'
 import { LayerComponent, makeContent, queryBodyDialog } from '../fixtures/components'
 
@@ -85,7 +85,7 @@ describe('createLayerx (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('default-msg')
   })
 
-  it('renders layer() LayerSlot content into layer slot', async () => {
+  it('renders layer() LayerTemplate content into layer slot', async () => {
     const useLayer = createLayerx(LayerComponent)
     const Content = makeContent(useLayer, true)
     let dialog!: LayerInstance
@@ -213,7 +213,7 @@ describe('createLayerx (integration)', () => {
     expect(wrapper.find('.done').exists()).toBe(true)
   })
 
-  it('nested content layer() and LayerSlot do not bind to parent layer', async () => {
+  it('nested content layer() and LayerTemplate do not bind to parent layer', async () => {
     const useLayer = createLayerx(LayerComponent)
 
     const InnerContent = defineComponent({
@@ -229,11 +229,11 @@ describe('createLayerx (integration)', () => {
         return () =>
           h('div', { class: 'inner' }, [
             h(
-              LayerSlot,
+              LayerTemplate,
               { ref: footerRef, visibleOutside: true },
-              ({ inLayer, inOutside }: { inLayer: boolean; inOutside: boolean }) => [
+              ({ inLayer, outsideLayer }: { inLayer: boolean; outsideLayer: boolean }) => [
                 h('span', { class: 'inner-in-layer' }, String(inLayer)),
-                h('span', { class: 'inner-in-outside' }, String(inOutside)),
+                h('span', { class: 'inner-outside-layer' }, String(outsideLayer)),
                 h('button', { class: 'inner-footer' }, 'inner'),
               ],
             ),
@@ -255,7 +255,7 @@ describe('createLayerx (integration)', () => {
           h('div', { class: 'outer' }, [
             h('span', { class: 'outer-msg' }, 'outer'),
             h(InnerContent),
-            h(LayerSlot, { ref: footerRef }, () =>
+            h(LayerTemplate, { ref: footerRef }, () =>
               h('button', { class: 'outer-footer' }, 'outer'),
             ),
           ])
@@ -277,14 +277,14 @@ describe('createLayerx (integration)', () => {
     expect(queryBodyDialog()?.getAttribute('data-title')).toBe('OuterTitle')
     expect(document.body.querySelector('.outer-footer')).toBeTruthy()
     expect(document.body.querySelector('.inner-in-layer')?.textContent).toBe('false')
-    expect(document.body.querySelector('.inner-in-outside')?.textContent).toBe('true')
+    expect(document.body.querySelector('.inner-outside-layer')?.textContent).toBe('true')
     expect(document.body.querySelector('.inner .inner-footer')).toBeTruthy()
     expect(document.body.querySelector('.inner-footer')?.closest('.inner')).toBeTruthy()
   })
 
-  it('render() passes inLayer scope when LayerSlot content is rendered into layer slot', async () => {
+  it('render() passes inLayer scope when LayerTemplate content is rendered into layer slot', async () => {
     const useLayer = createLayerx(LayerComponent)
-    let capturedScope: { inOutside: boolean; inLayer: boolean } | undefined
+    let capturedScope: { outsideLayer: boolean; inLayer: boolean } | undefined
 
     const Content = defineComponent({
       name: 'ContentWithScopeCapture',
@@ -298,9 +298,9 @@ describe('createLayerx (integration)', () => {
           h('motion-div', { class: 'content' }, [
             h('span', { class: 'msg' }, props.message),
             h(
-              LayerSlot,
+              LayerTemplate,
               { ref: footerRef },
-              (scope: { inOutside: boolean; inLayer: boolean }) => {
+              (scope: { outsideLayer: boolean; inLayer: boolean }) => {
                 capturedScope = scope
                 return h('button', { class: 'footer-btn' }, 'footer')
               },
@@ -322,6 +322,6 @@ describe('createLayerx (integration)', () => {
     await new Promise((r) => setTimeout(r, 0))
 
     expect(document.body.querySelector('.footer-btn')).toBeTruthy()
-    expect(capturedScope).toEqual({ inLayer: true, inOutside: false })
+    expect(capturedScope).toEqual({ inLayer: true, outsideLayer: false })
   })
 })

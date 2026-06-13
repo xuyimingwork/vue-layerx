@@ -1,10 +1,10 @@
 import { computed, defineComponent, getCurrentInstance, inject, onMounted, type VNode } from 'vue'
-import type { LayerSlotScope } from '../../domain/types'
+import type { LayerTemplateScope } from '../../domain/types'
 import { isInDirectLayerContent } from '../../infrastructure/vue/context/in-layer-content'
-import { LAYER_SLOT_CONTEXT_KEY } from '../../infrastructure/vue/di/injection-keys'
+import { LAYER_TEMPLATE_CONTEXT_KEY } from '../../infrastructure/vue/di/injection-keys'
 
-export const LayerSlot = defineComponent({
-  name: 'LayerSlot',
+export const LayerTemplate = defineComponent({
+  name: 'LayerTemplate',
   props: {
     visibleOutside: {
       type: Boolean,
@@ -12,16 +12,16 @@ export const LayerSlot = defineComponent({
     },
   },
   setup(props, { slots, expose }) {
-    const ctx = inject(LAYER_SLOT_CONTEXT_KEY, null)
+    const ctx = inject(LAYER_TEMPLATE_CONTEXT_KEY, null)
     const instance = getCurrentInstance()
     const inLayer = computed(() => ctx !== null && isInDirectLayerContent(instance))
 
-    const renderSlot = (scope: LayerSlotScope): VNode | VNode[] | null =>
+    const renderSlot = (scope: LayerTemplateScope): VNode | VNode[] | null =>
       slots.default?.(scope) ?? null
 
     expose({
       render: (): VNode | VNode[] | null =>
-        renderSlot({ inLayer: true, inOutside: false }),
+        renderSlot({ inLayer: true, outsideLayer: false }),
     })
 
     onMounted(() => {
@@ -31,7 +31,7 @@ export const LayerSlot = defineComponent({
     return () => {
       if (inLayer.value) return null
       if (!props.visibleOutside) return null
-      return renderSlot({ inLayer: false, inOutside: true })
+      return renderSlot({ inLayer: false, outsideLayer: true })
     }
   },
 })

@@ -25,7 +25,7 @@ src/
 每个 demo 目录：
 
 - `index.vue` — 使用侧（调用 show / 业务 UI）
-- `*Content.vue` — 定义侧（useXxx.layer、LayerSlot）
+- `*Content.vue` — 定义侧（useXxx.layer、LayerTemplate）
 
 ## 运行
 

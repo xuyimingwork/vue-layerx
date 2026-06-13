@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { ElButton, ElForm, ElFormItem, ElInput, ElTag } from 'element-plus'
-import { LayerSlot } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../core/layers'
 
 const props = defineProps<{
@@ -57,11 +57,11 @@ function cancel() {
     </ElFormItem>
   </ElForm>
 
-  <LayerSlot ref="footerRef" visible-outside>
-    <template #default="{ inLayer, inOutside }">
-      <div :class="['form-footer', { 'form-footer--inline': inOutside }]">
-        <ElTag v-if="inOutside" size="small" type="info" effect="plain">
-          页内 footer · inOutside
+  <LayerTemplate ref="footerRef" visible-outside>
+    <template #default="{ inLayer, outsideLayer }">
+      <div :class="['form-footer', { 'form-footer--inline': outsideLayer }]">
+        <ElTag v-if="outsideLayer" size="small" type="info" effect="plain">
+          页内 footer · outsideLayer
         </ElTag>
         <ElTag v-else-if="inLayer" size="small" type="success" effect="plain">
           弹层 footer · inLayer
@@ -74,7 +74,7 @@ function cancel() {
         </div>
       </div>
     </template>
-  </LayerSlot>
+  </LayerTemplate>
 </template>
 
 <style scoped>

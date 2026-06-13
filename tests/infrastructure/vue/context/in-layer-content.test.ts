@@ -8,14 +8,14 @@ describe('isInDirectLayerContent', () => {
       type: { name: 'Content' },
       props: { [LAYERX_DIRECT_CONTENT]: true },
     }
-    const slot = { type: { name: 'LayerSlot' }, parent: content }
+    const slot = { type: { name: 'LayerTemplate' }, parent: content }
 
     expect(isInDirectLayerContent(slot as never)).toBe(true)
   })
 
   it('returns false when owning content lacks marker', () => {
     const content = { type: { name: 'Content' }, props: {}, attrs: {} }
-    const slot = { type: { name: 'LayerSlot' }, parent: content }
+    const slot = { type: { name: 'LayerTemplate' }, parent: content }
 
     expect(isInDirectLayerContent(slot as never)).toBe(false)
   })

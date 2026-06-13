@@ -1,6 +1,6 @@
 import type { ComponentInternalInstance } from 'vue'
 
-/** Nearest component ancestor that rendered this instance (e.g. LayerSlot → UserForm). */
+/** Nearest component ancestor that rendered this instance (e.g. LayerTemplate → UserForm). */
 export function getOwningContentInstance(
   instance: ComponentInternalInstance | null | undefined,
 ): ComponentInternalInstance | null {

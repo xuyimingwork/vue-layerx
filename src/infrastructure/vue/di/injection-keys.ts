@@ -9,6 +9,6 @@ export function createLayerDefinitionKey(): InjectionKey<LayerDefinitionRegistry
   return Symbol('layerx-definition') as InjectionKey<LayerDefinitionRegistry>
 }
 
-export const LAYER_SLOT_CONTEXT_KEY = Symbol('layerx-slot-context') as InjectionKey<{
+export const LAYER_TEMPLATE_CONTEXT_KEY = Symbol('layerx-template-context') as InjectionKey<{
   bumpSlots: () => void
 }>

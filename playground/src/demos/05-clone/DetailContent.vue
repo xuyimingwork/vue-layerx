@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElDescriptions, ElDescriptionsItem } from 'element-plus'
-import { LayerSlot } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../core/layers'
 
 defineProps<{
@@ -29,7 +29,7 @@ useDialog.layer({
     <ElDescriptionsItem label="角色">{{ role }}</ElDescriptionsItem>
   </ElDescriptions>
 
-  <LayerSlot ref="footerRef">
+  <LayerTemplate ref="footerRef">
     <ElButton @click="emit('close')">关闭</ElButton>
-  </LayerSlot>
+  </LayerTemplate>
 </template>

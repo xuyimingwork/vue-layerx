@@ -15,7 +15,7 @@ export type {
 
 export type {
   LayerInstance,
-  LayerSlotContext,
-  LayerSlotInstance,
-  LayerSlotScope,
+  LayerTemplateContext,
+  LayerTemplateInstance,
+  LayerTemplateScope,
 } from './instance'

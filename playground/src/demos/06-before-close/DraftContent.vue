@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ElButton, ElInput, ElMessageBox } from 'element-plus'
-import { LayerSlot } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../core/layers'
 
 const props = defineProps<{
@@ -54,10 +54,10 @@ function cancel() {
   <ElInput v-model="content" type="textarea" :rows="4" placeholder="写点什么..." />
   <p v-if="dirty" class="dirty">● 有未保存修改</p>
 
-  <LayerSlot ref="footerRef">
+  <LayerTemplate ref="footerRef">
     <ElButton type="primary" :disabled="!dirty" @click="save">保存</ElButton>
     <ElButton @click="cancel">取消</ElButton>
-  </LayerSlot>
+  </LayerTemplate>
 </template>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ElButton } from 'element-plus'
-import { LayerSlot } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useAlertDialog } from '../../core/layers'
 
 const props = withDefaults(
@@ -35,9 +35,9 @@ useAlertDialog.layer({
 <template>
   <p :class="['message', `message--${tone}`]">{{ message }}</p>
 
-  <LayerSlot ref="footerRef">
+  <LayerTemplate ref="footerRef">
     <ElButton type="primary" @click="emit('confirm')">知道了</ElButton>
-  </LayerSlot>
+  </LayerTemplate>
 </template>
 
 <style scoped>

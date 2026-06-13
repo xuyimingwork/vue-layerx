@@ -1,5 +1,5 @@
 import { defineComponent, h, onMounted, ref } from 'vue'
-import { createLayerx, LayerSlot } from '../../src'
+import { createLayerx, LayerTemplate } from '../../src'
 import type { LayerInstance } from '../../src/domain/types'
 
 export const LayerComponent = defineComponent({
@@ -36,7 +36,7 @@ export function makeContent(useLayer: ReturnType<typeof createLayerx>, withLayer
         h('motion-div', { class: 'content' }, [
           h('span', { class: 'msg' }, props.message),
           withLayer
-            ? h(LayerSlot, { ref: footerRef }, () =>
+            ? h(LayerTemplate, { ref: footerRef }, () =>
                 h('button', { class: 'footer-btn' }, 'footer'),
               )
             : null,

@@ -1,31 +1,31 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { LayerSlot } from '../../src/presentation/components/layer-slot'
+import { LayerTemplate } from '../../src/presentation/components/layer-template'
 
-describe('LayerSlot', () => {
+describe('LayerTemplate', () => {
   it('renders nothing by default outside layer context', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
           return () =>
-            h(LayerSlot, null, () => h('button', { class: 'footer-btn' }, 'footer'))
+            h(LayerTemplate, null, () => h('button', { class: 'footer-btn' }, 'footer'))
         },
       }),
     )
     expect(wrapper.find('.footer-btn').exists()).toBe(false)
   })
 
-  it('renders with visibleOutside and passes inOutside scope', () => {
+  it('renders with visibleOutside and passes outsideLayer scope', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
           return () =>
             h(
-              LayerSlot,
+              LayerTemplate,
               { visibleOutside: true },
-              ({ inOutside, inLayer }: { inOutside: boolean; inLayer: boolean }) => [
-                h('span', { class: 'scope-outside' }, String(inOutside)),
+              ({ outsideLayer, inLayer }: { outsideLayer: boolean; inLayer: boolean }) => [
+                h('span', { class: 'scope-outside' }, String(outsideLayer)),
                 h('span', { class: 'scope-layer' }, String(inLayer)),
                 h('button', { class: 'footer-btn' }, 'footer'),
               ],
@@ -47,7 +47,7 @@ describe('LayerSlot', () => {
         setup() {
           return () =>
             h(
-              LayerSlot,
+              LayerTemplate,
               {
                 ref: (el: { render: () => unknown } | null) => {
                   exposed = el ?? undefined

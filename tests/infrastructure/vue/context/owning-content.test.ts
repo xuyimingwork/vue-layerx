@@ -8,7 +8,7 @@ describe('getOwningContentInstance', () => {
 
   it('walks up to nearest component ancestor', () => {
     const content = { type: { name: 'Content' } }
-    const layerSlot = { type: { name: 'LayerSlot' }, parent: content }
+    const layerSlot = { type: { name: 'LayerTemplate' }, parent: content }
     const fragment = { type: Symbol('Fragment'), parent: layerSlot }
 
     expect(getOwningContentInstance(fragment as never)).toBe(layerSlot)

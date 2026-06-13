@@ -21,7 +21,7 @@ export const demoGroups: DemoGroup[] = [
         title: '打开与关闭',
         description:
           '最简路径：content 内 useDialog.layer() 声明标题与 footer，调用方 useDialog(Content) + show()，hideOn 自动关闭。',
-        tags: ['useDialog', 'show()', 'hideOn', 'useDialog.layer()', 'LayerSlot'],
+        tags: ['useDialog', 'show()', 'hideOn', 'useDialog.layer()', 'LayerTemplate'],
         component: BasicDemo,
       },
       {
@@ -29,7 +29,7 @@ export const demoGroups: DemoGroup[] = [
         level: 2,
         title: '列表 CRUD',
         description:
-          '典型业务：show({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerSlot 注入 content #header。',
+          '典型业务：show({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerTemplate 注入 content #header。',
         tags: ['show(props)', 'hideOn', 'content slots', 'onSuccess'],
         component: CrudDemo,
       },
@@ -45,8 +45,8 @@ export const demoGroups: DemoGroup[] = [
         level: 3,
         title: '页内复用',
         description:
-          'LayerSlot visible-outside + scope（inLayer / inOutside）：页内 footer 落表单下，弹层时挂 Dialog.footer。',
-        tags: ['visibleOutside', 'LayerSlotScope', 'content 复用'],
+          'LayerTemplate visible-outside + scope（inLayer / outsideLayer）：页内 footer 落表单下，弹层时挂 Dialog.footer。',
+        tags: ['visible-outside', 'LayerTemplateScope', 'content 复用'],
         component: InlineReuseDemo,
       },
     ],
@@ -61,8 +61,8 @@ export const demoGroups: DemoGroup[] = [
         level: 4,
         title: 'Dialog / Drawer 双容器',
         description:
-          '同一 FilterContent 同时声明 useDialog.layer() 与 useDrawer.layer()，共用 LayerSlot；调用方分别 useDialog / useDrawer 打开，仅匹配的 layer() 生效。',
-        tags: ['useDialog + useDrawer', '双 layer()', '共用 LayerSlot', 'hideOn'],
+          '同一 FilterContent 同时声明 useDialog.layer() 与 useDrawer.layer()，共用 LayerTemplate；调用方分别 useDialog / useDrawer 打开，仅匹配的 layer() 生效。',
+        tags: ['useDialog + useDrawer', '双 layer()', '共用 LayerTemplate', 'hideOn'],
         component: DualLayerDemo,
       },
       {

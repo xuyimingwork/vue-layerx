@@ -47,7 +47,7 @@ CreateDialog = ElDialog + CreateForm
 {
   visible?: [prop, event]   // 显隐协议
   props?: { ... }           // layer 组件 props
-  slots?: { [name]: ref }   // layer 插槽 → LayerSlot ref
+  slots?: { [name]: ref }   // layer 插槽 → LayerTemplate ref
   content?: { props?: { ... } }  // 默认 content props
 }
 ```
@@ -92,7 +92,7 @@ useDialog / useDrawer
 LayerRoot（provide layer context）
   └─ layer（ElDialog，merged layer.props + visible）
        ├─ default slot → content（merged content.props）
-       └─ footer 等 slot ← merged slots 中 LayerSlot ref 内容
+       └─ footer 等 slot ← merged slots 中 LayerTemplate ref 内容
 ```
 
 ---
@@ -124,9 +124,9 @@ useDialog.layer({
 
 **激活条件：** content 被 Layer 渲染时，匹配 inject key 的 `layer()` 才生效；页内单独使用时无效。
 
-### 3. `LayerSlot`
+### 3. `LayerTemplate`
 
-标记将被 `layer().slots` 引用、渲染到 layer 插槽的内容；不在 Layer 内时不输出 DOM。
+标记将被 `layer().slots` 引用、渲染到 layer 插槽的内容。直接作为 layer Content 时不占本地 DOM；`visible-outside` 开启时，在 layer 外（页内或嵌套）就地渲染。default slot scope：`inLayer` / `outsideLayer`。
 
 ### 4. `useDialog(Content, options?)`
 
@@ -230,9 +230,9 @@ useDialog.layer({
 
 <template>
   <el-form>...</el-form>
-  <LayerSlot ref="footerRef">
+  <LayerTemplate ref="footerRef">
     <el-button @click="submit">确定</el-button>
-  </LayerSlot>
+  </LayerTemplate>
 </template>
 ```
 
@@ -262,5 +262,5 @@ function openEdit(row) {
 1. Layer 级 options：`visible + props + slots + content`（createLayerx、useLayer.layer）
 2. Content 级 options：`props + slots + hideOn + layer`（useLayer、show）
 3. 使用侧仅 `show()` / `hide()`，不维护 `visible`
-4. 插槽由 LayerSlot + merged slots 驱动，key 即 layer 插槽名
+4. 插槽由 LayerTemplate + merged slots 驱动，key 即 layer 插槽名
 5. `hideOn` 仅在 content 级配置

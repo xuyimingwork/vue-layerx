@@ -10,7 +10,7 @@ import type { ContentInstanceOptions, LayerDefinitionOptions } from '../../domai
 import { buildLayerVNode } from '../../infrastructure/vue/render/build-layer-vnode'
 import {
   createLayerDefinitionKey,
-  LAYER_SLOT_CONTEXT_KEY,
+  LAYER_TEMPLATE_CONTEXT_KEY,
   type LayerDefinitionRegistry,
 } from '../../infrastructure/vue/di/injection-keys'
 import type { ResolvedLayerConfig } from './resolve-layer-config'
@@ -55,7 +55,7 @@ export function createLayerRoot(options: CreateLayerRootOptions) {
         },
       } satisfies LayerDefinitionRegistry)
 
-      provide(LAYER_SLOT_CONTEXT_KEY, {
+      provide(LAYER_TEMPLATE_CONTEXT_KEY, {
         bumpSlots: () => {
           slotsVersion.value++
         },

@@ -1,12 +1,12 @@
 import type { Ref } from 'vue'
-import type { LayerSlotInstance } from './instance'
+import type { LayerTemplateInstance } from './instance'
 
 export type LayerProps = Record<string, unknown>
 
 /** [visibleProp, visibleEventHandlerProp] e.g. ['modelValue', 'onUpdate:modelValue'] */
 export type VisibleProtocol = [string, string]
 
-export type LayerSlots = Record<string, Ref<LayerSlotInstance | undefined>>
+export type LayerSlots = Record<string, Ref<LayerTemplateInstance | undefined>>
 
 /** Content props nested under layer definition */
 export interface ContentConfig {
@@ -18,7 +18,7 @@ export interface LayerDefinitionOptions {
   visible?: VisibleProtocol
   /** Layer component props */
   props?: LayerProps
-  /** Layer slot name → LayerSlot ref */
+  /** Layer slot name → LayerTemplate ref */
   slots?: LayerSlots
   /** Default content props */
   content?: ContentConfig

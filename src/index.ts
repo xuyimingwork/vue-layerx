@@ -1,5 +1,5 @@
 export { createLayerx } from './public/create-layerx'
-export { LayerSlot } from './presentation/components/layer-slot'
+export { LayerTemplate } from './presentation/components/layer-template'
 export type {
   ContentConfig,
   ContentInstanceOptions,
@@ -8,8 +8,8 @@ export type {
   LayerInstance,
   LayerProps,
   LayerShowPayload,
-  LayerSlotInstance,
-  LayerSlotScope,
+  LayerTemplateInstance,
+  LayerTemplateScope,
   LayerSlots,
   LayerUseOptions,
   VisibleProtocol,

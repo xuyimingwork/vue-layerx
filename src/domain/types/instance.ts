@@ -1,12 +1,12 @@
 import type { VNode } from 'vue'
 import type { LayerUseOptions, LayerShowPayload } from './content'
 
-export interface LayerSlotScope {
+export interface LayerTemplateScope {
   inLayer: boolean
-  inOutside: boolean
+  outsideLayer: boolean
 }
 
-export interface LayerSlotInstance {
+export interface LayerTemplateInstance {
   render: () => VNode | VNode[] | null
 }
 
@@ -17,6 +17,6 @@ export interface LayerInstance {
   readonly visible: boolean
 }
 
-export interface LayerSlotContext {
+export interface LayerTemplateContext {
   bumpSlots: () => void
 }
