@@ -48,6 +48,10 @@ export function queryBodyDialog() {
   return document.body.querySelector('motion-dialog')
 }
 
+export function queryAllBodyDialogs() {
+  return document.body.querySelectorAll('motion-dialog')
+}
+
 export function createMountedDialog(
   setup: (useLayer: ReturnType<typeof createLayer>) => {
     dialog: LayerInstance

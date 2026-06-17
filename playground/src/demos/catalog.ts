@@ -5,6 +5,7 @@ import CrudDemo from './02-crud/index.vue'
 import InlineReuseDemo from './03-inline-reuse/index.vue'
 import DualLayerDemo from './04-dual-layer/index.vue'
 import CloneDemo from './05-clone/index.vue'
+import CloneParallelDemo from './05-clone-parallel/index.vue'
 import BeforeCloseDemo from './06-before-close/index.vue'
 import ConfigMergeDemo from './07-config-merge/index.vue'
 import LifecycleDemo from './08-lifecycle/index.vue'
@@ -73,6 +74,15 @@ export const demoGroups: DemoGroup[] = [
           '从同一实例 clone({ layer }) 派生 partial 默认配置，visible 独立，各实例 show / hide 互不影响。',
         tags: ['clone()', 'partial', '独立 visible', 'layer.props'],
         component: CloneDemo,
+      },
+      {
+        id: 'clone-parallel',
+        level: 5,
+        title: 'clone 并行打开',
+        description:
+          '在 A 已打开时从 A footer 触发打开 B（clone）：每个实例独立 bodyRenderer，并行 show 时 visible 与 DOM 一致，hide 互不影响。',
+        tags: ['clone()', 'bodyRenderer', '并行 show', '独立挂载'],
+        component: CloneParallelDemo,
       },
     ],
   },

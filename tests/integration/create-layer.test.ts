@@ -3,7 +3,12 @@ import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, LayerTemplate } from '../../src'
 import type { LayerInstance } from '../../src/domain/types'
-import { LayerComponent, makeContent, queryBodyDialog } from '../fixtures/components'
+import {
+  LayerComponent,
+  makeContent,
+  queryAllBodyDialogs,
+  queryBodyDialog,
+} from '../fixtures/components'
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -172,6 +177,93 @@ describe('createLayer (integration)', () => {
     dialog.hide()
     await wrapper.vm.$nextTick()
     expect(queryBodyDialog()).toBeFalsy()
+  })
+
+  it('clone() allows parallel show() with independent DOM and visible state', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let base!: LayerInstance
+    let cloned!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        base = useLayer(Content)
+        cloned = base.clone({ layer: { props: { title: 'Cloned' } } })
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    base.show({ props: { message: 'base' } })
+    cloned.show({ props: { message: 'cloned' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(base.visible).toBe(true)
+    expect(cloned.visible).toBe(true)
+    expect(queryAllBodyDialogs()).toHaveLength(2)
+    expect([...document.body.querySelectorAll('.msg')].map((el) => el.textContent)).toEqual([
+      'base',
+      'cloned',
+    ])
+  })
+
+  it('clone.hide() without show does not tear down sibling instance DOM', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let base!: LayerInstance
+    let cloned!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        base = useLayer(Content)
+        cloned = base.clone()
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    base.show({ props: { message: 'base' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    cloned.hide()
+    await wrapper.vm.$nextTick()
+
+    expect(base.visible).toBe(true)
+    expect(cloned.visible).toBe(false)
+    expect(queryAllBodyDialogs()).toHaveLength(1)
+    expect(document.body.querySelector('.msg')?.textContent).toBe('base')
+  })
+
+  it('clone.hide() only removes its own dialog when both are open', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let base!: LayerInstance
+    let cloned!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        base = useLayer(Content, { layer: { props: { title: 'Base' } } })
+        cloned = base.clone({ layer: { props: { title: 'Cloned' } } })
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    base.show({ props: { message: 'base' } })
+    cloned.show({ props: { message: 'cloned' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    cloned.hide()
+    await wrapper.vm.$nextTick()
+
+    expect(cloned.visible).toBe(false)
+    expect(base.visible).toBe(true)
+    expect(queryAllBodyDialogs()).toHaveLength(1)
+    expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Base')
+    expect(document.body.querySelector('.msg')?.textContent).toBe('base')
   })
 
   it('clone() creates independent instance with partial defaults', async () => {

@@ -6,6 +6,7 @@ import {
   provide,
   reactive,
   shallowRef,
+  type AppContext,
   type Component,
   type Ref,
 } from 'vue'
@@ -49,7 +50,7 @@ interface CreateInstanceOptions {
   Content?: Component
   useOptions: LayerUsePayload
   partial: LayerUsePayload
-  bodyRenderer: ReturnType<typeof createBodyRenderer>
+  appContext: AppContext | null
 }
 
 function buildLayerRoot(
@@ -122,6 +123,7 @@ function buildLayerRoot(
 }
 
 function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions): LayerInstance {
+  const bodyRenderer = createBodyRenderer(opts.appContext)
   const internal = createLayerInternalState()
   const state = reactive<InstanceState>({
     visible: false,
@@ -132,7 +134,7 @@ function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions
 
   const hide = () => {
     state.visible = false
-    opts.bodyRenderer.teardown()
+    bodyRenderer.teardown()
   }
 
   const LayerRoot = buildLayerRoot(ctx, opts, internal, state, defineLayerConfig, hide)
@@ -142,7 +144,7 @@ function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions
     if (payload) state.showOptions = payload
     state.contentMountKey++
     state.visible = true
-    opts.bodyRenderer.render(h(LayerRoot))
+    bodyRenderer.render(h(LayerRoot))
   }
 
   const instance: LayerInstance = {
@@ -153,7 +155,7 @@ function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions
         Content: opts.Content,
         useOptions: opts.useOptions,
         partial: partial ?? {},
-        bodyRenderer: opts.bodyRenderer,
+        appContext: opts.appContext,
       })
     },
     get visible() {
@@ -171,13 +173,13 @@ export function createUseLayer(ctx: UseLayerFactoryContext) {
     useOptions: LayerUsePayload = {},
   ): LayerInstance {
     const hostInstance = getCurrentInstance()
-    const bodyRenderer = createBodyRenderer(hostInstance?.appContext ?? null)
+    const appContext = hostInstance?.appContext ?? null
 
     const instance = createInstance(ctx, {
       Content,
       useOptions,
       partial: {},
-      bodyRenderer,
+      appContext,
     })
 
     if (hostInstance) {
