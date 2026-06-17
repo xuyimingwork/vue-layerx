@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { ElButton, ElSwitch, ElTag } from 'element-plus'
 import { detailViewportMobile, useDetailLayer } from '../../../.vitepress/shared/layers'
-import UserDetail from '../../tutorial/UserDetail.vue'
+import UserForm from '../../tutorial/UserForm.vue'
 
 const user = {
   name: 'Alice',
@@ -10,28 +10,25 @@ const user = {
   role: '管理员',
 }
 
-const detailLayer = useDetailLayer(UserDetail)
+const userLayer = useDetailLayer(UserForm)
 
-function openDetail() {
-  detailLayer.show({ props: user })
+function openView() {
+  userLayer.show({
+    props: { mode: 'view', recordId: 1, initialName: user.name, email: user.email, role: user.role },
+  })
 }
 </script>
 
 <template>
   <p class="hint">
-    <code>useDetailLayer</code> 的 <code>adapt</code> 在窄屏把壳从 BaseDialog 换成 BaseDrawer——
-    <code>UserDetail</code> 一行不改。
+    同一 <code>useDetailLayer(UserForm)</code>，<code>adapt</code> 在窄屏把壳换成 BaseDrawer。
   </p>
-
   <div class="controls">
     <span>模拟窄屏</span>
     <ElSwitch v-model="detailViewportMobile" />
-    <ElTag size="small" type="info">
-      {{ detailViewportMobile ? 'Drawer' : 'Dialog（或随浏览器宽度）' }}
-    </ElTag>
+    <ElTag size="small">{{ detailViewportMobile ? 'Drawer' : 'Dialog' }}</ElTag>
   </div>
-
-  <ElButton type="primary" @click="openDetail">打开用户详情</ElButton>
+  <ElButton type="primary" @click="openView">打开用户详情</ElButton>
 </template>
 
 <style scoped>

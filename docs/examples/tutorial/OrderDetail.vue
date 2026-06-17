@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElCard, ElTag } from 'element-plus'
-import UserDetail from './UserDetail.vue'
+import UserForm from './UserForm.vue'
 
 const order = ref({
   id: 'ORD-1024',
@@ -25,8 +25,9 @@ const order = ref({
 
     <section class="order-detail__section">
       <h4>收货人</h4>
-      <UserDetail
-        :name="order.userName"
+      <UserForm
+        mode="view"
+        :initial-name="order.userName"
         :email="order.email"
         :role="order.role"
       />

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElMessage } from 'element-plus'
-import { useEditLayer } from '../../../.vitepress/shared/layers'
-import UserForm from '../../tutorial/UserFormWithOutside.vue'
+import { useDetailLayer } from '../../../.vitepress/shared/layers'
+import UserForm from '../../tutorial/UserForm.vue'
 
 const profile = ref({ name: 'Alice' })
 
-const editLayer = useEditLayer(UserForm)
+const userLayer = useDetailLayer(UserForm)
 
 function onInlineSubmit(name: string) {
   profile.value.name = name
@@ -14,7 +14,7 @@ function onInlineSubmit(name: string) {
 }
 
 function openInDialog() {
-  editLayer.show({
+  userLayer.show({
     props: {
       mode: 'edit',
       initialName: profile.value.name,
@@ -28,17 +28,11 @@ function openInDialog() {
 </script>
 
 <template>
-  <p class="hint">加一行 <code>visible-outside</code>：页内出现保存按钮，弹层仍进 BaseDialog footer。</p>
+  <p class="hint">加上 <code>visible-outside</code> 后，页内编辑也有保存按钮。</p>
 
-  <UserForm
-    mode="edit"
-    :initial-name="profile.name"
-    @submit="onInlineSubmit"
-  />
+  <UserForm mode="edit" :initial-name="profile.name" @submit="onInlineSubmit" />
 
-  <ElButton class="open-btn" link type="primary" @click="openInDialog">
-    弹层编辑对比 →
-  </ElButton>
+  <ElButton class="open-btn" link type="primary" @click="openInDialog">弹层编辑对比 →</ElButton>
 </template>
 
 <style scoped>

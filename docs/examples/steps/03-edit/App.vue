@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElMessage, ElTable, ElTableColumn } from 'element-plus'
-import { useEditLayer } from '../../../.vitepress/shared/layers'
+import { useDetailLayer } from '../../../.vitepress/shared/layers'
 import UserForm from '../../tutorial/UserForm.vue'
 
 interface User {
@@ -14,10 +14,10 @@ const users = ref<User[]>([
   { id: 2, name: 'Bob' },
 ])
 
-const editLayer = useEditLayer(UserForm)
+const userLayer = useDetailLayer(UserForm)
 
 function openCreate() {
-  editLayer.show({
+  userLayer.show({
     props: {
       mode: 'create',
       onSubmit: (name: string) => {
@@ -32,7 +32,7 @@ function openCreate() {
 }
 
 function openEdit(row: User) {
-  editLayer.show({
+  userLayer.show({
     props: {
       mode: 'edit',
       recordId: row.id,
@@ -48,8 +48,7 @@ function openEdit(row: User) {
 
 <template>
   <p class="hint">
-    编辑走 <code>UserForm</code> + <code>useEditLayer</code>；详情走
-    <code>UserDetail</code> + <code>useDetailLayer</code>——职责分开，组件更好组合。
+    仍是 <code>useDetailLayer</code>——<code>mode: 'edit' | 'create'</code> 时表单可编辑、footer 出现保存按钮。
   </p>
   <header class="toolbar">
     <ElButton type="primary" @click="openCreate">新建</ElButton>

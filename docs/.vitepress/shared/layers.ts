@@ -36,8 +36,5 @@ const detailAdapt: LayerAdapt = (normalized) => {
   }
 }
 
-/** 列表详情：Dialog ↔ Drawer 由 adapt 按视口切换 */
+/** 详情 / 编辑 / 新建：同一工厂，adapt 负责窄屏换 Drawer */
 export const useDetailLayer = createLayer(BaseDialog, {}, detailAdapt)
-
-/** 新建/编辑：默认 Dialog，配置全在 BaseDialog 里 */
-export const useEditLayer = createLayer(BaseDialog)

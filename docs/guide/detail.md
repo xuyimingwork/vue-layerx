@@ -2,48 +2,35 @@
 import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
 import Demo from '../examples/steps/01-detail/App.vue'
 import ListSource from '../examples/steps/01-detail/App.vue?raw'
-import DetailSource from '../examples/tutorial/UserDetail.vue?raw'
-import LayersSource from '../.vitepress/shared/layers.ts?raw'
+import FormSource from '../examples/tutorial/UserForm.vue?raw'
 </script>
 
 # §1 列表详情弹层
 
 ::: info 本章新增
-`UserDetail` · `useDetailLayer` · `defineLayer` · `show({ props })`
+`useDetailLayer(UserForm)` · `mode: 'view'` · disabled 表单
 :::
-
-列表点姓名 → 弹出详情。列表页**零** dialog 模板。
 
 <DemoBlock
   :demo="Demo"
   :files="[
     { name: 'UserList.vue', code: ListSource },
-    { name: 'UserDetail.vue', code: DetailSource },
-    { name: 'layers.ts → useDetailLayer', code: LayersSource },
+    { name: 'UserForm.vue', code: FormSource },
   ]"
 />
 
-## UserDetail.vue
-
-纯展示组件，名字**不带 Dialog**：
-
 ```ts
-defineLayer({
-  props: { title: '用户详情', width: '420px', size: '85vw', direction: 'rtl' },
+const userLayer = useDetailLayer(UserForm)
+
+userLayer.show({
+  props: { mode: 'view', recordId: row.id, initialName: row.name, ... },
 })
 ```
 
-- `defineLayer` 声明弹层时的标题和尺寸
-- 无 footer 按钮——关闭走 BaseDialog 的「关闭」
-- 此时**不需要** `visible-outside`（页内详情只是 Descriptions，没有「保存」）
-
-## UserList.vue
-
-```ts
-const detailLayer = useDetailLayer(UserDetail)
-detailLayer.show({ props: row })
-```
+- `mode: 'view'` → 输入框 **disabled**，无 footer 保存按钮
+- 关闭走 BaseDialog「关闭」
+- 此时还不需要 `visible-outside`
 
 ## 下一步
 
-同一 `UserDetail` 嵌进订单页：[§2 OrderDetail 组合](/guide/compose)
+[§2 OrderDetail 嵌入](/guide/compose)

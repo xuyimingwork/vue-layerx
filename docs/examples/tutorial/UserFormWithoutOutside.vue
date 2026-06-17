@@ -11,14 +11,10 @@ const props = withDefaults(
     email?: string
     role?: string
   }>(),
-  {
-    mode: 'view',
-  },
+  { mode: 'view' },
 )
 
-const emit = defineEmits<{
-  submit: [name: string]
-}>()
+const emit = defineEmits<{ submit: [name: string] }>()
 
 const name = ref(props.initialName ?? '')
 const submitting = ref(false)
@@ -50,8 +46,8 @@ defineLayer({
 
 watch(
   () => props.initialName,
-  (value) => {
-    if (value !== undefined) name.value = value
+  (v) => {
+    if (v !== undefined) name.value = v
   },
 )
 
@@ -66,49 +62,18 @@ async function handleSubmit() {
 
 <template>
   <ElForm label-width="72px" @submit.prevent="handleSubmit">
-    <ElFormItem v-if="recordId" label="ID">
-      <span>{{ recordId }}</span>
-    </ElFormItem>
+    <ElFormItem v-if="recordId" label="ID"><span>{{ recordId }}</span></ElFormItem>
     <ElFormItem label="姓名">
-      <ElInput
-        v-model="name"
-        :disabled="readonly"
-        placeholder="请输入姓名"
-        :autofocus="!readonly"
-      />
+      <ElInput v-model="name" :disabled="readonly" placeholder="请输入姓名" />
     </ElFormItem>
-    <ElFormItem v-if="email" label="邮箱">
-      <ElInput :model-value="email" disabled />
-    </ElFormItem>
-    <ElFormItem v-if="role" label="角色">
-      <ElInput :model-value="role" disabled />
-    </ElFormItem>
+    <ElFormItem v-if="email" label="邮箱"><ElInput :model-value="email" disabled /></ElFormItem>
+    <ElFormItem v-if="role" label="角色"><ElInput :model-value="role" disabled /></ElFormItem>
   </ElForm>
 
-  <!-- §4 引入 visible-outside；view 模式无 footer -->
-  <LayerTemplate v-if="mode !== 'view'" name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer }">
-      <div v-if="outsideLayer" class="inline-actions">
-        <ElButton type="primary" :loading="submitting" @click="handleSubmit">
-          {{ mode === 'edit' ? '保存' : '创建' }}
-        </ElButton>
-      </div>
-      <ElButton
-        v-else-if="inLayer"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ mode === 'edit' ? '保存' : '创建' }}
-      </ElButton>
-    </template>
+  <!-- 无 visible-outside：footer 只在弹层 inLayer 时出现 -->
+  <LayerTemplate v-if="mode !== 'view'" name="footer">
+    <ElButton type="primary" :loading="submitting" @click="handleSubmit">
+      {{ mode === 'edit' ? '保存' : '创建' }}
+    </ElButton>
   </LayerTemplate>
 </template>
-
-<style scoped>
-.inline-actions {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--el-border-color-lighter);
-}
-</style>

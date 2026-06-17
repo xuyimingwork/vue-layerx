@@ -7,44 +7,26 @@ import FormSource from '../examples/tutorial/UserForm.vue?raw'
 # §6 未保存拦截
 
 ::: info 本章新增
-`defineLayer.props.beforeClose`
+`defineLayer.props.beforeClose`（仅 edit/create 有脏数据时）
 :::
 
-编辑表单的关闭语义仍在 **UserForm** 的 `defineLayer` 里：
-
 ```ts
-defineLayer({
-  props: {
-    beforeClose: (done) => {
-      if (!dirty.value) { done(); return }
-      if (confirm('未保存，确定关闭？')) done()
-    },
-  },
-  hideOn: ['submit'],
-})
+beforeClose: (done) => {
+  if (mode === 'view' || !dirty) { done(); return }
+  if (confirm('未保存？')) done()
+}
 ```
 
-| 操作 | 路径 |
+| 操作 | 行为 |
 |------|------|
-| 保存 | `emit('submit')` → `hideOn` |
-| BaseDialog「关闭」 | 直接关层 |
-| X / 遮罩 | `beforeClose` |
+| view 模式关闭 | 直接关 |
+| edit 点保存 | `hideOn` |
+| edit 有脏数据点 X | `beforeClose` |
 
-<DemoBlock
-  :demo="Demo"
-  title="打开编辑，改姓名后点 X 或关闭"
-  :files="[{ name: 'UserForm.vue', code: FormSource }]"
-/>
+<DemoBlock :demo="Demo" :files="[{ name: 'UserForm.vue', code: FormSource }]" />
 
-## 教程回顾
+## 回顾
 
-| § | 能力 | 组件 |
-|---|------|------|
-| 1 | 列表详情弹层 | UserDetail + useDetailLayer |
-| 2 | OrderDetail 组合 | UserDetail 页内 |
-| 3 | 编辑 | UserForm + useEditLayer |
-| 4 | visible-outside | UserForm 页内保存 |
-| 5 | adapt 换壳 | useDetailLayer |
-| 6 | beforeClose | UserForm |
+一个 **UserForm** + 一个 **useDetailLayer**：view / edit / create、页内嵌入、adapt 换壳、visible-outside 页内保存。
 
-[API 参考](/api/)
+[API](/api/)
