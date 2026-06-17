@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bindHideOn } from '../../../src/core/config/bind-hide-on'
+import { bindHideOn } from '../bind-hide-on'
 
 describe('bindHideOn', () => {
   it('returns original props when events is empty or undefined', () => {

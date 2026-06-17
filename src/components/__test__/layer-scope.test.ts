@@ -1,8 +1,8 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createLayer, LayerScope, LayerTemplate } from '../../src'
-import { LayerComponent } from '../fixtures/components'
+import { createLayer, LayerScope, LayerTemplate } from '@/index'
+import { LayerComponent } from '@/__test__/fixtures/components'
 
 describe('LayerScope', () => {
   it('fills content slot via contentTemplates registry', async () => {

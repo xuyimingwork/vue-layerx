@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getOwningContentInstance } from '../../../src/vue/context/owning-content'
+import { getOwningContentInstance } from '../owning-content'
 
 describe('getOwningContentInstance', () => {
   it('returns null when instance is undefined', () => {

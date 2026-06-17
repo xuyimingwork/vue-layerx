@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeConfig } from '../../../src/core/config/merge-config'
+import { mergeConfig } from '../merge-config'
 
 describe('mergeConfig', () => {
   it('merges layer props with priority show > partial > useX > defineLayer > defaults', () => {

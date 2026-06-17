@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { LayerTemplate } from '../../src/components/layer-template'
+import { LayerTemplate } from '../layer-template'
 
 describe('LayerTemplate', () => {
   it('renders nothing by default outside layer context', () => {

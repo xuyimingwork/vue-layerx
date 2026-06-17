@@ -1,8 +1,8 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayer, defineLayer, LayerTemplate } from '../../src'
-import type { LayerInstance } from '../../src/core/types'
+import { createLayer, defineLayer, LayerTemplate } from '@/index'
+import type { LayerInstance } from '@/core/types'
 import {
   LayerComponent,
   makeContent,

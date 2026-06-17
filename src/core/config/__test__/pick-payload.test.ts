@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pickContentConfig, pickLayerConfig } from '../../../src/core/config/merge-config'
+import { pickContentConfig, pickLayerConfig } from '../merge-config'
 
 describe('pickContentConfig', () => {
   it('extracts only content node fields', () => {

@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayerRuntime } from '../../src/runtime/layer-runtime'
+import { createLayerRuntime } from '../layer-runtime'
 
 const Marker = defineComponent({
   setup() {

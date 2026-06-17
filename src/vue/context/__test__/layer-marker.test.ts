@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { LAYERX_DIRECT_CONTENT } from '../../../src/core/constants/markers'
-import { hasDirectLayerMarker } from '../../../src/vue/context/layer-marker'
+import { LAYERX_DIRECT_CONTENT } from '@/core/constants/markers'
+import { hasDirectLayerMarker } from '../layer-marker'
 
 describe('hasDirectLayerMarker', () => {
   it('returns false for null/undefined', () => {

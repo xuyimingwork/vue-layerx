@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildVisibleProps } from '../../../src/vue/render/build-visible-props'
+import { buildVisibleProps } from '../build-visible-props'
 
 describe('buildVisibleProps', () => {
   it('binds visible prop and event handler', () => {

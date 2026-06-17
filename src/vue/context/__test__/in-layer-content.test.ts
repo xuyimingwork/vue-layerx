@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { LAYERX_DIRECT_CONTENT } from '../../../src/core/constants/markers'
-import { isInDirectLayerContent } from '../../../src/vue/context/in-layer-content'
+import { LAYERX_DIRECT_CONTENT } from '@/core/constants/markers'
+import { isInDirectLayerContent } from '../in-layer-content'
 
 describe('isInDirectLayerContent', () => {
   it('returns true when owning content has direct layer marker', () => {

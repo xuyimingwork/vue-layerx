@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeProps, mergeNodeConfig } from '../../../src/core/config/merge-node-config'
+import { mergeProps, mergeNodeConfig } from '../merge-node-config'
 
 describe('mergeProps', () => {
   it('shallow merges later sources over earlier', () => {
