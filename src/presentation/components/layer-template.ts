@@ -1,10 +1,10 @@
 import { computed, defineComponent, getCurrentInstance, inject, onMounted, onUnmounted, type VNode } from 'vue'
-import type { LayerTemplateScope } from '../../domain/types'
-import { isInDirectLayerContent } from '../../infrastructure/vue/context/in-layer-content'
+import type { LayerTemplateScope } from '@/domain/types'
+import { isInDirectLayerContent } from '@/infrastructure/vue/context/in-layer-content'
 import {
   LAYER_SCOPE_REGISTRY_KEY,
   LAYER_TEMPLATE_REGISTRY_KEY,
-} from '../../infrastructure/vue/di/injection-keys'
+} from '@/infrastructure/vue/di/injection-keys'
 
 export const LayerTemplate = defineComponent({
   name: 'LayerTemplate',

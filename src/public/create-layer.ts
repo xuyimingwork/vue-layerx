@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
-import { createUseLayer } from '../application/factory/create-use-layer'
-import { DEFAULT_VISIBLE } from '../domain/constants/visible'
-import type { LayerAdapt, LayerFactoryDefaults } from '../domain/types'
+import { createUseLayer } from '@/application/factory/create-use-layer'
+import { DEFAULT_VISIBLE } from '@/domain/constants/visible'
+import type { LayerAdapt, LayerFactoryDefaults } from '@/domain/types'
 
 export function createLayer(
   layer: Component,

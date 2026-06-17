@@ -18,11 +18,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "playground": "pnpm --filter playground dev"
+    "playground": "pnpm build && pnpm --filter playground dev"
   },
   "keywords": [
     "vue",

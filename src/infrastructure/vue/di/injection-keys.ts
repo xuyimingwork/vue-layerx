@@ -1,5 +1,5 @@
 import type { InjectionKey } from 'vue'
-import type { DefineLayerOptions, LayerInternalState } from '../../domain/types'
+import type { DefineLayerOptions, LayerInternalState } from '@/domain/types'
 
 export type LayerDefineRegistry = {
   register: (config: DefineLayerOptions) => void

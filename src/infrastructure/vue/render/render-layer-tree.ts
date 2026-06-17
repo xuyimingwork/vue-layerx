@@ -1,6 +1,6 @@
 import { h, type VNode } from 'vue'
-import { LAYERX_DIRECT_CONTENT } from '../../../domain/constants/markers'
-import type { LayerRenderPlan } from '../../domain/types'
+import { LAYERX_DIRECT_CONTENT } from '@/domain/constants/markers'
+import type { LayerRenderPlan } from '@/domain/types'
 import { buildVisibleProps } from './build-visible-props'
 
 export function renderLayerTree(plan: LayerRenderPlan, hasContent: boolean): VNode {

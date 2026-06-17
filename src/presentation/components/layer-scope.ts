@@ -1,7 +1,7 @@
 import { defineComponent, provide, type PropType } from 'vue'
-import type { LayerInstance } from '../../domain/types'
-import { getInternal } from '../../infrastructure/layer-instance-state'
-import { LAYER_SCOPE_REGISTRY_KEY } from '../../infrastructure/vue/di/injection-keys'
+import type { LayerInstance } from '@/domain/types'
+import { getInternal } from '@/infrastructure/layer-instance-state'
+import { LAYER_SCOPE_REGISTRY_KEY } from '@/infrastructure/vue/di/injection-keys'
 
 export const LayerScope = defineComponent({
   name: 'LayerScope',

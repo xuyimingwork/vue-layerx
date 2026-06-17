@@ -3,8 +3,8 @@ import type {
   LayerMerged,
   LayerNormalized,
   LayerTemplateEntry,
-} from '../types/layer'
-import { bindHideOn } from '../events/bind-hide-on'
+} from '@/domain/types/layer'
+import { bindHideOn } from '@/domain/events/bind-hide-on'
 
 export interface ResolveContext {
   merged: LayerMerged

@@ -1,4 +1,4 @@
-import type { LayerNormalized, LayerRenderPlan } from '../types/layer'
+import type { LayerNormalized, LayerRenderPlan } from '@/domain/types/layer'
 
 export interface ToRenderPlanContext {
   normalized: LayerNormalized

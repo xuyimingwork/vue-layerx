@@ -10,27 +10,27 @@ import {
   type Component,
   type Ref,
 } from 'vue'
-import { mergeConfig } from '../../domain/config/merge-config'
-import { defaultResolve, hasContentComponent } from '../../domain/config/default-resolve'
-import { toRenderPlan } from '../../domain/config/to-render-plan'
+import { mergeConfig } from '@/domain/config/merge-config'
+import { defaultResolve, hasContentComponent } from '@/domain/config/default-resolve'
+import { toRenderPlan } from '@/domain/config/to-render-plan'
 import type {
   DefineLayerOptions,
   LayerAdapt,
   LayerFactoryDefaults,
   LayerInstance,
+  LayerInternalState,
   LayerUsePayload,
-} from '../../domain/types'
+} from '@/domain/types'
 import {
   attachInternal,
   createLayerInternalState,
-  type LayerInternalState,
-} from '../../infrastructure/layer-instance-state'
-import { createBodyRenderer } from '../../infrastructure/vue/render/body-renderer'
-import { renderLayerTree } from '../../infrastructure/vue/render/render-layer-tree'
+} from '@/infrastructure/layer-instance-state'
+import { createBodyRenderer } from '@/infrastructure/vue/render/body-renderer'
+import { renderLayerTree } from '@/infrastructure/vue/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
   LAYER_TEMPLATE_REGISTRY_KEY,
-} from '../../infrastructure/vue/di/injection-keys'
+} from '@/infrastructure/vue/di/injection-keys'
 
 export interface UseLayerFactoryContext {
   factoryLayer: Component

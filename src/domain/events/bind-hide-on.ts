@@ -1,4 +1,4 @@
-import type { LayerProps } from '../types/layer'
+import type { LayerProps } from '@/domain/types/layer'
 
 export function bindHideOn(
   contentProps: LayerProps,

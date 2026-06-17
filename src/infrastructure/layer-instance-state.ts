@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { LayerInternalState, LayerTemplateEntry } from '../types'
+import type { LayerInternalState, LayerTemplateEntry } from '@/domain/types'
 
 function warnDuplicate(name: string, scope: 'layer' | 'content') {
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return

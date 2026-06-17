@@ -1,4 +1,4 @@
-import type { LayerProps } from '../../../domain/types'
+import type { LayerProps } from '@/domain/types'
 
 export function buildVisibleProps(
   layerProps: LayerProps,
