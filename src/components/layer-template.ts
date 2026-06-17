@@ -2,7 +2,7 @@ import { computed, defineComponent, getCurrentInstance, inject, onMounted, type 
 import type { LayerTemplateScope } from '@/core/types'
 import { isInDirectLayerContent } from '@/vue/context/in-layer-content'
 import {
-  LAYER_SCOPE_REGISTRY_KEY,
+  LAYER_BIND_REGISTRY_KEY,
   LAYER_TEMPLATE_REGISTRY_KEY,
 } from '@/vue/di/injection-keys'
 
@@ -20,13 +20,13 @@ export const LayerTemplate = defineComponent({
   },
   setup(props, { slots }) {
     const layerRegistry = inject(LAYER_TEMPLATE_REGISTRY_KEY, null)
-    const scopeRegistry = inject(LAYER_SCOPE_REGISTRY_KEY, null)
+    const bindRegistry = inject(LAYER_BIND_REGISTRY_KEY, null)
     const instance = getCurrentInstance()
 
     const inLayer = computed(
       () => layerRegistry !== null && isInDirectLayerContent(instance),
     )
-    const inScope = computed(() => scopeRegistry !== null)
+    const inBind = computed(() => bindRegistry !== null)
 
     const renderSlot = (scope: LayerTemplateScope): VNode | VNode[] | null =>
       slots.default?.(scope) ?? null
@@ -38,15 +38,15 @@ export const LayerTemplate = defineComponent({
         })
         return
       }
-      if (inScope.value && scopeRegistry) {
-        scopeRegistry.registerContentTemplate(props.name, {
+      if (inBind.value && bindRegistry) {
+        bindRegistry.registerContentTemplate(props.name, {
           render: () => renderSlot({ inLayer: true, outsideLayer: false }),
         })
       }
     })
 
     return () => {
-      if (inLayer.value || inScope.value) return null
+      if (inLayer.value || inBind.value) return null
       if (!props.visibleOutside) return null
       return renderSlot({ inLayer: false, outsideLayer: true })
     }

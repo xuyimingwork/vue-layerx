@@ -15,7 +15,7 @@ export type LayerTemplateRegistry = Pick<LayerInternalState, 'registerLayerTempl
 export const LAYER_TEMPLATE_REGISTRY_KEY: InjectionKey<LayerTemplateRegistry> =
   Symbol('vue-layerx-layer-template') as InjectionKey<LayerTemplateRegistry>
 
-export type LayerScopeRegistry = Pick<LayerInternalState, 'registerContentTemplate'>
+export type LayerBindRegistry = Pick<LayerInternalState, 'registerContentTemplate'>
 
-export const LAYER_SCOPE_REGISTRY_KEY: InjectionKey<LayerScopeRegistry> =
-  Symbol('vue-layerx-content-template') as InjectionKey<LayerScopeRegistry>
+export const LAYER_BIND_REGISTRY_KEY: InjectionKey<LayerBindRegistry> =
+  Symbol('vue-layerx-content-template') as InjectionKey<LayerBindRegistry>

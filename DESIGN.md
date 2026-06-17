@@ -31,7 +31,7 @@ UserDialog = MyDialog + UserForm
 |------|------|
 | **npm 包 / 项目名** | `vue-layerx`（保留 `x`，不变） |
 | **import 路径** | `'vue-layerx'` |
-| **公共 API / 类型** | 统一用 `Layer`，**不带 `x`**：`createLayer`、`defineLayer`、`LayerTemplate`、`LayerScope`、`LayerInstance` 等 |
+| **公共 API / 类型** | 统一用 `Layer`，**不带 `x`**：`createLayer`、`defineLayer`、`LayerTemplate`、`LayerBind`、`LayerInstance` 等 |
 | **兼容性** | 不考虑旧 `*Layerx*` API 名称；实现与文档以本节为准 |
 
 ---
@@ -70,21 +70,21 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 
 ### 跨树 slot 投递（render fn）
 
-`LayerTemplate` / `LayerScope` 在 mount 时向实例注册表写入 `{ name, render }`；**resolve 阶段物化为 `SlotRenderFn`**，由框架在 `h(layer, props, slots)` / `h(content, props, slots)` 时传入。四段渲染顺序：
+`LayerTemplate` / `LayerBind` 在 mount 时向实例注册表写入 `{ name, render }`；**resolve 阶段物化为 `SlotRenderFn`**，由框架在 `h(layer, props, slots)` / `h(content, props, slots)` 时传入。四段渲染顺序：
 
 ```text
 ① merge / resolve / adapt   合并配置，物化模板为 slot render fn
 ② render layer              h(MyDialog, …) 挂载（通常 appendToBody 至 body）
 ③ render content            UserForm 作为 layer default slot（每次 show remount）
-④ slot fn 调用              LayerTemplate.render() / LayerScope 模板.render() 产出 VNode
+④ slot fn 调用              LayerTemplate.render() / LayerBind 模板.render() 产出 VNode
 ```
 
 `layerTemplates` / `contentTemplates` 在组件 mount 时写入实例注册表；**resolve 阶段读取**后物化为 `SlotRenderFn`。首次打开若模板尚未 register，对应 slot 为空；模板 mount 后 `bumpSlots` 触发重渲染即可。
 
-### LayerScope 与实例绑定
+### LayerBind 与实例绑定
 
-- `LayerScope :of="userDialog"` 绑定 `LayerInstance`；实例维护 **`contentTemplates` 注册表**（`:of` 隔离，clone 实例各自独立）。
-- `LayerScope` 声明在 UserList 的 template 中，layer 渲染在 body portal；跨树靠 **实例注册表 + slot render fn** 投递，不经过 merge。
+- `LayerBind :to="userDialog"` 绑定 `LayerInstance`；实例维护 **`contentTemplates` 注册表**（`:to` 隔离，clone 实例各自独立）。
+- `LayerBind` 声明在 UserList 的 template 中，layer 渲染在 body portal；跨树靠 **实例注册表 + slot render fn** 投递，不经过 merge。
 - `LayerTemplate`（UserForm 内）同理写入实例的 **`layerTemplates`**，resolve 时物化后作为 MyDialog 的 slot fn 传入。
 
 ### defineLayer 与 inject
@@ -201,7 +201,7 @@ type LayerFactoryDefaults = {
 | 声明位置 | 填充目标 | 说明 |
 |----------|----------|------|
 | **UserForm 内**（弹层 direct content 上下文） | **MyDialog 的 slot** | `name` 须与 layer 组件 slot 同名（或经 `adapt` 对齐） |
-| **UserList `LayerScope` 内** | **UserForm 的 `<slot>`** | `name` 须与 content 组件 slot 同名 |
+| **UserList `LayerBind` 内** | **UserForm 的 `<slot>`** | `name` 须与 content 组件 slot 同名 |
 
 纯字符串标题仍用 `defineLayer` / `layer.props.title`；富标题区用 **`LayerTemplate name="title"`**（当 MyDialog 提供 `#title` 时）。
 
@@ -229,14 +229,14 @@ type LayerFactoryDefaults = {
 | `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**inLayer 时忽略此配置**，仍走 slot render fn 投进 layer slot |
 | scope | `inLayer` / `outsideLayer` 即字面含义：当前渲染是否处于弹层内 / 弹层外（`#default` 插槽参数） |
 
-### `LayerScope`
+### `LayerBind`
 
 与 UserForm 内的 `LayerTemplate` **同一组件、同一套 self-register 机制**；差异只在 **声明位置决定投递目标**：
 
 - UserForm 内 `LayerTemplate` → `layerTemplates` → `normalized.layer.slots`（同名 key）。
-- `LayerScope` 内 `LayerTemplate` → `contentTemplates` → `normalized.content.slots`（同名 key）。
+- `LayerBind` 内 `LayerTemplate` → `contentTemplates` → `normalized.content.slots`（同名 key）。
 
-使用侧绑定 `:of="userDialog"`（`useDialog(UserForm)` 的实例），把「远程填充 content slot」暴露到 UserList template。**不接 MyDialog 投递链**。
+使用侧绑定 `:to="userDialog"`（`useDialog(UserForm)` 的实例），把「远程填充 content slot」暴露到 UserList template。**不接 MyDialog 投递链**。
 
 ### 路由边界
 
@@ -245,17 +245,17 @@ type LayerFactoryDefaults = {
 | 声明位置 | 投递链 | UserList 能否触及 |
 |----------|--------|-------------------|
 | UserForm 内 `LayerTemplate` | `normalized.layer.slots` → **MyDialog** | 否 |
-| `LayerScope` 内 `LayerTemplate` | `normalized.content.slots` → **UserForm** `<slot>` | 是 |
+| `LayerBind` 内 `LayerTemplate` | `normalized.content.slots` → **UserForm** `<slot>` | 是 |
 
 **与 Vue 相同，框架不持有、也不校验 slot 清单：**
 
-- Vue 无法从子组件「读出」`defineSlots` / template 里有哪些 `<slot name>`；`useDialog(UserForm)` + `LayerScope` + `LayerTemplate` **同样做不到**按契约拦截 `name`。
-- `LayerScope` 内 `name="form-end"` 只会进入 `contentTemplates`，resolve 后作为 `h(UserForm, …, { 'form-end': fn })` 的 slot 传入；**UserForm 没有 `<slot name="form-end">` 就不展示**——与父组件写了 `<template #form-end>` 但子组件没开口一样，不是框架 warning，是静默无渲染。
+- Vue 无法从子组件「读出」`defineSlots` / template 里有哪些 `<slot name>`；`useDialog(UserForm)` + `LayerBind` + `LayerTemplate` **同样做不到**按契约拦截 `name`。
+- `LayerBind` 内 `name="form-end"` 只会进入 `contentTemplates`，resolve 后作为 `h(UserForm, …, { 'form-end': fn })` 的 slot 传入；**UserForm 没有 `<slot name="form-end">` 就不展示**——与父组件写了 `<template #form-end>` 但子组件没开口一样，不是框架 warning，是静默无渲染。
 - UserList 写 `name="footer"`，而 UserForm 只有 layer 侧 `LayerTemplate name="footer"`、没有 `<slot name="footer">`：内容走 **content** 链，对不上口 → **不展示**；**换不掉** MyDialog 上的 layer footer（那条链 UserList 触及不到）。
 
 `layerTemplates` 与 `contentTemplates` 是两张表、两条投递链，key 相同也互不覆盖。
 
-同一注册域内（UserForm 内、`LayerScope` 内等）同名 `LayerTemplate` 重复注册：**dev warning**，**后者覆盖前者**。
+同一注册域内（UserForm 内、`LayerBind` 内等）同名 `LayerTemplate` 重复注册：**dev warning**，**后者覆盖前者**。
 
 **产品边界：** 不支持从 UserList 替换 UserForm 投进 MyDialog 的 layer 模板。调用方 **路由不到** layer 链。
 
@@ -265,7 +265,7 @@ type LayerFactoryDefaults = {
 |------|------|
 | `LayerTemplate name="title"` / `footer` | 块级模板 → MyDialog 同名 slot |
 | Vue `<slot name="action-end">` | 结构级：操作区内部扩展 |
-| `LayerScope` + `LayerTemplate name="action-end"` | 弹层下远程填充同名 slot |
+| `LayerBind` + `LayerTemplate name="action-end"` | 弹层下远程填充同名 slot |
 
 「保存」与「取消」**之间**插入按钮：UserForm 预留 Vue slot；vue-layerx 不负责块内顺序组合。
 
@@ -280,7 +280,7 @@ type LayerFactoryDefaults = {
 
 **content 侧**
 
-`LayerScope` 内 `LayerTemplate name="form-end"` → `contentTemplates` → `normalized.content.slots.form-end`；UserForm 无 `<slot name="form-end">` 则不展示。
+`LayerBind` 内 `LayerTemplate name="form-end"` → `contentTemplates` → `normalized.content.slots.form-end`；UserForm 无 `<slot name="form-end">` 则不展示。
 
 **容器差异**：非默认 slot 名对齐（Dialog `#title` vs Drawer `#header`）在工厂 **`adapt`** 中调整 `normalized.layer.slots` 的 key，不在 merge 维护名表。
 
@@ -297,7 +297,7 @@ type LayerFactoryDefaults = {
 | **defaultResolve** | — | `LayerMerged` → `LayerNormalized` | 不参与优先级 |
 | **createLayer 第 3 参 adapt** | — | `LayerNormalized` → `LayerNormalized` | 不实现 merge |
 | **LayerTemplate**（UserForm 内） | layerTemplates（resolve 读取） | 注册 layer 侧模板内容 | — |
-| **LayerScope** | contentTemplates（resolve 读取） | 向 UserDialog content slot 注册模板 | 接入 layer 投递链；不经 merge |
+| **LayerBind** | contentTemplates（resolve 读取） | 向 UserDialog content slot 注册模板 | 接入 layer 投递链；不经 merge |
 
 ### 绑定分层
 
@@ -329,7 +329,7 @@ defineLayer({
 
 ## 公共 API
 
-框架导出：`createLayer`、`defineLayer`、`LayerTemplate`、`LayerScope`。  
+框架导出：`createLayer`、`defineLayer`、`LayerTemplate`、`LayerBind`。  
 应用层别名 `useDialog` / `useDrawer` 由项目 `createLayer` 注册，非框架内置。
 
 ### `createLayer(layer, defaults?, adapt?)`
@@ -482,9 +482,9 @@ xxx.show({
 
 `show()` payload 为当次打开快照；弹层打开后，**父组件（如 UserList）侧**响应式数据变化不自动同步进已打开的弹层（content remount 语义见「渲染与投递机制」）。
 
-### `LayerScope` / `LayerTemplate`
+### `LayerBind` / `LayerTemplate`
 
-见上文。`LayerScope` 须显式 `:of="userDialog"`（`useDialog` 返回的实例），**不可省略**。
+见上文。`LayerBind` 须显式 `:to="userDialog"`（`useDialog` 返回的实例），**不可省略**。
 
 ### Layer 实例
 
@@ -631,7 +631,7 @@ userDialog.show({
 | `props` | content 组件 / `UserFormLayer` |
 | `layer.props` | `createLayer` 注册的 `MyDialog` props |
 | `hideOn` | `UserFormLayer.emits`（手写泛型时） |
-| `LayerTemplate` / `LayerScope` 的 `name` | **无框架类型**；须对照 UserForm 模板与 MyDialog 文档，与 Vue 使用 slot 相同 |
+| `LayerTemplate` / `LayerBind` 的 `name` | **无框架类型**；须对照 UserForm 模板与 MyDialog 文档，与 Vue 使用 slot 相同 |
 
 ---
 
@@ -659,7 +659,7 @@ useDialog / useDrawer
         └── show(payload) ──────────────┘            │
                                                      ├──► resolve ─► adapt ─► render
         LayerTemplate（UserForm 内）─── layerTemplates ─┘      ▲
-        LayerScope（UserList）─── contentTemplates ────────────┘
+        LayerBind（UserList）─── contentTemplates ────────────┘
               （运行时注册，resolve 读取；不经 merge）
 ```
 
@@ -669,9 +669,9 @@ useDialog / useDrawer
 MyDialog（normalized.layer）
   ├─ #title ← slot fn ← UserForm 内 LayerTemplate name="title"
   ├─ default → UserForm（normalized.content，direct layer content）
-  │              └─ #form-end ← slot fn ← LayerScope 模板
+  │              └─ #form-end ← slot fn ← LayerBind 模板
   └─ #footer ← slot fn ← UserForm 内 LayerTemplate name="footer"
-       └─ #action-end ← slot fn ← LayerScope 模板
+       └─ #action-end ← slot fn ← LayerBind 模板
 ```
 
 **页内复用（outsideLayer）：** 带 `visible-outside` 的 `LayerTemplate` 在 UserForm SFC 原位置渲染；无 `visible-outside` 的不占 DOM。inLayer 时 `visible-outside` 无效，footer 等仍通过 slot render fn 投进 MyDialog slot。
@@ -765,7 +765,7 @@ function cancel() { emit('cancel') }
 
 ```vue
 <script setup>
-import { LayerScope, LayerTemplate } from 'vue-layerx'
+import { LayerBind, LayerTemplate } from 'vue-layerx'
 import { useDialog } from '@/layers/dialog'
 import UserForm from './UserForm.vue'
 
@@ -777,14 +777,14 @@ const userDialog = useDialog(UserForm, { hideOn: ['success', 'cancel'] })
     新建
   </ElButton>
 
-  <LayerScope :of="userDialog">
+  <LayerBind :to="userDialog">
     <LayerTemplate name="form-end">
       <ElFormItem label="年龄"><ElInput v-model="age" /></ElFormItem>
     </LayerTemplate>
     <LayerTemplate name="action-end">
       <ElButton @click="print">打印</ElButton>
     </LayerTemplate>
-  </LayerScope>
+  </LayerBind>
 </template>
 ```
 
@@ -810,9 +810,9 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 | `useX()` 无 Content | 实例正常；未 `show({ component })` 时 layer 无 content |
 | 嵌套 content | 仅 **direct layer content**（`useX` / `show` 绑定的根组件）内的 `LayerTemplate` 进外层 MyDialog；内嵌子组件上的模板**不**挂外层 |
 | 嵌套示例 | `OrderForm` 内嵌 `UserForm`；`useDialog(OrderForm)` 打开时，`UserForm` **不是**弹层 direct content，其 `LayerTemplate` **不**投递到 MyDialog |
-| 多 Layer 实例 | 各 `LayerScope :of` 隔离 |
-| 操作区内部扩展 | Vue slot + `LayerScope` 同名模板 |
-| UserList 在 `LayerScope` 写 `name="footer"` 换 layer footer | **不展示**（走 content 链；UserForm 无 `<slot name="footer">`）；换不了 layer footer |
+| 多 Layer 实例 | 各 `LayerBind :to` 隔离 |
+| 操作区内部扩展 | Vue slot + `LayerBind` 同名模板 |
+| UserList 在 `LayerBind` 写 `name="footer"` 换 layer footer | **不展示**（走 content 链；UserForm 无 `<slot name="footer">`）；换不了 layer footer |
 | 从列表页替换整块 MyDialog footer | **不支持**（无 layer 侧调用 API） |
 | `show` 换 `layer.component` | merge → resolve 后走**该实例工厂**的 `adapt`；容器差异由用户在 adapt 内处理 |
 | 每次 `show()` | 框架强制 remount content，setup（含 `defineLayer`）在当次 props 下重新执行 |
@@ -825,13 +825,13 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 1. **配置片段** merge：常规 `show > useX > defineLayer > createLayer`；`clone` 实例 `show > partial > useX > defineLayer > createLayer`。
 2. **content / layer 同构**（`LayerNodeConfig`）：`component` / `props` / 命令式 `slots`；**声明式**插槽内容走 `layerTemplates` / `contentTemplates`。
 3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`show` 覆盖 merge 但不跳过 adapt；`show` 每次 remount content。
-4. **slot render fn 投递**：UserForm 内模板 → layer slot；`LayerScope` 模板 → content slot；模板运行时注册、resolve 物化。
+4. **slot render fn 投递**：UserForm 内模板 → layer slot；`LayerBind` 模板 → content slot；模板运行时注册、resolve 物化。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` 为字面 scope。
 6. **`LayerTemplate`**：`name` 即 slot 名，与 Vue `<template #name>` 同构；目标无同名 slot 则不渲染。
 7. **容器 slot 名差异**在工厂 **`adapt`** 调整 `normalized.layer.slots`，不用 merge 名表。
 8. **无 `layerId` / `surface`**；多容器靠多工厂 + 各自 `adapt`。
-9. **细粒度扩展**用 Vue `<slot>`；`LayerScope` 在弹层下填充同名 content slot。
-10. **声明位置分流**：`LayerScope` 与 `LayerTemplate` 同机制，只触 content slot；不接 MyDialog。
+9. **细粒度扩展**用 Vue `<slot>`；`LayerBind` 在弹层下填充同名 content slot。
+10. **声明位置分流**：`LayerBind` 与 `LayerTemplate` 同机制，只触 content slot；不接 MyDialog。
 11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；固定三参 `createLayer`；不导出 `useLayer`。
 12. **`clone`**：`show > partial > useX > defineLayer > createLayer`；`hideOn` 与用户 `onXxx` 合并为 wrapper（用户先、`hide()` 后）。
 13. **`visible`**：仅 prop + event 元组；非常规模型由使用者封装 layer。
@@ -851,7 +851,7 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 ### 业务弹窗使用者（UserList）
 
 - `useDialog(UserForm)` + `show()`
-- `LayerScope` 填充 UserDialog（UserForm）的 content slot
+- `LayerBind` 填充 UserDialog（UserForm）的 content slot
 - 不写 MyDialog template、不维护 `visible`
 
 ### 框架实现者
@@ -867,7 +867,7 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 | 无 `LayerTemplate ref` 连线 | `name` self-register |
 | 无独立 `transform` API | adapt 内聚在注册时 |
 | 同构 node | content / layer 同一套 mental model |
-| `LayerScope` 同 `LayerTemplate` | 声明位置分流；列表页只触 content slot |
+| `LayerBind` 同 `LayerTemplate` | 声明位置分流；列表页只触 content slot |
 | 插槽与 Vue 同构 | `name` = slot 名；对不上就不渲染；框架不校验 slot 清单 |
 | Drawer 差异走 `adapt` | 滤 props、搬移 `normalized.layer.slots` 的 key |
 | `visible` 仅 prop+event | 非常规模型用户自封装 layer |

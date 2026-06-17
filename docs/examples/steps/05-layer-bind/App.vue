@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElMessage, ElTable, ElTableColumn, ElTag } from 'element-plus'
-import { LayerScope, LayerTemplate } from 'vue-layerx'
+import { LayerBind, LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../../.vitepress/shared/layers'
 import UserForm from '../../tutorial/UserForm.vue'
 
@@ -34,7 +34,7 @@ function openEdit(row: User) {
 
 <template>
   <p class="hint">
-    列表页通过 <code>LayerScope</code> 向 <code>UserForm</code> 的 <code>#header</code>
+    列表页通过 <code>LayerBind</code> 向 <code>UserForm</code> 的 <code>#header</code>
     插槽注入上下文——不修改表单组件源码。
   </p>
 
@@ -48,11 +48,11 @@ function openEdit(row: User) {
     </ElTableColumn>
   </ElTable>
 
-  <LayerScope :of="userForm">
+  <LayerBind :to="userForm">
     <LayerTemplate name="header">
       <ElTag type="warning" size="small">管理员编辑</ElTag>
     </LayerTemplate>
-  </LayerScope>
+  </LayerBind>
 </template>
 
 <style scoped>

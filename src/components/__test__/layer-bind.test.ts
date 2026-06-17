@@ -1,10 +1,10 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createLayer, LayerScope, LayerTemplate } from '@/index'
+import { createLayer, LayerBind, LayerTemplate } from '@/index'
 import { LayerComponent } from '@/__test__/fixtures/components'
 
-describe('LayerScope', () => {
+describe('LayerBind', () => {
   it('fills content slot via contentTemplates registry', async () => {
     const useLayer = createLayer(LayerComponent)
 
@@ -21,9 +21,9 @@ describe('LayerScope', () => {
       setup() {
         dialog = useLayer(Content)
         return () =>
-          h(LayerScope, { of: dialog }, () =>
+          h(LayerBind, { to: dialog }, () =>
             h(LayerTemplate, { name: 'extra' }, () =>
-              h('span', { class: 'scoped-extra' }, 'from scope'),
+              h('span', { class: 'scoped-extra' }, 'from bind'),
             ),
           )
       },
