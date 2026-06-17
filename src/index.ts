@@ -1,7 +1,7 @@
-export { createLayer } from './public/create-layer'
-export { defineLayer } from './application/define-layer'
-export { LayerTemplate } from './presentation/components/layer-template'
-export { LayerScope } from './presentation/components/layer-scope'
+export { createLayer } from './api/create-layer'
+export { defineLayer } from './api/define-layer'
+export { LayerTemplate } from './components/layer-template'
+export { LayerScope } from './components/layer-scope'
 export type {
   DefineLayerOptions,
   LayerAdapt,
@@ -14,4 +14,4 @@ export type {
   LayerUsePayload,
   SlotRenderFn,
   VisibleProtocol,
-} from './domain/types'
+} from './core/types'
