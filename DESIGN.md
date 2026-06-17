@@ -105,7 +105,7 @@ layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 p
 配置期与渲染期类型不同：
 
 ```ts
-type SlotRenderFn = () => VNode | VNode[] | null
+type SlotRenderFn = (props?: Record<string, unknown>) => VNode | VNode[] | null
 
 /** merge 片段：content / layer 同构 */
 type LayerNodeConfig = {
@@ -214,7 +214,7 @@ type LayerFactoryDefaults = {
 <LayerTemplate name="title" />
 <!-- ... -->
 <LayerTemplate name="footer" visible-outside>
-  <template #default="{ inLayer, outsideLayer }">
+  <template #default="{ inLayer, outsideLayer, slotProps }">
     <ElButton type="primary" @click="submit">提交</ElButton>
     <slot name="action-end" />
     <ElButton @click="cancel">取消</ElButton>
@@ -227,7 +227,7 @@ type LayerFactoryDefaults = {
 | **inLayer**（direct layer content 内，弹层打开） | 不占 SFC 原位置 DOM；经 slot render fn 作为 `normalized.layer.slots[name]` 投进 **MyDialog** 同名 slot |
 | **outsideLayer**（页内等非 direct layer content 上下文） | 默认不占 DOM、不投递；见 `visible-outside` |
 | `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**inLayer 时忽略此配置**，仍走 slot render fn 投进 layer slot |
-| scope | `inLayer` / `outsideLayer` 即字面含义：当前渲染是否处于弹层内 / 弹层外（`#default` 插槽参数） |
+| `#default` 参数 | `inLayer` / `outsideLayer` 表示渲染上下文；`slotProps` 为同名 slot 的 scoped props 原样转发，默认 `{}`（layer / content 链一致） |
 
 ### `LayerBind`
 
@@ -750,7 +750,7 @@ function cancel() { emit('cancel') }
 
   <!-- visible-outside：页内时在表单下展示 footer；弹层内仍通过 slot fn 投进 MyDialog #footer -->
   <LayerTemplate name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer }">
+    <template #default="{ inLayer, outsideLayer, slotProps }">
       <div :class="{ 'footer--inline': outsideLayer }">
         <ElButton type="primary" @click="submit">提交</ElButton>
         <slot name="action-end" />
@@ -826,7 +826,7 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 2. **content / layer 同构**（`LayerNodeConfig`）：`component` / `props` / 命令式 `slots`；**声明式**插槽内容走 `layerTemplates` / `contentTemplates`。
 3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`show` 覆盖 merge 但不跳过 adapt；`show` 每次 remount content。
 4. **slot render fn 投递**：UserForm 内模板 → layer slot；`LayerBind` 模板 → content slot；模板运行时注册、resolve 物化。
-5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` 为字面 scope。
+5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
 6. **`LayerTemplate`**：`name` 即 slot 名，与 Vue `<template #name>` 同构；目标无同名 slot 则不渲染。
 7. **容器 slot 名差异**在工厂 **`adapt`** 调整 `normalized.layer.slots`，不用 merge 名表。
 8. **无 `layerId` / `surface`**；多容器靠多工厂 + 各自 `adapt`。

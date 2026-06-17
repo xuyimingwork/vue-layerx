@@ -6,6 +6,17 @@ import {
   LAYER_TEMPLATE_REGISTRY_KEY,
 } from '@/vue/di/injection-keys'
 
+function buildTemplateScope(
+  slotProps: Record<string, unknown>,
+  layer: Pick<LayerTemplateScope, 'inLayer' | 'outsideLayer'>,
+): LayerTemplateScope {
+  return {
+    slotProps,
+    inLayer: layer.inLayer,
+    outsideLayer: layer.outsideLayer,
+  }
+}
+
 export const LayerTemplate = defineComponent({
   name: 'LayerTemplate',
   props: {
@@ -28,19 +39,24 @@ export const LayerTemplate = defineComponent({
     )
     const inBind = computed(() => bindRegistry !== null)
 
-    const renderSlot = (scope: LayerTemplateScope): VNode | VNode[] | null =>
-      slots.default?.(scope) ?? null
+    const renderSlot = (templateScope: LayerTemplateScope): VNode | VNode[] | null =>
+      slots.default?.(templateScope) ?? null
 
     onMounted(() => {
+      const renderWithScope = (
+        layer: Pick<LayerTemplateScope, 'inLayer' | 'outsideLayer'>,
+      ) => (slotProps: Record<string, unknown> = {}) =>
+        renderSlot(buildTemplateScope(slotProps, layer))
+
       if (inLayer.value && layerRegistry) {
         layerRegistry.registerLayerTemplate(props.name, {
-          render: () => renderSlot({ inLayer: true, outsideLayer: false }),
+          render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
         return
       }
       if (inBind.value && bindRegistry) {
         bindRegistry.registerContentTemplate(props.name, {
-          render: () => renderSlot({ inLayer: true, outsideLayer: false }),
+          render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
       }
     })
@@ -48,7 +64,7 @@ export const LayerTemplate = defineComponent({
     return () => {
       if (inLayer.value || inBind.value) return null
       if (!props.visibleOutside) return null
-      return renderSlot({ inLayer: false, outsideLayer: true })
+      return renderSlot(buildTemplateScope({}, { inLayer: false, outsideLayer: true }))
     }
   },
 })

@@ -3,6 +3,7 @@ import type {
   LayerMerged,
   LayerNormalized,
   LayerTemplateEntry,
+  SlotRenderFn,
 } from '@/core/types/config'
 import { bindHideOn } from './bind-hide-on'
 
@@ -17,10 +18,10 @@ export interface ResolveContext {
 
 function materializeTemplates(
   templates: Record<string, LayerTemplateEntry>,
-): Record<string, () => ReturnType<LayerTemplateEntry['render']>> {
-  const slots: Record<string, () => ReturnType<LayerTemplateEntry['render']>> = {}
+): Record<string, SlotRenderFn> {
+  const slots: Record<string, SlotRenderFn> = {}
   for (const [name, entry] of Object.entries(templates)) {
-    slots[name] = () => entry.render()
+    slots[name] = (slotProps) => entry.render(slotProps ?? {})
   }
   return slots
 }
@@ -28,7 +29,7 @@ function materializeTemplates(
 function resolveNodeSlots(
   templates: Record<string, LayerTemplateEntry>,
   mergedSlots: LayerMerged['layer']['slots'],
-): Record<string, () => ReturnType<LayerTemplateEntry['render']>> {
+): Record<string, SlotRenderFn> {
   return {
     ...materializeTemplates(templates),
     ...mergedSlots,

@@ -1,8 +1,8 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayer, defineLayer, LayerTemplate } from '@/index'
-import type { LayerInstance } from '@/core/types'
+import { createLayer, defineLayer, LayerBind, LayerTemplate } from '@/index'
+import type { LayerInstance, LayerTemplateScope } from '@/core/types'
 import {
   LayerComponent,
   makeContent,
@@ -441,9 +441,10 @@ describe('createLayer (integration)', () => {
             h(
               LayerTemplate,
               { name: 'footer', visibleOutside: true },
-              ({ inLayer, outsideLayer }: { inLayer: boolean; outsideLayer: boolean }) => [
+              ({ inLayer, outsideLayer, slotProps }: LayerTemplateScope) => [
                 h('span', { class: 'inner-in-layer' }, String(inLayer)),
                 h('span', { class: 'inner-outside-layer' }, String(outsideLayer)),
+                h('span', { class: 'inner-slot-props-empty' }, String(Object.keys(slotProps).length === 0)),
                 h('button', { class: 'inner-footer' }, 'inner'),
               ],
             ),
@@ -490,7 +491,7 @@ describe('createLayer (integration)', () => {
 
   it('render() passes inLayer scope when LayerTemplate content is rendered into layer slot', async () => {
     const useLayer = createLayer(LayerComponent)
-    let capturedScope: { outsideLayer: boolean; inLayer: boolean } | undefined
+    let captured: LayerTemplateScope | undefined
 
     const Content = defineComponent({
       name: 'ContentWithScopeCapture',
@@ -502,8 +503,8 @@ describe('createLayer (integration)', () => {
             h(
               LayerTemplate,
               { name: 'footer' },
-              (scope: { outsideLayer: boolean; inLayer: boolean }) => {
-                capturedScope = scope
+              (templateScope: LayerTemplateScope) => {
+                captured = templateScope
                 return h('button', { class: 'footer-btn' }, 'footer')
               },
             ),
@@ -524,7 +525,108 @@ describe('createLayer (integration)', () => {
     await new Promise((r) => setTimeout(r, 0))
 
     expect(document.body.querySelector('.footer-btn')).toBeTruthy()
-    expect(capturedScope).toEqual({ inLayer: true, outsideLayer: false })
+    expect(captured).toEqual({
+      inLayer: true,
+      outsideLayer: false,
+      slotProps: {},
+    })
+  })
+
+  it('forwards content scoped slot props into LayerTemplate slotProps', async () => {
+    const useLayer = createLayer(LayerComponent)
+    let captured: LayerTemplateScope | undefined
+
+    const Content = defineComponent({
+      name: 'ContentWithScopedSlot',
+      setup(_props, { slots }) {
+        return () =>
+          h('motion-div', { class: 'content' }, slots.extra?.({ data: 'from-content' }))
+      },
+    })
+
+    let dialog!: LayerInstance
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () =>
+          h(LayerBind, { to: dialog }, () =>
+            h(LayerTemplate, { name: 'extra' }, (templateScope: LayerTemplateScope) => {
+              captured = templateScope
+              return h('span', { class: 'scoped-extra' }, String(templateScope.slotProps.data))
+            }),
+          )
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.show()
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.scoped-extra')?.textContent).toBe('from-content')
+    expect(captured).toEqual({
+      inLayer: true,
+      outsideLayer: false,
+      slotProps: { data: 'from-content' },
+    })
+  })
+
+  it('forwards layer scoped slot props into LayerTemplate slotProps', async () => {
+    const ScopedFooterLayer = defineComponent({
+      name: 'ScopedFooterLayer',
+      props: { modelValue: Boolean },
+      emits: ['update:modelValue'],
+      setup(props, { slots }) {
+        return () =>
+          props.modelValue
+            ? h('motion-dialog', {}, [
+                slots.default?.(),
+                slots.footer?.({ confirmLoading: true }),
+              ])
+            : null
+      },
+    })
+
+    const useLayer = createLayer(ScopedFooterLayer)
+    let captured: LayerTemplateScope | undefined
+
+    const Content = defineComponent({
+      name: 'ContentWithLayerScopedFooter',
+      setup() {
+        return () =>
+          h(
+            LayerTemplate,
+            { name: 'footer' },
+            (templateScope: LayerTemplateScope) => {
+              captured = templateScope
+              return h(
+                'button',
+                { class: 'footer-btn' },
+                String(templateScope.slotProps.confirmLoading),
+              )
+            },
+          )
+      },
+    })
+
+    let dialog!: LayerInstance
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        onMounted(() => dialog.show())
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.footer-btn')?.textContent).toBe('true')
+    expect(captured).toEqual({
+      inLayer: true,
+      outsideLayer: false,
+      slotProps: { confirmLoading: true },
+    })
   })
 
   it('remounts content on each show()', async () => {

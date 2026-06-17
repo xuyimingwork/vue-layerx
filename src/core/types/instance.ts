@@ -1,8 +1,12 @@
 import type { LayerShowPayload, LayerUseOptions } from './payload'
 
-export interface LayerTemplateScope {
+export interface LayerTemplateScope<
+  T extends Record<string, unknown> = Record<string, never>,
+> {
   inLayer: boolean
   outsideLayer: boolean
+  /** content / layer 侧 scoped slot 原样转发的 props；无参数时为 {} */
+  slotProps: T
 }
 
 export interface LayerInstance {

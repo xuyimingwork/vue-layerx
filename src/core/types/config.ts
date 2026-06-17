@@ -2,7 +2,9 @@ import type { Component, VNode } from 'vue'
 
 export type LayerProps = Record<string, unknown>
 
-export type SlotRenderFn = () => VNode | VNode[] | null
+export type SlotRenderFn = (
+  props?: Record<string, unknown>,
+) => VNode | VNode[] | null
 
 /** [visibleProp, visibleEventHandlerProp] e.g. ['modelValue', 'onUpdate:modelValue'] */
 export type VisibleProtocol = [string, string]
