@@ -1,9 +1,9 @@
 import type { Component } from 'vue'
-import type { LayerAdapt, LayerFactoryDefaults } from '@/core/types'
+import type { LayerAdapt, LayerDefaults } from '@/core/types'
 
-export interface UseLayerFactoryContext {
-  factoryLayer: Component
-  factoryDefaults: LayerFactoryDefaults
+export interface UseLayerContext {
+  LayerComponent: Component
+  layerDefaults: LayerDefaults
   visibleProp: string
   visibleEvent: string
   adapt?: LayerAdapt

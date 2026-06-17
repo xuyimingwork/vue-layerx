@@ -12,7 +12,7 @@ import { attachInternal } from '@/vue/instance/instance-registry'
 import { createLayerInternalState } from '@/vue/instance/internal-state'
 import { createBodyRenderer } from '@/vue/render/body-renderer'
 import { buildLayerRoot } from './layer-root'
-import type { UseLayerFactoryContext } from './types'
+import type { UseLayerContext } from './types'
 
 interface CreateInstanceOptions {
   Content?: Component
@@ -21,7 +21,7 @@ interface CreateInstanceOptions {
   appContext: AppContext | null
 }
 
-function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions): LayerInstance {
+function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): LayerInstance {
   const bodyRenderer = createBodyRenderer(opts.appContext)
   const internal = createLayerInternalState()
   const state = reactive({
@@ -66,7 +66,7 @@ function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions
   return instance
 }
 
-export function createUseLayer(ctx: UseLayerFactoryContext) {
+export function createUseLayer(ctx: UseLayerContext) {
   return function useLayer(
     Content?: Component,
     useOptions: LayerUsePayload = {},

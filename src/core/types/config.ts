@@ -46,7 +46,7 @@ export interface LayerRenderPlan extends LayerNormalized {
   onHide: () => void
 }
 
-export interface LayerFactoryDefaults {
+export interface LayerDefaults {
   visible?: VisibleProtocol
   content?: LayerNodeConfig
   layer?: LayerNodeConfig

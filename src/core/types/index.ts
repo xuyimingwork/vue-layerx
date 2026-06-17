@@ -1,7 +1,7 @@
 export type {
   DefineLayerOptions,
   LayerAdapt,
-  LayerFactoryDefaults,
+  LayerDefaults,
   LayerMerged,
   LayerNodeConfig,
   LayerNodeNormalized,

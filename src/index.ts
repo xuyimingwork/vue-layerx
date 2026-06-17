@@ -5,7 +5,7 @@ export { LayerScope } from './components/layer-scope'
 export type {
   DefineLayerOptions,
   LayerAdapt,
-  LayerFactoryDefaults,
+  LayerDefaults,
   LayerInstance,
   LayerNodeConfig,
   LayerShowPayload,

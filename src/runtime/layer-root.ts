@@ -12,7 +12,7 @@ import {
   LAYER_DEFINE_KEY,
   LAYER_TEMPLATE_REGISTRY_KEY,
 } from '@/vue/di/injection-keys'
-import type { UseLayerFactoryContext } from './types'
+import type { UseLayerContext } from './types'
 
 export interface LayerRootState {
   visible: boolean
@@ -27,7 +27,7 @@ export interface LayerRootOptions {
 }
 
 export function buildLayerRoot(
-  ctx: UseLayerFactoryContext,
+  ctx: UseLayerContext,
   opts: LayerRootOptions,
   internal: LayerInternalState,
   state: LayerRootState,
@@ -54,7 +54,7 @@ export function buildLayerRoot(
         void internal.slotsVersion.value
 
         const merged = mergeConfig({
-          factoryDefaults: ctx.factoryDefaults,
+          layerDefaults: ctx.layerDefaults,
           defineLayer: defineLayerConfig.value,
           useOptions: opts.useOptions,
           showOptions: state.showOptions,
@@ -63,7 +63,7 @@ export function buildLayerRoot(
 
         const resolveCtx = {
           merged,
-          factoryLayer: ctx.factoryLayer,
+          LayerComponent: ctx.LayerComponent,
           boundContent: opts.Content,
           layerTemplates: internal.layerTemplates,
           contentTemplates: internal.contentTemplates,

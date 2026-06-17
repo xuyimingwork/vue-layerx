@@ -1,10 +1,10 @@
-import type { DefineLayerOptions, LayerFactoryDefaults, LayerMerged } from '@/core/types/config'
+import type { DefineLayerOptions, LayerDefaults, LayerMerged } from '@/core/types/config'
 import type { LayerUsePayload } from '@/core/types/payload'
 import { mergeNodeConfig } from './merge-node-config'
 import { pickContentConfig, pickLayerConfig } from './pick-payload'
 
 export interface MergeContext {
-  factoryDefaults: LayerFactoryDefaults
+  layerDefaults: LayerDefaults
   defineLayer: DefineLayerOptions | null
   useOptions: LayerUsePayload
   showOptions: LayerUsePayload
@@ -27,14 +27,14 @@ export function mergeConfig(ctx: MergeContext): LayerMerged {
   const defineLayerConfig = defineLayerToConfig(ctx.defineLayer)
 
   const content = mergeNodeConfig(
-    ctx.factoryDefaults.content,
+    ctx.layerDefaults.content,
     pickContentConfig(ctx.useOptions),
     pickContentConfig(ctx.partial),
     pickContentConfig(ctx.showOptions),
   )
 
   const layer = mergeNodeConfig(
-    ctx.factoryDefaults.layer,
+    ctx.layerDefaults.layer,
     defineLayerConfig?.layer,
     pickLayerConfig(ctx.useOptions),
     pickLayerConfig(ctx.partial),

@@ -8,7 +8,7 @@ import { bindHideOn } from './bind-hide-on'
 
 export interface ResolveContext {
   merged: LayerMerged
-  factoryLayer: Component
+  LayerComponent: Component
   boundContent?: Component
   layerTemplates: Record<string, LayerTemplateEntry>
   contentTemplates: Record<string, LayerTemplateEntry>
@@ -36,13 +36,13 @@ function resolveNodeSlots(
 }
 
 export function defaultResolve(ctx: ResolveContext): LayerNormalized {
-  const { merged, factoryLayer, boundContent, layerTemplates, contentTemplates, hide } =
+  const { merged, LayerComponent, boundContent, layerTemplates, contentTemplates, hide } =
     ctx
 
   const contentComponent = merged.content.component ?? boundContent
 
   const layerNormalized = {
-    component: merged.layer.component ?? factoryLayer,
+    component: merged.layer.component ?? LayerComponent,
     props: merged.layer.props ?? {},
     slots: resolveNodeSlots(layerTemplates, merged.layer.slots),
   }
@@ -51,7 +51,7 @@ export function defaultResolve(ctx: ResolveContext): LayerNormalized {
     return {
       layer: layerNormalized,
       content: {
-        component: factoryLayer,
+        component: LayerComponent,
         props: {},
         slots: {},
       },

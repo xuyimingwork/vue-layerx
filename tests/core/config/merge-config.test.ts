@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { mergeConfig } from '../../../src/core/config/merge-config'
 
 describe('mergeConfig', () => {
-  it('merges layer props with priority show > partial > useX > defineLayer > factory', () => {
+  it('merges layer props with priority show > partial > useX > defineLayer > defaults', () => {
     const merged = mergeConfig({
-      factoryDefaults: {
+      layerDefaults: {
         layer: { props: { title: 'Factory', width: '400px' } },
       },
       defineLayer: { props: { title: 'Defined' } },
@@ -16,9 +16,9 @@ describe('mergeConfig', () => {
     expect(merged.layer.props).toEqual({ title: 'Show', width: '720px' })
   })
 
-  it('merges content props with priority show > partial > useX > factory', () => {
+  it('merges content props with priority show > partial > useX > defaults', () => {
     const merged = mergeConfig({
-      factoryDefaults: {
+      layerDefaults: {
         content: { props: { message: 'factory' } },
       },
       defineLayer: null,
@@ -33,7 +33,7 @@ describe('mergeConfig', () => {
   it('falls back hideOn through partial and useX', () => {
     expect(
       mergeConfig({
-        factoryDefaults: {},
+        layerDefaults: {},
         defineLayer: null,
         useOptions: { hideOn: ['done'] },
         showOptions: {},
@@ -42,7 +42,7 @@ describe('mergeConfig', () => {
 
     expect(
       mergeConfig({
-        factoryDefaults: {},
+        layerDefaults: {},
         defineLayer: null,
         useOptions: { hideOn: ['done'] },
         showOptions: { hideOn: ['cancel'] },
@@ -51,7 +51,7 @@ describe('mergeConfig', () => {
 
     expect(
       mergeConfig({
-        factoryDefaults: {},
+        layerDefaults: {},
         defineLayer: null,
         useOptions: { hideOn: ['done'] },
         showOptions: {},
@@ -65,7 +65,7 @@ describe('mergeConfig', () => {
     const layerSlot = () => null
 
     const merged = mergeConfig({
-      factoryDefaults: {},
+      layerDefaults: {},
       defineLayer: { layer: { slots: { footer: layerSlot } } },
       useOptions: { slots: { header: contentSlot } },
       showOptions: {},
