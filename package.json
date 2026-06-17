@@ -1,7 +1,6 @@
 {
   "name": "vue-layerx",
-  "private": true,
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Vue 3 hook factory for declarative + imperative layered UI (dialogs, drawers, etc.)",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -27,6 +26,14 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuyimingwork/vue-layerx.git"
+  },
+  "homepage": "https://github.com/xuyimingwork/vue-layerx#readme",
+  "bugs": {
+    "url": "https://github.com/xuyimingwork/vue-layerx/issues"
   },
   "keywords": [
     "vue",

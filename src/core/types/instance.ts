@@ -1,7 +1,7 @@
 import type { LayerShowPayload, LayerUseOptions } from './payload'
 
 export interface LayerTemplateScope<
-  T extends Record<string, unknown> = Record<string, never>,
+  T extends Record<string, unknown> = Record<string, unknown>,
 > {
   inLayer: boolean
   outsideLayer: boolean

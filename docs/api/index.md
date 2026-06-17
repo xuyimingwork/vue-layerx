@@ -36,7 +36,7 @@ defineLayer({
 `#default` 插槽参数为 `LayerTemplateScope`：
 
 ```ts
-interface LayerTemplateScope<T = Record<string, never>> {
+interface LayerTemplateScope<T = Record<string, unknown>> {
   inLayer: boolean
   outsideLayer: boolean
   /** 同名 slot 的 scoped props 原样转发；无参数时为 {} */
