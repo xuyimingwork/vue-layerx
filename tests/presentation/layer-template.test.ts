@@ -9,7 +9,9 @@ describe('LayerTemplate', () => {
       defineComponent({
         setup() {
           return () =>
-            h(LayerTemplate, null, () => h('button', { class: 'footer-btn' }, 'footer'))
+            h(LayerTemplate, { name: 'footer' }, () =>
+              h('button', { class: 'footer-btn' }, 'footer'),
+            )
         },
       }),
     )
@@ -23,7 +25,7 @@ describe('LayerTemplate', () => {
           return () =>
             h(
               LayerTemplate,
-              { visibleOutside: true },
+              { name: 'footer', visibleOutside: true },
               ({ outsideLayer, inLayer }: { outsideLayer: boolean; inLayer: boolean }) => [
                 h('span', { class: 'scope-outside' }, String(outsideLayer)),
                 h('span', { class: 'scope-layer' }, String(inLayer)),
@@ -37,30 +39,5 @@ describe('LayerTemplate', () => {
     expect(wrapper.find('.footer-btn').exists()).toBe(true)
     expect(wrapper.find('.scope-outside').text()).toBe('true')
     expect(wrapper.find('.scope-layer').text()).toBe('false')
-  })
-
-  it('exposes render() for layer slot delegation', () => {
-    let exposed: { render: () => unknown } | undefined
-
-    mount(
-      defineComponent({
-        setup() {
-          return () =>
-            h(
-              LayerTemplate,
-              {
-                ref: (el: { render: () => unknown } | null) => {
-                  exposed = el ?? undefined
-                },
-              },
-              ({ inLayer }: { inLayer: boolean }) =>
-                h('span', { class: 'exposed' }, String(inLayer)),
-            )
-        },
-      }),
-    )
-
-    const vnode = exposed?.render()
-    expect(vnode).toBeTruthy()
   })
 })

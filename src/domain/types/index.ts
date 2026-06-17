@@ -1,21 +1,22 @@
 export type {
-  ContentConfig,
-  CreateLayerxOptions,
-  LayerDefinitionOptions,
+  DefineLayerOptions,
+  LayerAdapt,
+  LayerFactoryDefaults,
+  LayerMerged,
+  LayerNodeConfig,
+  LayerNodeNormalized,
+  LayerNormalized,
   LayerProps,
-  LayerSlots,
+  LayerRenderPlan,
+  LayerTemplateEntry,
+  SlotRenderFn,
   VisibleProtocol,
 } from './layer'
 
-export type {
-  ContentInstanceOptions,
-  LayerShowPayload,
-  LayerUseOptions,
-} from './content'
+export type { LayerShowPayload, LayerUseOptions, LayerUsePayload } from './content'
 
 export type {
   LayerInstance,
-  LayerTemplateContext,
-  LayerTemplateInstance,
+  LayerInternalState,
   LayerTemplateScope,
 } from './instance'

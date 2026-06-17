@@ -27,7 +27,7 @@ function openShowOverride() {
 
 <template>
   <div class="actions">
-    <ElButton @click="openDefault">默认（layer() 标题 + 520px）</ElButton>
+    <ElButton @click="openDefault">默认（defineLayer 标题 + 520px）</ElButton>
     <ElButton type="primary" @click="openShowOverride">show() 覆盖标题与宽度</ElButton>
   </div>
 </template>

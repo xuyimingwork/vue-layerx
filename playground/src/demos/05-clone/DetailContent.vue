@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { ElButton, ElDescriptions, ElDescriptionsItem } from 'element-plus'
-import { LayerTemplate } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { defineLayer, LayerTemplate } from 'vue-layerx'
 
 defineProps<{
   name: string
@@ -14,11 +12,8 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const footerRef = ref()
-
-useDialog.layer({
+defineLayer({
   props: { title: '用户详情' },
-  slots: { footer: footerRef },
 })
 </script>
 
@@ -29,7 +24,7 @@ useDialog.layer({
     <ElDescriptionsItem label="角色">{{ role }}</ElDescriptionsItem>
   </ElDescriptions>
 
-  <LayerTemplate ref="footerRef">
+  <LayerTemplate name="footer">
     <ElButton @click="emit('close')">关闭</ElButton>
   </LayerTemplate>
 </template>

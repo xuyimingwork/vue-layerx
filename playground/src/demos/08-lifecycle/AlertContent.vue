@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { ElButton } from 'element-plus'
-import { LayerTemplate } from 'vue-layerx'
-import { useAlertDialog } from '../../core/layers'
+import { defineLayer, LayerTemplate } from 'vue-layerx'
 
 const props = withDefaults(
   defineProps<{
@@ -19,23 +18,20 @@ const emit = defineEmits<{
   confirm: []
 }>()
 
-const footerRef = ref()
-
 const title = computed(() => {
   const map = { info: '提示', success: '成功', warning: '注意' }
   return map[props.tone]
 })
 
-useAlertDialog.layer({
+defineLayer({
   props: { title: title.value },
-  slots: { footer: footerRef },
 })
 </script>
 
 <template>
   <p :class="['message', `message--${tone}`]">{{ message }}</p>
 
-  <LayerTemplate ref="footerRef">
+  <LayerTemplate name="footer">
     <ElButton type="primary" @click="emit('confirm')">知道了</ElButton>
   </LayerTemplate>
 </template>

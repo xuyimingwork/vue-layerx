@@ -1,7 +1,7 @@
-import { defineComponent, h, onMounted, ref } from 'vue'
+import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayerx, LayerTemplate } from '../../src'
+import { createLayer, defineLayer, LayerTemplate } from '../../src'
 import type { LayerInstance } from '../../src/domain/types'
 import { LayerComponent, makeContent, queryBodyDialog } from '../fixtures/components'
 
@@ -9,12 +9,12 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('createLayerx (integration)', () => {
+describe('createLayer (integration)', () => {
   it('opens via .show() without template (body)', async () => {
-    const useLayer = createLayerx(LayerComponent, {
-      props: { title: 'Create', width: '400px' },
+    const useLayer = createLayer(LayerComponent, {
+      layer: { props: { title: 'Create', width: '400px' } },
     })
-    const Content = makeContent(useLayer)
+    const Content = makeContent()
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -35,10 +35,10 @@ describe('createLayerx (integration)', () => {
   })
 
   it('merges config across all layers end-to-end', async () => {
-    const useLayer = createLayerx(LayerComponent, {
-      props: { title: 'Default', width: '400px' },
+    const useLayer = createLayer(LayerComponent, {
+      layer: { props: { title: 'Default', width: '400px' } },
     })
-    const Content = makeContent(useLayer, true)
+    const Content = makeContent(true)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -64,11 +64,11 @@ describe('createLayerx (integration)', () => {
     expect(el?.getAttribute('data-width')).toBe('640px')
   })
 
-  it('merges default content props from createLayerx', async () => {
-    const useLayer = createLayerx(LayerComponent, {
+  it('merges default content props from createLayer', async () => {
+    const useLayer = createLayer(LayerComponent, {
       content: { props: { message: 'default-msg' } },
     })
-    const Content = makeContent(useLayer)
+    const Content = makeContent()
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -85,9 +85,9 @@ describe('createLayerx (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('default-msg')
   })
 
-  it('renders layer() LayerTemplate content into layer slot', async () => {
-    const useLayer = createLayerx(LayerComponent)
-    const Content = makeContent(useLayer, true)
+  it('renders defineLayer LayerTemplate content into layer slot', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent(true)
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -106,8 +106,8 @@ describe('createLayerx (integration)', () => {
   })
 
   it('closes on hideOn content events', async () => {
-    const useLayer = createLayerx(LayerComponent)
-    const Content = makeContent(useLayer)
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -129,8 +129,8 @@ describe('createLayerx (integration)', () => {
   })
 
   it('show hideOn works when useDialog has no hideOn', async () => {
-    const useLayer = createLayerx(LayerComponent)
-    const Content = makeContent(useLayer)
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -152,8 +152,8 @@ describe('createLayerx (integration)', () => {
   })
 
   it('exposes .hide()', async () => {
-    const useLayer = createLayerx(LayerComponent)
-    const Content = makeContent(useLayer)
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
     let dialog!: LayerInstance
 
     const Host = defineComponent({
@@ -174,9 +174,11 @@ describe('createLayerx (integration)', () => {
     expect(queryBodyDialog()).toBeFalsy()
   })
 
-  it('clone() creates independent instance', async () => {
-    const useLayer = createLayerx(LayerComponent, { props: { title: 'Base' } })
-    const Content = makeContent(useLayer)
+  it('clone() creates independent instance with partial defaults', async () => {
+    const useLayer = createLayer(LayerComponent, {
+      layer: { props: { title: 'Factory' } },
+    })
+    const Content = makeContent()
     let base!: LayerInstance
     let cloned!: LayerInstance
 
@@ -204,33 +206,28 @@ describe('createLayerx (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('cloned')
   })
 
-  it('layer() does not activate when content used outside layer', () => {
-    const useLayer = createLayerx(LayerComponent)
-    const Content = makeContent(useLayer, true)
-
+  it('defineLayer does not activate when content used outside layer', () => {
+    const Content = makeContent(true)
     const wrapper = mount(Content, { props: { message: 'page' } })
     expect(wrapper.find('.footer-btn').exists()).toBe(false)
     expect(wrapper.find('.done').exists()).toBe(true)
   })
 
-  it('nested content layer() and LayerTemplate do not bind to parent layer', async () => {
-    const useLayer = createLayerx(LayerComponent)
+  it('nested content defineLayer and LayerTemplate do not bind to parent layer', async () => {
+    const useLayer = createLayer(LayerComponent)
 
     const InnerContent = defineComponent({
       name: 'InnerContent',
       setup() {
-        const footerRef = ref()
-
-        useLayer.layer({
+        defineLayer({
           props: { title: 'InnerShouldNotApply' },
-          slots: { footer: footerRef },
         })
 
         return () =>
           h('div', { class: 'inner' }, [
             h(
               LayerTemplate,
-              { ref: footerRef, visibleOutside: true },
+              { name: 'footer', visibleOutside: true },
               ({ inLayer, outsideLayer }: { inLayer: boolean; outsideLayer: boolean }) => [
                 h('span', { class: 'inner-in-layer' }, String(inLayer)),
                 h('span', { class: 'inner-outside-layer' }, String(outsideLayer)),
@@ -244,18 +241,15 @@ describe('createLayerx (integration)', () => {
     const OuterContent = defineComponent({
       name: 'OuterContent',
       setup() {
-        const footerRef = ref()
-
-        useLayer.layer({
+        defineLayer({
           props: { title: 'OuterTitle' },
-          slots: { footer: footerRef },
         })
 
         return () =>
           h('div', { class: 'outer' }, [
             h('span', { class: 'outer-msg' }, 'outer'),
             h(InnerContent),
-            h(LayerTemplate, { ref: footerRef }, () =>
+            h(LayerTemplate, { name: 'footer' }, () =>
               h('button', { class: 'outer-footer' }, 'outer'),
             ),
           ])
@@ -279,27 +273,22 @@ describe('createLayerx (integration)', () => {
     expect(document.body.querySelector('.inner-in-layer')?.textContent).toBe('false')
     expect(document.body.querySelector('.inner-outside-layer')?.textContent).toBe('true')
     expect(document.body.querySelector('.inner .inner-footer')).toBeTruthy()
-    expect(document.body.querySelector('.inner-footer')?.closest('.inner')).toBeTruthy()
   })
 
   it('render() passes inLayer scope when LayerTemplate content is rendered into layer slot', async () => {
-    const useLayer = createLayerx(LayerComponent)
+    const useLayer = createLayer(LayerComponent)
     let capturedScope: { outsideLayer: boolean; inLayer: boolean } | undefined
 
     const Content = defineComponent({
       name: 'ContentWithScopeCapture',
       props: { message: String },
       setup(props) {
-        const footerRef = ref()
-
-        useLayer.layer({ slots: { footer: footerRef } })
-
         return () =>
           h('motion-div', { class: 'content' }, [
             h('span', { class: 'msg' }, props.message),
             h(
               LayerTemplate,
-              { ref: footerRef },
+              { name: 'footer' },
               (scope: { outsideLayer: boolean; inLayer: boolean }) => {
                 capturedScope = scope
                 return h('button', { class: 'footer-btn' }, 'footer')
@@ -323,5 +312,39 @@ describe('createLayerx (integration)', () => {
 
     expect(document.body.querySelector('.footer-btn')).toBeTruthy()
     expect(capturedScope).toEqual({ inLayer: true, outsideLayer: false })
+  })
+
+  it('remounts content on each show()', async () => {
+    const useLayer = createLayer(LayerComponent)
+    let setupCount = 0
+
+    const Content = defineComponent({
+      name: 'RemountContent',
+      props: { message: String },
+      setup(props) {
+        setupCount++
+        return () => h('span', { class: 'msg' }, props.message)
+      },
+    })
+
+    let dialog!: LayerInstance
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.show({ props: { message: 'first' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(setupCount).toBe(1)
+
+    dialog.show({ props: { message: 'second' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(setupCount).toBe(2)
+    expect(document.body.querySelector('.msg')?.textContent).toBe('second')
   })
 })

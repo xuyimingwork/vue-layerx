@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ElButton, ElInput, ElMessageBox } from 'element-plus'
-import { LayerTemplate } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { defineLayer, LayerTemplate } from 'vue-layerx'
 
 const props = defineProps<{
   initialContent?: string
@@ -14,10 +13,9 @@ const emit = defineEmits<{
 }>()
 
 const content = ref(props.initialContent ?? '')
-const footerRef = ref()
 const dirty = computed(() => content.value !== (props.initialContent ?? ''))
 
-useDialog.layer({
+defineLayer({
   props: {
     title: '编辑草稿',
     beforeClose: (done: () => void) => {
@@ -34,7 +32,6 @@ useDialog.layer({
         .catch(() => {})
     },
   },
-  slots: { footer: footerRef },
 })
 
 function save() {
@@ -54,7 +51,7 @@ function cancel() {
   <ElInput v-model="content" type="textarea" :rows="4" placeholder="写点什么..." />
   <p v-if="dirty" class="dirty">● 有未保存修改</p>
 
-  <LayerTemplate ref="footerRef">
+  <LayerTemplate name="footer">
     <ElButton type="primary" :disabled="!dirty" @click="save">保存</ElButton>
     <ElButton @click="cancel">取消</ElButton>
   </LayerTemplate>

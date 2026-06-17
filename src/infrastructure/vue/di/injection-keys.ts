@@ -1,14 +1,26 @@
 import type { InjectionKey } from 'vue'
-import type { LayerDefinitionOptions } from '../../../domain/types'
+import type { DefineLayerOptions, LayerInternalState } from '../../domain/types'
 
-export type LayerDefinitionRegistry = {
-  registerLayer: (config: LayerDefinitionOptions) => void
+export type LayerDefineRegistry = {
+  register: (config: DefineLayerOptions) => void
 }
 
-export function createLayerDefinitionKey(): InjectionKey<LayerDefinitionRegistry> {
-  return Symbol('layerx-definition') as InjectionKey<LayerDefinitionRegistry>
-}
+/** global inject key; value provided per LayerRoot render context */
+export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
+  Symbol('vue-layerx-define') as InjectionKey<LayerDefineRegistry>
 
-export const LAYER_TEMPLATE_CONTEXT_KEY = Symbol('layerx-template-context') as InjectionKey<{
-  bumpSlots: () => void
-}>
+export type LayerTemplateRegistry = Pick<
+  LayerInternalState,
+  'registerLayerTemplate' | 'bumpSlots'
+>
+
+export const LAYER_TEMPLATE_REGISTRY_KEY: InjectionKey<LayerTemplateRegistry> =
+  Symbol('vue-layerx-layer-template') as InjectionKey<LayerTemplateRegistry>
+
+export type LayerScopeRegistry = Pick<
+  LayerInternalState,
+  'registerContentTemplate' | 'bumpSlots'
+>
+
+export const LAYER_SCOPE_REGISTRY_KEY: InjectionKey<LayerScopeRegistry> =
+  Symbol('vue-layerx-content-template') as InjectionKey<LayerScopeRegistry>

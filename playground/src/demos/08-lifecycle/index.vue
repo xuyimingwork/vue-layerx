@@ -34,7 +34,7 @@ function openInfo() {
     hideOn: ['confirm'],
     props: {
       tone: 'info',
-      message: 'createLayerx 工厂默认 tone=info，此处 show 覆盖 message。',
+      message: 'createLayer 工厂默认 tone=info，此处 show 覆盖 message。',
     },
   })
 }

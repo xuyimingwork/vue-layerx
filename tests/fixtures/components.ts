@@ -1,5 +1,5 @@
-import { defineComponent, h, onMounted, ref } from 'vue'
-import { createLayerx, LayerTemplate } from '../../src'
+import { defineComponent, h, onMounted } from 'vue'
+import { defineLayer, LayerTemplate, createLayer } from '../../src'
 import type { LayerInstance } from '../../src/domain/types'
 
 export const LayerComponent = defineComponent({
@@ -17,18 +17,15 @@ export const LayerComponent = defineComponent({
   },
 })
 
-export function makeContent(useLayer: ReturnType<typeof createLayerx>, withLayer = false) {
+export function makeContent(withLayer = false) {
   return defineComponent({
     name: 'Content',
     props: { message: String },
     emits: ['done', 'cancel'],
     setup(props, { emit }) {
-      const footerRef = ref()
-
       if (withLayer) {
-        useLayer.layer({
+        defineLayer({
           props: { title: 'FromLayer', width: '600px' },
-          slots: { footer: footerRef },
         })
       }
 
@@ -36,7 +33,7 @@ export function makeContent(useLayer: ReturnType<typeof createLayerx>, withLayer
         h('motion-div', { class: 'content' }, [
           h('span', { class: 'msg' }, props.message),
           withLayer
-            ? h(LayerTemplate, { ref: footerRef }, () =>
+            ? h(LayerTemplate, { name: 'footer' }, () =>
                 h('button', { class: 'footer-btn' }, 'footer'),
               )
             : null,
@@ -52,31 +49,24 @@ export function queryBodyDialog() {
 }
 
 export function createMountedDialog(
-  setup: (useLayer: ReturnType<typeof createLayerx>) => {
+  setup: (useLayer: ReturnType<typeof createLayer>) => {
     dialog: LayerInstance
     Content: ReturnType<typeof makeContent>
     onMounted?: () => void
   },
-  layerxOptions?: Parameters<typeof createLayerx>[1],
+  layerDefaults?: Parameters<typeof createLayer>[1],
   withLayer = false,
 ) {
-  const useLayer = createLayerx(LayerComponent, layerxOptions)
+  const useLayer = createLayer(LayerComponent, layerDefaults)
   let dialog!: LayerInstance
   let Content!: ReturnType<typeof makeContent>
-  let onMountedCb: (() => void) | undefined
-
-  const result = setup(useLayer)
-  dialog = result.dialog
-  Content = result.Content
-  onMountedCb = result.onMounted
 
   const Host = defineComponent({
     setup() {
-      const { dialog: d, Content: C, onMounted: cb } = setup(useLayer)
-      dialog = d
-      Content = C
-      onMountedCb = cb
-      if (onMountedCb) onMounted(onMountedCb)
+      const result = setup(useLayer)
+      dialog = result.dialog
+      Content = result.Content
+      if (result.onMounted) onMounted(result.onMounted)
       return () => h('motion-host')
     },
   })

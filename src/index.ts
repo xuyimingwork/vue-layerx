@@ -1,16 +1,17 @@
-export { createLayerx } from './public/create-layerx'
+export { createLayer } from './public/create-layer'
+export { defineLayer } from './application/define-layer'
 export { LayerTemplate } from './presentation/components/layer-template'
+export { LayerScope } from './presentation/components/layer-scope'
 export type {
-  ContentConfig,
-  ContentInstanceOptions,
-  CreateLayerxOptions,
-  LayerDefinitionOptions,
+  DefineLayerOptions,
+  LayerAdapt,
+  LayerFactoryDefaults,
   LayerInstance,
-  LayerProps,
+  LayerNodeConfig,
   LayerShowPayload,
-  LayerTemplateInstance,
   LayerTemplateScope,
-  LayerSlots,
   LayerUseOptions,
+  LayerUsePayload,
+  SlotRenderFn,
   VisibleProtocol,
 } from './domain/types'

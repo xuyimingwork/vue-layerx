@@ -1,13 +1,10 @@
-import type { VNode } from 'vue'
-import type { LayerUseOptions, LayerShowPayload } from './content'
+import type { Ref } from 'vue'
+import type { LayerTemplateEntry } from './layer'
+import type { LayerShowPayload, LayerUseOptions } from './content'
 
 export interface LayerTemplateScope {
   inLayer: boolean
   outsideLayer: boolean
-}
-
-export interface LayerTemplateInstance {
-  render: () => VNode | VNode[] | null
 }
 
 export interface LayerInstance {
@@ -17,6 +14,11 @@ export interface LayerInstance {
   readonly visible: boolean
 }
 
-export interface LayerTemplateContext {
+export interface LayerInternalState {
+  layerTemplates: Record<string, LayerTemplateEntry>
+  contentTemplates: Record<string, LayerTemplateEntry>
+  slotsVersion: Ref<number>
   bumpSlots: () => void
+  registerLayerTemplate: (name: string, entry: LayerTemplateEntry) => void
+  registerContentTemplate: (name: string, entry: LayerTemplateEntry) => void
 }

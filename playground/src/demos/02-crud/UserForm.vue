@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { ElButton, ElForm, ElFormItem, ElInput, ElTag } from 'element-plus'
-import { LayerTemplate } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { defineLayer, LayerTemplate } from 'vue-layerx'
 
 const props = defineProps<{
   mode?: 'create' | 'edit'
@@ -16,13 +15,11 @@ const emit = defineEmits<{
 }>()
 
 const name = ref(props.initialName ?? '')
-const footerRef = ref()
 
-useDialog.layer({
+defineLayer({
   props: {
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
   },
-  slots: { footer: footerRef },
 })
 
 watch(
@@ -57,7 +54,7 @@ function cancel() {
     </ElFormItem>
   </ElForm>
 
-  <LayerTemplate ref="footerRef" visible-outside>
+  <LayerTemplate name="footer" visible-outside>
     <template #default="{ inLayer, outsideLayer }">
       <div :class="['form-footer', { 'form-footer--inline': outsideLayer }]">
         <ElTag v-if="outsideLayer" size="small" type="info" effect="plain">

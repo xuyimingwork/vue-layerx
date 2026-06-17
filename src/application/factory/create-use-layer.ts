@@ -1,88 +1,189 @@
 import {
+  defineComponent,
   getCurrentInstance,
   h,
   onUnmounted,
+  provide,
   reactive,
-  ref,
   shallowRef,
   type Component,
+  type Ref,
 } from 'vue'
-import { mergeContentInstanceOptions } from '../../domain/config/merge-content-instance-options'
+import { mergeConfig } from '../../domain/config/merge-config'
+import { defaultResolve, hasContentComponent } from '../../domain/config/default-resolve'
+import { toRenderPlan } from '../../domain/config/to-render-plan'
 import type {
-  ContentInstanceOptions,
+  DefineLayerOptions,
+  LayerAdapt,
+  LayerFactoryDefaults,
   LayerInstance,
-  LayerUseOptions,
-  LayerShowPayload,
+  LayerUsePayload,
 } from '../../domain/types'
+import {
+  attachInternal,
+  createLayerInternalState,
+  type LayerInternalState,
+} from '../../infrastructure/layer-instance-state'
 import { createBodyRenderer } from '../../infrastructure/vue/render/body-renderer'
-import { createLayerDefinitionKey } from '../../infrastructure/vue/di/injection-keys'
-import { createLayerDefinitionHook } from './create-layer-definition-hook'
-import { createLayerRoot } from './create-layer-root'
-import type { ResolvedLayerConfig } from './resolve-layer-config'
+import { renderLayerTree } from '../../infrastructure/vue/render/render-layer-tree'
+import {
+  LAYER_DEFINE_KEY,
+  LAYER_TEMPLATE_REGISTRY_KEY,
+} from '../../infrastructure/vue/di/injection-keys'
 
-export interface UseLayerFactoryContext extends ResolvedLayerConfig {
-  Layer: Component
+export interface UseLayerFactoryContext {
+  factoryLayer: Component
+  factoryDefaults: LayerFactoryDefaults
+  visibleProp: string
+  visibleEvent: string
+  adapt?: LayerAdapt
+}
+
+interface InstanceState {
+  visible: boolean
+  showOptions: LayerUsePayload
+  contentMountKey: number
+}
+
+interface CreateInstanceOptions {
+  Content?: Component
+  useOptions: LayerUsePayload
+  partial: LayerUsePayload
+  bodyRenderer: ReturnType<typeof createBodyRenderer>
+}
+
+function buildLayerRoot(
+  ctx: UseLayerFactoryContext,
+  opts: CreateInstanceOptions,
+  internal: LayerInternalState,
+  state: InstanceState,
+  defineLayerConfig: Ref<DefineLayerOptions | null>,
+  hide: () => void,
+) {
+  return defineComponent({
+    name: `LayerRoot_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
+    setup() {
+      provide(LAYER_DEFINE_KEY, {
+        register(config: DefineLayerOptions) {
+          defineLayerConfig.value = config
+          internal.bumpSlots()
+        },
+      })
+
+      provide(LAYER_TEMPLATE_REGISTRY_KEY, {
+        registerLayerTemplate: internal.registerLayerTemplate,
+        bumpSlots: internal.bumpSlots,
+      })
+
+      return () => {
+        if (!state.visible) return null
+        void internal.slotsVersion.value
+
+        const merged = mergeConfig({
+          factoryDefaults: ctx.factoryDefaults,
+          defineLayer: defineLayerConfig.value,
+          useOptions: opts.useOptions,
+          showOptions: state.showOptions,
+          partial: opts.partial,
+        })
+
+        const resolveCtx = {
+          merged,
+          factoryLayer: ctx.factoryLayer,
+          boundContent: opts.Content,
+          layerTemplates: internal.layerTemplates,
+          contentTemplates: internal.contentTemplates,
+          hide,
+        }
+
+        const resolved = defaultResolve(resolveCtx)
+        const normalized = ctx.adapt ? ctx.adapt(resolved) : resolved
+        const contentPresent = hasContentComponent(resolveCtx)
+
+        const plan = toRenderPlan({
+          normalized,
+          visible: true,
+          visibleProp: ctx.visibleProp,
+          visibleEvent: ctx.visibleEvent,
+          onHide: hide,
+        })
+
+        if (contentPresent) {
+          plan.content.props = {
+            ...plan.content.props,
+            __layerContentKey: state.contentMountKey,
+          }
+        }
+
+        return renderLayerTree(plan, contentPresent)
+      }
+    },
+  })
+}
+
+function createInstance(ctx: UseLayerFactoryContext, opts: CreateInstanceOptions): LayerInstance {
+  const internal = createLayerInternalState()
+  const state = reactive<InstanceState>({
+    visible: false,
+    showOptions: {},
+    contentMountKey: 0,
+  })
+  const defineLayerConfig = shallowRef<DefineLayerOptions | null>(null)
+
+  const hide = () => {
+    state.visible = false
+    opts.bodyRenderer.teardown()
+  }
+
+  const LayerRoot = buildLayerRoot(ctx, opts, internal, state, defineLayerConfig, hide)
+
+  const show = (payload?: LayerUsePayload) => {
+    defineLayerConfig.value = null
+    if (payload) state.showOptions = payload
+    state.contentMountKey++
+    state.visible = true
+    opts.bodyRenderer.render(h(LayerRoot))
+  }
+
+  const instance: LayerInstance = {
+    show,
+    hide,
+    clone(partial?: LayerUsePayload) {
+      return createInstance(ctx, {
+        Content: opts.Content,
+        useOptions: opts.useOptions,
+        partial: partial ?? {},
+        bodyRenderer: opts.bodyRenderer,
+      })
+    },
+    get visible() {
+      return state.visible
+    },
+  }
+
+  attachInternal(instance, internal)
+  return instance
 }
 
 export function createUseLayer(ctx: UseLayerFactoryContext) {
-  const layerDefinitionKey = createLayerDefinitionKey()
-  const layer = createLayerDefinitionHook(layerDefinitionKey)
-
-  function useLayer(
-    Content: Component,
-    useOptions: LayerUseOptions = {},
+  return function useLayer(
+    Content?: Component,
+    useOptions: LayerUsePayload = {},
   ): LayerInstance {
-    const state = reactive({
-      visible: false,
-      showOptions: {} as ContentInstanceOptions,
-    })
+    const hostInstance = getCurrentInstance()
+    const bodyRenderer = createBodyRenderer(hostInstance?.appContext ?? null)
 
-    const layerDefinition = shallowRef(null)
-    const slotsVersion = ref(0)
-
-    const instance = getCurrentInstance()
-    const bodyRenderer = createBodyRenderer(instance?.appContext ?? null)
-
-    const hide = () => {
-      state.visible = false
-      bodyRenderer.teardown()
-    }
-
-    const LayerRoot = createLayerRoot({
-      ...ctx,
+    const instance = createInstance(ctx, {
       Content,
       useOptions,
-      state,
-      layerDefinitionKey,
-      layerDefinition,
-      slotsVersion,
-      hide,
+      partial: {},
+      bodyRenderer,
     })
 
-    const show = (payload?: LayerShowPayload) => {
-      if (payload) state.showOptions = payload
-      state.visible = true
-      bodyRenderer.render(h(LayerRoot))
+    if (hostInstance) {
+      onUnmounted(() => instance.hide())
     }
 
-    const clone = (partial?: LayerUseOptions): LayerInstance =>
-      useLayer(Content, mergeContentInstanceOptions(useOptions, partial))
-
-    if (instance) {
-      onUnmounted(hide)
-    }
-
-    return {
-      show,
-      hide,
-      clone,
-      get visible() {
-        return state.visible
-      },
-    }
+    return instance
   }
-
-  useLayer.layer = layer
-
-  return useLayer
 }

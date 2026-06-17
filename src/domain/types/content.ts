@@ -1,13 +1,10 @@
-import type { LayerDefinitionOptions, LayerProps, LayerSlots } from './layer'
+import type { LayerNodeConfig } from './layer'
 
-/** useLayer(Content) & show() — content-level options */
-export interface ContentInstanceOptions {
-  /** Content component props */
-  props?: LayerProps
-  slots?: LayerSlots
+/** useX(Content, opts) & show(payload) — content node + layer + hideOn */
+export type LayerUsePayload = LayerNodeConfig & {
+  layer?: LayerNodeConfig
   hideOn?: string[]
-  layer?: LayerDefinitionOptions
 }
 
-export type LayerUseOptions = ContentInstanceOptions
-export type LayerShowPayload = ContentInstanceOptions
+export type LayerUseOptions = LayerUsePayload
+export type LayerShowPayload = LayerUsePayload

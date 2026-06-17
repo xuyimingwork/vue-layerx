@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElTable, ElTableColumn, ElTag } from 'element-plus'
-import { LayerTemplate } from 'vue-layerx'
+import { LayerScope, LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../core/layers'
 import UserForm from './UserForm.vue'
 
@@ -15,10 +15,7 @@ const users = ref<User[]>([
   { id: 2, name: 'Bob' },
 ])
 
-const headerRef = ref()
-
 const userDialog = useDialog(UserForm, {
-  slots: { header: headerRef },
   hideOn: ['success', 'cancel'],
 })
 
@@ -27,9 +24,7 @@ function openCreate() {
     props: {
       mode: 'create',
       onSuccess: (name: string) => {
-        const id = users.value.length
-          ? Math.max(...users.value.map((u) => u.id)) + 1
-          : 1
+        const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1
         users.value.push({ id, name })
       },
     },
@@ -65,9 +60,11 @@ function openEdit(row: User) {
     </ElTableColumn>
   </ElTable>
 
-  <LayerTemplate ref="headerRef">
-    <ElTag type="success" size="small">调用方注入 header</ElTag>
-  </LayerTemplate>
+  <LayerScope :of="userDialog">
+    <LayerTemplate name="header">
+      <ElTag type="success" size="small">调用方注入 header</ElTag>
+    </LayerTemplate>
+  </LayerScope>
 </template>
 
 <style scoped>

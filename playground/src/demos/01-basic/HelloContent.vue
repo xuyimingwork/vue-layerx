@@ -1,25 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { ElButton } from 'element-plus'
-import { LayerTemplate } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { defineLayer, LayerTemplate } from 'vue-layerx'
 
 const emit = defineEmits<{
   close: []
 }>()
 
-const footerRef = ref()
-
-useDialog.layer({
+defineLayer({
   props: { title: '你好，vue-layerx' },
-  slots: { footer: footerRef },
 })
 </script>
 
 <template>
   <p class="message">最简用法：content 声明 layer 配置，调用方 <code>show()</code> 即可打开。</p>
 
-  <LayerTemplate ref="footerRef">
+  <LayerTemplate name="footer">
     <ElButton type="primary" @click="emit('close')">关闭</ElButton>
   </LayerTemplate>
 </template>
