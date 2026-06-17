@@ -1,5 +1,4 @@
-import type { Ref } from 'vue'
-import type { LayerInternalState } from './types'
+import type { LayerInternalState } from './internal-state'
 
 const registry = new WeakMap<object, LayerInternalState>()
 
@@ -13,8 +12,4 @@ export function getInternal(instance: object): LayerInternalState {
     throw new Error('[vue-layerx] Invalid LayerInstance passed to LayerScope')
   }
   return internal
-}
-
-export function getSlotsVersion(instance: object): Ref<number> {
-  return getInternal(instance).slotsVersion
 }

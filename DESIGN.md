@@ -115,14 +115,10 @@ type LayerNodeConfig = {
   slots?: Record<string, SlotRenderFn>
 }
 
-/** merge 完成后 */
+/** merge 完成后（仅配置片段；模板注册表在 LayerInstance 运行时状态，不经 merge） */
 type LayerMerged = {
   content: LayerNodeConfig
   layer: LayerNodeConfig
-  /** UserForm 内 LayerTemplate；name 即插槽名，resolve 后投进 layer.slots */
-  layerTemplates: Record<string, { render: () => VNode | VNode[] | null }>
-  /** LayerScope 内 LayerTemplate；name 即插槽名，resolve 后投进 content.slots */
-  contentTemplates: Record<string, { render: () => VNode | VNode[] | null }>
   hideOn?: string[]
 }
 

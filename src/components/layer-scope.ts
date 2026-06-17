@@ -16,7 +16,6 @@ export const LayerScope = defineComponent({
 
     provide(LAYER_SCOPE_REGISTRY_KEY, {
       registerContentTemplate: internal.registerContentTemplate,
-      bumpSlots: internal.bumpSlots,
     })
 
     return () => slots.default?.()

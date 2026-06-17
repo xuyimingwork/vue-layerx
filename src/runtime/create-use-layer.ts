@@ -9,9 +9,8 @@ import {
 import type { DefineLayerOptions, LayerInstance, LayerUsePayload } from '@/core/types'
 import { attachInternal } from '@/vue/instance/instance-registry'
 import { createLayerInternalState } from '@/vue/instance/internal-state'
-import { buildLayerRoot } from './layer-root'
+import { buildLayerRoot, type UseLayerContext } from './layer-root'
 import { createLayerRuntime } from './layer-runtime'
-import type { UseLayerContext } from './types'
 
 interface CreateInstanceOptions {
   Content?: Component

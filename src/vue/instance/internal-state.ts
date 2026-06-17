@@ -1,6 +1,14 @@
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import type { LayerTemplateEntry } from '@/core/types/config'
-import type { LayerInternalState } from './types'
+
+export interface LayerInternalState {
+  layerTemplates: Record<string, LayerTemplateEntry>
+  contentTemplates: Record<string, LayerTemplateEntry>
+  slotsVersion: Ref<number>
+  bumpSlots: () => void
+  registerLayerTemplate: (name: string, entry: LayerTemplateEntry) => void
+  registerContentTemplate: (name: string, entry: LayerTemplateEntry) => void
+}
 
 function warnDuplicate(name: string, scope: 'layer' | 'content') {
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return

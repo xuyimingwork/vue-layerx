@@ -3,16 +3,25 @@ import { mergeConfig } from '@/core/config/merge-config'
 import { defaultResolve, hasContentComponent } from '@/core/config/default-resolve'
 import type {
   DefineLayerOptions,
+  LayerAdapt,
+  LayerDefaults,
   LayerRenderPlan,
   LayerUsePayload,
 } from '@/core/types'
-import type { LayerInternalState } from '@/vue/instance/types'
+import type { LayerInternalState } from '@/vue/instance/internal-state'
 import { renderLayerTree } from '@/vue/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
   LAYER_TEMPLATE_REGISTRY_KEY,
 } from '@/vue/di/injection-keys'
-import type { UseLayerContext } from './types'
+
+export interface UseLayerContext {
+  LayerComponent: Component
+  layerDefaults: LayerDefaults
+  visibleProp: string
+  visibleEvent: string
+  adapt?: LayerAdapt
+}
 
 export interface LayerRootState {
   visible: boolean
@@ -46,7 +55,6 @@ export function buildLayerRoot(
 
       provide(LAYER_TEMPLATE_REGISTRY_KEY, {
         registerLayerTemplate: internal.registerLayerTemplate,
-        bumpSlots: internal.bumpSlots,
       })
 
       return () => {
