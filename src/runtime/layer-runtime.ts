@@ -1,23 +1,28 @@
-import { render, type AppContext, type VNode } from 'vue'
+import { h, render, type AppContext, type Component } from 'vue'
 
-export interface BodyRenderer {
-  render: (vnode: VNode) => void
-  teardown: () => void
+export interface LayerRuntime {
+  readonly mounted: boolean
+  mount: () => void
+  unmount: () => void
 }
 
-export function createBodyRenderer(appContext: AppContext | null): BodyRenderer {
+export function createLayerRuntime(root: Component, appContext: AppContext | null): LayerRuntime {
   let container: HTMLElement | null = null
 
   return {
-    render(vnode: VNode) {
+    get mounted() {
+      return container !== null
+    },
+    mount() {
       if (!container) {
         container = document.createElement('div')
         document.body.appendChild(container)
       }
+      const vnode = h(root)
       if (appContext) vnode.appContext = appContext
       render(vnode, container)
     },
-    teardown() {
+    unmount() {
       if (!container) return
       render(null, container)
       container.remove()

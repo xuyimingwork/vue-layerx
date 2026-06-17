@@ -80,8 +80,8 @@ export const demoGroups: DemoGroup[] = [
         level: 5,
         title: 'clone 并行打开',
         description:
-          '在 A 已打开时从 A footer 触发打开 B（clone）：每个实例独立 bodyRenderer，并行 show 时 visible 与 DOM 一致，hide 互不影响。',
-        tags: ['clone()', 'bodyRenderer', '并行 show', '独立挂载'],
+          '在 A 已打开时从 A footer 触发打开 B（clone）：每个实例独立 layerRuntime，并行 show 时 visible 与 DOM 一致，hide 互不影响。',
+        tags: ['clone()', 'layerRuntime', '并行 show', '独立挂载'],
         component: CloneParallelDemo,
       },
     ],

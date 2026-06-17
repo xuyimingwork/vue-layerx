@@ -1,6 +1,5 @@
 import {
   getCurrentInstance,
-  h,
   onUnmounted,
   reactive,
   shallowRef,
@@ -10,8 +9,8 @@ import {
 import type { DefineLayerOptions, LayerInstance, LayerUsePayload } from '@/core/types'
 import { attachInternal } from '@/vue/instance/instance-registry'
 import { createLayerInternalState } from '@/vue/instance/internal-state'
-import { createBodyRenderer } from '@/vue/render/body-renderer'
 import { buildLayerRoot } from './layer-root'
+import { createLayerRuntime } from './layer-runtime'
 import type { UseLayerContext } from './types'
 
 interface CreateInstanceOptions {
@@ -19,10 +18,33 @@ interface CreateInstanceOptions {
   useOptions: LayerUsePayload
   partial: LayerUsePayload
   appContext: AppContext | null
+  lifecycle: InstanceLifecycle
 }
 
-function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): LayerInstance {
-  const bodyRenderer = createBodyRenderer(opts.appContext)
+interface InstanceLifecycle {
+  register: (dispose: () => void) => void
+  dispose: () => void
+}
+
+function createInstanceLifecycle(): InstanceLifecycle {
+  const disposers: (() => void)[] = []
+
+  return {
+    register(dispose) {
+      disposers.push(dispose)
+    },
+    dispose() {
+      for (const dispose of disposers.splice(0)) dispose()
+    },
+  }
+}
+
+interface LayerInstanceBundle {
+  instance: LayerInstance
+  dispose: () => void
+}
+
+function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): LayerInstanceBundle {
   const internal = createLayerInternalState()
   const state = reactive({
     visible: false,
@@ -33,29 +55,37 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
 
   const hide = () => {
     state.visible = false
-    bodyRenderer.teardown()
   }
 
   const LayerRoot = buildLayerRoot(ctx, opts, internal, state, defineLayerConfig, hide)
+  const runtime = createLayerRuntime(LayerRoot, opts.appContext)
+
+  const dispose = () => {
+    state.visible = false
+    runtime.unmount()
+  }
 
   const show = (payload?: LayerUsePayload) => {
     defineLayerConfig.value = null
     if (payload) state.showOptions = payload
     state.contentMountKey++
     state.visible = true
-    bodyRenderer.render(h(LayerRoot))
+    if (!runtime.mounted) runtime.mount()
   }
 
   const instance: LayerInstance = {
     show,
     hide,
     clone(partial?: LayerUsePayload) {
-      return createInstance(ctx, {
+      const bundle = createInstance(ctx, {
         Content: opts.Content,
         useOptions: opts.useOptions,
         partial: partial ?? {},
         appContext: opts.appContext,
+        lifecycle: opts.lifecycle,
       })
+      opts.lifecycle.register(bundle.dispose)
+      return bundle.instance
     },
     get visible() {
       return state.visible
@@ -63,7 +93,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
   }
 
   attachInternal(instance, internal)
-  return instance
+  return { instance, dispose }
 }
 
 export function createUseLayer(ctx: UseLayerContext) {
@@ -74,15 +104,18 @@ export function createUseLayer(ctx: UseLayerContext) {
     const hostInstance = getCurrentInstance()
     const appContext = hostInstance?.appContext ?? null
 
-    const instance = createInstance(ctx, {
+    const lifecycle = createInstanceLifecycle()
+    const { instance, dispose } = createInstance(ctx, {
       Content,
       useOptions,
       partial: {},
       appContext,
+      lifecycle,
     })
+    lifecycle.register(dispose)
 
     if (hostInstance) {
-      onUnmounted(() => instance.hide())
+      onUnmounted(() => lifecycle.dispose())
     }
 
     return instance

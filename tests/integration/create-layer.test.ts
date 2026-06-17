@@ -179,6 +179,68 @@ describe('createLayer (integration)', () => {
     expect(queryBodyDialog()).toBeFalsy()
   })
 
+  it('hide() closes layer but keeps mount container until host unmounts', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let dialog!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.show({ props: { message: 'a' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(queryBodyDialog()).toBeTruthy()
+    expect(document.body.querySelector('div')).toBeTruthy()
+
+    dialog.hide()
+    await wrapper.vm.$nextTick()
+
+    expect(dialog.visible).toBe(false)
+    expect(queryBodyDialog()).toBeFalsy()
+    expect(document.body.querySelector('div')).toBeTruthy()
+
+    wrapper.unmount()
+    await wrapper.vm.$nextTick()
+
+    expect(document.body.querySelector('div')).toBeFalsy()
+  })
+
+  it('show() after hide() reopens without host remount', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let dialog!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.show({ props: { message: 'first' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    dialog.hide()
+    await wrapper.vm.$nextTick()
+
+    dialog.show({ props: { message: 'second' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(dialog.visible).toBe(true)
+    expect(document.body.querySelector('.msg')?.textContent).toBe('second')
+    expect(document.body.querySelectorAll('div')).toHaveLength(1)
+  })
+
   it('clone() allows parallel show() with independent DOM and visible state', async () => {
     const useLayer = createLayer(LayerComponent)
     const Content = makeContent()
@@ -206,6 +268,65 @@ describe('createLayer (integration)', () => {
       'base',
       'cloned',
     ])
+  })
+
+  it('host unmount disposes base and cloned mount containers together', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let base!: LayerInstance
+    let cloned!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        base = useLayer(Content)
+        cloned = base.clone()
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    base.show({ props: { message: 'base' } })
+    cloned.show({ props: { message: 'cloned' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelectorAll('div')).toHaveLength(2)
+
+    wrapper.unmount()
+    await wrapper.vm.$nextTick()
+
+    expect(document.body.querySelectorAll('div')).toHaveLength(0)
+  })
+
+  it('host unmount disposes nested clone chain mount containers', async () => {
+    const useLayer = createLayer(LayerComponent)
+    const Content = makeContent()
+    let base!: LayerInstance
+    let mid!: LayerInstance
+    let leaf!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        base = useLayer(Content)
+        mid = base.clone({ layer: { props: { title: 'Mid' } } })
+        leaf = mid.clone({ layer: { props: { title: 'Leaf' } } })
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    base.show({ props: { message: 'base' } })
+    mid.show({ props: { message: 'mid' } })
+    leaf.show({ props: { message: 'leaf' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelectorAll('div')).toHaveLength(3)
+
+    wrapper.unmount()
+    await wrapper.vm.$nextTick()
+
+    expect(document.body.querySelectorAll('div')).toHaveLength(0)
   })
 
   it('clone.hide() without show does not tear down sibling instance DOM', async () => {

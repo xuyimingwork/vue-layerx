@@ -50,7 +50,7 @@ function openBFromA() {
   instanceB.show({
     props: {
       instanceId: 'B',
-      note: 'B 使用独立 bodyRenderer，与 A 并行打开时两层 Dialog 同时存在。',
+      note: 'B 使用独立 layerRuntime，与 A 并行打开时两层 Dialog 同时存在。',
       onAction: () => pushLog('收到实例 B 的 action 事件'),
     },
   })
@@ -78,7 +78,7 @@ function hideA() {
 
 function hideB() {
   instanceB.hide()
-  pushLog('instanceB.hide()（仅拆除 B 的挂载点）')
+  pushLog('instanceB.hide()（仅关闭 B，挂载点保留至 Host 卸载）')
   pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
@@ -93,7 +93,7 @@ function probeDom() {
   <div class="clone-parallel">
     <p class="clone-parallel__intro">
       先打开实例 A，再在 A 的 footer 点击「从 A 打开 B」。每个 Layer 实例（含
-      <code>clone()</code> 派生）拥有独立 <code>bodyRenderer</code>，并行
+      <code>clone()</code> 派生）拥有独立 <code>layerRuntime</code>，并行
       <code>show()</code> 时 <code>visible</code> 与 DOM 一致，互不影响关闭。
     </p>
 

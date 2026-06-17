@@ -514,7 +514,7 @@ show > partial（clone 入参）> useX > defineLayer > createLayer(defaults)
 - **`partial`**：仅 `clone(partial)` 时写入，对该克隆实例持久，直到再次被 `clone` 覆盖（无单独 API 改 partial）。
 - **`useX`**：创建父实例时传入的 options（含 `hideOn`、默认 `props` / `layer.props` 等）。
 - 父实例某次 `show` 的 payload **不**继承给克隆；克隆只带 `useX` + 自己的 `partial`。
-- 克隆与父实例**共享同一工厂**及其 `adapt`；**各自独立 `bodyRenderer`**（独立 body 挂载点，`show` / `hide` 互不影响 DOM）。
+- 克隆与父实例**共享同一工厂**及其 `adapt`；**各自独立 `layerRuntime`**（独立挂载点，`show` / `hide` 互不影响 DOM）。
 
 ```ts
 const base = useDialog(DetailContent, { hideOn: ['close'] })
