@@ -30,11 +30,29 @@ describe('mergeConfig', () => {
     expect(merged.content.props).toEqual({ message: 'show' })
   })
 
-  it('falls back hideOn through partial and useX', () => {
+  it('falls back hideOn through partial, useX, and defineLayer', () => {
     expect(
       mergeConfig({
         layerDefaults: {},
         defineLayer: null,
+        useOptions: { hideOn: ['done'] },
+        showOptions: {},
+      }).hideOn,
+    ).toEqual(['done'])
+
+    expect(
+      mergeConfig({
+        layerDefaults: {},
+        defineLayer: { hideOn: ['submit'] },
+        useOptions: {},
+        showOptions: {},
+      }).hideOn,
+    ).toEqual(['submit'])
+
+    expect(
+      mergeConfig({
+        layerDefaults: {},
+        defineLayer: { hideOn: ['submit'] },
         useOptions: { hideOn: ['done'] },
         showOptions: {},
       }).hideOn,

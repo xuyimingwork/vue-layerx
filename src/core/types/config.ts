@@ -59,6 +59,8 @@ export interface DefineLayerOptions {
     props?: LayerProps
     slots?: Record<string, SlotRenderFn>
   }
+  /** content events that auto-close the layer; owned by the dialog module author */
+  hideOn?: string[]
 }
 
 export type LayerAdapt = (normalized: LayerNormalized) => LayerNormalized

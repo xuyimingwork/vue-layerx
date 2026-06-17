@@ -13,5 +13,17 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/__test__/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      reportsDirectory: './coverage',
+      reporter: ['text', 'text-summary', 'html', 'lcov', 'json-summary'],
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/**/__test__/**',
+        'src/__test__/**',
+        'src/**/types/**',
+        'src/**/*.d.ts',
+      ],
+    },
   },
 })

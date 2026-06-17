@@ -37,12 +37,14 @@ function defineLayerToConfig(
   defineLayer: DefineLayerOptions | null,
 ): LayerUsePayload | undefined {
   if (!defineLayer) return undefined
-  return {
+  const result: LayerUsePayload = {
     layer: mergeNodeConfig(
       defineLayer.props ? { props: defineLayer.props } : undefined,
       defineLayer.layer,
     ),
   }
+  if (defineLayer.hideOn) result.hideOn = defineLayer.hideOn
+  return result
 }
 
 export function mergeConfig(ctx: MergeContext): LayerMerged {
@@ -66,7 +68,8 @@ export function mergeConfig(ctx: MergeContext): LayerMerged {
   const hideOn =
     ctx.showOptions.hideOn ??
     ctx.partial?.hideOn ??
-    ctx.useOptions.hideOn
+    ctx.useOptions.hideOn ??
+    defineLayerConfig?.hideOn
 
   return { content, layer, hideOn }
 }

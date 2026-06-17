@@ -1,0 +1,9 @@
+:root {
+  --vp-c-brand-1: #42b883;
+  --vp-c-brand-2: #33a06f;
+  --vp-c-brand-3: #2d8f63;
+}
+
+.VPDoc .container {
+  max-width: 960px;
+}
