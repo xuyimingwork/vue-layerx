@@ -1,7 +1,7 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayer, defineLayer, LayerBind, LayerTemplate } from '@/index'
+import { createLayer, defineLayer, LayerTemplate } from '@/index'
 import type { LayerInstance, LayerTemplateScope } from '@/core/types'
 import {
   LayerComponent,
@@ -549,12 +549,10 @@ describe('createLayer (integration)', () => {
       setup() {
         dialog = useLayer(Content)
         return () =>
-          h(LayerBind, { to: dialog }, () =>
-            h(LayerTemplate, { name: 'extra' }, (templateScope: LayerTemplateScope) => {
-              captured = templateScope
-              return h('span', { class: 'scoped-extra' }, String(templateScope.slotProps.data))
-            }),
-          )
+          h(LayerTemplate, { to: dialog, name: 'extra' }, (templateScope: LayerTemplateScope) => {
+            captured = templateScope
+            return h('span', { class: 'scoped-extra' }, String(templateScope.slotProps.data))
+          })
       },
     })
 

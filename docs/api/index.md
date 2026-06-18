@@ -45,25 +45,23 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 ```
 
 ```vue
+<!-- content 内：投进 layer 同名 slot -->
 <LayerTemplate name="footer" v-slot="{ inLayer, outsideLayer, slotProps }">
+  ...
+</LayerTemplate>
+
+<!-- 调用方：远程投进 content 同名 slot -->
+<LayerTemplate :to="userLayer" name="form-end" v-slot="{ slotProps: { data } }">
   ...
 </LayerTemplate>
 ```
 
-- **layer 链**（content 内）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
-- **content 链**（`LayerBind` 内）：投进 content 组件同名 `<slot>`；`slotProps` 来自 content 的 scoped slot（如 `<slot :data="info" />`）。
-
-`visible-outside`：页内 edit 也要保存按钮时再加。view 模式不需要 footer。
-
-## `LayerBind`
-
-```vue
-<LayerBind :to="userLayer">
-  <LayerTemplate name="form-end" v-slot="{ slotProps: { data } }">...</LayerTemplate>
-</LayerBind>
-```
+- **layer 链**（content 内，无 `to`）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
+- **content 链**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`；`slotProps` 来自 content 的 scoped slot（如 `<slot :data="info" />`）。
 
 `:to` 为 `useX(Content)` 返回的 `LayerInstance`。
+
+`visible-outside`：页内 edit 也要保存按钮时再加。view 模式不需要 footer。
 
 ## 教程
 

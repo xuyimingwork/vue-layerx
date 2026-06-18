@@ -9,7 +9,7 @@ export function attachInternal(instance: object, internal: LayerInternalState): 
 export function getInternal(instance: object): LayerInternalState {
   const internal = registry.get(instance)
   if (!internal) {
-    throw new Error('[vue-layerx] Invalid LayerInstance passed to LayerBind')
+    throw new Error('[vue-layerx] Invalid LayerInstance passed to LayerTemplate')
   }
   return internal
 }

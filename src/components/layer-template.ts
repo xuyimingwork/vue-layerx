@@ -1,10 +1,16 @@
-import { computed, defineComponent, getCurrentInstance, inject, onMounted, type VNode } from 'vue'
-import type { LayerTemplateScope } from '@/core/types'
-import { isInDirectLayerContent } from '@/vue/context/in-layer-content'
 import {
-  LAYER_BIND_REGISTRY_KEY,
-  LAYER_TEMPLATE_REGISTRY_KEY,
-} from '@/vue/di/injection-keys'
+  computed,
+  defineComponent,
+  getCurrentInstance,
+  inject,
+  onMounted,
+  type PropType,
+  type VNode,
+} from 'vue'
+import type { LayerInstance, LayerTemplateScope } from '@/core/types'
+import { isInDirectLayerContent } from '@/vue/context/in-layer-content'
+import { LAYER_TEMPLATE_REGISTRY_KEY } from '@/vue/di/injection-keys'
+import { getInternal } from '@/vue/instance/instance-registry'
 
 function buildTemplateScope(
   slotProps: Record<string, unknown>,
@@ -24,6 +30,10 @@ export const LayerTemplate = defineComponent({
       type: String,
       required: true,
     },
+    to: {
+      type: Object as PropType<LayerInstance>,
+      default: undefined,
+    },
     visibleOutside: {
       type: Boolean,
       default: false,
@@ -31,38 +41,37 @@ export const LayerTemplate = defineComponent({
   },
   setup(props, { slots }) {
     const layerRegistry = inject(LAYER_TEMPLATE_REGISTRY_KEY, null)
-    const bindRegistry = inject(LAYER_BIND_REGISTRY_KEY, null)
     const instance = getCurrentInstance()
 
     const inLayer = computed(
-      () => layerRegistry !== null && isInDirectLayerContent(instance),
+      () => !props.to && layerRegistry !== null && isInDirectLayerContent(instance),
     )
-    const inBind = computed(() => bindRegistry !== null)
+    const boundToInstance = computed(() => props.to != null)
 
     const renderSlot = (templateScope: LayerTemplateScope): VNode | VNode[] | null =>
       slots.default?.(templateScope) ?? null
 
     onMounted(() => {
-      const renderWithScope = (
-        layer: Pick<LayerTemplateScope, 'inLayer' | 'outsideLayer'>,
-      ) => (slotProps: Record<string, unknown> = {}) =>
-        renderSlot(buildTemplateScope(slotProps, layer))
+      const renderWithScope =
+        (layer: Pick<LayerTemplateScope, 'inLayer' | 'outsideLayer'>) =>
+        (slotProps: Record<string, unknown> = {}) =>
+          renderSlot(buildTemplateScope(slotProps, layer))
 
-      if (inLayer.value && layerRegistry) {
-        layerRegistry.registerLayerTemplate(props.name, {
+      if (props.to) {
+        getInternal(props.to).registerContentTemplate(props.name, {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
         return
       }
-      if (inBind.value && bindRegistry) {
-        bindRegistry.registerContentTemplate(props.name, {
+      if (inLayer.value && layerRegistry) {
+        layerRegistry.registerLayerTemplate(props.name, {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
       }
     })
 
     return () => {
-      if (inLayer.value || inBind.value) return null
+      if (boundToInstance.value || inLayer.value) return null
       if (!props.visibleOutside) return null
       return renderSlot(buildTemplateScope({}, { inLayer: false, outsideLayer: true }))
     }

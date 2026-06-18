@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElTable, ElTableColumn, ElTag } from 'element-plus'
-import { LayerBind, LayerTemplate } from 'vue-layerx'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog } from '../../.vitepress/shared/layers'
 import UserForm from './UserForm.vue'
 
@@ -60,11 +60,9 @@ function openEdit(row: User) {
     </ElTableColumn>
   </ElTable>
 
-  <LayerBind :to="userDialog">
-    <LayerTemplate name="header">
-      <ElTag type="success" size="small">调用方注入 header</ElTag>
-    </LayerTemplate>
-  </LayerBind>
+  <LayerTemplate :to="userDialog" name="header">
+    <ElTag type="success" size="small">调用方注入 header</ElTag>
+  </LayerTemplate>
 </template>
 
 <style scoped>

@@ -30,8 +30,8 @@ export const demoGroups: DemoGroup[] = [
         level: 2,
         title: '列表 CRUD',
         description:
-          '典型业务：show({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerBind + LayerTemplate name 注入 content #header。',
-        tags: ['show(props)', 'hideOn', 'LayerBind', 'onSuccess'],
+          '典型业务：show({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerTemplate :to 注入 content #header。',
+        tags: ['show(props)', 'hideOn', 'LayerTemplate :to', 'onSuccess'],
         component: CrudDemo,
       },
     ],
