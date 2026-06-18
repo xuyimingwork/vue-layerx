@@ -50,7 +50,7 @@ describe('LayerTemplate', () => {
     expect(wrapper.find('.slot-props-empty').text()).toBe('true')
   })
 
-  it('fills content slot via contentTemplates registry when to is set', async () => {
+  it('forwards content slot props into slotProps when to is set', async () => {
     const useLayer = createLayer(LayerComponent)
 
     const Content = defineComponent({
@@ -116,5 +116,41 @@ describe('LayerTemplate', () => {
       outsideLayer: false,
       slotProps: { token: 'abc' },
     })
+  })
+
+  it('fills container slot when to and container are set', async () => {
+    const useLayer = createLayer(LayerComponent)
+
+    const Content = defineComponent({
+      name: 'ContentWithCreatorFooter',
+      setup() {
+        return () =>
+          h('div', { class: 'content' }, [
+            h(LayerTemplate, { name: 'footer' }, () =>
+              h('span', { class: 'creator-footer' }, 'creator'),
+            ),
+          ])
+      },
+    })
+
+    let dialog = useLayer(Content)
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () =>
+          h(LayerTemplate, { to: dialog, container: true, name: 'footer' }, () =>
+            h('span', { class: 'caller-footer' }, 'caller'),
+          )
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.show()
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.caller-footer')).toBeTruthy()
+    expect(document.body.querySelector('.creator-footer')).toBeFalsy()
   })
 })

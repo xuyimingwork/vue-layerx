@@ -34,6 +34,11 @@ export const LayerTemplate = defineComponent({
       type: Object as PropType<LayerInstance>,
       default: undefined,
     },
+    /** With `:to`, register into container slot chain instead of content slot chain */
+    container: {
+      type: Boolean,
+      default: false,
+    },
     visibleOutside: {
       type: Boolean,
       default: false,
@@ -58,13 +63,19 @@ export const LayerTemplate = defineComponent({
           renderSlot(buildTemplateScope(slotProps, layer))
 
       if (props.to) {
-        getInternal(props.to).registerContentTemplate(props.name, {
+        const internal = getInternal(props.to)
+        const entry = {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
-        })
+        }
+        if (props.container) {
+          internal.registerCallerContainerTemplate(props.name, entry)
+        } else {
+          internal.registerCallerContentTemplate(props.name, entry)
+        }
         return
       }
       if (inLayer.value && containerRegistry) {
-        containerRegistry.registerContainerTemplate(props.name, {
+        containerRegistry.registerCreatorContainerTemplate(props.name, {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
       }

@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `LayerTemplate` **`container`** prop: with `:to`, register into container slot chain (remote MyDialog slots)
+
 ### Changed
 
+- **Breaking:** LayerTemplate slot delivery now merges through **slot tiers** in `mergeConfig` (same priority model as imperative `slots`). Resolve no longer overlays templates after merge.
+- **Breaking:** Container slot priority: `show > partial > useX > caller LayerTemplate (:to container) > defineLayer > creator LayerTemplate > createLayer`
+- **Breaking:** Content slot priority: `show > partial > useX > caller LayerTemplate (:to) > createLayer`
 - **Breaking:** Remove `LayerBind`; use `LayerTemplate :to="instance"` to fill content slots from the caller side
 - **Breaking:** Rename config field `layer` → `container` on `LayerUsePayload`, `LayerNormalized`, `LayerMerged`, `LayerDefaults`, and `DefineLayerOptions`
 - **Breaking:** Rename `layerTemplates` / `registerLayerTemplate` → `containerTemplates` / `registerContainerTemplate`; injection key `CONTAINER_TEMPLATE_REGISTRY_KEY`

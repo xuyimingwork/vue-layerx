@@ -54,7 +54,7 @@ export function buildLayerRoot(
       })
 
       provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
-        registerContainerTemplate: internal.registerContainerTemplate,
+        registerCreatorContainerTemplate: internal.registerCreatorContainerTemplate,
       })
 
       return () => {
@@ -67,14 +67,17 @@ export function buildLayerRoot(
           useOptions: opts.useOptions,
           showOptions: state.showOptions,
           partial: opts.partial,
+          templateTiers: {
+            creatorContainer: internal.creatorContainer,
+            callerContainer: internal.callerContainer,
+            callerContent: internal.callerContent,
+          },
         })
 
         const resolveCtx = {
           merged,
           LayerComponent: ctx.LayerComponent,
           boundContent: opts.Content,
-          containerTemplates: internal.containerTemplates,
-          contentTemplates: internal.contentTemplates,
           hide,
         }
 

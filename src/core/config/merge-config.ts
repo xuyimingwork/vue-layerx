@@ -5,6 +5,8 @@ import type {
   LayerNodeConfig,
 } from '@/core/types/config'
 import type { LayerUsePayload } from '@/core/types/payload'
+import type { LayerTemplateRegistries } from '@/vue/instance/internal-state'
+import { templateRegistryToNodeConfig } from './materialize-templates'
 import { mergeNodeConfig } from './merge-node-config'
 
 export function pickContentConfig(
@@ -25,12 +27,21 @@ export function pickContainerConfig(
   return payload?.container
 }
 
+function pickSlotsFragment(
+  config: LayerNodeConfig | undefined,
+): LayerNodeConfig | undefined {
+  if (!config?.slots) return undefined
+  return { slots: config.slots }
+}
+
 export interface MergeContext {
   layerDefaults: LayerDefaults
   defineLayer: DefineLayerOptions | null
   useOptions: LayerUsePayload
   showOptions: LayerUsePayload
   partial?: LayerUsePayload
+  /** LayerTemplate registries snapshotted at render; merged as slot tiers */
+  templateTiers?: LayerTemplateRegistries
 }
 
 function defineLayerToConfig(
@@ -47,17 +58,50 @@ function defineLayerToConfig(
   return result
 }
 
+/**
+ * Container slot priority (low → high, later wins):
+ * create > creator template > define > caller template > useX > partial > show
+ */
+function mergeContainerSlots(
+  ctx: MergeContext,
+  defineLayerConfig: LayerUsePayload | undefined,
+): LayerNodeConfig['slots'] {
+  return mergeNodeConfig(
+    pickSlotsFragment(ctx.layerDefaults.container),
+    templateRegistryToNodeConfig(ctx.templateTiers?.creatorContainer),
+    pickSlotsFragment(defineLayerConfig?.container),
+    templateRegistryToNodeConfig(ctx.templateTiers?.callerContainer),
+    pickSlotsFragment(pickContainerConfig(ctx.useOptions)),
+    pickSlotsFragment(pickContainerConfig(ctx.partial)),
+    pickSlotsFragment(pickContainerConfig(ctx.showOptions)),
+  ).slots
+}
+
+/**
+ * Content slot priority (low → high, later wins):
+ * create > caller template > useX > partial > show
+ */
+function mergeContentSlots(ctx: MergeContext): LayerNodeConfig['slots'] {
+  return mergeNodeConfig(
+    pickSlotsFragment(ctx.layerDefaults.content),
+    templateRegistryToNodeConfig(ctx.templateTiers?.callerContent),
+    pickSlotsFragment(pickContentConfig(ctx.useOptions)),
+    pickSlotsFragment(pickContentConfig(ctx.partial)),
+    pickSlotsFragment(pickContentConfig(ctx.showOptions)),
+  ).slots
+}
+
 export function mergeConfig(ctx: MergeContext): LayerMerged {
   const defineLayerConfig = defineLayerToConfig(ctx.defineLayer)
 
-  const content = mergeNodeConfig(
+  const contentBase = mergeNodeConfig(
     ctx.layerDefaults.content,
     pickContentConfig(ctx.useOptions),
     pickContentConfig(ctx.partial),
     pickContentConfig(ctx.showOptions),
   )
 
-  const container = mergeNodeConfig(
+  const containerBase = mergeNodeConfig(
     ctx.layerDefaults.container,
     defineLayerConfig?.container,
     pickContainerConfig(ctx.useOptions),
@@ -71,5 +115,9 @@ export function mergeConfig(ctx: MergeContext): LayerMerged {
     ctx.useOptions.hideOn ??
     defineLayerConfig?.hideOn
 
-  return { content, container, hideOn }
+  return {
+    content: { ...contentBase, slots: mergeContentSlots(ctx) },
+    container: { ...containerBase, slots: mergeContainerSlots(ctx, defineLayerConfig) },
+    hideOn,
+  }
 }

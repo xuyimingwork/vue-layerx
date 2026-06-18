@@ -47,8 +47,8 @@ UserDialog = MyDialog + UserForm
 ④ render     toRenderPlan(normalized)  →  h(...)
 ```
 
-- **merge**：各层贡献 **LayerNodeConfig 片段**（`content` / `layer`）与 `hideOn`；优先级固定。`containerTemplates` / `contentTemplates` **不经 merge**，按 **`LayerTemplate` 路由**（无 `to` → container 链，有 `to` → content 链），在 resolve 读取（见「渲染与投递机制」）。
-- **resolve**：先物化 `containerTemplates` / `contentTemplates` 为 `normalized.container.slots` / `normalized.content.slots`；再用 merge 阶段已按优先级合并好的**命令式** `container.slots` / `content.slots`（`SlotRenderFn`）**同 key 覆盖**物化结果；`hideOn` 接入 content 事件；产出 **LayerNormalized**。
+- **merge**：各层贡献 **LayerNodeConfig 片段**（`content` / `container`）与 `hideOn`；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。`component` / `props` 与 slot 的 tier 顺序略有不同。
+- **resolve**：`defaultResolve(merged)` 将 merge 结果归一化为 **LayerNormalized**（`slots` 直接来自 `LayerMerged`）；`hideOn` 接入 content 事件。
 - **adapt**：在 **LayerNormalized** 上整形（滤 props、搬移 / 重命名 `container.slots` 的 key、**可改 `container.component`** 等）；`show` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapt`（不按 `show` 里的 `container.component` 动态换 adapt）。
 - **render**：内部附加 `visible` 等协议后 `h()`；content 由框架托管渲染，**每次 `show()` 强制 remount**（见「渲染与投递机制」）。
 
@@ -70,22 +70,22 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 
 ### 跨树 slot 投递（render fn）
 
-`LayerTemplate` 在 mount 时向实例注册表写入 `{ name, render }`；**resolve 阶段物化为 `SlotRenderFn`**，由框架在 `h(container, props, slots)` / `h(content, props, slots)` 时传入。四段渲染顺序：
+`LayerTemplate` 在 mount 时向实例注册表写入 `{ name, render }`；**每次 LayerRoot render 时物化为 `SlotRenderFn` 并汇入 merge**。四段渲染顺序：
 
 ```text
-① merge / resolve / adapt   合并配置，物化模板为 slot render fn
+① merge / resolve / adapt   合并配置（含 LayerTemplate slot tier）
 ② render layer              h(MyDialog, …) 挂载（通常 appendToBody 至 body）
 ③ render content            UserForm 作为 layer default slot（每次 show remount）
 ④ slot fn 调用              LayerTemplate.render() 产出 VNode
 ```
 
-`containerTemplates` / `contentTemplates` 在组件 mount 时写入实例注册表；**resolve 阶段读取**后物化为 `SlotRenderFn`。首次打开若模板尚未 register，对应 slot 为空；模板 mount 后 `bumpSlots` 触发重渲染即可。
+`LayerTemplate` 注册表在 mount 时写入；**merge 阶段读取快照**并物化。首次打开若模板尚未 register，对应 slot 为空；模板 mount 后 `bumpSlots` 触发重渲染即可。
 
 ### `LayerTemplate :to` 与实例绑定
 
-- `LayerTemplate :to="userDialog"` 绑定 `LayerInstance`，写入该实例的 **`contentTemplates` 注册表**（`:to` 隔离，clone 实例各自独立）。
-- 带 `:to` 的 `LayerTemplate` 声明在 UserList 的 template 中，layer 渲染在 body portal；跨树靠 **实例注册表 + slot render fn** 投递，不经过 merge。
-- 无 `:to` 的 `LayerTemplate`（UserForm 内）写入实例的 **`containerTemplates`**，resolve 时物化后作为 MyDialog 的 slot fn 传入。
+- `LayerTemplate :to="userDialog"` 绑定 `LayerInstance`，写入 **caller content** 注册表（`:to` 隔离，clone 实例各自独立）。
+- `LayerTemplate :to="userDialog" container` 写入 **caller container** 注册表，远程填充 MyDialog 同名 slot。
+- 无 `:to` 的 `LayerTemplate`（UserForm 内）写入 **creator container** 注册表；merge tier 最低（仅次于 `createLayer` 命令式 slots）。
 
 ### defineLayer 与 inject
 
@@ -111,11 +111,11 @@ type SlotRenderFn = (props?: Record<string, unknown>) => VNode | VNode[] | null
 type LayerNodeConfig = {
   component?: Component
   props?: Record<string, unknown>
-  /** 极少：命令式直出插槽（defineLayer / show）；常规由 LayerTemplate 注册 */
+  /** slot 内容：命令式或 LayerTemplate 物化后汇入 merge */
   slots?: Record<string, SlotRenderFn>
 }
 
-/** merge 完成后（仅配置片段；模板注册表在 LayerInstance 运行时状态，不经 merge） */
+/** merge 完成后（含 LayerTemplate 物化后的 slots） */
 type LayerMerged = {
   content: LayerNodeConfig
   container: LayerNodeConfig
@@ -202,6 +202,7 @@ type LayerFactoryDefaults = {
 |------|----------|------|
 | **UserForm 内**（无 `to`，弹层 direct content 上下文） | **MyDialog 的 slot** | `name` 须与 layer 组件 slot 同名（或经 `adapt` 对齐） |
 | **UserList `LayerTemplate :to`** | **UserForm 的 `<slot>`** | `name` 须与 content 组件 slot 同名 |
+| **UserList `LayerTemplate :to container`** | **MyDialog 的 slot** | `name` 须与 layer 组件 slot 同名 |
 
 纯字符串标题仍用 `defineLayer` / `container.props.title`；富标题区用 **`LayerTemplate name="title"`**（当 MyDialog 提供 `#title` 时）。
 
@@ -228,36 +229,38 @@ type LayerFactoryDefaults = {
 | **outsideLayer**（页内等非 direct layer content 上下文） | 默认不占 DOM、不投递；见 `visible-outside` |
 | `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**inLayer 时忽略此配置**，仍走 slot render fn 投进 layer slot |
 | `#default` 参数 | `inLayer` / `outsideLayer` 表示渲染上下文；`slotProps` 为同名 slot 的 scoped props 原样转发，默认 `{}`（container / content 链一致） |
-| `:to` | 绑定 `LayerInstance`（`useDialog(UserForm)` 返回值），注册进 **contentTemplates**；远程填充 content 同名 `<slot>`，**不接 MyDialog 投递链** |
+| `:to` | 绑定 `LayerInstance`，注册进 **caller content** tier；远程填充 content 同名 `<slot>` |
+| `:to` + `container` | 注册进 **caller container** tier；远程填充 MyDialog 同名 slot |
 
 **调用方示例：**
 
 ```vue
 <LayerTemplate :to="userDialog" name="header">
-  <ElTag>调用方注入</ElTag>
+  <ElTag>调用方注入 content slot</ElTag>
+</LayerTemplate>
+
+<LayerTemplate :to="userDialog" container name="footer">
+  <ElButton>调用方注入 container slot</ElButton>
 </LayerTemplate>
 ```
 
 ### 路由边界
 
-框架按 **`to` 有无** 分流，而非在同一池子里用优先级「覆盖」：
+框架按 **`to` / `container` 组合** 分流到 container 链或 content 链；**同链内**按 merge slot tier 决定优先级（见「配置 merge」）。
 
-| 用法 | 投递链 | UserList 能否触及 |
-|------|--------|-------------------|
-| UserForm 内 `LayerTemplate`（无 `to`） | `normalized.container.slots` → **MyDialog** | 否 |
-| `LayerTemplate :to="userDialog"` | `normalized.content.slots` → **UserForm** `<slot>` | 是 |
+| 用法 | 投递链 | 说明 |
+|------|--------|------|
+| UserForm 内 `LayerTemplate`（无 `to`） | **MyDialog** slot（creator tier） | 调用方 `:to container` 可覆盖 |
+| `LayerTemplate :to` | **UserForm** `<slot>`（caller content tier） | |
+| `LayerTemplate :to container` | **MyDialog** slot（caller container tier） | 高于 creator tier |
 
 **与 Vue 相同，框架不持有、也不校验 slot 清单：**
 
 - Vue 无法从子组件「读出」`defineSlots` / template 里有哪些 `<slot name>`；`useDialog(UserForm)` + `LayerTemplate :to` **同样做不到**按契约拦截 `name`。
-- `:to` 下 `name="form-end"` 只会进入 `contentTemplates`，resolve 后作为 `h(UserForm, …, { 'form-end': fn })` 的 slot 传入；**UserForm 没有 `<slot name="form-end">` 就不展示**——与父组件写了 `<template #form-end>` 但子组件没开口一样，不是框架 warning，是静默无渲染。
-- UserList 写 `name="footer"` 且带 `:to`，而 UserForm 只有 container 侧 `LayerTemplate name="footer"`、没有 `<slot name="footer">`：内容走 **content** 链，对不上口 → **不展示**；**换不掉** MyDialog 上的 layer footer（那条链 UserList 触及不到）。
+- `:to` 下 `name="form-end"` 走 caller content tier，resolve 后作为 `h(UserForm, …, { 'form-end': fn })` 的 slot 传入；**UserForm 没有 `<slot name="form-end">` 就不展示**——与父组件写了 `<template #form-end>` 但子组件没开口一样，不是框架 warning，是静默无渲染。
+- UserList 写 `name="footer"` 且 `:to` **无** `container`，而 UserForm 只有 creator `LayerTemplate name="footer"`：内容走 **content** 链，对不上口 → **不展示**；应改用 `:to container` 覆盖 MyDialog footer。
 
-`containerTemplates` 与 `contentTemplates` 是两张表、两条投递链，key 相同也互不覆盖。
-
-同一注册域内（UserForm 内、带 `:to` 的调用方等）同名 `LayerTemplate` 重复注册：**dev warning**，**后者覆盖前者**。
-
-**产品边界：** 不支持从 UserList 替换 UserForm 投进 MyDialog 的 layer 模板。调用方 **路由不到** container 链。
+同一 tier 内同名 `LayerTemplate` 重复注册：**dev warning**，**后者覆盖前者**（同 tier 内仍按 mount 顺序）。
 
 ### Vue slot 与 vue-layerx 分工
 
@@ -273,14 +276,13 @@ type LayerFactoryDefaults = {
 
 **container 侧**
 
-1. UserForm 内 `LayerTemplate name="title"` → `containerTemplates['title']`。
-2. **merge** 阶段：各层贡献的命令式 `container.slots` / `content.slots` 已按 `show` > `useX` > `defineLayer` > `createLayer` 合并进 `LayerMerged`。
-3. **resolve** 阶段：`defaultResolve` 先物化模板（`normalized.container.slots.title = () => containerTemplates['title'].render()`，`contentTemplates` 同理），再用 `LayerMerged` 里合并好的命令式 slots **同 key 覆盖**物化结果。
-4. `h(MyDialog, props, normalized.container.slots)`，slot fn 调用模板 `render()` — MyDialog 无 `#title` 则不展示。
+1. UserForm 内 `LayerTemplate name="title"` → creator container tier。
+2. **merge** 阶段：按 slot tier 合并（见下）；`LayerMerged.container.slots` 为最终结果。
+3. `h(MyDialog, props, normalized.container.slots)` — MyDialog 无 `#title` 则不展示。
 
 **content 侧**
 
-`LayerTemplate :to` + `name="form-end"` → `contentTemplates` → `normalized.content.slots.form-end`；UserForm 无 `<slot name="form-end">` 则不展示。
+`LayerTemplate :to` + `name="form-end"` → caller content tier → `normalized.content.slots.form-end`；UserForm 无 `<slot name="form-end">` 则不展示。
 
 **容器差异**：非默认 slot 名对齐（Dialog `#title` vs Drawer `#header`）在工厂 **`adapt`** 中调整 `normalized.container.slots` 的 key，不在 merge 维护名表。
 
@@ -296,8 +298,9 @@ type LayerFactoryDefaults = {
 | **show(payload?)** | ✅ 最高 | 可覆盖 merge 一切，含 `component`、`container.component` | 绕过 adapt（仍须走 adapt；adapt 可改回 component） |
 | **defaultResolve** | — | `LayerMerged` → `LayerNormalized` | 不参与优先级 |
 | **createLayer 第 3 参 adapt** | — | `LayerNormalized` → `LayerNormalized` | 不实现 merge |
-| **LayerTemplate**（UserForm 内，无 `to`） | containerTemplates（resolve 读取） | 注册 container 侧模板内容 | — |
-| **LayerTemplate**（`:to` 绑定实例） | contentTemplates（resolve 读取） | 向 UserDialog content slot 注册模板 | 接入 layer 投递链；不经 merge |
+| **LayerTemplate**（UserForm 内，无 `to`） | ✅ creator tier | content 内声明 container slot | — |
+| **LayerTemplate**（`:to`） | ✅ caller tier | 远程 content slot | — |
+| **LayerTemplate**（`:to container`） | ✅ caller tier | 远程 container slot；高于 creator | — |
 
 ### 绑定分层
 
@@ -526,17 +529,27 @@ wide.show({ props: { id: 1 } })
 
 ### 优先级
 
-常规实例（非 `clone` 派生）：
+**container.props / content.props / component**（常规实例）：
 
 ```text
-show > useX > defineLayer > createLayer(defaults)
+show > partial > useX > defineLayer > createLayer(defaults)
 ```
 
-`clone` 派生实例见上文：`show > partial > useX > defineLayer > createLayer(defaults)`。
+**container.slots**（低 → 高，后者覆盖前者）：
 
-对 `content.*`、`container.*` 各字段分别 merge（浅合并 `props`；命令式 `slots`（`SlotRenderFn`）同 key 后者覆盖前者，结果写入 `LayerMerged.content.slots` / `LayerMerged.container.slots`，在 **resolve** 阶段覆盖模板物化结果）。
+```text
+createLayer > creator LayerTemplate > defineLayer > caller LayerTemplate (:to container) > useX > partial > show
+```
 
-`containerTemplates` / `contentTemplates` **不参与**上述优先级链，由声明位置在 resolve 时先物化，再被 merge 好的命令式 slots 同 key 覆盖。
+**content.slots**：
+
+```text
+createLayer > caller LayerTemplate (:to) > useX > partial > show
+```
+
+`LayerTemplate` 与命令式 `slots` **同构**：均为 `SlotRenderFn`，在 merge 阶段按 tier 合并。resolve 直接透传 `LayerMerged.*.slots`。
+
+`clone` 派生实例：`partial` 介于 `show` 与 `useX` 之间（props 与 slots 均适用）。
 
 ### merge 后字段来源示例
 
@@ -654,13 +667,12 @@ createLayer(MyDialog, defaults, adapt?)
         ▼
 useDialog / useDrawer
         │
-        ├── defineLayer ──────────────┐
-        ├── useDialog(UserForm, opts) ──┤──► merge ──┐
-        └── show(payload) ──────────────┘            │
-                                                     ├──► resolve ─► adapt ─► render
-        LayerTemplate（UserForm 内）─── containerTemplates ─┘      ▲
-        LayerTemplate :to（UserList）─── contentTemplates ──────┘
-              （运行时注册，resolve 读取；不经 merge）
+        ├── defineLayer ─────────────────────────────┐
+        ├── useDialog(UserForm, opts) ───────────────┤
+        ├── show(payload) ───────────────────────────┤──► merge ──► resolve ──► adapt ──► render
+        ├── LayerTemplate（UserForm 内，creator tier）─┤
+        └── LayerTemplate :to / :to container ───────┘
+              （caller tier；mount 注册，merge 前物化）
 ```
 
 **渲染树（inLayer，slot render fn 投递后）：**
@@ -670,7 +682,7 @@ MyDialog（normalized.container）
   ├─ #title ← slot fn ← UserForm 内 LayerTemplate name="title"
   ├─ default → UserForm（normalized.content，direct layer content）
   │              └─ #form-end ← slot fn ← LayerTemplate :to
-  └─ #footer ← slot fn ← UserForm 内 LayerTemplate name="footer"
+  ├─ #footer ← slot fn ← merge tier（caller :to container 或 creator 内 LayerTemplate）
        └─ #action-end ← slot fn ← LayerTemplate :to
 ```
 
@@ -810,8 +822,8 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 | 嵌套示例 | `OrderForm` 内嵌 `UserForm`；`useDialog(OrderForm)` 打开时，`UserForm` **不是**弹层 direct content，其 `LayerTemplate` **不**投递到 MyDialog |
 | 多 Layer 实例 | 各 `LayerTemplate :to` 隔离 |
 | 操作区内部扩展 | Vue slot + `LayerTemplate :to` 同名模板 |
-| UserList 带 `:to` 写 `name="footer"` 换 layer footer | **不展示**（走 content 链；UserForm 无 `<slot name="footer">`）；换不了 layer footer |
-| 从列表页替换整块 MyDialog footer | **不支持**（无 container 侧调用 API） |
+| UserList 带 `:to` 写 `name="footer"` 换 layer footer | 应使用 `:to container`；caller tier 高于 creator |
+| 从列表页替换整块 MyDialog footer | `LayerTemplate :to container name="footer"` |
 | `show` 换 `container.component` | merge → resolve 后走**该实例工厂**的 `adapt`；容器差异由用户在 adapt 内处理 |
 | 每次 `show()` | 框架强制 remount content，setup（含 `defineLayer`）在当次 props 下重新执行 |
 | SSR | **暂不支持** |
@@ -820,16 +832,16 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 
 ## 推导小结
 
-1. **配置片段** merge：常规 `show > useX > defineLayer > createLayer`；`clone` 实例 `show > partial > useX > defineLayer > createLayer`。
-2. **content / container 同构**（`LayerNodeConfig`）：`component` / `props` / 命令式 `slots`；**声明式**插槽内容走 `containerTemplates` / `contentTemplates`。
+1. **配置片段** merge：props/component 常规 `show > partial > useX > defineLayer > createLayer`；**slots** 含 LayerTemplate tier（见「配置 merge」）。
+2. **content / container 同构**（`LayerNodeConfig`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
 3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`show` 覆盖 merge 但不跳过 adapt；`show` 每次 remount content。
-4. **slot render fn 投递**：UserForm 内模板 → layer slot；`LayerTemplate :to` → content slot；模板运行时注册、resolve 物化。
+4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `LayerMerged.*.slots`；resolve 透传。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
-6. **`LayerTemplate`**：`name` 即 slot 名，与 Vue `<template #name>` 同构；`:to` 走 content 链；目标无同名 slot 则不渲染。
+6. **`LayerTemplate`**：`name` 即 slot 名；`:to` → caller content；`:to container` → caller container；无 `to` → creator。
 7. **容器 slot 名差异**在工厂 **`adapt`** 调整 `normalized.container.slots`，不用 merge 名表。
 8. **无 `layerId` / `surface`**；多容器靠多工厂 + 各自 `adapt`。
 9. **细粒度扩展**用 Vue `<slot>`；`LayerTemplate :to` 在弹层下填充同名 content slot。
-10. **`to` 分流**：无 `to` → container 链；有 `to` → content 链；不接 MyDialog。
+10. **`to` 分流**：无 `to` → creator container；`:to` → caller content；`:to container` → caller container。
 11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；固定三参 `createLayer`；不导出 `useLayer`。
 12. **`clone`**：`show > partial > useX > defineLayer > createLayer`；`hideOn` 与用户 `onXxx` 合并为 wrapper（用户先、`hide()` 后）。
 13. **`visible`**：仅 prop + event 元组；非常规模型由使用者封装 layer。

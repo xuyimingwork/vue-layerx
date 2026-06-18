@@ -13,7 +13,7 @@ export type VisibleProtocol = [string, string]
 export interface LayerNodeConfig {
   component?: Component
   props?: LayerProps
-  /** imperative slot overrides (defineLayer / show); declarative content uses LayerTemplate */
+  /** slot content: imperative (show / define / create) or LayerTemplate materialized at merge */
   slots?: Record<string, SlotRenderFn>
 }
 

@@ -1,49 +1,63 @@
 import { ref, type Ref } from 'vue'
 import type { LayerTemplateEntry } from '@/core/types/config'
 
-export interface LayerInternalState {
-  containerTemplates: Record<string, LayerTemplateEntry>
-  contentTemplates: Record<string, LayerTemplateEntry>
-  slotsVersion: Ref<number>
-  bumpSlots: () => void
-  registerContainerTemplate: (name: string, entry: LayerTemplateEntry) => void
-  registerContentTemplate: (name: string, entry: LayerTemplateEntry) => void
+export interface LayerTemplateRegistries {
+  creatorContainer: Record<string, LayerTemplateEntry>
+  callerContainer: Record<string, LayerTemplateEntry>
+  callerContent: Record<string, LayerTemplateEntry>
 }
 
-function warnDuplicate(name: string, scope: 'container' | 'content') {
+export interface LayerInternalState extends LayerTemplateRegistries {
+  slotsVersion: Ref<number>
+  bumpSlots: () => void
+  registerCreatorContainerTemplate: (name: string, entry: LayerTemplateEntry) => void
+  registerCallerContainerTemplate: (name: string, entry: LayerTemplateEntry) => void
+  registerCallerContentTemplate: (name: string, entry: LayerTemplateEntry) => void
+}
+
+function warnDuplicate(name: string, scope: string) {
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return
   console.warn(
-    `[vue-layerx] Duplicate LayerTemplate name="${name}" in ${scope} scope; latter wins`,
+    `[vue-layerx] Duplicate LayerTemplate name="${name}" in ${scope}; latter wins`,
   )
 }
 
 export function createLayerInternalState(): LayerInternalState {
   const slotsVersion = ref(0)
-  const containerTemplates: Record<string, LayerTemplateEntry> = {}
-  const contentTemplates: Record<string, LayerTemplateEntry> = {}
+  const creatorContainer: Record<string, LayerTemplateEntry> = {}
+  const callerContainer: Record<string, LayerTemplateEntry> = {}
+  const callerContent: Record<string, LayerTemplateEntry> = {}
 
   const bumpSlots = () => {
     slotsVersion.value++
   }
 
-  const registerContainerTemplate = (name: string, entry: LayerTemplateEntry) => {
-    if (containerTemplates[name]) warnDuplicate(name, 'container')
-    containerTemplates[name] = entry
+  const registerCreatorContainerTemplate = (name: string, entry: LayerTemplateEntry) => {
+    if (creatorContainer[name]) warnDuplicate(name, 'creator container')
+    creatorContainer[name] = entry
     bumpSlots()
   }
 
-  const registerContentTemplate = (name: string, entry: LayerTemplateEntry) => {
-    if (contentTemplates[name]) warnDuplicate(name, 'content')
-    contentTemplates[name] = entry
+  const registerCallerContainerTemplate = (name: string, entry: LayerTemplateEntry) => {
+    if (callerContainer[name]) warnDuplicate(name, 'caller container')
+    callerContainer[name] = entry
+    bumpSlots()
+  }
+
+  const registerCallerContentTemplate = (name: string, entry: LayerTemplateEntry) => {
+    if (callerContent[name]) warnDuplicate(name, 'caller content')
+    callerContent[name] = entry
     bumpSlots()
   }
 
   return {
-    containerTemplates,
-    contentTemplates,
+    creatorContainer,
+    callerContainer,
+    callerContent,
     slotsVersion,
     bumpSlots,
-    registerContainerTemplate,
-    registerContentTemplate,
+    registerCreatorContainerTemplate,
+    registerCallerContainerTemplate,
+    registerCallerContentTemplate,
   }
 }

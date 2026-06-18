@@ -12,7 +12,7 @@ export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
 
 export type ContainerTemplateRegistry = Pick<
   LayerInternalState,
-  'registerContainerTemplate'
+  'registerCreatorContainerTemplate'
 >
 
 export const CONTAINER_TEMPLATE_REGISTRY_KEY: InjectionKey<ContainerTemplateRegistry> =

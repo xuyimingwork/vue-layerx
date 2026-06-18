@@ -54,10 +54,18 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 <LayerTemplate :to="userLayer" name="form-end" v-slot="{ slotProps: { data } }">
   ...
 </LayerTemplate>
+
+<!-- 调用方：远程投进 Dialog 等同名 slot（覆盖 content 内 LayerTemplate） -->
+<LayerTemplate :to="userLayer" container name="footer">
+  ...
+</LayerTemplate>
 ```
 
-- **container 链**（content 内，无 `to`）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
-- **content 链**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`；`slotProps` 来自 content 的 scoped slot（如 `<slot :data="info" />`）。
+- **creator**（content 内，无 `to`）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
+- **caller content**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`。
+- **caller container**（`:to` + `container`）：投进 Dialog 等同名 slot；优先级高于 creator。
+
+**slot 优先级**（container 链）：`show > useX > caller template > defineLayer > creator template > createLayer`。content 链：`show > useX > caller template > createLayer`。
 
 `:to` 为 `useX(Content)` 返回的 `LayerInstance`。
 
