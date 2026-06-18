@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { pickContentConfig, pickLayerConfig } from '../merge-config'
+import { pickContentConfig, pickContainerConfig } from '../merge-config'
 
 describe('pickContentConfig', () => {
   it('extracts only content node fields', () => {
     expect(
       pickContentConfig({
         props: { message: 'hi' },
-        layer: { props: { title: 'x' } },
+        container: { props: { title: 'x' } },
         hideOn: ['done'],
       }),
     ).toEqual({ props: { message: 'hi' } })
@@ -18,12 +18,12 @@ describe('pickContentConfig', () => {
   })
 })
 
-describe('pickLayerConfig', () => {
-  it('returns layer fragment only', () => {
+describe('pickContainerConfig', () => {
+  it('returns container fragment only', () => {
     expect(
-      pickLayerConfig({
+      pickContainerConfig({
         props: { message: 'hi' },
-        layer: { props: { title: 'x' } },
+        container: { props: { title: 'x' } },
       }),
     ).toEqual({ props: { title: 'x' } })
   })

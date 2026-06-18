@@ -19,10 +19,10 @@ export function pickContentConfig(
   return result
 }
 
-export function pickLayerConfig(
+export function pickContainerConfig(
   payload: LayerUsePayload | undefined,
 ): LayerNodeConfig | undefined {
-  return payload?.layer
+  return payload?.container
 }
 
 export interface MergeContext {
@@ -38,9 +38,9 @@ function defineLayerToConfig(
 ): LayerUsePayload | undefined {
   if (!defineLayer) return undefined
   const result: LayerUsePayload = {
-    layer: mergeNodeConfig(
+    container: mergeNodeConfig(
       defineLayer.props ? { props: defineLayer.props } : undefined,
-      defineLayer.layer,
+      defineLayer.container,
     ),
   }
   if (defineLayer.hideOn) result.hideOn = defineLayer.hideOn
@@ -57,12 +57,12 @@ export function mergeConfig(ctx: MergeContext): LayerMerged {
     pickContentConfig(ctx.showOptions),
   )
 
-  const layer = mergeNodeConfig(
-    ctx.layerDefaults.layer,
-    defineLayerConfig?.layer,
-    pickLayerConfig(ctx.useOptions),
-    pickLayerConfig(ctx.partial),
-    pickLayerConfig(ctx.showOptions),
+  const container = mergeNodeConfig(
+    ctx.layerDefaults.container,
+    defineLayerConfig?.container,
+    pickContainerConfig(ctx.useOptions),
+    pickContainerConfig(ctx.partial),
+    pickContainerConfig(ctx.showOptions),
   )
 
   const hideOn =
@@ -71,5 +71,5 @@ export function mergeConfig(ctx: MergeContext): LayerMerged {
     ctx.useOptions.hideOn ??
     defineLayerConfig?.hideOn
 
-  return { content, layer, hideOn }
+  return { content, container, hideOn }
 }

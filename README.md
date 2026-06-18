@@ -54,8 +54,8 @@ defineLayer({ props: { title: '用户' }, hideOn: ['submit'] })
 | 导出 | 用途 |
 |------|------|
 | `createLayer(Layer, defaults?, adapt?)` | 创建弹层工厂，返回 `useX(Content)` |
-| `defineLayer(options)` | 在 content 内声明默认 layer 配置 |
-| `LayerTemplate` | 声明式投递 layer / content 插槽（`:to` 远程填充 content slot） |
+| `defineLayer(options)` | 在 content 内声明默认 container 配置 |
+| `LayerTemplate` | 声明式投递 container / content 插槽（`:to` 远程填充 content slot） |
 
 ## 文档
 

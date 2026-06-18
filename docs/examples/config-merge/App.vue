@@ -4,7 +4,7 @@ import { useDialog } from '../../.vitepress/shared/layers'
 import UserForm from '../crud/UserForm.vue'
 
 const mergeDialog = useDialog(UserForm, {
-  layer: { props: { width: '520px' } },
+  container: { props: { width: '520px' } },
   hideOn: ['success', 'cancel'],
 })
 
@@ -15,7 +15,7 @@ function openDefault() {
 function openShowOverride() {
   mergeDialog.show({
     props: { mode: 'create' },
-    layer: {
+    container: {
       props: {
         title: 'show() 覆盖标题',
         width: '640px',

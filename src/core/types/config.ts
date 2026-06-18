@@ -9,7 +9,7 @@ export type SlotRenderFn = (
 /** [visibleProp, visibleEventHandlerProp] e.g. ['modelValue', 'onUpdate:modelValue'] */
 export type VisibleProtocol = [string, string]
 
-/** merge / config fragment for content or layer node */
+/** merge / config fragment for content or container node */
 export interface LayerNodeConfig {
   component?: Component
   props?: LayerProps
@@ -24,7 +24,7 @@ export interface LayerTemplateEntry {
 /** merge phase output */
 export interface LayerMerged {
   content: LayerNodeConfig
-  layer: LayerNodeConfig
+  container: LayerNodeConfig
   hideOn?: string[]
 }
 
@@ -37,7 +37,7 @@ export interface LayerNodeNormalized {
 
 export interface LayerNormalized {
   content: LayerNodeNormalized
-  layer: LayerNodeNormalized
+  container: LayerNodeNormalized
 }
 
 /** after adapt, before h() */
@@ -51,17 +51,17 @@ export interface LayerRenderPlan extends LayerNormalized {
 export interface LayerDefaults {
   visible?: VisibleProtocol
   content?: LayerNodeConfig
-  layer?: LayerNodeConfig
+  container?: LayerNodeConfig
 }
 
 export interface DefineLayerOptions {
-  /** shorthand for layer.props */
+  /** shorthand for container.props */
   props?: LayerProps
-  layer?: {
+  container?: {
     props?: LayerProps
     slots?: Record<string, SlotRenderFn>
   }
-  /** content events that auto-close the layer; owned by the dialog module author */
+  /** content events that auto-close the layer instance; owned by the dialog module author */
   hideOn?: string[]
 }
 

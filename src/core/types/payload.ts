@@ -1,8 +1,8 @@
 import type { LayerNodeConfig } from './config'
 
-/** useX(Content, opts) & show(payload) — content node + layer + hideOn */
+/** useX(Content, opts) & show(payload) — content node + container + hideOn */
 export type LayerUsePayload = LayerNodeConfig & {
-  layer?: LayerNodeConfig
+  container?: LayerNodeConfig
   hideOn?: string[]
 }
 

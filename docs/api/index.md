@@ -20,7 +20,7 @@ createLayer(BaseDialog, {}, adaptFn)       // useDetailLayer
 
 ### `adapt`
 
-窄屏把 `layer.component` 从 BaseDialog 换为 BaseDrawer，并滤掉 `width` / `size` 等。见 [§5](/guide/adapt)。
+窄屏把 `container.component` 从 BaseDialog 换为 BaseDrawer，并滤掉 `width` / `size` 等。见 [§5](/guide/adapt)。
 
 ## `defineLayer`
 
@@ -45,7 +45,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 ```
 
 ```vue
-<!-- content 内：投进 layer 同名 slot -->
+<!-- content 内：投进 container 同名 slot -->
 <LayerTemplate name="footer" v-slot="{ inLayer, outsideLayer, slotProps }">
   ...
 </LayerTemplate>
@@ -56,7 +56,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 </LayerTemplate>
 ```
 
-- **layer 链**（content 内，无 `to`）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
+- **container 链**（content 内，无 `to`）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
 - **content 链**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`；`slotProps` 来自 content 的 scoped slot（如 `<slot :data="info" />`）。
 
 `:to` 为 `useX(Content)` 返回的 `LayerInstance`。

@@ -2,15 +2,15 @@ import { ref, type Ref } from 'vue'
 import type { LayerTemplateEntry } from '@/core/types/config'
 
 export interface LayerInternalState {
-  layerTemplates: Record<string, LayerTemplateEntry>
+  containerTemplates: Record<string, LayerTemplateEntry>
   contentTemplates: Record<string, LayerTemplateEntry>
   slotsVersion: Ref<number>
   bumpSlots: () => void
-  registerLayerTemplate: (name: string, entry: LayerTemplateEntry) => void
+  registerContainerTemplate: (name: string, entry: LayerTemplateEntry) => void
   registerContentTemplate: (name: string, entry: LayerTemplateEntry) => void
 }
 
-function warnDuplicate(name: string, scope: 'layer' | 'content') {
+function warnDuplicate(name: string, scope: 'container' | 'content') {
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return
   console.warn(
     `[vue-layerx] Duplicate LayerTemplate name="${name}" in ${scope} scope; latter wins`,
@@ -19,16 +19,16 @@ function warnDuplicate(name: string, scope: 'layer' | 'content') {
 
 export function createLayerInternalState(): LayerInternalState {
   const slotsVersion = ref(0)
-  const layerTemplates: Record<string, LayerTemplateEntry> = {}
+  const containerTemplates: Record<string, LayerTemplateEntry> = {}
   const contentTemplates: Record<string, LayerTemplateEntry> = {}
 
   const bumpSlots = () => {
     slotsVersion.value++
   }
 
-  const registerLayerTemplate = (name: string, entry: LayerTemplateEntry) => {
-    if (layerTemplates[name]) warnDuplicate(name, 'layer')
-    layerTemplates[name] = entry
+  const registerContainerTemplate = (name: string, entry: LayerTemplateEntry) => {
+    if (containerTemplates[name]) warnDuplicate(name, 'container')
+    containerTemplates[name] = entry
     bumpSlots()
   }
 
@@ -39,11 +39,11 @@ export function createLayerInternalState(): LayerInternalState {
   }
 
   return {
-    layerTemplates,
+    containerTemplates,
     contentTemplates,
     slotsVersion,
     bumpSlots,
-    registerLayerTemplate,
+    registerContainerTemplate,
     registerContentTemplate,
   }
 }

@@ -8,7 +8,7 @@ const user = ref({ id: 1, name: 'Alice' })
 
 const editForm = useDialog(UserForm)
 const viewForm = editForm.clone({
-  layer: { props: { width: '400px' } },
+  container: { props: { width: '400px' } },
 })
 
 function openEdit() {
@@ -32,14 +32,14 @@ function openView() {
       recordId: user.value.id,
       initialName: user.value.name,
     },
-    layer: { props: { title: '快速预览（show 覆盖标题）' } },
+    container: { props: { title: '快速预览（show 覆盖标题）' } },
   })
 }
 </script>
 
 <template>
   <p class="hint">
-    <code>clone()</code> 派生只读预览实例；<code>show({ layer })</code> 单次覆盖标题——配置优先级：
+    <code>clone()</code> 派生只读预览实例；<code>show({ container })</code> 单次覆盖标题——配置优先级：
     show &gt; clone partial &gt; defineLayer。
   </p>
   <p class="user">

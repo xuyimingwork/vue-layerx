@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Breaking:** Remove `LayerBind`; use `LayerTemplate :to="instance"` to fill content slots from the caller side
+- **Breaking:** Rename config field `layer` → `container` on `LayerUsePayload`, `LayerNormalized`, `LayerMerged`, `LayerDefaults`, and `DefineLayerOptions`
+- **Breaking:** Rename `layerTemplates` / `registerLayerTemplate` → `containerTemplates` / `registerContainerTemplate`; injection key `CONTAINER_TEMPLATE_REGISTRY_KEY`
+- **Breaking:** Rename `pickLayerConfig` → `pickContainerConfig` (internal merge helper)
 
 ## [0.0.1] - 2026-06-17
 

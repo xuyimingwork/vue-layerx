@@ -14,8 +14,8 @@ export function renderLayerTree({
   hasContent,
   contentMountKey,
 }: RenderLayerTreeOptions): VNode {
-  const layerProps = buildVisibleProps(
-    plan.layer.props,
+  const containerProps = buildVisibleProps(
+    plan.container.props,
     plan.visible,
     plan.visibleProp,
     plan.visibleEvent,
@@ -35,8 +35,8 @@ export function renderLayerTree({
         )
     : () => null
 
-  return h(plan.layer.component, layerProps, {
+  return h(plan.container.component, containerProps, {
     default: defaultSlot,
-    ...plan.layer.slots,
+    ...plan.container.slots,
   })
 }

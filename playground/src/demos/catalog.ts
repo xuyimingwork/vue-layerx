@@ -71,8 +71,8 @@ export const demoGroups: DemoGroup[] = [
         level: 5,
         title: 'clone 多实例',
         description:
-          '从同一实例 clone({ layer }) 派生 partial 默认配置，visible 独立，各实例 show / hide 互不影响。',
-        tags: ['clone()', 'partial', '独立 visible', 'layer.props'],
+          '从同一实例 clone({ container }) 派生 partial 默认配置，visible 独立，各实例 show / hide 互不影响。',
+        tags: ['clone()', 'partial', '独立 visible', 'container.props'],
         component: CloneDemo,
       },
       {
@@ -97,7 +97,7 @@ export const demoGroups: DemoGroup[] = [
         title: '未保存拦截',
         description:
           'defineLayer 配置 beforeClose 透传至 ElDialog；有脏数据时 X / 遮罩关闭需二次确认。',
-        tags: ['beforeClose', 'defineLayer', 'layer.props', 'hideOn'],
+        tags: ['beforeClose', 'defineLayer', 'container.props', 'hideOn'],
         component: BeforeCloseDemo,
       },
       {

@@ -9,7 +9,7 @@ import {
 } from 'vue'
 import type { LayerInstance, LayerTemplateScope } from '@/core/types'
 import { isInDirectLayerContent } from '@/vue/context/in-layer-content'
-import { LAYER_TEMPLATE_REGISTRY_KEY } from '@/vue/di/injection-keys'
+import { CONTAINER_TEMPLATE_REGISTRY_KEY } from '@/vue/di/injection-keys'
 import { getInternal } from '@/vue/instance/instance-registry'
 
 function buildTemplateScope(
@@ -40,11 +40,11 @@ export const LayerTemplate = defineComponent({
     },
   },
   setup(props, { slots }) {
-    const layerRegistry = inject(LAYER_TEMPLATE_REGISTRY_KEY, null)
+    const containerRegistry = inject(CONTAINER_TEMPLATE_REGISTRY_KEY, null)
     const instance = getCurrentInstance()
 
     const inLayer = computed(
-      () => !props.to && layerRegistry !== null && isInDirectLayerContent(instance),
+      () => !props.to && containerRegistry !== null && isInDirectLayerContent(instance),
     )
     const boundToInstance = computed(() => props.to != null)
 
@@ -63,8 +63,8 @@ export const LayerTemplate = defineComponent({
         })
         return
       }
-      if (inLayer.value && layerRegistry) {
-        layerRegistry.registerLayerTemplate(props.name, {
+      if (inLayer.value && containerRegistry) {
+        containerRegistry.registerContainerTemplate(props.name, {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
       }

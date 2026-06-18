@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { mergeConfig } from '../merge-config'
 
 describe('mergeConfig', () => {
-  it('merges layer props with priority show > partial > useX > defineLayer > defaults', () => {
+  it('merges container props with priority show > partial > useX > defineLayer > defaults', () => {
     const merged = mergeConfig({
       layerDefaults: {
-        layer: { props: { title: 'Factory', width: '400px' } },
+        container: { props: { title: 'Factory', width: '400px' } },
       },
       defineLayer: { props: { title: 'Defined' } },
-      useOptions: { layer: { props: { width: '640px' } } },
-      showOptions: { layer: { props: { title: 'Show' } } },
-      partial: { layer: { props: { width: '720px' } } },
+      useOptions: { container: { props: { width: '640px' } } },
+      showOptions: { container: { props: { title: 'Show' } } },
+      partial: { container: { props: { width: '720px' } } },
     })
 
-    expect(merged.layer.props).toEqual({ title: 'Show', width: '720px' })
+    expect(merged.container.props).toEqual({ title: 'Show', width: '720px' })
   })
 
   it('merges content props with priority show > partial > useX > defaults', () => {
@@ -78,18 +78,18 @@ describe('mergeConfig', () => {
     ).toEqual(['cancel'])
   })
 
-  it('keeps content and layer slots separate in merge', () => {
+  it('keeps content and container slots separate in merge', () => {
     const contentSlot = () => null
-    const layerSlot = () => null
+    const containerSlot = () => null
 
     const merged = mergeConfig({
       layerDefaults: {},
-      defineLayer: { layer: { slots: { footer: layerSlot } } },
+      defineLayer: { container: { slots: { footer: containerSlot } } },
       useOptions: { slots: { header: contentSlot } },
       showOptions: {},
     })
 
     expect(merged.content.slots).toEqual({ header: contentSlot })
-    expect(merged.layer.slots).toEqual({ footer: layerSlot })
+    expect(merged.container.slots).toEqual({ footer: containerSlot })
   })
 })

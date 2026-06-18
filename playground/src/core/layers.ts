@@ -5,7 +5,7 @@ export const useDialog = createLayer(
   ElDialog,
   {
     visible: ['modelValue', 'onUpdate:modelValue'],
-    layer: {
+    container: {
       props: {
         width: '480px',
         destroyOnClose: true,
@@ -15,10 +15,10 @@ export const useDialog = createLayer(
   },
   (normalized) => ({
     ...normalized,
-    layer: {
-      ...normalized.layer,
+    container: {
+      ...normalized.container,
       props: Object.fromEntries(
-        Object.entries(normalized.layer.props).filter(([key]) => key !== 'direction'),
+        Object.entries(normalized.container.props).filter(([key]) => key !== 'direction'),
       ),
     },
   }),
@@ -28,7 +28,7 @@ export const useDrawer = createLayer(
   ElDrawer,
   {
     visible: ['modelValue', 'onUpdate:modelValue'],
-    layer: {
+    container: {
       props: {
         direction: 'rtl',
         size: '360px',
@@ -38,13 +38,13 @@ export const useDrawer = createLayer(
     },
   },
   (normalized) => {
-    const { title, footer, ...rest } = normalized.layer.slots
+    const { title, footer, ...rest } = normalized.container.slots
     return {
       ...normalized,
-      layer: {
-        ...normalized.layer,
+      container: {
+        ...normalized.container,
         props: Object.fromEntries(
-          Object.entries(normalized.layer.props).filter(([key]) => key !== 'width'),
+          Object.entries(normalized.container.props).filter(([key]) => key !== 'width'),
         ),
         slots: {
           ...rest,
@@ -58,7 +58,7 @@ export const useDrawer = createLayer(
 
 export const useAlertDialog = createLayer(ElDialog, {
   visible: ['modelValue', 'onUpdate:modelValue'],
-  layer: {
+  container: {
     props: {
       width: '360px',
       appendToBody: true,

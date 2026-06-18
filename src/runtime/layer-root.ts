@@ -12,7 +12,7 @@ import type { LayerInternalState } from '@/vue/instance/internal-state'
 import { renderLayerTree } from '@/vue/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
-  LAYER_TEMPLATE_REGISTRY_KEY,
+  CONTAINER_TEMPLATE_REGISTRY_KEY,
 } from '@/vue/di/injection-keys'
 
 export interface UseLayerContext {
@@ -53,8 +53,8 @@ export function buildLayerRoot(
         },
       })
 
-      provide(LAYER_TEMPLATE_REGISTRY_KEY, {
-        registerLayerTemplate: internal.registerLayerTemplate,
+      provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
+        registerContainerTemplate: internal.registerContainerTemplate,
       })
 
       return () => {
@@ -73,7 +73,7 @@ export function buildLayerRoot(
           merged,
           LayerComponent: ctx.LayerComponent,
           boundContent: opts.Content,
-          layerTemplates: internal.layerTemplates,
+          containerTemplates: internal.containerTemplates,
           contentTemplates: internal.contentTemplates,
           hide,
         }

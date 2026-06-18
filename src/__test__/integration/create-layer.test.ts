@@ -17,7 +17,7 @@ afterEach(() => {
 describe('createLayer (integration)', () => {
   it('opens via .show() without template (body)', async () => {
     const useLayer = createLayer(LayerComponent, {
-      layer: { props: { title: 'Create', width: '400px' } },
+      container: { props: { title: 'Create', width: '400px' } },
     })
     const Content = makeContent()
     let dialog!: LayerInstance
@@ -41,7 +41,7 @@ describe('createLayer (integration)', () => {
 
   it('merges config across all layers end-to-end', async () => {
     const useLayer = createLayer(LayerComponent, {
-      layer: { props: { title: 'Default', width: '400px' } },
+      container: { props: { title: 'Default', width: '400px' } },
     })
     const Content = makeContent(true)
     let dialog!: LayerInstance
@@ -49,12 +49,12 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(Content, {
-          layer: { props: { width: '640px' } },
+          container: { props: { width: '640px' } },
         })
         onMounted(() =>
           dialog.show({
             props: { message: 'merged' },
-            layer: { props: { title: 'FromShow' } },
+            container: { props: { title: 'FromShow' } },
           }),
         )
         return () => h('motion-host')
@@ -90,7 +90,7 @@ describe('createLayer (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('default-msg')
   })
 
-  it('renders defineLayer LayerTemplate content into layer slot', async () => {
+  it('renders defineLayer LayerTemplate content into container slot', async () => {
     const useLayer = createLayer(LayerComponent)
     const Content = makeContent(true)
     let dialog!: LayerInstance
@@ -250,7 +250,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         base = useLayer(Content)
-        cloned = base.clone({ layer: { props: { title: 'Cloned' } } })
+        cloned = base.clone({ container: { props: { title: 'Cloned' } } })
         return () => h('motion-host')
       },
     })
@@ -308,8 +308,8 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         base = useLayer(Content)
-        mid = base.clone({ layer: { props: { title: 'Mid' } } })
-        leaf = mid.clone({ layer: { props: { title: 'Leaf' } } })
+        mid = base.clone({ container: { props: { title: 'Mid' } } })
+        leaf = mid.clone({ container: { props: { title: 'Leaf' } } })
         return () => h('motion-host')
       },
     })
@@ -365,8 +365,8 @@ describe('createLayer (integration)', () => {
 
     const Host = defineComponent({
       setup() {
-        base = useLayer(Content, { layer: { props: { title: 'Base' } } })
-        cloned = base.clone({ layer: { props: { title: 'Cloned' } } })
+        base = useLayer(Content, { container: { props: { title: 'Base' } } })
+        cloned = base.clone({ container: { props: { title: 'Cloned' } } })
         return () => h('motion-host')
       },
     })
@@ -389,7 +389,7 @@ describe('createLayer (integration)', () => {
 
   it('clone() creates independent instance with partial defaults', async () => {
     const useLayer = createLayer(LayerComponent, {
-      layer: { props: { title: 'Factory' } },
+      container: { props: { title: 'Factory' } },
     })
     const Content = makeContent()
     let base!: LayerInstance
@@ -397,8 +397,8 @@ describe('createLayer (integration)', () => {
 
     const Host = defineComponent({
       setup() {
-        base = useLayer(Content, { layer: { props: { title: 'Base' } } })
-        cloned = base.clone({ layer: { props: { title: 'Cloned' } } })
+        base = useLayer(Content, { container: { props: { title: 'Base' } } })
+        cloned = base.clone({ container: { props: { title: 'Cloned' } } })
         return () => h('motion-host')
       },
     })
@@ -489,7 +489,7 @@ describe('createLayer (integration)', () => {
     expect(document.body.querySelector('.inner .inner-footer')).toBeTruthy()
   })
 
-  it('render() passes inLayer scope when LayerTemplate content is rendered into layer slot', async () => {
+  it('render() passes inLayer scope when LayerTemplate content is rendered into container slot', async () => {
     const useLayer = createLayer(LayerComponent)
     let captured: LayerTemplateScope | undefined
 

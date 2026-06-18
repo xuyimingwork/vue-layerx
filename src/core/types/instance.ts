@@ -5,7 +5,7 @@ export interface LayerTemplateScope<
 > {
   inLayer: boolean
   outsideLayer: boolean
-  /** content / layer 侧 scoped slot 原样转发的 props；无参数时为 {} */
+  /** content / container 侧 scoped slot 原样转发的 props；无参数时为 {} */
   slotProps: T
 }
 

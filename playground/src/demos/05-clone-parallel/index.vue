@@ -7,7 +7,7 @@ import PanelContent from './PanelContent.vue'
 const instanceA = useDialog(PanelContent, { hideOn: ['close'] })
 
 const instanceB = instanceA.clone({
-  layer: { props: { width: '640px', title: '实例 B（clone · 640px）' } },
+  container: { props: { width: '640px', title: '实例 B（clone · 640px）' } },
 })
 
 const logs = ref<string[]>([])
@@ -39,7 +39,7 @@ function openA() {
       onOpenB: openBFromA,
       onAction: () => pushLog('收到实例 A 的 action 事件'),
     },
-    layer: { props: { title: '实例 A（base · 480px）' } },
+    container: { props: { title: '实例 A（base · 480px）' } },
   })
   pushLog('instanceA.show() — A.visible=true')
   pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)

@@ -10,7 +10,7 @@ const savedDraft = ref('欢迎使用 vue-layerx')
 const draft = useDialog(DraftDialog)
 const baseDetail = useDialog(DetailContent)
 const wideDetail = baseDetail.clone({
-  layer: { props: { width: '640px', title: '用户详情（宽屏）' } },
+  container: { props: { width: '640px', title: '用户详情（宽屏）' } },
 })
 
 const user = { name: 'Alice', email: 'alice@example.com', role: '管理员' }

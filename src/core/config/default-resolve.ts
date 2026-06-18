@@ -11,7 +11,7 @@ export interface ResolveContext {
   merged: LayerMerged
   LayerComponent: Component
   boundContent?: Component
-  layerTemplates: Record<string, LayerTemplateEntry>
+  containerTemplates: Record<string, LayerTemplateEntry>
   contentTemplates: Record<string, LayerTemplateEntry>
   hide: () => void
 }
@@ -28,7 +28,7 @@ function materializeTemplates(
 
 function resolveNodeSlots(
   templates: Record<string, LayerTemplateEntry>,
-  mergedSlots: LayerMerged['layer']['slots'],
+  mergedSlots: LayerMerged['container']['slots'],
 ): Record<string, SlotRenderFn> {
   return {
     ...materializeTemplates(templates),
@@ -37,20 +37,20 @@ function resolveNodeSlots(
 }
 
 export function defaultResolve(ctx: ResolveContext): LayerNormalized {
-  const { merged, LayerComponent, boundContent, layerTemplates, contentTemplates, hide } =
+  const { merged, LayerComponent, boundContent, containerTemplates, contentTemplates, hide } =
     ctx
 
   const contentComponent = merged.content.component ?? boundContent
 
-  const layerNormalized = {
-    component: merged.layer.component ?? LayerComponent,
-    props: merged.layer.props ?? {},
-    slots: resolveNodeSlots(layerTemplates, merged.layer.slots),
+  const containerNormalized = {
+    component: merged.container.component ?? LayerComponent,
+    props: merged.container.props ?? {},
+    slots: resolveNodeSlots(containerTemplates, merged.container.slots),
   }
 
   if (!contentComponent) {
     return {
-      layer: layerNormalized,
+      container: containerNormalized,
       content: {
         component: LayerComponent,
         props: {},
@@ -62,7 +62,7 @@ export function defaultResolve(ctx: ResolveContext): LayerNormalized {
   const contentProps = bindHideOn(merged.content.props ?? {}, merged.hideOn, hide)
 
   return {
-    layer: layerNormalized,
+    container: containerNormalized,
     content: {
       component: contentComponent,
       props: contentProps,

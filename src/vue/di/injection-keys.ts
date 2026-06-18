@@ -10,7 +10,10 @@ export type LayerDefineRegistry = {
 export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
   Symbol('vue-layerx-define') as InjectionKey<LayerDefineRegistry>
 
-export type LayerTemplateRegistry = Pick<LayerInternalState, 'registerLayerTemplate'>
+export type ContainerTemplateRegistry = Pick<
+  LayerInternalState,
+  'registerContainerTemplate'
+>
 
-export const LAYER_TEMPLATE_REGISTRY_KEY: InjectionKey<LayerTemplateRegistry> =
-  Symbol('vue-layerx-layer-template') as InjectionKey<LayerTemplateRegistry>
+export const CONTAINER_TEMPLATE_REGISTRY_KEY: InjectionKey<ContainerTemplateRegistry> =
+  Symbol('vue-layerx-container-template') as InjectionKey<ContainerTemplateRegistry>

@@ -19,19 +19,19 @@ const detailAdapt: LayerAdapt = (normalized) => {
   if (!mobile) {
     return {
       ...normalized,
-      layer: {
-        ...normalized.layer,
-        props: stripProps(normalized.layer.props, 'size', 'direction'),
+      container: {
+        ...normalized.container,
+        props: stripProps(normalized.container.props, 'size', 'direction'),
       },
     }
   }
 
   return {
     ...normalized,
-    layer: {
-      ...normalized.layer,
+    container: {
+      ...normalized.container,
       component: BaseDrawer,
-      props: stripProps(normalized.layer.props, 'width'),
+      props: stripProps(normalized.container.props, 'width'),
     },
   }
 }

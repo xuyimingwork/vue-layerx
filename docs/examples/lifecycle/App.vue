@@ -47,7 +47,7 @@ function openWarning() {
       tone: 'warning',
       message: 'show() 同时覆盖 content props 与 hideOn。',
     },
-    layer: { props: { title: 'show 层覆盖标题' } },
+    container: { props: { title: 'show 层覆盖标题' } },
   })
 }
 

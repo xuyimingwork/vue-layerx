@@ -21,7 +21,7 @@ import LayersSource from '../.vitepress/shared/layers.ts?raw'
   ]"
 />
 
-`UserForm` 的 `defineLayer` 同时声明 `width`（Dialog）和 `size`/`direction`（Drawer）；`adapt` 在基础设施层换 `layer.component` 并滤 props。
+`UserForm` 的 `defineLayer` 同时声明 `width`（Dialog）和 `size`/`direction`（Drawer）；`adapt` 在基础设施层换 `container.component` 并滤 props。
 
 ## 下一步
 
