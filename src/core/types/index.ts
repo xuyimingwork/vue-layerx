@@ -1,18 +1,18 @@
 export type {
-  DefineLayerOptions,
   LayerAdapt,
-  LayerDefaults,
+  LayerFragment,
   LayerMerged,
   LayerNodeConfig,
   LayerNodeNormalized,
   LayerNormalized,
   LayerProps,
   LayerRenderPlan,
+  LayerStaticConfig,
   LayerTemplateEntry,
   SlotRenderFn,
   VisibleProtocol,
 } from './config'
 
-export type { LayerShowPayload, LayerUseOptions, LayerUsePayload } from './payload'
+export type { LayerInstanceConfig } from './payload'
 
 export type { LayerInstance, LayerTemplateScope } from './instance'

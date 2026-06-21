@@ -58,10 +58,10 @@ export function createMountedDialog(
     Content: ReturnType<typeof makeContent>
     onMounted?: () => void
   },
-  layerDefaults?: Parameters<typeof createLayer>[1],
+  createConfig?: Parameters<typeof createLayer>[1],
   withLayer = false,
 ) {
-  const useLayer = createLayer(Container, layerDefaults)
+  const useLayer = createLayer(Container, createConfig)
   let dialog!: LayerInstance
   let Content!: ReturnType<typeof makeContent>
 

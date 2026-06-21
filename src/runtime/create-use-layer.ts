@@ -2,20 +2,20 @@ import {
   getCurrentInstance,
   onUnmounted,
   reactive,
-  shallowRef,
   type AppContext,
   type Component,
 } from 'vue'
-import type { DefineLayerOptions, LayerInstance, LayerUsePayload } from '@/core/types'
+import type { LayerInstance, LayerInstanceConfig } from '@/core/types'
+import { toFragmentFromInstance } from '@/core/config/to-fragment'
 import { attachInternal } from '@/vue/instance/instance-registry'
-import { createLayerInternalState } from '@/vue/instance/internal-state'
-import { buildLayerRoot, type UseLayerContext } from './layer-root'
+import { createLayerState, type LayerStateWithRegistry } from '@/vue/instance/layer-state'
+import { buildLayerRoot, type LayerRootState, type UseLayerContext } from './layer-root'
 import { createLayerRuntime } from './layer-runtime'
 
 interface CreateInstanceOptions {
   Content?: Component
-  useOptions: LayerUsePayload
-  partial: LayerUsePayload
+  use: LayerInstanceConfig
+  clone: LayerInstanceConfig
   appContext: AppContext | null
   lifecycle: InstanceLifecycle
 }
@@ -44,42 +44,47 @@ interface LayerInstanceBundle {
 }
 
 function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): LayerInstanceBundle {
-  const internal = createLayerInternalState()
-  const state = reactive({
+  const layerState: LayerStateWithRegistry = createLayerState({
+    create: ctx.create,
+    use: toFragmentFromInstance(opts.use),
+    clone: toFragmentFromInstance(opts.clone),
+    show: {},
+  })
+
+  const rootState = reactive<LayerRootState>({
     visible: false,
-    showOptions: {} as LayerUsePayload,
     contentMountKey: 0,
   })
-  const defineLayerConfig = shallowRef<DefineLayerOptions | null>(null)
 
   const hide = () => {
-    state.visible = false
+    rootState.visible = false
   }
 
-  const LayerRoot = buildLayerRoot(ctx, opts, internal, state, defineLayerConfig, hide)
+  const LayerRoot = buildLayerRoot(ctx, { Content: opts.Content }, layerState, rootState, hide)
   const runtime = createLayerRuntime(LayerRoot, opts.appContext)
 
   const dispose = () => {
-    state.visible = false
+    rootState.visible = false
     runtime.unmount()
   }
 
-  const show = (payload?: LayerUsePayload) => {
-    defineLayerConfig.value = null
-    if (payload) state.showOptions = payload
-    state.contentMountKey++
-    state.visible = true
+  const show = (config?: LayerInstanceConfig) => {
+    if (config !== undefined) {
+      layerState.show = toFragmentFromInstance(config)
+    }
+    rootState.contentMountKey++
+    rootState.visible = true
     if (!runtime.mounted) runtime.mount()
   }
 
   const instance: LayerInstance = {
     show,
     hide,
-    clone(partial?: LayerUsePayload) {
+    clone(config?: LayerInstanceConfig) {
       const bundle = createInstance(ctx, {
         Content: opts.Content,
-        useOptions: opts.useOptions,
-        partial: partial ?? {},
+        use: opts.use,
+        clone: config ?? {},
         appContext: opts.appContext,
         lifecycle: opts.lifecycle,
       })
@@ -87,18 +92,18 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
       return bundle.instance
     },
     get visible() {
-      return state.visible
+      return rootState.visible
     },
   }
 
-  attachInternal(instance, internal)
+  attachInternal(instance, layerState)
   return { instance, dispose }
 }
 
 export function createUseLayer(ctx: UseLayerContext) {
   return function useLayer(
     Content?: Component,
-    useOptions: LayerUsePayload = {},
+    config: LayerInstanceConfig = {},
   ): LayerInstance {
     const hostInstance = getCurrentInstance()
     const appContext = hostInstance?.appContext ?? null
@@ -106,8 +111,8 @@ export function createUseLayer(ctx: UseLayerContext) {
     const lifecycle = createInstanceLifecycle()
     const { instance, dispose } = createInstance(ctx, {
       Content,
-      useOptions,
-      partial: {},
+      use: config,
+      clone: {},
       appContext,
       lifecycle,
     })

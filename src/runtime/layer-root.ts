@@ -1,14 +1,8 @@
-import { defineComponent, provide, type Component, type Ref } from 'vue'
-import { mergeConfig } from '@/core/config/merge-config'
+import { defineComponent, provide, type Component } from 'vue'
+import { mergeLayerState } from '@/core/config/merge-config'
 import { defaultResolve } from '@/core/config/default-resolve'
-import type {
-  DefineLayerOptions,
-  LayerAdapt,
-  LayerDefaults,
-  LayerRenderPlan,
-  LayerUsePayload,
-} from '@/core/types'
-import type { LayerInternalState } from '@/vue/instance/internal-state'
+import type { LayerAdapt, LayerFragment, LayerRenderPlan } from '@/core/types'
+import type { LayerStateWithRegistry } from '@/vue/instance/layer-state'
 import { renderLayerTree } from '@/vue/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
@@ -17,7 +11,7 @@ import {
 
 export interface UseLayerContext {
   Container: Component
-  layerDefaults: LayerDefaults
+  create: LayerFragment
   visibleProp: string
   visibleEvent: string
   adapt?: LayerAdapt
@@ -25,54 +19,49 @@ export interface UseLayerContext {
 
 export interface LayerRootState {
   visible: boolean
-  showOptions: LayerUsePayload
   contentMountKey: number
 }
 
 export interface LayerRootOptions {
   Content?: Component
-  useOptions: LayerUsePayload
-  partial: LayerUsePayload
 }
 
 export function buildLayerRoot(
   ctx: UseLayerContext,
   opts: LayerRootOptions,
-  internal: LayerInternalState,
+  layerState: LayerStateWithRegistry,
   state: LayerRootState,
-  defineLayerConfig: Ref<DefineLayerOptions | null>,
   hide: () => void,
 ) {
+  let lastMountKey = -1
+
   return defineComponent({
     name: `LayerRoot_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
     setup() {
       provide(LAYER_DEFINE_KEY, {
-        register(config: DefineLayerOptions) {
-          defineLayerConfig.value = config
-          internal.bumpSlots()
+        register(fragment: LayerFragment) {
+          layerState.define = fragment
         },
       })
 
       provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
-        registerCreatorContainerTemplate: internal.registerCreatorContainerTemplate,
+        registerCreatorContainerTemplate: layerState.registerCreatorContainerTemplate,
       })
 
       return () => {
         if (!state.visible) return null
-        void internal.slotsVersion.value
 
-        const merged = mergeConfig({
-          layerDefaults: ctx.layerDefaults,
-          defineLayer: defineLayerConfig.value,
-          useOptions: opts.useOptions,
-          showOptions: state.showOptions,
-          partial: opts.partial,
-          templateTiers: {
-            creatorContainer: internal.creatorContainer,
-            callerContainer: internal.callerContainer,
-            callerContent: internal.callerContent,
-          },
-        })
+        if (state.contentMountKey !== lastMountKey) {
+          layerState.define = null
+          lastMountKey = state.contentMountKey
+        }
+
+        void layerState.define
+        void layerState.templates.creatorContainer.container?.slots
+        void layerState.templates.callerContainer.container?.slots
+        void layerState.templates.callerContent.content?.slots
+
+        const merged = mergeLayerState(layerState)
 
         const resolveCtx = {
           merged,

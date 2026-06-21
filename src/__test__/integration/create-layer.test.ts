@@ -17,7 +17,7 @@ afterEach(() => {
 describe('createLayer (integration)', () => {
   it('opens shell layer without bound content', async () => {
     const useLayer = createLayer(Container, {
-      container: { props: { title: 'Shell', width: '400px' } },
+      props: { title: 'Shell', width: '400px' },
     })
     let dialog!: LayerInstance
 
@@ -39,7 +39,7 @@ describe('createLayer (integration)', () => {
 
   it('opens via .show() without template (body)', async () => {
     const useLayer = createLayer(Container, {
-      container: { props: { title: 'Create', width: '400px' } },
+      props: { title: 'Create', width: '400px' },
     })
     const Content = makeContent()
     let dialog!: LayerInstance
@@ -63,7 +63,7 @@ describe('createLayer (integration)', () => {
 
   it('merges config across all layers end-to-end', async () => {
     const useLayer = createLayer(Container, {
-      container: { props: { title: 'Default', width: '400px' } },
+      props: { title: 'Default', width: '400px' },
     })
     const Content = makeContent(true)
     let dialog!: LayerInstance
@@ -409,9 +409,9 @@ describe('createLayer (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('base')
   })
 
-  it('clone() creates independent instance with partial defaults', async () => {
+  it('clone() creates independent instance with clone defaults', async () => {
     const useLayer = createLayer(Container, {
-      container: { props: { title: 'Factory' } },
+      props: { title: 'Factory' },
     })
     const Content = makeContent()
     let base!: LayerInstance

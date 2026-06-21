@@ -5,12 +5,10 @@ export const useDialog = createLayer(
   ElDialog,
   {
     visible: ['modelValue', 'onUpdate:modelValue'],
-    container: {
-      props: {
-        width: '480px',
-        destroyOnClose: true,
-        appendToBody: true,
-      },
+    props: {
+      width: '480px',
+      destroyOnClose: true,
+      appendToBody: true,
     },
   },
   (normalized) => ({
@@ -28,13 +26,11 @@ export const useDrawer = createLayer(
   ElDrawer,
   {
     visible: ['modelValue', 'onUpdate:modelValue'],
-    container: {
-      props: {
-        direction: 'rtl',
-        size: '360px',
-        destroyOnClose: true,
-        appendToBody: true,
-      },
+    props: {
+      direction: 'rtl',
+      size: '360px',
+      destroyOnClose: true,
+      appendToBody: true,
     },
   },
   (normalized) => {
@@ -58,13 +54,11 @@ export const useDrawer = createLayer(
 
 export const useAlertDialog = createLayer(ElDialog, {
   visible: ['modelValue', 'onUpdate:modelValue'],
-  container: {
-    props: {
-      width: '360px',
-      appendToBody: true,
-      destroyOnClose: true,
-      showClose: false,
-    },
+  props: {
+    width: '360px',
+    appendToBody: true,
+    destroyOnClose: true,
+    showClose: false,
   },
   content: {
     props: { tone: 'info' as const },

@@ -40,7 +40,7 @@ function openView() {
 <template>
   <p class="hint">
     <code>clone()</code> 派生只读预览实例；<code>show({ container })</code> 单次覆盖标题——配置优先级：
-    show &gt; clone partial &gt; defineLayer。
+    show &gt; clone &gt; define。
   </p>
   <p class="user">
     {{ user.name }}

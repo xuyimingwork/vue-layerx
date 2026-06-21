@@ -1,15 +1,15 @@
-import type { LayerInternalState } from './internal-state'
+import type { LayerStateWithRegistry } from './layer-state'
 
-const registry = new WeakMap<object, LayerInternalState>()
+const registry = new WeakMap<object, LayerStateWithRegistry>()
 
-export function attachInternal(instance: object, internal: LayerInternalState): void {
+export function attachInternal(instance: object, internal: LayerStateWithRegistry): void {
   registry.set(instance, internal)
 }
 
-export function getInternal(instance: object): LayerInternalState {
-  const internal = registry.get(instance)
-  if (!internal) {
-    throw new Error('[vue-layerx] Invalid LayerInstance passed to LayerTemplate')
+export function getInternal(instance: object): LayerStateWithRegistry {
+  const state = registry.get(instance)
+  if (!state) {
+    throw new Error('[vue-layerx] LayerInstance internal state not found')
   }
-  return internal
+  return state
 }

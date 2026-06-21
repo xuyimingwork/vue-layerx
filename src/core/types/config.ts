@@ -21,6 +21,21 @@ export interface LayerTemplateEntry {
   render: SlotRenderFn
 }
 
+/** single merge tier: content + container fragments + hideOn */
+export interface LayerFragment {
+  content?: LayerNodeConfig
+  container?: LayerNodeConfig
+  hideOn?: string[]
+}
+
+/** createLayer + defineLayer — top-level LayerNodeConfig is container */
+export type LayerStaticConfig = LayerNodeConfig & {
+  content?: LayerNodeConfig
+  hideOn?: string[]
+  /** createLayer only; not part of merge */
+  visible?: VisibleProtocol
+}
+
 /** merge phase output */
 export interface LayerMerged {
   content: LayerNodeConfig
@@ -46,23 +61,6 @@ export interface LayerRenderPlan extends LayerNormalized {
   visibleProp: string
   visibleEvent: string
   onHide: () => void
-}
-
-export interface LayerDefaults {
-  visible?: VisibleProtocol
-  content?: LayerNodeConfig
-  container?: LayerNodeConfig
-}
-
-export interface DefineLayerOptions {
-  /** shorthand for container.props */
-  props?: LayerProps
-  container?: {
-    props?: LayerProps
-    slots?: Record<string, SlotRenderFn>
-  }
-  /** content events that auto-close the layer instance; owned by the dialog module author */
-  hideOn?: string[]
 }
 
 export type LayerAdapt = (normalized: LayerNormalized) => LayerNormalized

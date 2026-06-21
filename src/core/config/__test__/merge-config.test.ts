@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { LayerTemplateEntry } from '@/core/types/config'
-import { mergeConfig } from '../merge-config'
+import type { LayerFragment, LayerTemplateEntry } from '@/core/types/config'
+import { toFragmentFromInstance, toFragmentFromStatic } from '../to-fragment'
+import { mergeLayerState } from '../merge-config'
+import { createLayerState, type LayerStateWithRegistry } from '@/vue/instance/layer-state'
 
-function slotMarker(label: string) {
+function slotMarker(_label: string) {
   return () => null as never
 }
 
@@ -10,80 +12,93 @@ function entry(label: string): LayerTemplateEntry {
   return { render: slotMarker(label) }
 }
 
-describe('mergeConfig', () => {
-  it('merges container props with priority show > partial > useX > defineLayer > defaults', () => {
-    const merged = mergeConfig({
-      layerDefaults: {
-        container: { props: { title: 'Factory', width: '400px' } },
-      },
-      defineLayer: { props: { title: 'Defined' } },
-      useOptions: { container: { props: { width: '640px' } } },
-      showOptions: { container: { props: { title: 'Show' } } },
-      partial: { container: { props: { width: '720px' } } },
-    })
+function createTestState(overrides: {
+  create?: LayerFragment
+  define?: LayerFragment | null
+  use?: LayerFragment
+  clone?: LayerFragment
+  show?: LayerFragment
+} = {}): LayerStateWithRegistry {
+  const state = createLayerState({
+    create: overrides.create ?? {},
+    use: overrides.use,
+    clone: overrides.clone,
+    show: overrides.show,
+  })
+  if (overrides.define !== undefined) state.define = overrides.define
+  return state
+}
+
+describe('mergeLayerState', () => {
+  it('merges container props with priority show > clone > use > define > create', () => {
+    const merged = mergeLayerState(
+      createTestState({
+        create: toFragmentFromStatic({ props: { title: 'Create', width: '400px' } }),
+        define: toFragmentFromStatic({ props: { title: 'Defined' } }),
+        use: toFragmentFromInstance({ container: { props: { width: '640px' } } }),
+        show: toFragmentFromInstance({ container: { props: { title: 'Show' } } }),
+        clone: toFragmentFromInstance({ container: { props: { width: '720px' } } }),
+      }),
+    )
 
     expect(merged.container.props).toEqual({ title: 'Show', width: '720px' })
   })
 
-  it('merges content props with priority show > partial > useX > defaults', () => {
-    const merged = mergeConfig({
-      layerDefaults: {
-        content: { props: { message: 'factory' } },
-      },
-      defineLayer: null,
-      useOptions: { props: { message: 'use' } },
-      showOptions: { props: { message: 'show' } },
-      partial: { props: { message: 'partial' } },
-    })
+  it('merges content props with priority show > clone > use > create', () => {
+    const merged = mergeLayerState(
+      createTestState({
+        create: toFragmentFromStatic({ content: { props: { message: 'create' } } }),
+        use: toFragmentFromInstance({ props: { message: 'use' } }),
+        show: toFragmentFromInstance({ props: { message: 'show' } }),
+        clone: toFragmentFromInstance({ props: { message: 'clone' } }),
+      }),
+    )
 
     expect(merged.content.props).toEqual({ message: 'show' })
   })
 
-  it('falls back hideOn through partial, useX, and defineLayer', () => {
+  it('falls back hideOn through clone, use, and define', () => {
     expect(
-      mergeConfig({
-        layerDefaults: {},
-        defineLayer: null,
-        useOptions: { hideOn: ['done'] },
-        showOptions: {},
-      }).hideOn,
+      mergeLayerState(
+        createTestState({
+          use: toFragmentFromInstance({ hideOn: ['done'] }),
+        }),
+      ).hideOn,
     ).toEqual(['done'])
 
     expect(
-      mergeConfig({
-        layerDefaults: {},
-        defineLayer: { hideOn: ['submit'] },
-        useOptions: {},
-        showOptions: {},
-      }).hideOn,
+      mergeLayerState(
+        createTestState({
+          define: toFragmentFromStatic({ hideOn: ['submit'] }),
+        }),
+      ).hideOn,
     ).toEqual(['submit'])
 
     expect(
-      mergeConfig({
-        layerDefaults: {},
-        defineLayer: { hideOn: ['submit'] },
-        useOptions: { hideOn: ['done'] },
-        showOptions: {},
-      }).hideOn,
+      mergeLayerState(
+        createTestState({
+          define: toFragmentFromStatic({ hideOn: ['submit'] }),
+          use: toFragmentFromInstance({ hideOn: ['done'] }),
+        }),
+      ).hideOn,
     ).toEqual(['done'])
 
     expect(
-      mergeConfig({
-        layerDefaults: {},
-        defineLayer: null,
-        useOptions: { hideOn: ['done'] },
-        showOptions: { hideOn: ['cancel'] },
-      }).hideOn,
+      mergeLayerState(
+        createTestState({
+          use: toFragmentFromInstance({ hideOn: ['done'] }),
+          show: toFragmentFromInstance({ hideOn: ['cancel'] }),
+        }),
+      ).hideOn,
     ).toEqual(['cancel'])
 
     expect(
-      mergeConfig({
-        layerDefaults: {},
-        defineLayer: null,
-        useOptions: { hideOn: ['done'] },
-        showOptions: {},
-        partial: { hideOn: ['cancel'] },
-      }).hideOn,
+      mergeLayerState(
+        createTestState({
+          use: toFragmentFromInstance({ hideOn: ['done'] }),
+          clone: toFragmentFromInstance({ hideOn: ['cancel'] }),
+        }),
+      ).hideOn,
     ).toEqual(['cancel'])
   })
 
@@ -91,12 +106,12 @@ describe('mergeConfig', () => {
     const contentSlot = () => null
     const containerSlot = () => null
 
-    const merged = mergeConfig({
-      layerDefaults: {},
-      defineLayer: { container: { slots: { footer: containerSlot } } },
-      useOptions: { slots: { header: contentSlot } },
-      showOptions: {},
-    })
+    const merged = mergeLayerState(
+      createTestState({
+        define: { container: { slots: { footer: containerSlot } } },
+        use: toFragmentFromInstance({ slots: { header: contentSlot } }),
+      }),
+    )
 
     expect(merged.content.slots).toEqual({ header: contentSlot })
     expect(merged.container.slots).toEqual({ footer: containerSlot })
@@ -108,17 +123,16 @@ describe('mergeConfig', () => {
     const useX = () => null
     const show = () => null
 
-    const merged = mergeConfig({
-      layerDefaults: { container: { slots: { footer: create } } },
-      defineLayer: { container: { slots: { footer: define } } },
-      useOptions: { container: { slots: { footer: useX } } },
-      showOptions: { container: { slots: { footer: show } } },
-      templateTiers: {
-        creatorContainer: { footer: entry('creator') },
-        callerContainer: { footer: entry('caller') },
-        callerContent: {},
-      },
+    const state = createTestState({
+      create: { container: { slots: { footer: create } } },
+      define: { container: { slots: { footer: define } } },
+      use: toFragmentFromInstance({ container: { slots: { footer: useX } } }),
+      show: toFragmentFromInstance({ container: { slots: { footer: show } } }),
     })
+    state.registerCreatorContainerTemplate('footer', entry('creator'))
+    state.registerCallerContainerTemplate('footer', entry('caller'))
+
+    const merged = mergeLayerState(state)
 
     expect(merged.container.slots?.footer).toBe(show)
   })
@@ -126,17 +140,14 @@ describe('mergeConfig', () => {
   it('caller container template wins over define and creator templates', () => {
     const define = () => null
 
-    const merged = mergeConfig({
-      layerDefaults: { container: { slots: { footer: () => null } } },
-      defineLayer: { container: { slots: { footer: define } } },
-      useOptions: {},
-      showOptions: {},
-      templateTiers: {
-        creatorContainer: { footer: entry('creator') },
-        callerContainer: { footer: entry('caller') },
-        callerContent: {},
-      },
+    const state = createTestState({
+      create: { container: { slots: { footer: () => null } } },
+      define: { container: { slots: { footer: define } } },
     })
+    state.registerCreatorContainerTemplate('footer', entry('creator'))
+    state.registerCallerContainerTemplate('footer', entry('caller'))
+
+    const merged = mergeLayerState(state)
 
     const footer = merged.container.slots?.footer
     expect(footer).toBeTypeOf('function')
@@ -146,35 +157,26 @@ describe('mergeConfig', () => {
   it('define container slot wins over creator template', () => {
     const define = () => null
 
-    const merged = mergeConfig({
-      layerDefaults: {},
-      defineLayer: { container: { slots: { footer: define } } },
-      useOptions: {},
-      showOptions: {},
-      templateTiers: {
-        creatorContainer: { footer: entry('creator') },
-        callerContainer: {},
-        callerContent: {},
-      },
+    const state = createTestState({
+      define: { container: { slots: { footer: define } } },
     })
+    state.registerCreatorContainerTemplate('footer', entry('creator'))
+
+    const merged = mergeLayerState(state)
 
     expect(merged.container.slots?.footer).toBe(define)
   })
 
-  it('caller content template wins over create defaults but loses to useX', () => {
+  it('caller content template wins over create defaults but loses to use', () => {
     const useX = () => null
 
-    const merged = mergeConfig({
-      layerDefaults: { content: { slots: { extra: () => null } } },
-      defineLayer: null,
-      useOptions: { slots: { extra: useX } },
-      showOptions: {},
-      templateTiers: {
-        creatorContainer: {},
-        callerContainer: {},
-        callerContent: { extra: entry('caller') },
-      },
+    const state = createTestState({
+      create: { content: { slots: { extra: () => null } } },
+      use: toFragmentFromInstance({ slots: { extra: useX } }),
     })
+    state.registerCallerContentTemplate('extra', entry('caller'))
+
+    const merged = mergeLayerState(state)
 
     expect(merged.content.slots?.extra).toBe(useX)
   })

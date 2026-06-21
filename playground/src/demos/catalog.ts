@@ -71,8 +71,8 @@ export const demoGroups: DemoGroup[] = [
         level: 5,
         title: 'clone 多实例',
         description:
-          '从同一实例 clone({ container }) 派生 partial 默认配置，visible 独立，各实例 show / hide 互不影响。',
-        tags: ['clone()', 'partial', '独立 visible', 'container.props'],
+          '从同一实例 clone({ container }) 派生 clone 默认配置，visible 独立，各实例 show / hide 互不影响。',
+        tags: ['clone()', 'clone tier', '独立 visible', 'container.props'],
         component: CloneDemo,
       },
       {
@@ -106,7 +106,7 @@ export const demoGroups: DemoGroup[] = [
         title: '配置合并',
         description:
           '四级优先级：createLayer(defaults) → defineLayer → useDialog → show()。对比默认与 show 覆盖的标题、宽度。',
-        tags: ['mergeConfig', 'show > useX > defineLayer > createLayer'],
+        tags: ['mergeLayerState', 'show > use > define > create'],
         component: ConfigMergeDemo,
       },
     ],

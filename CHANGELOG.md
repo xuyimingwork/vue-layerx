@@ -13,13 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** LayerTemplate slot delivery now merges through **slot tiers** in `mergeConfig` (same priority model as imperative `slots`). Resolve no longer overlays templates after merge.
-- **Breaking:** Container slot priority: `show > partial > useX > caller LayerTemplate (:to container) > defineLayer > creator LayerTemplate > createLayer`
-- **Breaking:** Content slot priority: `show > partial > useX > caller LayerTemplate (:to) > createLayer`
+- **Breaking:** Unify public config types: `LayerStaticConfig` (`createLayer` + `defineLayer`, top-level = container) and `LayerInstanceConfig` (`useX` / `show` / `clone`, top-level = content). Remove `LayerDefaults`, `DefineLayerOptions`, `LayerUsePayload`, `LayerUseOptions`, `LayerShowPayload`.
+- **Breaking:** `createLayer` second argument: container props move to top-level (`props`) instead of `container: { props }`.
+- **Breaking:** Internal merge input consolidated into per-instance `LayerState` (`create` / `define` / `use` / `clone` / `show` / `templates` tiers); `mergeConfig` renamed to `mergeLayerState`.
+- **Breaking:** Merge tier rename: `partial` → `clone` in priority chains.
+- **Breaking:** LayerTemplate slot delivery now merges through **slot tiers** in `mergeLayerState` (same priority model as imperative `slots`). Resolve no longer overlays templates after merge.
+- **Breaking:** Container slot priority: `show > clone > use > caller LayerTemplate (:to container) > define > creator LayerTemplate > create`
+- **Breaking:** Content slot priority: `show > clone > use > caller LayerTemplate (:to) > create`
 - **Breaking:** Remove `LayerBind`; use `LayerTemplate :to="instance"` to fill content slots from the caller side
-- **Breaking:** Rename config field `layer` → `container` on `LayerUsePayload`, `LayerNormalized`, `LayerMerged`, `LayerDefaults`, and `DefineLayerOptions`
+- **Breaking:** Rename config field `layer` → `container` on instance config, `LayerNormalized`, and `LayerMerged`
 - **Breaking:** Rename `layerTemplates` / `registerLayerTemplate` → `containerTemplates` / `registerContainerTemplate`; injection key `CONTAINER_TEMPLATE_REGISTRY_KEY`
-- **Breaking:** Rename `pickLayerConfig` → `pickContainerConfig` (internal merge helper)
 
 ## [0.0.1] - 2026-06-17
 

@@ -1,123 +1,72 @@
-import type {
-  DefineLayerOptions,
-  LayerDefaults,
-  LayerMerged,
-  LayerNodeConfig,
-} from '@/core/types/config'
-import type { LayerUsePayload } from '@/core/types/payload'
-import type { LayerTemplateRegistries } from '@/vue/instance/internal-state'
-import { templateRegistryToNodeConfig } from './materialize-templates'
+import type { LayerFragment, LayerMerged, LayerNodeConfig } from '@/core/types/config'
+import type { LayerStateWithRegistry } from '@/vue/instance/layer-state'
 import { mergeNodeConfig } from './merge-node-config'
 
-export function pickContentConfig(
-  payload: LayerUsePayload | undefined,
-): LayerNodeConfig | undefined {
-  if (!payload) return undefined
-  const result: LayerNodeConfig = {}
-  if (payload.component !== undefined) result.component = payload.component
-  if (payload.props !== undefined) result.props = payload.props
-  if (payload.slots !== undefined) result.slots = payload.slots
-  if (Object.keys(result).length === 0) return undefined
-  return result
-}
-
-export function pickContainerConfig(
-  payload: LayerUsePayload | undefined,
-): LayerNodeConfig | undefined {
-  return payload?.container
-}
-
 function pickSlotsFragment(
-  config: LayerNodeConfig | undefined,
+  fragment: LayerFragment | null | undefined,
+  side: 'content' | 'container',
 ): LayerNodeConfig | undefined {
-  if (!config?.slots) return undefined
-  return { slots: config.slots }
-}
-
-export interface MergeContext {
-  layerDefaults: LayerDefaults
-  defineLayer: DefineLayerOptions | null
-  useOptions: LayerUsePayload
-  showOptions: LayerUsePayload
-  partial?: LayerUsePayload
-  /** LayerTemplate registries snapshotted at render; merged as slot tiers */
-  templateTiers?: LayerTemplateRegistries
-}
-
-function defineLayerToConfig(
-  defineLayer: DefineLayerOptions | null,
-): LayerUsePayload | undefined {
-  if (!defineLayer) return undefined
-  const result: LayerUsePayload = {
-    container: mergeNodeConfig(
-      defineLayer.props ? { props: defineLayer.props } : undefined,
-      defineLayer.container,
-    ),
-  }
-  if (defineLayer.hideOn) result.hideOn = defineLayer.hideOn
-  return result
+  if (!fragment) return undefined
+  const node = side === 'content' ? fragment.content : fragment.container
+  if (!node?.slots) return undefined
+  return { slots: node.slots }
 }
 
 /**
  * Container slot priority (low → high, later wins):
- * create > creator template > define > caller template > useX > partial > show
+ * create > creator template > define > caller template > use > clone > show
  */
-function mergeContainerSlots(
-  ctx: MergeContext,
-  defineLayerConfig: LayerUsePayload | undefined,
-): LayerNodeConfig['slots'] {
+function mergeContainerSlots(state: LayerStateWithRegistry): LayerNodeConfig['slots'] {
   return mergeNodeConfig(
-    pickSlotsFragment(ctx.layerDefaults.container),
-    templateRegistryToNodeConfig(ctx.templateTiers?.creatorContainer),
-    pickSlotsFragment(defineLayerConfig?.container),
-    templateRegistryToNodeConfig(ctx.templateTiers?.callerContainer),
-    pickSlotsFragment(pickContainerConfig(ctx.useOptions)),
-    pickSlotsFragment(pickContainerConfig(ctx.partial)),
-    pickSlotsFragment(pickContainerConfig(ctx.showOptions)),
+    pickSlotsFragment(state.create, 'container'),
+    pickSlotsFragment(state.templates.creatorContainer, 'container'),
+    pickSlotsFragment(state.define, 'container'),
+    pickSlotsFragment(state.templates.callerContainer, 'container'),
+    pickSlotsFragment(state.use, 'container'),
+    pickSlotsFragment(state.clone, 'container'),
+    pickSlotsFragment(state.show, 'container'),
   ).slots
 }
 
 /**
  * Content slot priority (low → high, later wins):
- * create > caller template > useX > partial > show
+ * create > caller template > use > clone > show
  */
-function mergeContentSlots(ctx: MergeContext): LayerNodeConfig['slots'] {
+function mergeContentSlots(state: LayerStateWithRegistry): LayerNodeConfig['slots'] {
   return mergeNodeConfig(
-    pickSlotsFragment(ctx.layerDefaults.content),
-    templateRegistryToNodeConfig(ctx.templateTiers?.callerContent),
-    pickSlotsFragment(pickContentConfig(ctx.useOptions)),
-    pickSlotsFragment(pickContentConfig(ctx.partial)),
-    pickSlotsFragment(pickContentConfig(ctx.showOptions)),
+    pickSlotsFragment(state.create, 'content'),
+    pickSlotsFragment(state.templates.callerContent, 'content'),
+    pickSlotsFragment(state.use, 'content'),
+    pickSlotsFragment(state.clone, 'content'),
+    pickSlotsFragment(state.show, 'content'),
   ).slots
 }
 
-export function mergeConfig(ctx: MergeContext): LayerMerged {
-  const defineLayerConfig = defineLayerToConfig(ctx.defineLayer)
-
+export function mergeLayerState(state: LayerStateWithRegistry): LayerMerged {
   const contentBase = mergeNodeConfig(
-    ctx.layerDefaults.content,
-    pickContentConfig(ctx.useOptions),
-    pickContentConfig(ctx.partial),
-    pickContentConfig(ctx.showOptions),
+    state.create.content,
+    state.use.content,
+    state.clone.content,
+    state.show.content,
   )
 
   const containerBase = mergeNodeConfig(
-    ctx.layerDefaults.container,
-    defineLayerConfig?.container,
-    pickContainerConfig(ctx.useOptions),
-    pickContainerConfig(ctx.partial),
-    pickContainerConfig(ctx.showOptions),
+    state.create.container,
+    state.define?.container,
+    state.use.container,
+    state.clone.container,
+    state.show.container,
   )
 
   const hideOn =
-    ctx.showOptions.hideOn ??
-    ctx.partial?.hideOn ??
-    ctx.useOptions.hideOn ??
-    defineLayerConfig?.hideOn
+    state.show.hideOn ??
+    state.clone.hideOn ??
+    state.use.hideOn ??
+    state.define?.hideOn
 
   return {
-    content: { ...contentBase, slots: mergeContentSlots(ctx) },
-    container: { ...containerBase, slots: mergeContainerSlots(ctx, defineLayerConfig) },
+    content: { ...contentBase, slots: mergeContentSlots(state) },
+    container: { ...containerBase, slots: mergeContainerSlots(state) },
     hideOn,
   }
 }
