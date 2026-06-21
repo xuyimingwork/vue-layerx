@@ -1,6 +1,6 @@
 import { defineComponent, provide, type Component, type Ref } from 'vue'
 import { mergeConfig } from '@/core/config/merge-config'
-import { defaultResolve, hasContentComponent } from '@/core/config/default-resolve'
+import { defaultResolve } from '@/core/config/default-resolve'
 import type {
   DefineLayerOptions,
   LayerAdapt,
@@ -16,7 +16,7 @@ import {
 } from '@/vue/di/injection-keys'
 
 export interface UseLayerContext {
-  LayerComponent: Component
+  Container: Component
   layerDefaults: LayerDefaults
   visibleProp: string
   visibleEvent: string
@@ -76,14 +76,13 @@ export function buildLayerRoot(
 
         const resolveCtx = {
           merged,
-          LayerComponent: ctx.LayerComponent,
+          Container: ctx.Container,
           boundContent: opts.Content,
           hide,
         }
 
         const resolved = defaultResolve(resolveCtx)
         const normalized = ctx.adapt ? ctx.adapt(resolved) : resolved
-        const contentPresent = hasContentComponent(resolveCtx)
 
         const plan: LayerRenderPlan = {
           ...normalized,
@@ -95,8 +94,7 @@ export function buildLayerRoot(
 
         return renderLayerTree({
           plan,
-          hasContent: contentPresent,
-          contentMountKey: contentPresent ? state.contentMountKey : undefined,
+          contentMountKey: normalized.content ? state.contentMountKey : undefined,
         })
       }
     },

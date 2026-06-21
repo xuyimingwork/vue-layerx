@@ -2,8 +2,8 @@ import { defineComponent, h, onMounted } from 'vue'
 import { defineLayer, LayerTemplate, createLayer } from '@/index'
 import type { LayerInstance } from '@/core/types'
 
-export const LayerComponent = defineComponent({
-  name: 'LayerComponent',
+export const Container = defineComponent({
+  name: 'Container',
   props: { modelValue: Boolean, title: String, width: String },
   emits: ['update:modelValue'],
   setup(props, { slots }) {
@@ -61,7 +61,7 @@ export function createMountedDialog(
   layerDefaults?: Parameters<typeof createLayer>[1],
   withLayer = false,
 ) {
-  const useLayer = createLayer(LayerComponent, layerDefaults)
+  const useLayer = createLayer(Container, layerDefaults)
   let dialog!: LayerInstance
   let Content!: ReturnType<typeof makeContent>
 

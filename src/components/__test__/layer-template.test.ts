@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { LayerTemplateScope } from '@/core/types'
 import { createLayer, LayerTemplate } from '@/index'
-import { LayerComponent } from '@/__test__/fixtures/components'
+import { Container } from '@/__test__/fixtures/components'
 import { LayerTemplate as LayerTemplateComponent } from '../layer-template'
 
 describe('LayerTemplate', () => {
@@ -51,7 +51,7 @@ describe('LayerTemplate', () => {
   })
 
   it('forwards content slot props into slotProps when to is set', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
 
     const Content = defineComponent({
       name: 'ScopedContent',
@@ -81,7 +81,7 @@ describe('LayerTemplate', () => {
   })
 
   it('forwards content slot props into slotProps when to is set', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     let captured: LayerTemplateScope | undefined
 
     const Content = defineComponent({
@@ -119,7 +119,7 @@ describe('LayerTemplate', () => {
   })
 
   it('fills container slot when to and container are set', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
 
     const Content = defineComponent({
       name: 'ContentWithCreatorFooter',

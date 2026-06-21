@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, LayerTemplate } from '@/index'
 import type { LayerInstance, LayerTemplateScope } from '@/core/types'
 import {
-  LayerComponent,
+  Container,
   makeContent,
   queryAllBodyDialogs,
   queryBodyDialog,
@@ -15,8 +15,30 @@ afterEach(() => {
 })
 
 describe('createLayer (integration)', () => {
+  it('opens shell layer without bound content', async () => {
+    const useLayer = createLayer(Container, {
+      container: { props: { title: 'Shell', width: '400px' } },
+    })
+    let dialog!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer()
+        onMounted(() => dialog.show())
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(queryBodyDialog()).toBeTruthy()
+    expect(document.body.querySelector('.content')).toBeNull()
+    expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Shell')
+  })
+
   it('opens via .show() without template (body)', async () => {
-    const useLayer = createLayer(LayerComponent, {
+    const useLayer = createLayer(Container, {
       container: { props: { title: 'Create', width: '400px' } },
     })
     const Content = makeContent()
@@ -40,7 +62,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('merges config across all layers end-to-end', async () => {
-    const useLayer = createLayer(LayerComponent, {
+    const useLayer = createLayer(Container, {
       container: { props: { title: 'Default', width: '400px' } },
     })
     const Content = makeContent(true)
@@ -70,7 +92,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('merges default content props from createLayer', async () => {
-    const useLayer = createLayer(LayerComponent, {
+    const useLayer = createLayer(Container, {
       content: { props: { message: 'default-msg' } },
     })
     const Content = makeContent()
@@ -91,7 +113,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('renders defineLayer LayerTemplate content into container slot', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent(true)
     let dialog!: LayerInstance
 
@@ -111,7 +133,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('closes on hideOn content events', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
 
@@ -134,7 +156,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('show hideOn works when useDialog has no hideOn', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
 
@@ -157,7 +179,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('exposes .hide()', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
 
@@ -180,7 +202,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('hide() closes layer but keeps mount container until host unmounts', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
 
@@ -213,7 +235,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('show() after hide() reopens without host remount', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
 
@@ -242,7 +264,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('clone() allows parallel show() with independent DOM and visible state', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
     let cloned!: LayerInstance
@@ -271,7 +293,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('host unmount disposes base and cloned mount containers together', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
     let cloned!: LayerInstance
@@ -299,7 +321,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('host unmount disposes nested clone chain mount containers', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
     let mid!: LayerInstance
@@ -330,7 +352,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('clone.hide() without show does not tear down sibling instance DOM', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
     let cloned!: LayerInstance
@@ -358,7 +380,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('clone.hide() only removes its own dialog when both are open', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
     let cloned!: LayerInstance
@@ -388,7 +410,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('clone() creates independent instance with partial defaults', async () => {
-    const useLayer = createLayer(LayerComponent, {
+    const useLayer = createLayer(Container, {
       container: { props: { title: 'Factory' } },
     })
     const Content = makeContent()
@@ -427,7 +449,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('nested content defineLayer and LayerTemplate do not bind to parent layer', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
 
     const InnerContent = defineComponent({
       name: 'InnerContent',
@@ -490,7 +512,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('render() passes inLayer scope when LayerTemplate content is rendered into container slot', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     let captured: LayerTemplateScope | undefined
 
     const Content = defineComponent({
@@ -533,7 +555,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('forwards content scoped slot props into LayerTemplate slotProps', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     let captured: LayerTemplateScope | undefined
 
     const Content = defineComponent({
@@ -628,7 +650,7 @@ describe('createLayer (integration)', () => {
   })
 
   it('remounts content on each show()', async () => {
-    const useLayer = createLayer(LayerComponent)
+    const useLayer = createLayer(Container)
     let setupCount = 0
 
     const Content = defineComponent({

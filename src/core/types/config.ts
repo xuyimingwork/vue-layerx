@@ -36,7 +36,7 @@ export interface LayerNodeNormalized {
 }
 
 export interface LayerNormalized {
-  content: LayerNodeNormalized
+  content?: LayerNodeNormalized
   container: LayerNodeNormalized
 }
 

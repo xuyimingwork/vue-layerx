@@ -5,13 +5,11 @@ import { buildVisibleProps } from './build-visible-props'
 
 export interface RenderLayerTreeOptions {
   plan: LayerRenderPlan
-  hasContent: boolean
   contentMountKey?: number
 }
 
 export function renderLayerTree({
   plan,
-  hasContent,
   contentMountKey,
 }: RenderLayerTreeOptions): VNode {
   const containerProps = buildVisibleProps(
@@ -22,16 +20,17 @@ export function renderLayerTree({
     plan.onHide,
   )
 
-  const defaultSlot = hasContent
+  const content = plan.content
+  const defaultSlot = content
     ? () =>
         h(
-          plan.content.component,
+          content.component,
           {
-            ...plan.content.props,
+            ...content.props,
             key: contentMountKey,
             [LAYERX_DIRECT_CONTENT]: true,
           },
-          plan.content.slots,
+          content.slots,
         )
     : () => null
 
