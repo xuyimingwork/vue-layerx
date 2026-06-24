@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
 import { toFragmentFromInstance, toFragmentFromStatic } from '../to-fragment'
-import { mergeLayerState } from '../merge-config'
-import { createLayerState, type LayerStateWithRegistry } from '@/instance/layer-state'
+import { mergeLayerConfigStore } from '../merge-config'
+import { createLayerConfigStore, type LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 
 function slotMarker(_label: string) {
   return () => null as never
@@ -12,27 +12,27 @@ function entry(label: string): LayerTemplateEntry {
   return { render: slotMarker(label) }
 }
 
-function createTestState(overrides: {
+function createTestStore(overrides: {
   create?: LayerConfigFragment
   define?: LayerConfigFragment | null
   use?: LayerConfigFragment
   clone?: LayerConfigFragment
   show?: LayerConfigFragment
-} = {}): LayerStateWithRegistry {
-  const state = createLayerState({
+} = {}): LayerConfigStoreWithRegistry {
+  const store = createLayerConfigStore({
     create: overrides.create ?? {},
     use: overrides.use,
     clone: overrides.clone,
     show: overrides.show,
   })
-  if (overrides.define !== undefined) state.define = overrides.define
-  return state
+  if (overrides.define !== undefined) store.define = overrides.define
+  return store
 }
 
-describe('mergeLayerState', () => {
+describe('mergeLayerConfigStore', () => {
   it('merges container props with priority show > clone > use > define > create', () => {
-    const merged = mergeLayerState(
-      createTestState({
+    const merged = mergeLayerConfigStore(
+      createTestStore({
         create: toFragmentFromStatic({ props: { title: 'Create', width: '400px' } }),
         define: toFragmentFromStatic({ props: { title: 'Defined' } }),
         use: toFragmentFromInstance({ container: { props: { width: '640px' } } }),
@@ -45,8 +45,8 @@ describe('mergeLayerState', () => {
   })
 
   it('merges content props with priority show > clone > use > create', () => {
-    const merged = mergeLayerState(
-      createTestState({
+    const merged = mergeLayerConfigStore(
+      createTestStore({
         create: toFragmentFromStatic({ content: { props: { message: 'create' } } }),
         use: toFragmentFromInstance({ props: { message: 'use' } }),
         show: toFragmentFromInstance({ props: { message: 'show' } }),
@@ -59,24 +59,24 @@ describe('mergeLayerState', () => {
 
   it('falls back hideOn through clone, use, and define', () => {
     expect(
-      mergeLayerState(
-        createTestState({
+      mergeLayerConfigStore(
+        createTestStore({
           use: toFragmentFromInstance({ hideOn: ['done'] }),
         }),
       ).hideOn,
     ).toEqual(['done'])
 
     expect(
-      mergeLayerState(
-        createTestState({
+      mergeLayerConfigStore(
+        createTestStore({
           define: toFragmentFromStatic({ hideOn: ['submit'] }),
         }),
       ).hideOn,
     ).toEqual(['submit'])
 
     expect(
-      mergeLayerState(
-        createTestState({
+      mergeLayerConfigStore(
+        createTestStore({
           define: toFragmentFromStatic({ hideOn: ['submit'] }),
           use: toFragmentFromInstance({ hideOn: ['done'] }),
         }),
@@ -84,8 +84,8 @@ describe('mergeLayerState', () => {
     ).toEqual(['done'])
 
     expect(
-      mergeLayerState(
-        createTestState({
+      mergeLayerConfigStore(
+        createTestStore({
           use: toFragmentFromInstance({ hideOn: ['done'] }),
           show: toFragmentFromInstance({ hideOn: ['cancel'] }),
         }),
@@ -93,8 +93,8 @@ describe('mergeLayerState', () => {
     ).toEqual(['cancel'])
 
     expect(
-      mergeLayerState(
-        createTestState({
+      mergeLayerConfigStore(
+        createTestStore({
           use: toFragmentFromInstance({ hideOn: ['done'] }),
           clone: toFragmentFromInstance({ hideOn: ['cancel'] }),
         }),
@@ -106,8 +106,8 @@ describe('mergeLayerState', () => {
     const contentSlot = () => null
     const containerSlot = () => null
 
-    const merged = mergeLayerState(
-      createTestState({
+    const merged = mergeLayerConfigStore(
+      createTestStore({
         define: { container: { slots: { footer: containerSlot } } },
         use: toFragmentFromInstance({ slots: { header: contentSlot } }),
       }),
@@ -123,16 +123,16 @@ describe('mergeLayerState', () => {
     const useX = () => null
     const show = () => null
 
-    const state = createTestState({
+    const store = createTestStore({
       create: { container: { slots: { footer: create } } },
       define: { container: { slots: { footer: define } } },
       use: toFragmentFromInstance({ container: { slots: { footer: useX } } }),
       show: toFragmentFromInstance({ container: { slots: { footer: show } } }),
     })
-    state.registerCreatorContainerTemplate('footer', entry('creator'))
-    state.registerCallerContainerTemplate('footer', entry('caller'))
+    store.registerCreatorContainerTemplate('footer', entry('creator'))
+    store.registerCallerContainerTemplate('footer', entry('caller'))
 
-    const merged = mergeLayerState(state)
+    const merged = mergeLayerConfigStore(store)
 
     expect(merged.container.slots?.footer).toBe(show)
   })
@@ -140,14 +140,14 @@ describe('mergeLayerState', () => {
   it('caller container template wins over define and creator templates', () => {
     const define = () => null
 
-    const state = createTestState({
+    const store = createTestStore({
       create: { container: { slots: { footer: () => null } } },
       define: { container: { slots: { footer: define } } },
     })
-    state.registerCreatorContainerTemplate('footer', entry('creator'))
-    state.registerCallerContainerTemplate('footer', entry('caller'))
+    store.registerCreatorContainerTemplate('footer', entry('creator'))
+    store.registerCallerContainerTemplate('footer', entry('caller'))
 
-    const merged = mergeLayerState(state)
+    const merged = mergeLayerConfigStore(store)
 
     const footer = merged.container.slots?.footer
     expect(footer).toBeTypeOf('function')
@@ -157,12 +157,12 @@ describe('mergeLayerState', () => {
   it('define container slot wins over creator template', () => {
     const define = () => null
 
-    const state = createTestState({
+    const store = createTestStore({
       define: { container: { slots: { footer: define } } },
     })
-    state.registerCreatorContainerTemplate('footer', entry('creator'))
+    store.registerCreatorContainerTemplate('footer', entry('creator'))
 
-    const merged = mergeLayerState(state)
+    const merged = mergeLayerConfigStore(store)
 
     expect(merged.container.slots?.footer).toBe(define)
   })
@@ -170,13 +170,13 @@ describe('mergeLayerState', () => {
   it('caller content template wins over create defaults but loses to use', () => {
     const useX = () => null
 
-    const state = createTestState({
+    const store = createTestStore({
       create: { content: { slots: { extra: () => null } } },
       use: toFragmentFromInstance({ slots: { extra: useX } }),
     })
-    state.registerCallerContentTemplate('extra', entry('caller'))
+    store.registerCallerContentTemplate('extra', entry('caller'))
 
-    const merged = mergeLayerState(state)
+    const merged = mergeLayerConfigStore(store)
 
     expect(merged.content.slots?.extra).toBe(useX)
   })

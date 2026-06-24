@@ -547,9 +547,9 @@ create > caller LayerTemplate (:to) > use > clone > show
 
 `clone` 派生实例：`clone` tier 介于 `show` 与 `use` 之间（props 与 slots 均适用）。
 
-### 内部 LayerState
+### 内部 LayerConfigStore
 
-每个 layer 实例维护 **`LayerState`**（`create` / `define` / `use` / `clone` / `show` / `templates`），各 API 只更新对应 tier；render 时 `mergeLayerState(state)` 汇合并 resolve。
+每个 layer 实例维护 **`LayerConfigStore`**（`create` / `define` / `use` / `clone` / `show` / `templates`），各 API 只更新对应 tier；render 时 `mergeLayerConfigStore(store)` 汇合并 resolve。
 
 ### merge 后字段来源示例
 

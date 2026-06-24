@@ -1,8 +1,8 @@
 import { defineComponent, provide, type Component } from 'vue'
-import { mergeLayerState } from '@/pipeline/merge-config'
+import { mergeLayerConfigStore } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
 import type { LayerAdapt, LayerConfigFragment, LayerRenderPlan } from '@/types'
-import type { LayerStateWithRegistry } from '@/instance/layer-state'
+import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
@@ -29,7 +29,7 @@ export interface LayerRootOptions {
 export function buildLayerRoot(
   ctx: UseLayerContext,
   opts: LayerRootOptions,
-  layerState: LayerStateWithRegistry,
+  configStore: LayerConfigStoreWithRegistry,
   state: LayerRootState,
   hide: () => void,
 ) {
@@ -40,28 +40,28 @@ export function buildLayerRoot(
     setup() {
       provide(LAYER_DEFINE_KEY, {
         register(fragment: LayerConfigFragment) {
-          layerState.define = fragment
+          configStore.define = fragment
         },
       })
 
       provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
-        registerCreatorContainerTemplate: layerState.registerCreatorContainerTemplate,
+        registerCreatorContainerTemplate: configStore.registerCreatorContainerTemplate,
       })
 
       return () => {
         if (!state.visible) return null
 
         if (state.contentMountKey !== lastMountKey) {
-          layerState.define = null
+          configStore.define = null
           lastMountKey = state.contentMountKey
         }
 
-        void layerState.define
-        void layerState.templates.creatorContainer.container?.slots
-        void layerState.templates.callerContainer.container?.slots
-        void layerState.templates.callerContent.content?.slots
+        void configStore.define
+        void configStore.templates.creatorContainer.container?.slots
+        void configStore.templates.callerContainer.container?.slots
+        void configStore.templates.callerContent.content?.slots
 
-        const merged = mergeLayerState(layerState)
+        const merged = mergeLayerConfigStore(configStore)
 
         const resolveCtx = {
           merged,

@@ -1,5 +1,5 @@
 import type { LayerConfigFragment, LayerMerged, LayerConfigNode } from '@/types/config'
-import type { LayerStateWithRegistry } from '@/instance/layer-state'
+import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { mergeNodeConfig } from './merge-node-config'
 
 function pickSlotsFragment(
@@ -16,15 +16,15 @@ function pickSlotsFragment(
  * Container slot priority (low → high, later wins):
  * create > creator template > define > caller template > use > clone > show
  */
-function mergeContainerSlots(state: LayerStateWithRegistry): LayerConfigNode['slots'] {
+function mergeContainerSlots(store: LayerConfigStoreWithRegistry): LayerConfigNode['slots'] {
   return mergeNodeConfig(
-    pickSlotsFragment(state.create, 'container'),
-    pickSlotsFragment(state.templates.creatorContainer, 'container'),
-    pickSlotsFragment(state.define, 'container'),
-    pickSlotsFragment(state.templates.callerContainer, 'container'),
-    pickSlotsFragment(state.use, 'container'),
-    pickSlotsFragment(state.clone, 'container'),
-    pickSlotsFragment(state.show, 'container'),
+    pickSlotsFragment(store.create, 'container'),
+    pickSlotsFragment(store.templates.creatorContainer, 'container'),
+    pickSlotsFragment(store.define, 'container'),
+    pickSlotsFragment(store.templates.callerContainer, 'container'),
+    pickSlotsFragment(store.use, 'container'),
+    pickSlotsFragment(store.clone, 'container'),
+    pickSlotsFragment(store.show, 'container'),
   ).slots
 }
 
@@ -32,41 +32,41 @@ function mergeContainerSlots(state: LayerStateWithRegistry): LayerConfigNode['sl
  * Content slot priority (low → high, later wins):
  * create > caller template > use > clone > show
  */
-function mergeContentSlots(state: LayerStateWithRegistry): LayerConfigNode['slots'] {
+function mergeContentSlots(store: LayerConfigStoreWithRegistry): LayerConfigNode['slots'] {
   return mergeNodeConfig(
-    pickSlotsFragment(state.create, 'content'),
-    pickSlotsFragment(state.templates.callerContent, 'content'),
-    pickSlotsFragment(state.use, 'content'),
-    pickSlotsFragment(state.clone, 'content'),
-    pickSlotsFragment(state.show, 'content'),
+    pickSlotsFragment(store.create, 'content'),
+    pickSlotsFragment(store.templates.callerContent, 'content'),
+    pickSlotsFragment(store.use, 'content'),
+    pickSlotsFragment(store.clone, 'content'),
+    pickSlotsFragment(store.show, 'content'),
   ).slots
 }
 
-export function mergeLayerState(state: LayerStateWithRegistry): LayerMerged {
+export function mergeLayerConfigStore(store: LayerConfigStoreWithRegistry): LayerMerged {
   const contentBase = mergeNodeConfig(
-    state.create.content,
-    state.use.content,
-    state.clone.content,
-    state.show.content,
+    store.create.content,
+    store.use.content,
+    store.clone.content,
+    store.show.content,
   )
 
   const containerBase = mergeNodeConfig(
-    state.create.container,
-    state.define?.container,
-    state.use.container,
-    state.clone.container,
-    state.show.container,
+    store.create.container,
+    store.define?.container,
+    store.use.container,
+    store.clone.container,
+    store.show.container,
   )
 
   const hideOn =
-    state.show.hideOn ??
-    state.clone.hideOn ??
-    state.use.hideOn ??
-    state.define?.hideOn
+    store.show.hideOn ??
+    store.clone.hideOn ??
+    store.use.hideOn ??
+    store.define?.hideOn
 
   return {
-    content: { ...contentBase, slots: mergeContentSlots(state) },
-    container: { ...containerBase, slots: mergeContainerSlots(state) },
+    content: { ...contentBase, slots: mergeContentSlots(store) },
+    container: { ...containerBase, slots: mergeContainerSlots(store) },
     hideOn,
   }
 }

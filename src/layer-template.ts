@@ -10,7 +10,7 @@ import {
 import type { LayerInstance, LayerTemplateScope } from '@/types'
 import { isInDirectLayerContent } from '@/context/in-layer-content'
 import { CONTAINER_TEMPLATE_REGISTRY_KEY } from '@/di/injection-keys'
-import { getInternal } from '@/instance/instance-registry'
+import { getConfigStore } from '@/instance/instance-registry'
 
 function buildTemplateScope(
   slotProps: Record<string, unknown>,
@@ -63,7 +63,7 @@ export const LayerTemplate = defineComponent({
           renderSlot(buildTemplateScope(slotProps, layer))
 
       if (props.to) {
-        const internal = getInternal(props.to)
+        const internal = getConfigStore(props.to)
         const entry = {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         }

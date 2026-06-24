@@ -1,15 +1,15 @@
-import type { LayerStateWithRegistry } from './layer-state'
+import type { LayerConfigStoreWithRegistry } from './layer-config-store'
 
-const registry = new WeakMap<object, LayerStateWithRegistry>()
+const registry = new WeakMap<object, LayerConfigStoreWithRegistry>()
 
-export function attachInternal(instance: object, internal: LayerStateWithRegistry): void {
-  registry.set(instance, internal)
+export function attachConfigStore(instance: object, store: LayerConfigStoreWithRegistry): void {
+  registry.set(instance, store)
 }
 
-export function getInternal(instance: object): LayerStateWithRegistry {
-  const state = registry.get(instance)
-  if (!state) {
-    throw new Error('[vue-layerx] LayerInstance internal state not found')
+export function getConfigStore(instance: object): LayerConfigStoreWithRegistry {
+  const store = registry.get(instance)
+  if (!store) {
+    throw new Error('[vue-layerx] LayerInstance config store not found')
   }
-  return state
+  return store
 }

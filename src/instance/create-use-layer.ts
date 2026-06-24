@@ -7,8 +7,8 @@ import {
 } from 'vue'
 import type { LayerInstance, LayerInstanceConfig } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
-import { attachInternal } from '@/instance/instance-registry'
-import { createLayerState, type LayerStateWithRegistry } from '@/instance/layer-state'
+import { attachConfigStore } from '@/instance/instance-registry'
+import { createLayerConfigStore, type LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { buildLayerRoot, type LayerRootState, type UseLayerContext } from './layer-root'
 import { createLayerRuntime } from './layer-runtime'
 
@@ -44,7 +44,7 @@ interface LayerInstanceBundle {
 }
 
 function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): LayerInstanceBundle {
-  const layerState: LayerStateWithRegistry = createLayerState({
+  const configStore: LayerConfigStoreWithRegistry = createLayerConfigStore({
     create: ctx.create,
     use: toFragmentFromInstance(opts.use),
     clone: toFragmentFromInstance(opts.clone),
@@ -60,7 +60,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     rootState.visible = false
   }
 
-  const LayerRoot = buildLayerRoot(ctx, { Content: opts.Content }, layerState, rootState, hide)
+  const LayerRoot = buildLayerRoot(ctx, { Content: opts.Content }, configStore, rootState, hide)
   const runtime = createLayerRuntime(LayerRoot, opts.appContext)
 
   const dispose = () => {
@@ -70,7 +70,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
 
   const show = (config?: LayerInstanceConfig) => {
     if (config !== undefined) {
-      layerState.show = toFragmentFromInstance(config)
+      configStore.show = toFragmentFromInstance(config)
     }
     rootState.contentMountKey++
     rootState.visible = true
@@ -96,7 +96,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     },
   }
 
-  attachInternal(instance, layerState)
+  attachConfigStore(instance, configStore)
   return { instance, dispose }
 }
 

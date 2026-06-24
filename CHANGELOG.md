@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking (internal):** Rename `LayerState` → `LayerConfigStore`, `mergeLayerState` → `mergeLayerConfigStore`, `createLayerState` → `createLayerConfigStore`; instance registry helpers `attachInternal` / `getInternal` → `attachConfigStore` / `getConfigStore`.
 - **Breaking:** Unify public config types: `LayerStaticConfig` (`createLayer` + `defineLayer`, top-level = container) and `LayerInstanceConfig` (`useX` / `show` / `clone`, top-level = content). Remove `LayerDefaults`, `DefineLayerOptions`, `LayerUsePayload`, `LayerUseOptions`, `LayerShowPayload`.
 - **Breaking:** `createLayer` second argument: container props move to top-level (`props`) instead of `container: { props }`.
 - **Breaking:** Internal merge input consolidated into per-instance `LayerState` (`create` / `define` / `use` / `clone` / `show` / `templates` tiers); `mergeConfig` renamed to `mergeLayerState`.

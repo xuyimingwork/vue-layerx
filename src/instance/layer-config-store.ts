@@ -8,7 +8,7 @@ export interface LayerTemplateBuckets {
   callerContent: LayerConfigFragment
 }
 
-export interface LayerState {
+export interface LayerConfigStore {
   create: LayerConfigFragment
   define: LayerConfigFragment | null
   use: LayerConfigFragment
@@ -17,7 +17,7 @@ export interface LayerState {
   templates: LayerTemplateBuckets
 }
 
-export interface CreateLayerStateInit {
+export interface LayerConfigStoreInit {
   create: LayerConfigFragment
   use?: LayerConfigFragment
   clone?: LayerConfigFragment
@@ -51,16 +51,16 @@ function ensureContentSlots(bucket: LayerConfigFragment): Record<string, LayerTe
   return bucket.content.slots
 }
 
-export type ReactiveLayerState = UnwrapNestedRefs<LayerState>
+export type ReactiveLayerConfigStore = UnwrapNestedRefs<LayerConfigStore>
 
-export function createLayerState(init: CreateLayerStateInit): LayerStateWithRegistry {
+export function createLayerConfigStore(init: LayerConfigStoreInit): LayerConfigStoreWithRegistry {
   const templates: LayerTemplateBuckets = {
     creatorContainer: emptyContainerTemplateBucket(),
     callerContainer: emptyContainerTemplateBucket(),
     callerContent: emptyContentTemplateBucket(),
   }
 
-  const state = reactive<LayerState>({
+  const configStore = reactive<LayerConfigStore>({
     create: init.create,
     define: null,
     use: init.use ?? EMPTY_LAYER_FRAGMENT,
@@ -70,31 +70,31 @@ export function createLayerState(init: CreateLayerStateInit): LayerStateWithRegi
   })
 
   const registerCreatorContainerTemplate = (name: string, entry: LayerTemplateEntry) => {
-    const slots = ensureContainerSlots(state.templates.creatorContainer)
+    const slots = ensureContainerSlots(configStore.templates.creatorContainer)
     if (slots[name]) warnDuplicate(name, 'creator container')
     slots[name] = (slotProps) => entry.render(slotProps ?? {})
   }
 
   const registerCallerContainerTemplate = (name: string, entry: LayerTemplateEntry) => {
-    const slots = ensureContainerSlots(state.templates.callerContainer)
+    const slots = ensureContainerSlots(configStore.templates.callerContainer)
     if (slots[name]) warnDuplicate(name, 'caller container')
     slots[name] = (slotProps) => entry.render(slotProps ?? {})
   }
 
   const registerCallerContentTemplate = (name: string, entry: LayerTemplateEntry) => {
-    const slots = ensureContentSlots(state.templates.callerContent)
+    const slots = ensureContentSlots(configStore.templates.callerContent)
     if (slots[name]) warnDuplicate(name, 'caller content')
     slots[name] = (slotProps) => entry.render(slotProps ?? {})
   }
 
-  return Object.assign(state, {
+  return Object.assign(configStore, {
     registerCreatorContainerTemplate,
     registerCallerContainerTemplate,
     registerCallerContentTemplate,
-  }) as LayerStateWithRegistry
+  }) as LayerConfigStoreWithRegistry
 }
 
-export type LayerStateWithRegistry = ReactiveLayerState & {
+export type LayerConfigStoreWithRegistry = ReactiveLayerConfigStore & {
   registerCreatorContainerTemplate: (name: string, entry: LayerTemplateEntry) => void
   registerCallerContainerTemplate: (name: string, entry: LayerTemplateEntry) => void
   registerCallerContentTemplate: (name: string, entry: LayerTemplateEntry) => void
