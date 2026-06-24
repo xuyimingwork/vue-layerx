@@ -6,7 +6,7 @@ export type {
   LayerConfigFragment,
   LayerInstance,
   LayerInstanceConfig,
-  LayerNodeConfig,
+  LayerConfigNode,
   LayerStaticConfig,
   LayerTemplateScope,
   SlotRenderFn,

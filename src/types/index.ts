@@ -2,7 +2,7 @@ export type {
   LayerAdapt,
   LayerConfigFragment,
   LayerMerged,
-  LayerNodeConfig,
+  LayerConfigNode,
   LayerNodeNormalized,
   LayerNormalized,
   LayerProps,

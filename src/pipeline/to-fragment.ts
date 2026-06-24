@@ -1,6 +1,6 @@
 import type {
   LayerConfigFragment,
-  LayerNodeConfig,
+  LayerConfigNode,
   LayerStaticConfig,
   LayerTemplateEntry,
 } from '@/types/config'
@@ -8,11 +8,11 @@ import type { LayerInstanceConfig } from '@/types/payload'
 import { materializeTemplates } from './materialize-templates'
 
 export function pickNodeConfig(source: {
-  component?: LayerNodeConfig['component']
-  props?: LayerNodeConfig['props']
-  slots?: LayerNodeConfig['slots']
-}): LayerNodeConfig {
-  const result: LayerNodeConfig = {}
+  component?: LayerConfigNode['component']
+  props?: LayerConfigNode['props']
+  slots?: LayerConfigNode['slots']
+}): LayerConfigNode {
+  const result: LayerConfigNode = {}
   if (source.component !== undefined) result.component = source.component
   if (source.props !== undefined) result.props = source.props
   if (source.slots !== undefined) result.slots = source.slots

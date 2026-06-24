@@ -10,7 +10,7 @@ export type SlotRenderFn = (
 export type VisibleProtocol = [string, string]
 
 /** merge / config fragment for content or container node */
-export interface LayerNodeConfig {
+export interface LayerConfigNode {
   component?: Component
   props?: LayerProps
   /** slot content: imperative (show / define / create) or LayerTemplate materialized at merge */
@@ -23,14 +23,14 @@ export interface LayerTemplateEntry {
 
 /** single merge tier: content + container fragments + hideOn */
 export interface LayerConfigFragment {
-  content?: LayerNodeConfig
-  container?: LayerNodeConfig
+  content?: LayerConfigNode
+  container?: LayerConfigNode
   hideOn?: string[]
 }
 
-/** createLayer + defineLayer — top-level LayerNodeConfig is container */
-export type LayerStaticConfig = LayerNodeConfig & {
-  content?: LayerNodeConfig
+/** createLayer + defineLayer — top-level LayerConfigNode is container */
+export type LayerStaticConfig = LayerConfigNode & {
+  content?: LayerConfigNode
   hideOn?: string[]
   /** createLayer only; not part of merge */
   visible?: VisibleProtocol
@@ -38,8 +38,8 @@ export type LayerStaticConfig = LayerNodeConfig & {
 
 /** merge phase output */
 export interface LayerMerged {
-  content: LayerNodeConfig
-  container: LayerNodeConfig
+  content: LayerConfigNode
+  container: LayerConfigNode
   hideOn?: string[]
 }
 

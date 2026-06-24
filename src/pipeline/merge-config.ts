@@ -1,11 +1,11 @@
-import type { LayerConfigFragment, LayerMerged, LayerNodeConfig } from '@/types/config'
+import type { LayerConfigFragment, LayerMerged, LayerConfigNode } from '@/types/config'
 import type { LayerStateWithRegistry } from '@/instance/layer-state'
 import { mergeNodeConfig } from './merge-node-config'
 
 function pickSlotsFragment(
   fragment: LayerConfigFragment | null | undefined,
   side: 'content' | 'container',
-): LayerNodeConfig | undefined {
+): LayerConfigNode | undefined {
   if (!fragment) return undefined
   const node = side === 'content' ? fragment.content : fragment.container
   if (!node?.slots) return undefined
@@ -16,7 +16,7 @@ function pickSlotsFragment(
  * Container slot priority (low → high, later wins):
  * create > creator template > define > caller template > use > clone > show
  */
-function mergeContainerSlots(state: LayerStateWithRegistry): LayerNodeConfig['slots'] {
+function mergeContainerSlots(state: LayerStateWithRegistry): LayerConfigNode['slots'] {
   return mergeNodeConfig(
     pickSlotsFragment(state.create, 'container'),
     pickSlotsFragment(state.templates.creatorContainer, 'container'),
@@ -32,7 +32,7 @@ function mergeContainerSlots(state: LayerStateWithRegistry): LayerNodeConfig['sl
  * Content slot priority (low → high, later wins):
  * create > caller template > use > clone > show
  */
-function mergeContentSlots(state: LayerStateWithRegistry): LayerNodeConfig['slots'] {
+function mergeContentSlots(state: LayerStateWithRegistry): LayerConfigNode['slots'] {
   return mergeNodeConfig(
     pickSlotsFragment(state.create, 'content'),
     pickSlotsFragment(state.templates.callerContent, 'content'),

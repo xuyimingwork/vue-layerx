@@ -47,7 +47,7 @@ UserDialog = MyDialog + UserForm
 ④ render     toRenderPlan(normalized)  →  h(...)
 ```
 
-- **merge**：各层贡献 **LayerNodeConfig 片段**（`content` / `container`）与 `hideOn`；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。`component` / `props` 与 slot 的 tier 顺序略有不同。
+- **merge**：各层贡献 **LayerConfigNode 片段**（`content` / `container`）与 `hideOn`；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。`component` / `props` 与 slot 的 tier 顺序略有不同。
 - **resolve**：`defaultResolve(merged)` 将 merge 结果归一化为 **LayerNormalized**（`slots` 直接来自 `LayerMerged`）；`hideOn` 接入 content 事件。
 - **adapt**：在 **LayerNormalized** 上整形（滤 props、搬移 / 重命名 `container.slots` 的 key、**可改 `container.component`** 等）；`show` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapt`（不按 `show` 里的 `container.component` 动态换 adapt）。
 - **render**：内部附加 `visible` 等协议后 `h()`；content 由框架托管渲染，**每次 `show()` 强制 remount**（见「渲染与投递机制」）。
@@ -108,7 +108,7 @@ layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 p
 type SlotRenderFn = (props?: Record<string, unknown>) => VNode | VNode[] | null
 
 /** merge 片段：content / container 同构 */
-type LayerNodeConfig = {
+type LayerConfigNode = {
   component?: Component
   props?: Record<string, unknown>
   /** slot 内容：命令式或 LayerTemplate 物化后汇入 merge */
@@ -117,8 +117,8 @@ type LayerNodeConfig = {
 
 /** merge 完成后（含 LayerTemplate 物化后的 slots） */
 type LayerMerged = {
-  content: LayerNodeConfig
-  container: LayerNodeConfig
+  content: LayerConfigNode
+  container: LayerConfigNode
   hideOn?: string[]
 }
 
@@ -155,10 +155,10 @@ type LayerRenderPlan = LayerNormalized & {
 ### 工厂默认配置
 
 ```ts
-type LayerStaticConfig = LayerNodeConfig & {
+type LayerStaticConfig = LayerConfigNode & {
   /** [visibleProp, visibleEvent]，如 ['modelValue', 'onUpdate:modelValue']；仅 createLayer */
   visible?: [prop: string, event: string]
-  content?: LayerNodeConfig
+  content?: LayerConfigNode
   hideOn?: string[]
 }
 ```
@@ -433,8 +433,8 @@ defineLayer({
 `useX` 由 `createLayer` 返回。`config` 与 `show` **同构**，类型为 **`LayerInstanceConfig`**（顶层 = content，嵌套 `container`）：
 
 ```ts
-type LayerInstanceConfig = LayerNodeConfig & {
-  container?: LayerNodeConfig
+type LayerInstanceConfig = LayerConfigNode & {
+  container?: LayerConfigNode
   hideOn?: string[]
 }
 ```
@@ -835,7 +835,7 @@ const filterDrawer = useDrawer(FilterForm, { hideOn: ['apply'] })
 ## 推导小结
 
 1. **配置片段** merge：props/component 常规 `show > clone > use > define > create`；**slots** 含 LayerTemplate tier（见「配置 merge」）。
-2. **content / container 同构**（`LayerNodeConfig`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
+2. **content / container 同构**（`LayerConfigNode`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
 3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`show` 覆盖 merge 但不跳过 adapt；`show` 每次 remount content。
 4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `LayerMerged.*.slots`；resolve 透传。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
