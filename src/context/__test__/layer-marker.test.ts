@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LAYERX_DIRECT_CONTENT } from '@/core/constants/markers'
+import { LAYERX_DIRECT_CONTENT } from '@/constants/markers'
 import { hasDirectLayerMarker } from '../layer-marker'
 
 describe('hasDirectLayerMarker', () => {

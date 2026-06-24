@@ -1,6 +1,6 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type { LayerFragment, LayerTemplateEntry } from '@/core/types/config'
-import { EMPTY_LAYER_FRAGMENT } from '@/core/config/to-fragment'
+import type { LayerFragment, LayerTemplateEntry } from '@/types/config'
+import { EMPTY_LAYER_FRAGMENT } from '@/pipeline/to-fragment'
 
 export interface LayerTemplateBuckets {
   creatorContainer: LayerFragment

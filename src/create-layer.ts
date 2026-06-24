@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
-import type { LayerAdapt, LayerFragment, LayerStaticConfig } from '@/core/types'
-import { toFragmentFromStatic } from '@/core/config/to-fragment'
-import { createUseLayer } from '@/runtime/create-use-layer'
+import type { LayerAdapt, LayerFragment, LayerStaticConfig } from '@/types'
+import { toFragmentFromStatic } from '@/pipeline/to-fragment'
+import { createUseLayer } from '@/instance/create-use-layer'
 
 const DEFAULT_VISIBLE = ['modelValue', 'onUpdate:modelValue'] as const
 

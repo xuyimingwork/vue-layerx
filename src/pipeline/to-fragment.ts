@@ -3,8 +3,8 @@ import type {
   LayerNodeConfig,
   LayerStaticConfig,
   LayerTemplateEntry,
-} from '@/core/types/config'
-import type { LayerInstanceConfig } from '@/core/types/payload'
+} from '@/types/config'
+import type { LayerInstanceConfig } from '@/types/payload'
 import { materializeTemplates } from './materialize-templates'
 
 export function pickNodeConfig(source: {

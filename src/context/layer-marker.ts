@@ -1,5 +1,5 @@
 import type { ComponentInternalInstance } from 'vue'
-import { LAYERX_DIRECT_CONTENT } from '@/core/constants/markers'
+import { LAYERX_DIRECT_CONTENT } from '@/constants/markers'
 
 export function hasDirectLayerMarker(
   instance: ComponentInternalInstance | null | undefined,

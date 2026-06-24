@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { LayerMerged, LayerNormalized } from '@/core/types/config'
+import type { LayerMerged, LayerNormalized } from '@/types/config'
 import { bindHideOn } from './bind-hide-on'
 
 export interface ResolveContext {

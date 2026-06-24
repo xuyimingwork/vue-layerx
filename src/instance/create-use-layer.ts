@@ -5,10 +5,10 @@ import {
   type AppContext,
   type Component,
 } from 'vue'
-import type { LayerInstance, LayerInstanceConfig } from '@/core/types'
-import { toFragmentFromInstance } from '@/core/config/to-fragment'
-import { attachInternal } from '@/vue/instance/instance-registry'
-import { createLayerState, type LayerStateWithRegistry } from '@/vue/instance/layer-state'
+import type { LayerInstance, LayerInstanceConfig } from '@/types'
+import { toFragmentFromInstance } from '@/pipeline/to-fragment'
+import { attachInternal } from '@/instance/instance-registry'
+import { createLayerState, type LayerStateWithRegistry } from '@/instance/layer-state'
 import { buildLayerRoot, type LayerRootState, type UseLayerContext } from './layer-root'
 import { createLayerRuntime } from './layer-runtime'
 

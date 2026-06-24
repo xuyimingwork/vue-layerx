@@ -1,6 +1,6 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { defineLayer, LayerTemplate, createLayer } from '@/index'
-import type { LayerInstance } from '@/core/types'
+import type { LayerInstance } from '@/types'
 
 export const Container = defineComponent({
   name: 'Container',

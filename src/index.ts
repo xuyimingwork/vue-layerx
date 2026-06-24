@@ -1,6 +1,6 @@
-export { createLayer } from './api/create-layer'
-export { defineLayer } from './api/define-layer'
-export { LayerTemplate } from './components/layer-template'
+export { createLayer } from './create-layer'
+export { defineLayer } from './define-layer'
+export { LayerTemplate } from './layer-template'
 export type {
   LayerAdapt,
   LayerFragment,
@@ -11,4 +11,4 @@ export type {
   LayerTemplateScope,
   SlotRenderFn,
   VisibleProtocol,
-} from './core/types'
+} from './types'

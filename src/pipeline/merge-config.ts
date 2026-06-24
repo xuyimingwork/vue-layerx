@@ -1,5 +1,5 @@
-import type { LayerFragment, LayerMerged, LayerNodeConfig } from '@/core/types/config'
-import type { LayerStateWithRegistry } from '@/vue/instance/layer-state'
+import type { LayerFragment, LayerMerged, LayerNodeConfig } from '@/types/config'
+import type { LayerStateWithRegistry } from '@/instance/layer-state'
 import { mergeNodeConfig } from './merge-node-config'
 
 function pickSlotsFragment(

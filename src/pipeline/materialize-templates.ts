@@ -1,4 +1,4 @@
-import type { LayerTemplateEntry, LayerNodeConfig, SlotRenderFn } from '@/core/types/config'
+import type { LayerTemplateEntry, LayerNodeConfig, SlotRenderFn } from '@/types/config'
 
 export function materializeTemplates(
   templates: Record<string, LayerTemplateEntry>,

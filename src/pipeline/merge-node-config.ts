@@ -1,4 +1,4 @@
-import type { LayerNodeConfig, LayerProps } from '@/core/types/config'
+import type { LayerNodeConfig, LayerProps } from '@/types/config'
 
 export function mergeProps(...sources: (LayerProps | undefined)[]): LayerProps {
   const result: LayerProps = {}

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { LayerFragment, LayerTemplateEntry } from '@/core/types/config'
+import type { LayerFragment, LayerTemplateEntry } from '@/types/config'
 import { toFragmentFromInstance, toFragmentFromStatic } from '../to-fragment'
 import { mergeLayerState } from '../merge-config'
-import { createLayerState, type LayerStateWithRegistry } from '@/vue/instance/layer-state'
+import { createLayerState, type LayerStateWithRegistry } from '@/instance/layer-state'
 
 function slotMarker(_label: string) {
   return () => null as never

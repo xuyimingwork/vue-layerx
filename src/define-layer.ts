@@ -1,8 +1,8 @@
 import { getCurrentInstance, inject } from 'vue'
-import type { LayerStaticConfig } from '@/core/types'
-import { toFragmentFromStatic } from '@/core/config/to-fragment'
-import { hasDirectLayerMarker } from '@/vue/context/layer-marker'
-import { LAYER_DEFINE_KEY } from '@/vue/di/injection-keys'
+import type { LayerStaticConfig } from '@/types'
+import { toFragmentFromStatic } from '@/pipeline/to-fragment'
+import { hasDirectLayerMarker } from '@/context/layer-marker'
+import { LAYER_DEFINE_KEY } from '@/di/injection-keys'
 
 export function defineLayer(config: LayerStaticConfig = {}): void {
   const registry = inject(LAYER_DEFINE_KEY, null)

@@ -1,13 +1,13 @@
 import { defineComponent, provide, type Component } from 'vue'
-import { mergeLayerState } from '@/core/config/merge-config'
-import { defaultResolve } from '@/core/config/default-resolve'
-import type { LayerAdapt, LayerFragment, LayerRenderPlan } from '@/core/types'
-import type { LayerStateWithRegistry } from '@/vue/instance/layer-state'
-import { renderLayerTree } from '@/vue/render/render-layer-tree'
+import { mergeLayerState } from '@/pipeline/merge-config'
+import { defaultResolve } from '@/pipeline/default-resolve'
+import type { LayerAdapt, LayerFragment, LayerRenderPlan } from '@/types'
+import type { LayerStateWithRegistry } from '@/instance/layer-state'
+import { renderLayerTree } from '@/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
   CONTAINER_TEMPLATE_REGISTRY_KEY,
-} from '@/vue/di/injection-keys'
+} from '@/di/injection-keys'
 
 export interface UseLayerContext {
   Container: Component

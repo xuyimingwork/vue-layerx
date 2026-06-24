@@ -7,10 +7,10 @@ import {
   type PropType,
   type VNode,
 } from 'vue'
-import type { LayerInstance, LayerTemplateScope } from '@/core/types'
-import { isInDirectLayerContent } from '@/vue/context/in-layer-content'
-import { CONTAINER_TEMPLATE_REGISTRY_KEY } from '@/vue/di/injection-keys'
-import { getInternal } from '@/vue/instance/instance-registry'
+import type { LayerInstance, LayerTemplateScope } from '@/types'
+import { isInDirectLayerContent } from '@/context/in-layer-content'
+import { CONTAINER_TEMPLATE_REGISTRY_KEY } from '@/di/injection-keys'
+import { getInternal } from '@/instance/instance-registry'
 
 function buildTemplateScope(
   slotProps: Record<string, unknown>,

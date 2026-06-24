@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import type { LayerTemplateScope } from '@/core/types'
+import type { LayerTemplateScope } from '@/types'
 import { createLayer, LayerTemplate } from '@/index'
 import { Container } from '@/__test__/fixtures/components'
 import { LayerTemplate as LayerTemplateComponent } from '../layer-template'

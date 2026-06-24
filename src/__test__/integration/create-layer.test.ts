@@ -2,7 +2,7 @@ import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, LayerTemplate } from '@/index'
-import type { LayerInstance, LayerTemplateScope } from '@/core/types'
+import type { LayerInstance, LayerTemplateScope } from '@/types'
 import {
   Container,
   makeContent,
