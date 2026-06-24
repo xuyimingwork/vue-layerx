@@ -1,5 +1,5 @@
 import type {
-  LayerFragment,
+  LayerConfigFragment,
   LayerNodeConfig,
   LayerStaticConfig,
   LayerTemplateEntry,
@@ -19,8 +19,8 @@ export function pickNodeConfig(source: {
   return result
 }
 
-export function toFragmentFromStatic(config: LayerStaticConfig = {}): LayerFragment {
-  const fragment: LayerFragment = {}
+export function toFragmentFromStatic(config: LayerStaticConfig = {}): LayerConfigFragment {
+  const fragment: LayerConfigFragment = {}
   const container = pickNodeConfig(config)
   if (Object.keys(container).length > 0) fragment.container = container
   if (config.content) fragment.content = config.content
@@ -28,8 +28,8 @@ export function toFragmentFromStatic(config: LayerStaticConfig = {}): LayerFragm
   return fragment
 }
 
-export function toFragmentFromInstance(config: LayerInstanceConfig = {}): LayerFragment {
-  const fragment: LayerFragment = {}
+export function toFragmentFromInstance(config: LayerInstanceConfig = {}): LayerConfigFragment {
+  const fragment: LayerConfigFragment = {}
   const content = pickNodeConfig(config)
   if (Object.keys(content).length > 0) fragment.content = content
   if (config.container) fragment.container = config.container
@@ -40,7 +40,7 @@ export function toFragmentFromInstance(config: LayerInstanceConfig = {}): LayerF
 export function toTemplateFragment(
   templates: Record<string, LayerTemplateEntry>,
   side: 'container' | 'content',
-): LayerFragment | undefined {
+): LayerConfigFragment | undefined {
   if (Object.keys(templates).length === 0) return undefined
   const slots = materializeTemplates(templates)
   return side === 'container'
@@ -48,4 +48,4 @@ export function toTemplateFragment(
     : { content: { slots } }
 }
 
-export const EMPTY_LAYER_FRAGMENT: LayerFragment = Object.freeze({})
+export const EMPTY_LAYER_FRAGMENT: LayerConfigFragment = Object.freeze({})

@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { LayerAdapt, LayerFragment, LayerStaticConfig } from '@/types'
+import type { LayerAdapt, LayerStaticConfig } from '@/types'
 import { toFragmentFromStatic } from '@/pipeline/to-fragment'
 import { createUseLayer } from '@/instance/create-use-layer'
 

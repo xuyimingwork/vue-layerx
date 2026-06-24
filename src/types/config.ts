@@ -22,7 +22,7 @@ export interface LayerTemplateEntry {
 }
 
 /** single merge tier: content + container fragments + hideOn */
-export interface LayerFragment {
+export interface LayerConfigFragment {
   content?: LayerNodeConfig
   container?: LayerNodeConfig
   hideOn?: string[]

@@ -1,34 +1,34 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type { LayerFragment, LayerTemplateEntry } from '@/types/config'
+import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
 import { EMPTY_LAYER_FRAGMENT } from '@/pipeline/to-fragment'
 
 export interface LayerTemplateBuckets {
-  creatorContainer: LayerFragment
-  callerContainer: LayerFragment
-  callerContent: LayerFragment
+  creatorContainer: LayerConfigFragment
+  callerContainer: LayerConfigFragment
+  callerContent: LayerConfigFragment
 }
 
 export interface LayerState {
-  create: LayerFragment
-  define: LayerFragment | null
-  use: LayerFragment
-  clone: LayerFragment
-  show: LayerFragment
+  create: LayerConfigFragment
+  define: LayerConfigFragment | null
+  use: LayerConfigFragment
+  clone: LayerConfigFragment
+  show: LayerConfigFragment
   templates: LayerTemplateBuckets
 }
 
 export interface CreateLayerStateInit {
-  create: LayerFragment
-  use?: LayerFragment
-  clone?: LayerFragment
-  show?: LayerFragment
+  create: LayerConfigFragment
+  use?: LayerConfigFragment
+  clone?: LayerConfigFragment
+  show?: LayerConfigFragment
 }
 
-function emptyContainerTemplateBucket(): LayerFragment {
+function emptyContainerTemplateBucket(): LayerConfigFragment {
   return { container: { slots: {} } }
 }
 
-function emptyContentTemplateBucket(): LayerFragment {
+function emptyContentTemplateBucket(): LayerConfigFragment {
   return { content: { slots: {} } }
 }
 
@@ -39,13 +39,13 @@ function warnDuplicate(name: string, scope: string) {
   )
 }
 
-function ensureContainerSlots(bucket: LayerFragment): Record<string, LayerTemplateEntry['render']> {
+function ensureContainerSlots(bucket: LayerConfigFragment): Record<string, LayerTemplateEntry['render']> {
   if (!bucket.container) bucket.container = {}
   if (!bucket.container.slots) bucket.container.slots = {}
   return bucket.container.slots
 }
 
-function ensureContentSlots(bucket: LayerFragment): Record<string, LayerTemplateEntry['render']> {
+function ensureContentSlots(bucket: LayerConfigFragment): Record<string, LayerTemplateEntry['render']> {
   if (!bucket.content) bucket.content = {}
   if (!bucket.content.slots) bucket.content.slots = {}
   return bucket.content.slots

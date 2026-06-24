@@ -1,9 +1,9 @@
 import type { InjectionKey } from 'vue'
-import type { LayerFragment } from '@/types/config'
+import type { LayerConfigFragment } from '@/types/config'
 import type { LayerStateWithRegistry } from '@/instance/layer-state'
 
 export type LayerDefineRegistry = {
-  register: (fragment: LayerFragment) => void
+  register: (fragment: LayerConfigFragment) => void
 }
 
 /** global inject key; value provided per LayerRoot render context */

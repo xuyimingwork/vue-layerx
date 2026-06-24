@@ -1,9 +1,9 @@
-import type { LayerFragment, LayerMerged, LayerNodeConfig } from '@/types/config'
+import type { LayerConfigFragment, LayerMerged, LayerNodeConfig } from '@/types/config'
 import type { LayerStateWithRegistry } from '@/instance/layer-state'
 import { mergeNodeConfig } from './merge-node-config'
 
 function pickSlotsFragment(
-  fragment: LayerFragment | null | undefined,
+  fragment: LayerConfigFragment | null | undefined,
   side: 'content' | 'container',
 ): LayerNodeConfig | undefined {
   if (!fragment) return undefined

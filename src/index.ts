@@ -3,7 +3,7 @@ export { defineLayer } from './define-layer'
 export { LayerTemplate } from './layer-template'
 export type {
   LayerAdapt,
-  LayerFragment,
+  LayerConfigFragment,
   LayerInstance,
   LayerInstanceConfig,
   LayerNodeConfig,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { LayerFragment, LayerTemplateEntry } from '@/types/config'
+import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
 import { toFragmentFromInstance, toFragmentFromStatic } from '../to-fragment'
 import { mergeLayerState } from '../merge-config'
 import { createLayerState, type LayerStateWithRegistry } from '@/instance/layer-state'
@@ -13,11 +13,11 @@ function entry(label: string): LayerTemplateEntry {
 }
 
 function createTestState(overrides: {
-  create?: LayerFragment
-  define?: LayerFragment | null
-  use?: LayerFragment
-  clone?: LayerFragment
-  show?: LayerFragment
+  create?: LayerConfigFragment
+  define?: LayerConfigFragment | null
+  use?: LayerConfigFragment
+  clone?: LayerConfigFragment
+  show?: LayerConfigFragment
 } = {}): LayerStateWithRegistry {
   const state = createLayerState({
     create: overrides.create ?? {},

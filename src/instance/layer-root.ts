@@ -1,7 +1,7 @@
 import { defineComponent, provide, type Component } from 'vue'
 import { mergeLayerState } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerAdapt, LayerFragment, LayerRenderPlan } from '@/types'
+import type { LayerAdapt, LayerConfigFragment, LayerRenderPlan } from '@/types'
 import type { LayerStateWithRegistry } from '@/instance/layer-state'
 import { renderLayerTree } from '@/render/render-layer-tree'
 import {
@@ -11,7 +11,7 @@ import {
 
 export interface UseLayerContext {
   Container: Component
-  create: LayerFragment
+  create: LayerConfigFragment
   visibleProp: string
   visibleEvent: string
   adapt?: LayerAdapt
@@ -39,7 +39,7 @@ export function buildLayerRoot(
     name: `LayerRoot_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
     setup() {
       provide(LAYER_DEFINE_KEY, {
-        register(fragment: LayerFragment) {
+        register(fragment: LayerConfigFragment) {
           layerState.define = fragment
         },
       })
