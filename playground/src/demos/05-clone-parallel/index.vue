@@ -4,7 +4,7 @@ import { ElButton, ElTag } from 'element-plus'
 import { useDialog } from '../../core/layers'
 import PanelContent from './PanelContent.vue'
 
-const instanceA = useDialog(PanelContent, { hideOn: ['close'] })
+const instanceA = useDialog(PanelContent, { closeOn: ['close'] })
 
 const instanceB = instanceA.clone({
   container: { props: { width: '640px', title: '实例 B（clone · 640px）' } },
@@ -32,7 +32,7 @@ const status = computed(() => {
 })
 
 function openA() {
-  instanceA.show({
+  instanceA.open({
     props: {
       instanceId: 'A',
       note: '这是 base 实例。footer 里可点「从 A 打开 B」。',
@@ -41,13 +41,13 @@ function openA() {
     },
     container: { props: { title: '实例 A（base · 480px）' } },
   })
-  pushLog('instanceA.show() — A.visible=true')
+  pushLog('instanceA.open() — A.visible=true')
   pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
 function openBFromA() {
-  pushLog('A footer 按钮 → instanceB.show()（未先 hide A）')
-  instanceB.show({
+  pushLog('A footer 按钮 → instanceB.open()（未先 hide A）')
+  instanceB.open({
     props: {
       instanceId: 'B',
       note: 'B 使用独立 layerRuntime，与 A 并行打开时两层 Dialog 同时存在。',
@@ -59,8 +59,8 @@ function openBFromA() {
 }
 
 function openBFromPage() {
-  pushLog('页面按钮 → instanceB.show()（未先 hide A）')
-  instanceB.show({
+  pushLog('页面按钮 → instanceB.open()（未先 hide A）')
+  instanceB.open({
     props: {
       instanceId: 'B',
       note: '从页面直接打开 B，用于对比 A 未关时的行为。',
@@ -71,14 +71,14 @@ function openBFromPage() {
 }
 
 function hideA() {
-  instanceA.hide()
-  pushLog('instanceA.hide()')
+  instanceA.close()
+  pushLog('instanceA.close()')
   pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
 function hideB() {
-  instanceB.hide()
-  pushLog('instanceB.hide()（仅关闭 B，挂载点保留至 Host 卸载）')
+  instanceB.close()
+  pushLog('instanceB.close()（仅关闭 B，挂载点保留至 Host 卸载）')
   pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
@@ -94,7 +94,7 @@ function probeDom() {
     <p class="clone-parallel__intro">
       先打开实例 A，再在 A 的 footer 点击「从 A 打开 B」。每个 Layer 实例（含
       <code>clone()</code> 派生）拥有独立 <code>layerRuntime</code>，并行
-      <code>show()</code> 时 <code>visible</code> 与 DOM 一致，互不影响关闭。
+      <code>open()</code> 时 <code>visible</code> 与 DOM 一致，互不影响关闭。
     </p>
 
     <div class="clone-parallel__status">
@@ -106,8 +106,8 @@ function probeDom() {
     <div class="clone-parallel__actions">
       <ElButton type="primary" @click="openA">1. 打开 A</ElButton>
       <ElButton type="warning" plain @click="openBFromPage">2. 不关 A，从页面打开 B</ElButton>
-      <ElButton @click="hideA">hide A</ElButton>
-      <ElButton @click="hideB">hide B</ElButton>
+      <ElButton @click="hideA">close A</ElButton>
+      <ElButton @click="hideB">close B</ElButton>
       <ElButton link type="primary" @click="probeDom">探测 DOM / visible</ElButton>
     </div>
 

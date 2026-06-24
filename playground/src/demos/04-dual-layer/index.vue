@@ -7,11 +7,11 @@ import FilterContent from './FilterContent.vue'
 const activeFilters = ref<string[]>(['active'])
 
 const filterDialog = useDialog(FilterContent, {
-  hideOn: ['apply', 'reset'],
+  closeOn: ['apply', 'reset'],
 })
 
 const filterDrawer = useDrawer(FilterContent, {
-  hideOn: ['apply', 'reset'],
+  closeOn: ['apply', 'reset'],
 })
 
 function buildPayload() {
@@ -29,11 +29,11 @@ function buildPayload() {
 }
 
 function openDialog() {
-  filterDialog.show(buildPayload())
+  filterDialog.open(buildPayload())
 }
 
 function openDrawer() {
-  filterDrawer.show(buildPayload())
+  filterDrawer.open(buildPayload())
 }
 </script>
 

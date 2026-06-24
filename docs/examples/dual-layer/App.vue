@@ -32,8 +32,8 @@ function buildPayload() {
     <span v-if="!activeFilters.length" class="empty">（无）</span>
   </div>
   <div class="dual-layer__actions">
-    <ElButton type="primary" @click="filterDialog.show(buildPayload())">Dialog</ElButton>
-    <ElButton type="primary" plain @click="filterDrawer.show(buildPayload())">Drawer</ElButton>
+    <ElButton type="primary" @click="filterDialog.open(buildPayload())">Dialog</ElButton>
+    <ElButton type="primary" plain @click="filterDrawer.open(buildPayload())">Drawer</ElButton>
   </div>
 </template>
 

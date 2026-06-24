@@ -16,11 +16,11 @@ const users = ref<User[]>([
 ])
 
 const userDialog = useDialog(UserForm, {
-  hideOn: ['success', 'cancel'],
+  closeOn: ['success', 'cancel'],
 })
 
 function openCreate() {
-  userDialog.show({
+  userDialog.open({
     props: {
       mode: 'create',
       onSuccess: (name: string) => {
@@ -32,7 +32,7 @@ function openCreate() {
 }
 
 function openEdit(row: User) {
-  userDialog.show({
+  userDialog.open({
     props: {
       mode: 'edit',
       recordId: row.id,

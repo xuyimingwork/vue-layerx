@@ -3,12 +3,15 @@ export { defineLayer } from './define-layer'
 export { LayerTemplate } from './layer-template'
 export type {
   LayerAdapt,
+  CloseOnConfig,
   LayerConfigFragment,
   LayerInstance,
-  LayerInstanceConfig,
-  LayerConfigNode,
-  LayerStaticConfig,
+  LayerConfigInstance,
+  LayerConfigNodeBase,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
+  LayerConfigStatic,
   LayerTemplateScope,
   SlotRenderFn,
-  VisibleProtocol,
 } from './types'
+export { DEFAULT_CONTAINER_MODEL } from './types/config'

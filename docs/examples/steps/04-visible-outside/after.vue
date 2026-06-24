@@ -14,7 +14,7 @@ function onInlineSubmit(name: string) {
 }
 
 function openInDialog() {
-  userLayer.show({
+  userLayer.open({
     props: {
       mode: 'edit',
       initialName: profile.value.name,

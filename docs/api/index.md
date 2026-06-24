@@ -6,7 +6,7 @@
 export const useDetailLayer = createLayer(BaseDialog, {}, detailAdapt)
 
 const userLayer = useDetailLayer(UserForm)
-userLayer.show({ props: { mode: 'view' | 'edit' | 'create', ... } })
+userLayer.open({ props: { mode: 'view' | 'edit' | 'create', ... } })
 ```
 
 一个内容组件 + 一个工厂。`mode: 'view'` 时 content 自行 disabled，不必拆 UserDetail。
@@ -27,7 +27,7 @@ createLayer(BaseDialog, {}, adaptFn)       // useDetailLayer
 ```ts
 defineLayer({
   props: { title: '...', width: '480px', size: '85vw' },
-  hideOn: ['submit'],  // view 模式通常无 submit
+  content: { closeOn: ['submit'] },  // view 模式通常无 submit
 })
 ```
 
@@ -65,7 +65,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 - **caller content**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`。
 - **caller container**（`:to` + `container`）：投进 Dialog 等同名 slot；优先级高于 creator。
 
-**slot 优先级**（container 链）：`show > useX > caller template > defineLayer > creator template > createLayer`。content 链：`show > useX > caller template > createLayer`。
+**slot 优先级**（container 链）：`open > clone > useX > caller template > defineLayer > creator template > createLayer`。content 链：`open > clone > useX > caller template > define > create`。
 
 `:to` 为 `useX(Content)` 返回的 `LayerInstance`。
 

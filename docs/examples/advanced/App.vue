@@ -16,7 +16,7 @@ const wideDetail = baseDetail.clone({
 const user = { name: 'Alice', email: 'alice@example.com', role: '管理员' }
 
 function openDraft() {
-  draft.show({
+  draft.open({
     props: {
       initialContent: savedDraft.value,
       onSubmit: (content: string) => {
@@ -28,11 +28,11 @@ function openDraft() {
 }
 
 function openDetail() {
-  baseDetail.show({ props: user })
+  baseDetail.open({ props: user })
 }
 
 function openWideDetail() {
-  wideDetail.show({ props: user })
+  wideDetail.open({ props: user })
 }
 </script>
 

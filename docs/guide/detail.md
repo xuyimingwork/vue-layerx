@@ -22,7 +22,7 @@ import FormSource from '../examples/tutorial/UserForm.vue?raw'
 ```ts
 const userLayer = useDetailLayer(UserForm)
 
-userLayer.show({
+userLayer.open({
   props: { mode: 'view', recordId: row.id, initialName: row.name, ... },
 })
 ```

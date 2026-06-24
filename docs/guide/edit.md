@@ -8,14 +8,14 @@ import FormSource from '../examples/tutorial/UserForm.vue?raw'
 # §3 编辑 / 新建
 
 ::: info 本章新增
-同一工厂，`mode: 'edit' | 'create'` · `hideOn` · footer 保存
+同一工厂，`mode: 'edit' | 'create'` · `closeOn` · footer 保存
 :::
 
 **不新增工厂。** `useDetailLayer` 已经包含编辑能力：
 
 ```ts
-userLayer.show({ props: { mode: 'edit', initialName: row.name, onSubmit: fn } })
-userLayer.show({ props: { mode: 'create', onSubmit: fn } })
+userLayer.open({ props: { mode: 'edit', initialName: row.name, onSubmit: fn } })
+userLayer.open({ props: { mode: 'create', onSubmit: fn } })
 ```
 
 <DemoBlock
@@ -26,7 +26,7 @@ userLayer.show({ props: { mode: 'create', onSubmit: fn } })
   ]"
 />
 
-`mode !== 'view'` 时表单可编辑，`LayerTemplate name="footer"` 出现保存按钮；`hideOn: ['submit']` 提交后关层。
+`mode !== 'view'` 时表单可编辑，`LayerTemplate name="footer"` 出现保存按钮；`closeOn: ['submit']` 提交后关层。
 
 ## 下一步
 

@@ -73,7 +73,7 @@ describe('LayerTemplate', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show()
+    dialog.open()
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -106,7 +106,7 @@ describe('LayerTemplate', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show()
+    dialog.open()
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -146,7 +146,7 @@ describe('LayerTemplate', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show()
+    dialog.open()
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 

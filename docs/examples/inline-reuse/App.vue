@@ -14,7 +14,7 @@ function onInlineSubmit(name: string) {
 const userForm = useDialog(UserFormDialog)
 
 function openInDialog() {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'create',
       onSubmit: (name: string) => {

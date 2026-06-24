@@ -7,11 +7,11 @@ import DraftContent from './DraftContent.vue'
 const savedDraft = ref('欢迎使用 vue-layerx')
 
 const draftDialog = useDialog(DraftContent, {
-  hideOn: ['save', 'cancel'],
+  closeOn: ['save', 'cancel'],
 })
 
 function openDraft() {
-  draftDialog.show({
+  draftDialog.open({
     props: {
       initialContent: savedDraft.value,
       onSave: (content: string) => {

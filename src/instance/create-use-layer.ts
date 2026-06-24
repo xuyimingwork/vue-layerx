@@ -5,7 +5,7 @@ import {
   type AppContext,
   type Component,
 } from 'vue'
-import type { LayerInstance, LayerInstanceConfig } from '@/types'
+import type { LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
 import { attachConfigStore } from '@/instance/instance-registry'
 import { createLayerConfigStore, type LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
@@ -14,8 +14,8 @@ import { createLayerRuntime } from './layer-runtime'
 
 interface CreateInstanceOptions {
   Content?: Component
-  use: LayerInstanceConfig
-  clone: LayerInstanceConfig
+  use: LayerConfigInstance
+  clone: LayerConfigInstance
   appContext: AppContext | null
   lifecycle: InstanceLifecycle
 }
@@ -48,7 +48,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     create: ctx.create,
     use: toFragmentFromInstance(opts.use),
     clone: toFragmentFromInstance(opts.clone),
-    show: {},
+    open: {},
   })
 
   const rootState = reactive<LayerRootState>({
@@ -56,11 +56,11 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     contentMountKey: 0,
   })
 
-  const hide = () => {
+  const close = () => {
     rootState.visible = false
   }
 
-  const LayerRoot = buildLayerRoot(ctx, { Content: opts.Content }, configStore, rootState, hide)
+  const LayerRoot = buildLayerRoot(ctx, { Content: opts.Content }, configStore, rootState, close)
   const runtime = createLayerRuntime(LayerRoot, opts.appContext)
 
   const dispose = () => {
@@ -68,9 +68,9 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     runtime.unmount()
   }
 
-  const show = (config?: LayerInstanceConfig) => {
+  const open = (config?: LayerConfigInstance) => {
     if (config !== undefined) {
-      configStore.show = toFragmentFromInstance(config)
+      configStore.open = toFragmentFromInstance(config)
     }
     rootState.contentMountKey++
     rootState.visible = true
@@ -78,9 +78,9 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
   }
 
   const instance: LayerInstance = {
-    show,
-    hide,
-    clone(config?: LayerInstanceConfig) {
+    open,
+    close,
+    clone(config?: LayerConfigInstance) {
       const bundle = createInstance(ctx, {
         Content: opts.Content,
         use: opts.use,
@@ -103,7 +103,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
 export function createUseLayer(ctx: UseLayerContext) {
   return function useLayer(
     Content?: Component,
-    config: LayerInstanceConfig = {},
+    config: LayerConfigInstance = {},
   ): LayerInstance {
     const hostInstance = getCurrentInstance()
     const appContext = hostInstance?.appContext ?? null

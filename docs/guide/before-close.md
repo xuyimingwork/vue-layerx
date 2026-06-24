@@ -20,7 +20,7 @@ beforeClose: (done) => {
 | 操作 | 行为 |
 |------|------|
 | view 模式关闭 | 直接关 |
-| edit 点保存 | `hideOn` |
+| edit 点保存 | `closeOn` |
 | edit 有脏数据点 X | `beforeClose` |
 
 <DemoBlock :demo="Demo" :files="[{ name: 'UserForm.vue', code: FormSource }]" />

@@ -13,7 +13,7 @@ const user = {
 const userLayer = useDetailLayer(UserForm)
 
 function openView() {
-  userLayer.show({
+  userLayer.open({
     props: { mode: 'view', recordId: 1, initialName: user.name, email: user.email, role: user.role },
   })
 }

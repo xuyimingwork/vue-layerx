@@ -1,39 +1,44 @@
 import type {
   LayerConfigFragment,
-  LayerConfigNode,
-  LayerStaticConfig,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
+  LayerConfigStatic,
   LayerTemplateEntry,
 } from '@/types/config'
-import type { LayerInstanceConfig } from '@/types/payload'
+import type { LayerConfigInstance } from '@/types/config'
 import { materializeTemplates } from './materialize-templates'
 
-export function pickNodeConfig(source: {
-  component?: LayerConfigNode['component']
-  props?: LayerConfigNode['props']
-  slots?: LayerConfigNode['slots']
-}): LayerConfigNode {
-  const result: LayerConfigNode = {}
+export function pickContainerNode(source: LayerConfigNodeContainer): LayerConfigNodeContainer {
+  const result: LayerConfigNodeContainer = {}
   if (source.component !== undefined) result.component = source.component
   if (source.props !== undefined) result.props = source.props
   if (source.slots !== undefined) result.slots = source.slots
+  if (source.model !== undefined) result.model = source.model
   return result
 }
 
-export function toFragmentFromStatic(config: LayerStaticConfig = {}): LayerConfigFragment {
+export function pickContentNode(source: LayerConfigNodeContent): LayerConfigNodeContent {
+  const result: LayerConfigNodeContent = {}
+  if (source.component !== undefined) result.component = source.component
+  if (source.props !== undefined) result.props = source.props
+  if (source.slots !== undefined) result.slots = source.slots
+  if (source.closeOn !== undefined) result.closeOn = source.closeOn
+  return result
+}
+
+export function toFragmentFromStatic(config: LayerConfigStatic = {}): LayerConfigFragment {
   const fragment: LayerConfigFragment = {}
-  const container = pickNodeConfig(config)
+  const container = pickContainerNode(config)
   if (Object.keys(container).length > 0) fragment.container = container
-  if (config.content) fragment.content = config.content
-  if (config.hideOn) fragment.hideOn = config.hideOn
+  if (config.content) fragment.content = pickContentNode(config.content)
   return fragment
 }
 
-export function toFragmentFromInstance(config: LayerInstanceConfig = {}): LayerConfigFragment {
+export function toFragmentFromInstance(config: LayerConfigInstance = {}): LayerConfigFragment {
   const fragment: LayerConfigFragment = {}
-  const content = pickNodeConfig(config)
+  const content = pickContentNode(config)
   if (Object.keys(content).length > 0) fragment.content = content
-  if (config.container) fragment.container = config.container
-  if (config.hideOn) fragment.hideOn = config.hideOn
+  if (config.container) fragment.container = pickContainerNode(config.container)
   return fragment
 }
 

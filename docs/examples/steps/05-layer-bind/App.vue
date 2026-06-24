@@ -18,7 +18,7 @@ const users = ref<User[]>([
 const userForm = useDialog(UserForm)
 
 function openEdit(row: User) {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'edit',
       recordId: row.id,

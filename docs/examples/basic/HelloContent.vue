@@ -12,7 +12,7 @@ defineLayer({
 </script>
 
 <template>
-  <p class="message">最简用法：content 声明 container 配置，调用方 <code>show()</code> 即可打开。</p>
+  <p class="message">最简用法：content 声明 container 配置，调用方 <code>open()</code> 即可打开。</p>
 
   <LayerTemplate name="footer">
     <ElButton type="primary" @click="emit('close')">关闭</ElButton>

@@ -8,7 +8,7 @@ const emit = defineEmits<{
 
 defineLayer({
   props: { title: '删除确认', width: '400px' },
-  hideOn: ['confirm'],
+  content: { closeOn: ['confirm'] },
 })
 </script>
 

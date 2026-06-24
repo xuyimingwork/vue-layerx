@@ -1,22 +1,18 @@
 import type { Component } from 'vue'
-import type { LayerAdapt, LayerStaticConfig } from '@/types'
+import type { LayerAdapt, LayerConfigStatic } from '@/types'
+import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
 import { toFragmentFromStatic } from '@/pipeline/to-fragment'
 import { createUseLayer } from '@/instance/create-use-layer'
 
-const DEFAULT_VISIBLE = ['modelValue', 'onUpdate:modelValue'] as const
-
 export function createLayer(
   Container: Component,
-  config: LayerStaticConfig = {},
+  config: LayerConfigStatic = {},
   adapt?: LayerAdapt,
 ) {
-  const [visibleProp, visibleEvent] = config.visible ?? DEFAULT_VISIBLE
-
   return createUseLayer({
     Container,
     create: toFragmentFromStatic(config),
-    visibleProp,
-    visibleEvent,
+    defaultModel: config.model ?? DEFAULT_CONTAINER_MODEL,
     adapt,
   })
 }

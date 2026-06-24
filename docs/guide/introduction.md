@@ -32,8 +32,8 @@ const editVisible = ref(false)
 ```ts
 const userLayer = useDetailLayer(UserForm)
 
-userLayer.show({ props: { mode: 'view', ...row } })   // 详情
-userLayer.show({ props: { mode: 'edit', ...row } })   // 编辑
+userLayer.open({ props: { mode: 'view', ...row } })   // 详情
+userLayer.open({ props: { mode: 'edit', ...row } })   // 编辑
 ```
 
 ```vue

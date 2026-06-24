@@ -2,6 +2,7 @@ import { defineComponent, provide, type Component } from 'vue'
 import { mergeLayerConfigStore } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
 import type { LayerAdapt, LayerConfigFragment, LayerRenderPlan } from '@/types'
+import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
 import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
 import {
@@ -12,8 +13,7 @@ import {
 export interface UseLayerContext {
   Container: Component
   create: LayerConfigFragment
-  visibleProp: string
-  visibleEvent: string
+  defaultModel: string
   adapt?: LayerAdapt
 }
 
@@ -31,7 +31,7 @@ export function buildLayerRoot(
   opts: LayerRootOptions,
   configStore: LayerConfigStoreWithRegistry,
   state: LayerRootState,
-  hide: () => void,
+  close: () => void,
 ) {
   let lastMountKey = -1
 
@@ -49,8 +49,6 @@ export function buildLayerRoot(
       })
 
       return () => {
-        if (!state.visible) return null
-
         if (state.contentMountKey !== lastMountKey) {
           configStore.define = null
           lastMountKey = state.contentMountKey
@@ -67,7 +65,7 @@ export function buildLayerRoot(
           merged,
           Container: ctx.Container,
           boundContent: opts.Content,
-          hide,
+          close,
         }
 
         const resolved = defaultResolve(resolveCtx)
@@ -75,10 +73,9 @@ export function buildLayerRoot(
 
         const plan: LayerRenderPlan = {
           ...normalized,
-          visible: true,
-          visibleProp: ctx.visibleProp,
-          visibleEvent: ctx.visibleEvent,
-          onHide: hide,
+          visible: state.visible,
+          model: merged.container.model ?? ctx.defaultModel ?? DEFAULT_CONTAINER_MODEL,
+          onClose: close,
         }
 
         return renderLayerTree({

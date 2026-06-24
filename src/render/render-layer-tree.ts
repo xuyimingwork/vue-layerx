@@ -1,7 +1,7 @@
 import { h, type VNode } from 'vue'
 import { LAYERX_DIRECT_CONTENT } from '@/constants/markers'
 import type { LayerRenderPlan } from '@/types'
-import { buildVisibleProps } from './build-visible-props'
+import { bindContainerModel } from './bind-container-model'
 
 export interface RenderLayerTreeOptions {
   plan: LayerRenderPlan
@@ -12,12 +12,11 @@ export function renderLayerTree({
   plan,
   contentMountKey,
 }: RenderLayerTreeOptions): VNode {
-  const containerProps = buildVisibleProps(
+  const containerProps = bindContainerModel(
     plan.container.props,
     plan.visible,
-    plan.visibleProp,
-    plan.visibleEvent,
-    plan.onHide,
+    plan.model,
+    plan.onClose,
   )
 
   const content = plan.content

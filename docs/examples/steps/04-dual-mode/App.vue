@@ -14,7 +14,7 @@ function onInlineSubmit(name: string) {
 }
 
 function openInDialog() {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'edit',
       initialName: saved.value,

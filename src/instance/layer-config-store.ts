@@ -13,7 +13,7 @@ export interface LayerConfigStore {
   define: LayerConfigFragment | null
   use: LayerConfigFragment
   clone: LayerConfigFragment
-  show: LayerConfigFragment
+  open: LayerConfigFragment
   templates: LayerTemplateBuckets
 }
 
@@ -21,7 +21,7 @@ export interface LayerConfigStoreInit {
   create: LayerConfigFragment
   use?: LayerConfigFragment
   clone?: LayerConfigFragment
-  show?: LayerConfigFragment
+  open?: LayerConfigFragment
 }
 
 function emptyContainerTemplateBucket(): LayerConfigFragment {
@@ -65,7 +65,7 @@ export function createLayerConfigStore(init: LayerConfigStoreInit): LayerConfigS
     define: null,
     use: init.use ?? EMPTY_LAYER_FRAGMENT,
     clone: init.clone ?? EMPTY_LAYER_FRAGMENT,
-    show: init.show ?? EMPTY_LAYER_FRAGMENT,
+    open: init.open ?? EMPTY_LAYER_FRAGMENT,
     templates,
   })
 

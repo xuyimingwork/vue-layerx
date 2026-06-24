@@ -17,7 +17,7 @@ const users = ref<User[]>([
 const userLayer = useDetailLayer(UserForm)
 
 function openCreate() {
-  userLayer.show({
+  userLayer.open({
     props: {
       mode: 'create',
       onSubmit: (name: string) => {
@@ -32,7 +32,7 @@ function openCreate() {
 }
 
 function openEdit(row: User) {
-  userLayer.show({
+  userLayer.open({
     props: {
       mode: 'edit',
       recordId: row.id,

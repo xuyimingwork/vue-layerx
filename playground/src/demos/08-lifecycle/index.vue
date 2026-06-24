@@ -12,7 +12,7 @@ const countdown = ref(0)
 let autoCloseTimer: ReturnType<typeof setInterval> | null = null
 
 const statusLabel = computed(() => {
-  if (countdown.value > 0) return `${countdown.value}s 后自动 hide()`
+  if (countdown.value > 0) return `${countdown.value}s 后自动 close()`
   return alertDialog.visible ? '已打开' : '已关闭'
 })
 const statusType = computed(() => {
@@ -30,34 +30,34 @@ function clearAutoClose() {
 
 function openInfo() {
   clearAutoClose()
-  alertDialog.show({
-    hideOn: ['confirm'],
+  alertDialog.open({
+    closeOn: ['confirm'],
     props: {
       tone: 'info',
-      message: 'createLayer 工厂默认 tone=info，此处 show 覆盖 message。',
+      message: 'createLayer 工厂默认 tone=info，此处 open 覆盖 message。',
     },
   })
 }
 
 function openWarning() {
   clearAutoClose()
-  alertDialog.show({
-    hideOn: ['confirm'],
+  alertDialog.open({
+    closeOn: ['confirm'],
     props: {
       tone: 'warning',
-      message: 'show() 同时覆盖 content props 与 hideOn。',
+      message: 'open() 同时覆盖 content props 与 closeOn。',
     },
-    container: { props: { title: 'show 层覆盖标题' } },
+    container: { props: { title: 'open 层覆盖标题' } },
   })
 }
 
 function openAutoClose() {
   clearAutoClose()
-  alertDialog.show({
-    hideOn: ['confirm'],
+  alertDialog.open({
+    closeOn: ['confirm'],
     props: {
       tone: 'info',
-      message: `可点「知道了」正常关闭；或等待 ${AUTO_CLOSE_SECONDS}s 由外部 hide() 收尾（模拟卸载）。`,
+      message: `可点「知道了」正常关闭；或等待 ${AUTO_CLOSE_SECONDS}s 由外部 close() 收尾（模拟卸载）。`,
       onConfirm: clearAutoClose,
     },
   })
@@ -66,14 +66,14 @@ function openAutoClose() {
     countdown.value--
     if (countdown.value <= 0) {
       clearAutoClose()
-      alertDialog.hide()
+      alertDialog.close()
     }
   }, 1000)
 }
 
 onUnmounted(() => {
   clearAutoClose()
-  alertDialog.hide()
+  alertDialog.close()
 })
 </script>
 
@@ -85,7 +85,7 @@ onUnmounted(() => {
     </div>
     <div class="actions">
       <ElButton @click="openInfo">工厂默认 tone</ElButton>
-      <ElButton type="warning" @click="openWarning">show 覆盖</ElButton>
+      <ElButton type="warning" @click="openWarning">open 覆盖</ElButton>
       <ElButton type="primary" plain @click="openAutoClose">
         {{ AUTO_CLOSE_SECONDS }}s 倒计时 hide
       </ElButton>

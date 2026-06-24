@@ -18,7 +18,7 @@ const users: User[] = [
 const userLayer = useDetailLayer(UserForm)
 
 function openView(row: User) {
-  userLayer.show({
+  userLayer.open({
     props: { mode: 'view', recordId: row.id, initialName: row.name, email: row.email, role: row.role },
   })
 }
@@ -26,7 +26,7 @@ function openView(row: User) {
 
 <template>
   <p class="hint">
-    点姓名 → <code>useDetailLayer(UserForm).show({ mode: 'view' })</code>，表单 disabled 只读。
+    点姓名 → <code>useDetailLayer(UserForm).open({ mode: 'view' })</code>，表单 disabled 只读。
   </p>
   <ElTable :data="users" stripe>
     <ElTableColumn prop="id" label="ID" width="72" />

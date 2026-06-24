@@ -4,7 +4,7 @@ import { ElButton, ElTag } from 'element-plus'
 import { useDialog } from '../../.vitepress/shared/layers'
 import PanelContent from './PanelContent.vue'
 
-const instanceA = useDialog(PanelContent, { hideOn: ['close'] })
+const instanceA = useDialog(PanelContent, { closeOn: ['close'] })
 
 const instanceB = instanceA.clone({
   container: { props: { width: '640px', title: '实例 B（clone · 640px）' } },
@@ -36,7 +36,7 @@ const status = computed(() => {
 })
 
 function openA() {
-  instanceA.show({
+  instanceA.open({
     props: {
       instanceId: 'A',
       note: '这是 base 实例。footer 里可点「从 A 打开 B」。',
@@ -45,12 +45,12 @@ function openA() {
     },
     container: { props: { title: '实例 A（base · 480px）' } },
   })
-  pushLog('instanceA.show() — A.visible=true')
+  pushLog('instanceA.open() — A.visible=true')
 }
 
 function openBFromA() {
-  pushLog('A footer 按钮 → instanceB.show()（未先 hide A）')
-  instanceB.show({
+  pushLog('A footer 按钮 → instanceB.open()（未先 hide A）')
+  instanceB.open({
     props: {
       instanceId: 'B',
       note: 'B 使用独立 layerRuntime，与 A 并行打开时两层 Dialog 同时存在。',
@@ -61,7 +61,7 @@ function openBFromA() {
 }
 
 function openBFromPage() {
-  instanceB.show({
+  instanceB.open({
     props: {
       instanceId: 'B',
       note: '从页面直接打开 B，用于对比 A 未关时的行为。',
@@ -71,13 +71,13 @@ function openBFromPage() {
 }
 
 function hideA() {
-  instanceA.hide()
-  pushLog('instanceA.hide()')
+  instanceA.close()
+  pushLog('instanceA.close()')
 }
 
 function hideB() {
-  instanceB.hide()
-  pushLog('instanceB.hide()')
+  instanceB.close()
+  pushLog('instanceB.close()')
 }
 </script>
 

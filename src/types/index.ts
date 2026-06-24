@@ -1,18 +1,21 @@
 export type {
   LayerAdapt,
+  CloseOnConfig,
   LayerConfigFragment,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
+  LayerConfigNodeBase,
   LayerMerged,
-  LayerConfigNode,
   LayerNodeNormalized,
   LayerNormalized,
   LayerProps,
   LayerRenderPlan,
-  LayerStaticConfig,
+  LayerConfigStatic,
+  LayerConfigInstance,
   LayerTemplateEntry,
   SlotRenderFn,
-  VisibleProtocol,
 } from './config'
 
-export type { LayerInstanceConfig } from './payload'
+export { DEFAULT_CONTAINER_MODEL } from './config'
 
 export type { LayerInstance, LayerTemplateScope } from './instance'

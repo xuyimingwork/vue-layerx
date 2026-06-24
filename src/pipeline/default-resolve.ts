@@ -1,16 +1,16 @@
 import type { Component } from 'vue'
 import type { LayerMerged, LayerNormalized } from '@/types/config'
-import { bindHideOn } from './bind-hide-on'
+import { bindCloseOn } from './bind-close-on'
 
 export interface ResolveContext {
   merged: LayerMerged
   Container: Component
   boundContent?: Component
-  hide: () => void
+  close: () => void
 }
 
 export function defaultResolve(ctx: ResolveContext): LayerNormalized {
-  const { merged, Container, boundContent, hide } = ctx
+  const { merged, Container, boundContent, close } = ctx
 
   const contentComponent = merged.content.component ?? boundContent
 
@@ -24,7 +24,7 @@ export function defaultResolve(ctx: ResolveContext): LayerNormalized {
     return { container: containerNormalized }
   }
 
-  const contentProps = bindHideOn(merged.content.props ?? {}, merged.hideOn, hide)
+  const contentProps = bindCloseOn(merged.content.props ?? {}, merged.content.closeOn, close)
 
   return {
     container: containerNormalized,

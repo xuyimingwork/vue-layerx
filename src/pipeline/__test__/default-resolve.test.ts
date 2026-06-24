@@ -13,7 +13,7 @@ describe('defaultResolve', () => {
         container: { props: { title: 'Shell' } },
       },
       Container,
-      hide: vi.fn(),
+      close: vi.fn(),
     })
 
     expect(resolved.content).toBeUndefined()
@@ -26,7 +26,7 @@ describe('defaultResolve', () => {
       merged: { content: {}, container: {} },
       Container,
       boundContent: Content,
-      hide: vi.fn(),
+      close: vi.fn(),
     })
 
     expect(resolved.content?.component).toBe(Content)
@@ -39,9 +39,22 @@ describe('defaultResolve', () => {
       merged: { content: { component: Override }, container: {} },
       Container,
       boundContent: Content,
-      hide: vi.fn(),
+      close: vi.fn(),
     })
 
     expect(resolved.content?.component).toBe(Override)
+  })
+
+  it('binds closeOn into content props', () => {
+    const close = vi.fn()
+    const resolved = defaultResolve({
+      merged: { content: { closeOn: ['done'] }, container: {} },
+      Container,
+      boundContent: Content,
+      close,
+    })
+
+    resolved.content?.props.onDone?.()
+    expect(close).toHaveBeenCalled()
   })
 })

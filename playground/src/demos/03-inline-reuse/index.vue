@@ -7,7 +7,7 @@ import UserForm from '../02-crud/UserForm.vue'
 const lastSaved = ref('')
 
 const compareDialog = useDialog(UserForm, {
-  hideOn: ['success', 'cancel'],
+  closeOn: ['success', 'cancel'],
 })
 
 function onInlineSuccess(name: string) {
@@ -16,7 +16,7 @@ function onInlineSuccess(name: string) {
 }
 
 function openInDialog() {
-  compareDialog.show({
+  compareDialog.open({
     props: {
       mode: 'create',
       onSuccess: (name: string) => {

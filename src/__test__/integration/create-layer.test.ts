@@ -24,7 +24,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer()
-        onMounted(() => dialog.show())
+        onMounted(() => dialog.open())
         return () => h('motion-host')
       },
     })
@@ -37,7 +37,7 @@ describe('createLayer (integration)', () => {
     expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Shell')
   })
 
-  it('opens via .show() without template (body)', async () => {
+  it('opens via .open() without template (body)', async () => {
     const useLayer = createLayer(Container, {
       props: { title: 'Create', width: '400px' },
     })
@@ -47,7 +47,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(Content)
-        onMounted(() => dialog.show({ props: { message: 'hello' } }))
+        onMounted(() => dialog.open({ props: { message: 'hello' } }))
         return () => h('motion-host')
       },
     })
@@ -74,7 +74,7 @@ describe('createLayer (integration)', () => {
           container: { props: { width: '640px' } },
         })
         onMounted(() =>
-          dialog.show({
+          dialog.open({
             props: { message: 'merged' },
             container: { props: { title: 'FromShow' } },
           }),
@@ -101,7 +101,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(Content)
-        onMounted(() => dialog.show())
+        onMounted(() => dialog.open())
         return () => h('motion-host')
       },
     })
@@ -120,7 +120,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(Content)
-        onMounted(() => dialog.show({ props: { message: 'slot' } }))
+        onMounted(() => dialog.open({ props: { message: 'slot' } }))
         return () => h('motion-host')
       },
     })
@@ -132,20 +132,20 @@ describe('createLayer (integration)', () => {
     expect(document.querySelector('.content .footer-btn')).toBeFalsy()
   })
 
-  it('closes on hideOn content events', async () => {
+  it('closes on closeOn content events', async () => {
     const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
 
     const Host = defineComponent({
       setup() {
-        dialog = useLayer(Content, { hideOn: ['done'] })
+        dialog = useLayer(Content, { closeOn: ['done'] })
         return () => h('motion-host')
       },
     })
 
     const wrapper = mount(Host)
-    dialog.show({ props: { message: 'x' } })
+    dialog.open({ props: { message: 'x' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -155,7 +155,7 @@ describe('createLayer (integration)', () => {
     expect(queryBodyDialog()).toBeFalsy()
   })
 
-  it('show hideOn works when useDialog has no hideOn', async () => {
+  it('show closeOn works when useDialog has no closeOn', async () => {
     const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
@@ -168,7 +168,7 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show({ props: { message: 'x' }, hideOn: ['done'] })
+    dialog.open({ props: { message: 'x' }, closeOn: ['done'] })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -178,7 +178,7 @@ describe('createLayer (integration)', () => {
     expect(queryBodyDialog()).toBeFalsy()
   })
 
-  it('exposes .hide()', async () => {
+  it('exposes .close()', async () => {
     const useLayer = createLayer(Container)
     const Content = makeContent()
     let dialog!: LayerInstance
@@ -191,12 +191,12 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show({ props: { message: 'a' } })
+    dialog.open({ props: { message: 'a' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(queryBodyDialog()).toBeTruthy()
 
-    dialog.hide()
+    dialog.close()
     await wrapper.vm.$nextTick()
     expect(queryBodyDialog()).toBeFalsy()
   })
@@ -214,14 +214,14 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show({ props: { message: 'a' } })
+    dialog.open({ props: { message: 'a' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
     expect(queryBodyDialog()).toBeTruthy()
     expect(document.body.querySelector('div')).toBeTruthy()
 
-    dialog.hide()
+    dialog.close()
     await wrapper.vm.$nextTick()
 
     expect(dialog.visible).toBe(false)
@@ -247,14 +247,14 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show({ props: { message: 'first' } })
+    dialog.open({ props: { message: 'first' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
-    dialog.hide()
+    dialog.close()
     await wrapper.vm.$nextTick()
 
-    dialog.show({ props: { message: 'second' } })
+    dialog.open({ props: { message: 'second' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -278,8 +278,8 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    base.show({ props: { message: 'base' } })
-    cloned.show({ props: { message: 'cloned' } })
+    base.open({ props: { message: 'base' } })
+    cloned.open({ props: { message: 'cloned' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -307,8 +307,8 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    base.show({ props: { message: 'base' } })
-    cloned.show({ props: { message: 'cloned' } })
+    base.open({ props: { message: 'base' } })
+    cloned.open({ props: { message: 'cloned' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -337,9 +337,9 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    base.show({ props: { message: 'base' } })
-    mid.show({ props: { message: 'mid' } })
-    leaf.show({ props: { message: 'leaf' } })
+    base.open({ props: { message: 'base' } })
+    mid.open({ props: { message: 'mid' } })
+    leaf.open({ props: { message: 'leaf' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -351,7 +351,7 @@ describe('createLayer (integration)', () => {
     expect(document.body.querySelectorAll('div')).toHaveLength(0)
   })
 
-  it('clone.hide() without show does not tear down sibling instance DOM', async () => {
+  it('clone.close() without show does not tear down sibling instance DOM', async () => {
     const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
@@ -366,11 +366,11 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    base.show({ props: { message: 'base' } })
+    base.open({ props: { message: 'base' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
-    cloned.hide()
+    cloned.close()
     await wrapper.vm.$nextTick()
 
     expect(base.visible).toBe(true)
@@ -379,7 +379,7 @@ describe('createLayer (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('base')
   })
 
-  it('clone.hide() only removes its own dialog when both are open', async () => {
+  it('clone.close() only removes its own dialog when both are open', async () => {
     const useLayer = createLayer(Container)
     const Content = makeContent()
     let base!: LayerInstance
@@ -394,12 +394,12 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    base.show({ props: { message: 'base' } })
-    cloned.show({ props: { message: 'cloned' } })
+    base.open({ props: { message: 'base' } })
+    cloned.open({ props: { message: 'cloned' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
-    cloned.hide()
+    cloned.close()
     await wrapper.vm.$nextTick()
 
     expect(cloned.visible).toBe(false)
@@ -426,15 +426,15 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    base.show({ props: { message: 'base' } })
+    base.open({ props: { message: 'base' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Base')
 
-    base.hide()
+    base.close()
     await wrapper.vm.$nextTick()
 
-    cloned.show({ props: { message: 'cloned' } })
+    cloned.open({ props: { message: 'cloned' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Cloned')
@@ -496,7 +496,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(OuterContent)
-        onMounted(() => dialog.show())
+        onMounted(() => dialog.open())
         return () => h('motion-host')
       },
     })
@@ -538,7 +538,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(Content)
-        onMounted(() => dialog.show({ props: { message: 'scope' } }))
+        onMounted(() => dialog.open({ props: { message: 'scope' } }))
         return () => h('motion-host')
       },
     })
@@ -579,7 +579,7 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show()
+    dialog.open()
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
 
@@ -633,7 +633,7 @@ describe('createLayer (integration)', () => {
     const Host = defineComponent({
       setup() {
         dialog = useLayer(Content)
-        onMounted(() => dialog.show())
+        onMounted(() => dialog.open())
         return () => h('motion-host')
       },
     })
@@ -671,12 +671,12 @@ describe('createLayer (integration)', () => {
     })
 
     const wrapper = mount(Host)
-    dialog.show({ props: { message: 'first' } })
+    dialog.open({ props: { message: 'first' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(setupCount).toBe(1)
 
-    dialog.show({ props: { message: 'second' } })
+    dialog.open({ props: { message: 'second' } })
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(setupCount).toBe(2)

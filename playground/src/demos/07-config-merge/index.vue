@@ -5,19 +5,19 @@ import UserForm from '../02-crud/UserForm.vue'
 
 const mergeDialog = useDialog(UserForm, {
   container: { props: { width: '520px' } },
-  hideOn: ['success', 'cancel'],
+  closeOn: ['success', 'cancel'],
 })
 
 function openDefault() {
-  mergeDialog.show({ props: { mode: 'create' } })
+  mergeDialog.open({ props: { mode: 'create' } })
 }
 
 function openShowOverride() {
-  mergeDialog.show({
+  mergeDialog.open({
     props: { mode: 'create' },
     container: {
       props: {
-        title: 'show() 覆盖标题',
+        title: 'open() 覆盖标题',
         width: '640px',
       },
     },
@@ -28,7 +28,7 @@ function openShowOverride() {
 <template>
   <div class="actions">
     <ElButton @click="openDefault">默认（defineLayer 标题 + 520px）</ElButton>
-    <ElButton type="primary" @click="openShowOverride">show() 覆盖标题与宽度</ElButton>
+    <ElButton type="primary" @click="openShowOverride">open() 覆盖标题与宽度</ElButton>
   </div>
 </template>
 

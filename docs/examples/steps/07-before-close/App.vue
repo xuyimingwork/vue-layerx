@@ -9,7 +9,7 @@ const draft = ref('Alice')
 const userForm = useDialog(UserForm)
 
 function openEdit() {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'edit',
       initialName: draft.value,
@@ -26,7 +26,7 @@ function openEdit() {
   <p class="hint">
     修改姓名后，点 X / 遮罩 / BaseDialog「取消」→ <code>beforeClose</code> 在
     <code>UserForm</code> 的 <code>defineLayer</code> 里拦截；点「保存」→
-    <code>hideOn: ['submit']</code> 正常关闭。
+    <code>closeOn: ['submit']</code> 正常关闭。
   </p>
   <p class="draft">当前：{{ draft }}</p>
   <ElButton type="primary" @click="openEdit">编辑</ElButton>

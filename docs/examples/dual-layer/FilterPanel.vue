@@ -19,7 +19,7 @@ defineLayer({
     width: '420px',
     direction: 'rtl',
   },
-  hideOn: ['apply'],
+  content: { closeOn: ['apply'] },
 })
 
 function apply() {

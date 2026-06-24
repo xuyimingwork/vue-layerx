@@ -1,4 +1,4 @@
-import type { LayerTemplateEntry, LayerConfigNode, SlotRenderFn } from '@/types/config'
+import type { LayerTemplateEntry, LayerConfigNodeBase, SlotRenderFn } from '@/types/config'
 
 export function materializeTemplates(
   templates: Record<string, LayerTemplateEntry>,
@@ -12,7 +12,7 @@ export function materializeTemplates(
 
 export function templateRegistryToNodeConfig(
   templates: Record<string, LayerTemplateEntry> | undefined,
-): LayerConfigNode | undefined {
+): LayerConfigNodeBase | undefined {
   if (!templates || Object.keys(templates).length === 0) return undefined
   return { slots: materializeTemplates(templates) }
 }

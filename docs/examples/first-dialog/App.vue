@@ -6,7 +6,7 @@ import ConfirmDialog from './ConfirmDialog.vue'
 const confirm = useDialog(ConfirmDialog)
 
 function askDelete() {
-  confirm.show({
+  confirm.open({
     props: {
       onConfirm: () => ElMessage.success('已删除'),
     },
@@ -15,7 +15,7 @@ function askDelete() {
 </script>
 
 <template>
-  <p class="hint">业务页没有 <code>el-dialog</code>、没有 <code>v-model</code>、没有 <code>hideOn</code>。</p>
+  <p class="hint">业务页没有 <code>el-dialog</code>、没有 <code>v-model</code>、没有 <code>closeOn</code>。</p>
   <ElButton type="danger" @click="askDelete">删除记录</ElButton>
 </template>
 

@@ -7,7 +7,7 @@ import UserForm from '../../tutorial/UserForm.vue'
 const userForm = useDialog(UserForm)
 
 function openCreate() {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'create',
       onSubmit: (name: string) => ElMessage.success(`已创建 ${name}`),
@@ -17,7 +17,7 @@ function openCreate() {
 </script>
 
 <template>
-  <p class="hint">列表页没有 <code>el-dialog</code>，只有 <code>userForm.show()</code>。</p>
+  <p class="hint">列表页没有 <code>el-dialog</code>，只有 <code>userForm.open()</code>。</p>
   <ElButton type="primary" @click="openCreate">新建用户</ElButton>
 </template>
 

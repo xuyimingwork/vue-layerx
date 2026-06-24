@@ -6,44 +6,54 @@ export type SlotRenderFn = (
   props?: Record<string, unknown>,
 ) => VNode | VNode[] | null
 
-/** [visibleProp, visibleEventHandlerProp] e.g. ['modelValue', 'onUpdate:modelValue'] */
-export type VisibleProtocol = [string, string]
+/** Content emit names that trigger layer.close(); extended forms allow conditional close */
+export type CloseOnConfig = string[]
 
-/** merge / config fragment for content or container node */
-export interface LayerConfigNode {
+/** merge / config fragment building blocks */
+export interface LayerConfigNodeBase {
   component?: Component
   props?: LayerProps
-  /** slot content: imperative (show / define / create) or LayerTemplate materialized at merge */
+  /** slot content: imperative or LayerTemplate materialized at merge */
   slots?: Record<string, SlotRenderFn>
+}
+
+/** Container node — model = v-model prop name (event: onUpdate:${model}) */
+export type LayerConfigNodeContainer = LayerConfigNodeBase & {
+  model?: string
+}
+
+/** Content node — closeOn = content emit → layer.close() */
+export type LayerConfigNodeContent = LayerConfigNodeBase & {
+  closeOn?: CloseOnConfig
 }
 
 export interface LayerTemplateEntry {
   render: SlotRenderFn
 }
 
-/** single merge tier: content + container fragments + hideOn */
+/** single merge tier: content + container fragments */
 export interface LayerConfigFragment {
-  content?: LayerConfigNode
-  container?: LayerConfigNode
-  hideOn?: string[]
+  content?: LayerConfigNodeContent
+  container?: LayerConfigNodeContainer
 }
 
-/** createLayer + defineLayer — top-level LayerConfigNode is container */
-export type LayerStaticConfig = LayerConfigNode & {
-  content?: LayerConfigNode
-  hideOn?: string[]
-  /** createLayer only; not part of merge */
-  visible?: VisibleProtocol
+/** createLayer + defineLayer — top-level fields = container */
+export type LayerConfigStatic = LayerConfigNodeContainer & {
+  content?: LayerConfigNodeContent
+}
+
+/** useX / open / clone — top-level fields = content */
+export type LayerConfigInstance = LayerConfigNodeContent & {
+  container?: LayerConfigNodeContainer
 }
 
 /** merge phase output */
 export interface LayerMerged {
-  content: LayerConfigNode
-  container: LayerConfigNode
-  hideOn?: string[]
+  content: LayerConfigNodeContent
+  container: LayerConfigNodeContainer
 }
 
-/** resolve / adapt output — ready for h() except visible protocol */
+/** resolve / adapt output — ready for h() except open model binding */
 export interface LayerNodeNormalized {
   component: Component
   props: LayerProps
@@ -58,9 +68,11 @@ export interface LayerNormalized {
 /** after adapt, before h() */
 export interface LayerRenderPlan extends LayerNormalized {
   visible: boolean
-  visibleProp: string
-  visibleEvent: string
-  onHide: () => void
+  /** v-model prop name on container; event is onUpdate:${model} */
+  model: string
+  onClose: () => void
 }
 
 export type LayerAdapt = (normalized: LayerNormalized) => LayerNormalized
+
+export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const

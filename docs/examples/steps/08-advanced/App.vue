@@ -12,7 +12,7 @@ const viewForm = editForm.clone({
 })
 
 function openEdit() {
-  editForm.show({
+  editForm.open({
     props: {
       mode: 'edit',
       recordId: user.value.id,
@@ -26,13 +26,13 @@ function openEdit() {
 }
 
 function openView() {
-  viewForm.show({
+  viewForm.open({
     props: {
       mode: 'view',
       recordId: user.value.id,
       initialName: user.value.name,
     },
-    container: { props: { title: '快速预览（show 覆盖标题）' } },
+    container: { props: { title: '快速预览（open 覆盖标题）' } },
   })
 }
 </script>

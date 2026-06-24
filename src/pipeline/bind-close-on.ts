@@ -1,18 +1,18 @@
-import type { LayerProps } from '@/types/config'
+import type { CloseOnConfig, LayerProps } from '@/types/config'
 
-export function bindHideOn(
+export function bindCloseOn(
   contentProps: LayerProps,
-  events: string[] | undefined,
-  hide: () => void,
+  closeOn: CloseOnConfig | undefined,
+  close: () => void,
 ): LayerProps {
-  if (!events?.length) return contentProps
+  if (!closeOn?.length) return contentProps
   const listeners: LayerProps = {}
-  for (const event of events) {
+  for (const event of closeOn) {
     const key = `on${event.charAt(0).toUpperCase()}${event.slice(1)}`
     const prev = contentProps[key] as ((...args: unknown[]) => unknown) | undefined
     listeners[key] = (...args: unknown[]) => {
       prev?.(...args)
-      hide()
+      close()
     }
   }
   return { ...contentProps, ...listeners }

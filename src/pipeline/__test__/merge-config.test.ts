@@ -17,89 +17,103 @@ function createTestStore(overrides: {
   define?: LayerConfigFragment | null
   use?: LayerConfigFragment
   clone?: LayerConfigFragment
-  show?: LayerConfigFragment
+  open?: LayerConfigFragment
 } = {}): LayerConfigStoreWithRegistry {
   const store = createLayerConfigStore({
     create: overrides.create ?? {},
     use: overrides.use,
     clone: overrides.clone,
-    show: overrides.show,
+    open: overrides.open,
   })
   if (overrides.define !== undefined) store.define = overrides.define
   return store
 }
 
 describe('mergeLayerConfigStore', () => {
-  it('merges container props with priority show > clone > use > define > create', () => {
+  it('merges container props with priority open > clone > use > define > create', () => {
     const merged = mergeLayerConfigStore(
       createTestStore({
         create: toFragmentFromStatic({ props: { title: 'Create', width: '400px' } }),
         define: toFragmentFromStatic({ props: { title: 'Defined' } }),
         use: toFragmentFromInstance({ container: { props: { width: '640px' } } }),
-        show: toFragmentFromInstance({ container: { props: { title: 'Show' } } }),
+        open: toFragmentFromInstance({ container: { props: { title: 'Open' } } }),
         clone: toFragmentFromInstance({ container: { props: { width: '720px' } } }),
       }),
     )
 
-    expect(merged.container.props).toEqual({ title: 'Show', width: '720px' })
+    expect(merged.container.props).toEqual({ title: 'Open', width: '720px' })
   })
 
-  it('merges content props with priority show > clone > use > create', () => {
+  it('merges content props with priority open > clone > use > create', () => {
     const merged = mergeLayerConfigStore(
       createTestStore({
         create: toFragmentFromStatic({ content: { props: { message: 'create' } } }),
         use: toFragmentFromInstance({ props: { message: 'use' } }),
-        show: toFragmentFromInstance({ props: { message: 'show' } }),
+        open: toFragmentFromInstance({ props: { message: 'open' } }),
         clone: toFragmentFromInstance({ props: { message: 'clone' } }),
       }),
     )
 
-    expect(merged.content.props).toEqual({ message: 'show' })
+    expect(merged.content.props).toEqual({ message: 'open' })
   })
 
-  it('falls back hideOn through clone, use, and define', () => {
+  it('falls back closeOn through clone, use, and define', () => {
     expect(
       mergeLayerConfigStore(
         createTestStore({
-          use: toFragmentFromInstance({ hideOn: ['done'] }),
+          use: toFragmentFromInstance({ closeOn: ['done'] }),
         }),
-      ).hideOn,
+      ).content.closeOn,
     ).toEqual(['done'])
 
     expect(
       mergeLayerConfigStore(
         createTestStore({
-          define: toFragmentFromStatic({ hideOn: ['submit'] }),
+          define: toFragmentFromStatic({ content: { closeOn: ['submit'] } }),
         }),
-      ).hideOn,
+      ).content.closeOn,
     ).toEqual(['submit'])
 
     expect(
       mergeLayerConfigStore(
         createTestStore({
-          define: toFragmentFromStatic({ hideOn: ['submit'] }),
-          use: toFragmentFromInstance({ hideOn: ['done'] }),
+          define: toFragmentFromStatic({ content: { closeOn: ['submit'] } }),
+          use: toFragmentFromInstance({ closeOn: ['done'] }),
         }),
-      ).hideOn,
+      ).content.closeOn,
     ).toEqual(['done'])
 
     expect(
       mergeLayerConfigStore(
         createTestStore({
-          use: toFragmentFromInstance({ hideOn: ['done'] }),
-          show: toFragmentFromInstance({ hideOn: ['cancel'] }),
+          use: toFragmentFromInstance({ closeOn: ['done'] }),
+          open: toFragmentFromInstance({ closeOn: ['cancel'] }),
         }),
-      ).hideOn,
+      ).content.closeOn,
     ).toEqual(['cancel'])
 
     expect(
       mergeLayerConfigStore(
         createTestStore({
-          use: toFragmentFromInstance({ hideOn: ['done'] }),
-          clone: toFragmentFromInstance({ hideOn: ['cancel'] }),
+          use: toFragmentFromInstance({ closeOn: ['done'] }),
+          clone: toFragmentFromInstance({ closeOn: ['cancel'] }),
         }),
-      ).hideOn,
+      ).content.closeOn,
     ).toEqual(['cancel'])
+  })
+
+  it('merges container model with priority open > clone > use > define > create', () => {
+    const merged = mergeLayerConfigStore(
+      createTestStore({
+        create: toFragmentFromStatic({ model: 'open' }),
+        define: toFragmentFromStatic({ model: 'visible' }),
+        use: toFragmentFromInstance({ container: { model: 'show' } }),
+        clone: toFragmentFromInstance({ container: { model: 'active' } }),
+        open: toFragmentFromInstance({ container: { model: 'modelValue' } }),
+      }),
+    )
+
+    expect(merged.container.model).toBe('modelValue')
   })
 
   it('keeps content and container slots separate in merge', () => {
@@ -121,20 +135,20 @@ describe('mergeLayerConfigStore', () => {
     const create = () => null
     const define = () => null
     const useX = () => null
-    const show = () => null
+    const open = () => null
 
     const store = createTestStore({
       create: { container: { slots: { footer: create } } },
       define: { container: { slots: { footer: define } } },
       use: toFragmentFromInstance({ container: { slots: { footer: useX } } }),
-      show: toFragmentFromInstance({ container: { slots: { footer: show } } }),
+      open: toFragmentFromInstance({ container: { slots: { footer: open } } }),
     })
     store.registerCreatorContainerTemplate('footer', entry('creator'))
     store.registerCallerContainerTemplate('footer', entry('caller'))
 
     const merged = mergeLayerConfigStore(store)
 
-    expect(merged.container.slots?.footer).toBe(show)
+    expect(merged.container.slots?.footer).toBe(open)
   })
 
   it('caller container template wins over define and creator templates', () => {

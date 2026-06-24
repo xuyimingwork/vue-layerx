@@ -31,7 +31,7 @@ defineLayer({
         .catch(() => {})
     },
   },
-  hideOn: ['submit'],
+  content: { closeOn: ['submit'] },
 })
 
 function handleSubmit() {
@@ -43,7 +43,7 @@ function handleSubmit() {
 <template>
   <p class="hint">
     点 X 或遮罩 → <code>beforeClose</code>；点 AppDialog「取消」→ 直接关层；点「保存」→
-    <code>hideOn</code>。
+    <code>closeOn</code>。
   </p>
   <ElInput v-model="content" type="textarea" :rows="4" placeholder="写点什么..." />
   <p v-if="dirty" class="dirty">● 有未保存修改</p>

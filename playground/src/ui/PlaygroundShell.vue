@@ -13,7 +13,7 @@ defineProps<{
       <div class="playground-header__inner">
         <h1>vue-layerx Playground</h1>
         <p>
-          由易到难逐级演示：先 <code>show()</code> 打开弹层，再接触插槽、换层、
+          由易到难逐级演示：先 <code>open()</code> 打开弹层，再接触插槽、换层、
           配置合并与生命周期。示例按 <strong>Lv.1 → Lv.8</strong> 排列。
         </p>
       </div>

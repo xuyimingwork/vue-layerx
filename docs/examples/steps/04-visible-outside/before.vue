@@ -9,7 +9,7 @@ const profile = ref({ name: 'Alice' })
 const userLayer = useDetailLayer(UserForm)
 
 function openInDialog() {
-  userLayer.show({
+  userLayer.open({
     props: {
       mode: 'edit',
       initialName: profile.value.name,

@@ -9,7 +9,7 @@ const user = {
   role: '管理员',
 }
 
-const baseDetail = useDialog(DetailContent, { hideOn: ['close'] })
+const baseDetail = useDialog(DetailContent, { closeOn: ['close'] })
 
 const wideDetail = baseDetail.clone({
   container: { props: { width: '640px', title: '用户详情（宽屏）' } },
@@ -20,17 +20,17 @@ const exportDetail = baseDetail.clone({
 })
 
 function openBase() {
-  baseDetail.show({
+  baseDetail.open({
     props: { ...user, onClose: () => ElMessage.info('基础详情已关闭') },
   })
 }
 
 function openWide() {
-  wideDetail.show({ props: user })
+  wideDetail.open({ props: user })
 }
 
 function openExport() {
-  exportDetail.show({
+  exportDetail.open({
     props: { ...user, role: `${user.role} · 可导出` },
   })
 }

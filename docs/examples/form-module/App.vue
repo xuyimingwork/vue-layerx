@@ -17,7 +17,7 @@ const users = ref<User[]>([
 const userForm = useDialog(UserFormDialog)
 
 function openCreate() {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'create',
       onSubmit: (name: string) => {
@@ -32,7 +32,7 @@ function openCreate() {
 }
 
 function openEdit(row: User) {
-  userForm.show({
+  userForm.open({
     props: {
       mode: 'edit',
       recordId: row.id,
@@ -49,7 +49,7 @@ function openEdit(row: User) {
 <template>
   <p class="hint">
     列表页只关心<strong>何时打开</strong>和<strong>提交后做什么</strong>。取消在
-    <code>AppDialog</code>，主操作和 <code>hideOn</code> 在 <code>UserFormDialog</code>。
+    <code>AppDialog</code>，主操作和 <code>closeOn</code> 在 <code>UserFormDialog</code>。
   </p>
 
   <header class="toolbar">

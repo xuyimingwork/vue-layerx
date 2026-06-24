@@ -21,7 +21,7 @@ defineLayer({
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
     width: '480px',
   },
-  hideOn: ['submit'],
+  content: { closeOn: ['submit'] },
 })
 
 watch(

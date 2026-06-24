@@ -14,15 +14,15 @@ export const demoGroups: DemoGroup[] = [
   {
     id: 'basics',
     title: '入门',
-    subtitle: 'show / hideOn / 业务传参',
+    subtitle: 'open / closeOn / 业务传参',
     items: [
       {
-        id: 'basic-show',
+        id: 'basic-open',
         level: 1,
         title: '打开与关闭',
         description:
-          '最简路径：content 内 defineLayer 声明标题、LayerTemplate name 声明 footer，调用方 useDialog(Content) + show()，hideOn 自动关闭。',
-        tags: ['useDialog', 'show()', 'hideOn', 'defineLayer', 'LayerTemplate'],
+          '最简路径：content 内 defineLayer 声明标题、LayerTemplate name 声明 footer，调用方 useDialog(Content) + open()，closeOn 自动关闭。',
+        tags: ['useDialog', 'open()', 'closeOn', 'defineLayer', 'LayerTemplate'],
         component: BasicDemo,
       },
       {
@@ -30,8 +30,8 @@ export const demoGroups: DemoGroup[] = [
         level: 2,
         title: '列表 CRUD',
         description:
-          '典型业务：show({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerTemplate :to 注入 content #header。',
-        tags: ['show(props)', 'hideOn', 'LayerTemplate :to', 'onSuccess'],
+          '典型业务：open({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerTemplate :to 注入 content #header。',
+        tags: ['open(props)', 'closeOn', 'LayerTemplate :to', 'onSuccess'],
         component: CrudDemo,
       },
     ],
@@ -63,7 +63,7 @@ export const demoGroups: DemoGroup[] = [
         title: 'Dialog / Drawer 双容器',
         description:
           '同一 FilterContent 用 defineLayer 写跨容器 props，LayerTemplate name 共用 footer；调用方 useDialog / useDrawer 分工厂打开，各自 adapt 滤 props、对齐 slot。',
-        tags: ['useDialog + useDrawer', 'defineLayer', 'adapt', 'hideOn'],
+        tags: ['useDialog + useDrawer', 'defineLayer', 'adapt', 'closeOn'],
         component: DualLayerDemo,
       },
       {
@@ -71,7 +71,7 @@ export const demoGroups: DemoGroup[] = [
         level: 5,
         title: 'clone 多实例',
         description:
-          '从同一实例 clone({ container }) 派生 clone 默认配置，visible 独立，各实例 show / hide 互不影响。',
+          '从同一实例 clone({ container }) 派生 clone 默认配置，visible 独立，各实例 open / close 互不影响。',
         tags: ['clone()', 'clone tier', '独立 visible', 'container.props'],
         component: CloneDemo,
       },
@@ -80,8 +80,8 @@ export const demoGroups: DemoGroup[] = [
         level: 5,
         title: 'clone 并行打开',
         description:
-          '在 A 已打开时从 A footer 触发打开 B（clone）：每个实例独立 layerRuntime，并行 show 时 visible 与 DOM 一致，hide 互不影响。',
-        tags: ['clone()', 'layerRuntime', '并行 show', '独立挂载'],
+          '在 A 已打开时从 A footer 触发打开 B（clone）：每个实例独立 layerRuntime，并行 open 时 visible 与 DOM 一致，close 互不影响。',
+        tags: ['clone()', 'layerRuntime', '并行 open', '独立挂载'],
         component: CloneParallelDemo,
       },
     ],
@@ -97,7 +97,7 @@ export const demoGroups: DemoGroup[] = [
         title: '未保存拦截',
         description:
           'defineLayer 配置 beforeClose 透传至 ElDialog；有脏数据时 X / 遮罩关闭需二次确认。',
-        tags: ['beforeClose', 'defineLayer', 'container.props', 'hideOn'],
+        tags: ['beforeClose', 'defineLayer', 'container.props', 'closeOn'],
         component: BeforeCloseDemo,
       },
       {
@@ -105,8 +105,8 @@ export const demoGroups: DemoGroup[] = [
         level: 7,
         title: '配置合并',
         description:
-          '四级优先级：createLayer(defaults) → defineLayer → useDialog → show()。对比默认与 show 覆盖的标题、宽度。',
-        tags: ['mergeLayerConfigStore', 'show > use > define > create'],
+          '四级优先级：createLayer(defaults) → defineLayer → useDialog → open()。对比默认与 open 覆盖的标题、宽度。',
+        tags: ['mergeLayerConfigStore', 'open > use > define > create'],
         component: ConfigMergeDemo,
       },
     ],
@@ -114,15 +114,15 @@ export const demoGroups: DemoGroup[] = [
   {
     id: 'lifecycle',
     title: '生命周期',
-    subtitle: '工厂默认 / 外部 hide',
+    subtitle: '工厂默认 / 外部 close',
     items: [
       {
         id: 'lifecycle-api',
         level: 8,
         title: '工厂默认与卸载清理',
         description:
-          'createLayer content.props 工厂默认；show 覆盖 props / layer / hideOn；倒计时 hide() 与 onUnmounted 清理。',
-        tags: ['createLayer', 'content.props', 'show.hideOn', 'hide()', 'onUnmounted'],
+          'createLayer content.props 工厂默认；open 覆盖 props / container / closeOn；倒计时 close() 与 onUnmounted 清理。',
+        tags: ['createLayer', 'content.props', 'open.closeOn', 'close()', 'onUnmounted'],
         component: LifecycleDemo,
       },
     ],

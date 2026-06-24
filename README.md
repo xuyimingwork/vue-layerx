@@ -29,8 +29,8 @@ import UserForm from './UserForm.vue'
 
 const userLayer = useDetailLayer(UserForm)
 
-userLayer.show({ props: { mode: 'view', ...row } })   // 详情
-userLayer.show({ props: { mode: 'edit', onSubmit } }) // 编辑
+userLayer.open({ props: { mode: 'view', ...row } })   // 详情
+userLayer.open({ props: { mode: 'edit', onSubmit } }) // 编辑
 ```
 
 ```vue
@@ -38,7 +38,7 @@ userLayer.show({ props: { mode: 'edit', onSubmit } }) // 编辑
 <script setup lang="ts">
 import { defineLayer, LayerTemplate } from 'vue-layerx'
 
-defineLayer({ props: { title: '用户' }, hideOn: ['submit'] })
+defineLayer({ props: { title: '用户' }, content: { closeOn: ['submit'] } })
 </script>
 
 <template>

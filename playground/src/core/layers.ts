@@ -4,7 +4,6 @@ import { createLayer } from 'vue-layerx'
 export const useDialog = createLayer(
   ElDialog,
   {
-    visible: ['modelValue', 'onUpdate:modelValue'],
     props: {
       width: '480px',
       destroyOnClose: true,
@@ -25,7 +24,6 @@ export const useDialog = createLayer(
 export const useDrawer = createLayer(
   ElDrawer,
   {
-    visible: ['modelValue', 'onUpdate:modelValue'],
     props: {
       direction: 'rtl',
       size: '360px',
@@ -53,7 +51,6 @@ export const useDrawer = createLayer(
 )
 
 export const useAlertDialog = createLayer(ElDialog, {
-  visible: ['modelValue', 'onUpdate:modelValue'],
   props: {
     width: '360px',
     appendToBody: true,

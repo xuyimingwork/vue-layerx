@@ -1,4 +1,4 @@
-import type { LayerInstanceConfig } from './payload'
+import type { LayerConfigInstance } from './config'
 
 export interface LayerTemplateScope<
   T extends Record<string, unknown> = Record<string, unknown>,
@@ -10,8 +10,8 @@ export interface LayerTemplateScope<
 }
 
 export interface LayerInstance {
-  show: (config?: LayerInstanceConfig) => void
-  hide: () => void
-  clone: (config?: LayerInstanceConfig) => LayerInstance
+  open: (config?: LayerConfigInstance) => void
+  close: () => void
+  clone: (config?: LayerConfigInstance) => LayerInstance
   readonly visible: boolean
 }

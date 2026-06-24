@@ -31,8 +31,8 @@ function payload() {
   </p>
   <p class="current">当前姓名：{{ name }}</p>
   <div class="actions">
-    <ElButton type="primary" @click="userDialog.show(payload())">Dialog 编辑</ElButton>
-    <ElButton type="primary" plain @click="userDrawer.show(payload())">Drawer 编辑</ElButton>
+    <ElButton type="primary" @click="userDialog.open(payload())">Dialog 编辑</ElButton>
+    <ElButton type="primary" plain @click="userDrawer.open(payload())">Drawer 编辑</ElButton>
   </div>
 </template>
 

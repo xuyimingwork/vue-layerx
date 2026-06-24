@@ -45,7 +45,7 @@ defineLayer({
       if (window.confirm('内容未保存，确定关闭？')) done()
     },
   },
-  hideOn: ['submit'],
+  content: { closeOn: ['submit'] },
 })
 
 watch(
