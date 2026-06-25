@@ -6,7 +6,7 @@ export interface LayerRuntime {
   unmount: () => void
 }
 
-export function createLayerRuntime(root: Component, appContext: AppContext | null): LayerRuntime {
+export function createLayerRuntime(view: Component, appContext: AppContext | null): LayerRuntime {
   let container: HTMLElement | null = null
 
   return {
@@ -18,7 +18,7 @@ export function createLayerRuntime(root: Component, appContext: AppContext | nul
         container = document.createElement('div')
         document.body.appendChild(container)
       }
-      const vnode = h(root)
+      const vnode = h(view)
       if (appContext) vnode.appContext = appContext
       render(vnode, container)
     },

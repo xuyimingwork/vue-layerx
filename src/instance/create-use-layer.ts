@@ -9,7 +9,7 @@ import type { LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
 import { attachConfigStore } from '@/instance/instance-registry'
 import { createLayerConfigStore, type LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
-import { buildLayerRoot, type LayerRootState, type UseLayerContext } from './layer-root'
+import { buildLayerView, type LayerViewState, type UseLayerContext } from './layer-view'
 import { createLayerRuntime } from './layer-runtime'
 
 interface CreateInstanceOptions {
@@ -51,20 +51,20 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     open: {},
   })
 
-  const rootState = reactive<LayerRootState>({
+  const viewState = reactive<LayerViewState>({
     visible: false,
     contentMountKey: 0,
   })
 
   const close = () => {
-    rootState.visible = false
+    viewState.visible = false
   }
 
-  const LayerRoot = buildLayerRoot(ctx, { Content: opts.Content }, configStore, rootState, close)
-  const runtime = createLayerRuntime(LayerRoot, opts.appContext)
+  const LayerView = buildLayerView(ctx, { Content: opts.Content }, configStore, viewState, close)
+  const runtime = createLayerRuntime(LayerView, opts.appContext)
 
   const dispose = () => {
-    rootState.visible = false
+    viewState.visible = false
     runtime.unmount()
   }
 
@@ -72,14 +72,15 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     if (config !== undefined) {
       configStore.open = toFragmentFromInstance(config)
     }
-    rootState.contentMountKey++
-    rootState.visible = true
+    viewState.contentMountKey++
+    viewState.visible = true
     if (!runtime.mounted) runtime.mount()
   }
 
   const instance: LayerInstance = {
     open,
     close,
+    unmount: dispose,
     clone(config?: LayerConfigInstance) {
       const bundle = createInstance(ctx, {
         Content: opts.Content,
@@ -92,7 +93,7 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
       return bundle.instance
     },
     get visible() {
-      return rootState.visible
+      return viewState.visible
     },
   }
 

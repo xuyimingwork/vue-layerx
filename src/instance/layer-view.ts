@@ -17,26 +17,26 @@ export interface UseLayerContext {
   adapt?: LayerAdapt
 }
 
-export interface LayerRootState {
+export interface LayerViewState {
   visible: boolean
   contentMountKey: number
 }
 
-export interface LayerRootOptions {
+export interface LayerViewOptions {
   Content?: Component
 }
 
-export function buildLayerRoot(
+export function buildLayerView(
   ctx: UseLayerContext,
-  opts: LayerRootOptions,
+  opts: LayerViewOptions,
   configStore: LayerConfigStoreWithRegistry,
-  state: LayerRootState,
+  state: LayerViewState,
   close: () => void,
 ) {
   let lastMountKey = -1
 
   return defineComponent({
-    name: `LayerRoot_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
+    name: `LayerView_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
     setup() {
       provide(LAYER_DEFINE_KEY, {
         register(fragment: LayerConfigFragment) {

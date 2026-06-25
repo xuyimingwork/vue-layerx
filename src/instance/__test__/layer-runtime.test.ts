@@ -40,7 +40,7 @@ describe('createLayerRuntime', () => {
     expect(runtime.mounted).toBe(false)
   })
 
-  it('unmount removes container and unmounts root', () => {
+  it('unmount removes container and unmounts view', () => {
     const runtime = createLayerRuntime(Marker, null)
     runtime.mount()
     expect(document.body.querySelector('.body-marker')).toBeTruthy()
@@ -55,7 +55,7 @@ describe('createLayerRuntime', () => {
     expect(() => runtime.unmount()).not.toThrow()
   })
 
-  it('passes appContext to root vnode when provided', () => {
+  it('passes appContext to view vnode when provided', () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
     const runtime = createLayerRuntime(Marker, wrapper.vm.$.appContext)
     runtime.mount()

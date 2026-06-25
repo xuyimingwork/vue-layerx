@@ -12,6 +12,7 @@ export interface LayerTemplateScope<
 export interface LayerInstance {
   open: (config?: LayerConfigInstance) => void
   close: () => void
+  unmount: () => void
   clone: (config?: LayerConfigInstance) => LayerInstance
   readonly visible: boolean
 }

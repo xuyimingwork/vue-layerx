@@ -6,7 +6,7 @@ export type LayerDefineRegistry = {
   register: (fragment: LayerConfigFragment) => void
 }
 
-/** global inject key; value provided per LayerRoot render context */
+/** global inject key; value provided per LayerView render context */
 export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
   Symbol('vue-layerx-define') as InjectionKey<LayerDefineRegistry>
 

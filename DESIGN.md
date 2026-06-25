@@ -72,7 +72,7 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 
 ### 跨树 slot 投递（render fn）
 
-`LayerTemplate` 在 mount 时向实例注册表写入 `{ name, render }`；**每次 LayerRoot render 时物化为 `SlotRenderFn` 并汇入 merge**。四段渲染顺序：
+`LayerTemplate` 在 mount 时向实例注册表写入 `{ name, render }`；**每次 LayerView render 时物化为 `SlotRenderFn` 并汇入 merge**。四段渲染顺序：
 
 ```text
 ① merge / resolve / adapt   合并配置（含 LayerTemplate slot tier）
