@@ -2,13 +2,13 @@ import {
   getCurrentInstance,
   onUnmounted,
   reactive,
+  shallowRef,
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
-import { attachConfigStore } from '@/instance/instance-registry'
+import { attachLayerStore } from '@/instance/layer-internal'
 import { createLayerConfigStore } from '@/instance/layer-config-store'
-import { buildLayerView, type LayerViewState } from './layer-view'
-import { createLayerRuntime } from './layer-runtime'
+import { createLayerView } from './layer-view'
 import { asViewHost, type ViewHost } from './view-host'
 
 export function createLayerInstance({
@@ -22,52 +22,40 @@ export function createLayerInstance({
   use: LayerConfigFragment
   clone?: LayerConfigFragment
 }): LayerInstance {
-  const configStore = createLayerConfigStore({
+  const store = createLayerConfigStore({
     create,
     adapter,
     use,
     clone,
   })
 
-  const viewState = reactive<LayerViewState>({
+  const state = reactive({
     visible: false,
-    contentMountKey: 0,
   })
 
-  let viewHost: ViewHost | null = null
-  const getViewHost = () => viewHost
-
-  const close = () => {
-    viewState.visible = false
-  }
-
-  const LayerView = buildLayerView(configStore, {
-    state: viewState,
-    close,
-    getViewHost,
-  })
-  const layerRuntime = createLayerRuntime(LayerView, getViewHost)
+  const host = shallowRef<ViewHost | null>(null)
+  const view = createLayerView({ store, state, host })
 
   const dispose = () => {
-    viewState.visible = false
-    layerRuntime.unmount()
+    state.visible = false
+    view.unmount()
   }
 
   const open = (config?: LayerConfigInstance) => {
-    if (config !== undefined) {
-      configStore.open = toFragmentFromInstance(config)
-    }
-    viewState.contentMountKey++
-    viewState.visible = true
-    if (!layerRuntime.mounted) layerRuntime.mount()
+    store.open = toFragmentFromInstance(config)
+    state.visible = true
+  }
+
+  const close = () => {
+    state.visible = false
   }
 
   const bindHost = () => {
-    const host = getCurrentInstance()
-    if (!host || viewHost) return
-    viewHost = asViewHost(host)
+    const current = getCurrentInstance()
+    if (!current || host.value) return
+    host.value = asViewHost(current)
     onUnmounted(() => {
-      viewHost = null
+      host.value = null
       dispose()
     })
   }
@@ -88,10 +76,10 @@ export function createLayerInstance({
       return cloned
     },
     get visible() {
-      return viewState.visible
+      return state.visible
     },
   }
 
-  attachConfigStore(instance, configStore)
+  attachLayerStore(instance, store)
   return instance
 }

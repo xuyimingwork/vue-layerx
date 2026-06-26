@@ -75,7 +75,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 
 | 方法 / 属性 | 说明 |
 |-------------|------|
-| `open(config?)` | 打开弹层；每次 open 重建 content |
+| `open(config?)` | 打开弹层；关闭后再打开会重建 content；已打开时 open 更新配置 |
 | `close()` | 关闭（不卸 DOM 挂载点） |
 | `unmount()` | 卸 portal DOM；**不**清 viewHost |
 | `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier；setup 内自动 `bindHost()` |

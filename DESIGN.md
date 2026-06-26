@@ -50,7 +50,7 @@ UserDialog = MyDialog + UserForm
 - **merge**：各层贡献 **LayerConfigNodeBase 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
 - **resolve**：`defaultResolve(merged)` 将 merge 结果归一化为 **LayerNormalized**；`closeOn` 改写为 content 的 `onXxx` → `close()`。
 - **adapt**：在 **LayerNormalized** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapt`。
-- **render**：`bindContainerModel` 将 `visible` 投影到 container `model`；content 每次 `open()` 强制 remount。
+- **render**：`bindContainerModel` 将 `visible` 投影到 container `model`；**close 后再 open** 时 remount content；已打开时再次 `open()` 只更新 merge/props。
 
 使用者配置 **片段** 在 merge 汇入；**收归为可渲染形态** 在 Normalized（adapt 所见即此）。
 
@@ -62,20 +62,20 @@ UserDialog = MyDialog + UserForm
 
 ### open() 与 content 重建
 
-UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而由 vue-layerx 在 `render` 阶段 `h(content, …)` 托管。每次 `open()`（含弹层已打开时再次 `open`）须**强制重建 content 子树**（如变更 `:key` 触发 remount），保证：
+UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而由 vue-layerx 在 `render` 阶段 `h(content, …)` 托管。
 
-- content `setup` 重跑，`defineLayer` 在当次 `open` payload 的 props 上下文求值；
-- `LayerTemplate` 在当次上下文中重新 self-register；
-- 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层（`open` payload 为当次快照）。
+- **`close()` 后再 `open()`**：强制重建 content 子树（内部 `contentMountKey` 递增），content `setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。
+- **已打开时再次 `open(config?)`**：只更新 `store.open` tier 并下发新 props，**不** remount content。
+- 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
-首次 `open()` 才挂载 portal；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
+首次 `visible=true` 才挂载 portal（`createLayerView` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
 
 ### viewHost 与 bindHost（portal inject 上下文）
 
-Layer 通过 `render` 挂到 `document.body`，与 Host 组件树 DOM 分离。为让 content 能 `inject` Host / `ConfigProvider` 等祖先 provide，**每个 LayerInstance 各自维护 `viewHost`**：
+Layer 通过 `render` 挂到 `document.body`，与 Host 组件树 DOM 分离。为让 content 能 `inject` Host / `ConfigProvider` 等祖先 provide，**每个 LayerInstance 各自维护 `host`（`shallowRef<ViewHost>`）**：
 
-- **`viewHost` 存活**：LayerView setup 时 `provides = Object.create(viewHost.provides)`，runtime mount 时 `vnode.appContext = viewHost.appContext`
-- **无 viewHost 或已卸载**：bare portal（可 `open()`，但无 inject / 无全局组件解析）
+- **`host` 存活**：作为 prop 传入 LayerView；setup 时 `appContext = host.appContext`，`provides = Object.create(host.provides)`
+- **无 host 或已卸载**：bare portal（可 `open()`，但无 inject / 无全局组件解析）
 
 **`bindHost()`**（per-instance，重复调用 no-op）：
 
@@ -112,7 +112,7 @@ const bindHost = () => {
 ```text
 ① merge / resolve / adapt   合并配置（含 LayerTemplate slot tier）
 ② render layer              h(MyDialog, …) 挂载（通常 appendToBody 至 body）
-③ render content            UserForm 作为 layer default slot（每次 open remount）
+③ render content            UserForm 作为 layer default slot（close 后再 open 时 remount）
 ④ slot fn 调用              LayerTemplate.render() 产出 VNode
 ```
 
@@ -588,7 +588,7 @@ create > caller LayerTemplate (:to) > use > clone > open
 
 ### 内部 LayerConfigStore
 
-每个 layer 实例维护 **`LayerConfigStore`**（`create` / `define` / `use` / `clone` / `open` / `templates`），各 API 只更新对应 tier；render 时 `mergeLayerConfigStore(store)` 汇合并 resolve。
+每个 layer 实例维护 **`LayerConfigStore`**（`create` / `use` / `clone` / `open` / `templates`）；**`defineLayer` tier 由 LayerView 内部 `defineFragment` 维护**，render 时 `mergeLayerConfigStore(store, defineFragment)` 汇合并 resolve。`:to` 注册通过 instance 私有 `Symbol` 访问 store。
 
 ### merge 后字段来源示例
 
@@ -864,7 +864,8 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | UserList 带 `:to` 写 `name="footer"` 换 layer footer | 应使用 `:to container`；caller tier 高于 creator |
 | 从列表页替换整块 MyDialog footer | `LayerTemplate :to container name="footer"` |
 | `open` 换 `container.component` | merge → resolve 后走**该实例工厂**的 `adapt`；容器差异由用户在 adapt 内处理 |
-| 每次 `open()` | 框架强制 remount content，setup（含 `defineLayer`）在当次 props 下重新执行 |
+| `close` 后再 `open()` | remount content，`setup`（含 `defineLayer`）重新执行 |
+| 已打开时再次 `open()` | 更新 merge/props，不 remount content |
 | SSR | **暂不支持** |
 
 ---
@@ -873,7 +874,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 
 1. **配置片段** merge：props/component 常规 `open > clone > use > define > create`；**slots** 含 LayerTemplate tier（见「配置 merge」）。
 2. **content / container 同构**（`LayerConfigNodeBase`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
-3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`open` 覆盖 merge 但不跳过 adapt；`open` 每次 remount content。
+3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`open` 覆盖 merge 但不跳过 adapt；close 后再 open remount content。
 4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `LayerMerged.*.slots`；resolve 透传。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
 6. **`LayerTemplate`**：`name` 即 slot 名；`:to` → caller content；`:to container` → caller container；无 `to` → creator。
@@ -911,7 +912,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | 两参 `createLayer` + `config.adapter` | defaults / adapter 职责清晰；adapter 存 store 顶层 |
 | `defineLayer` 全局 inject | 与 Vue `defineXxx` 拉齐；content 不感知容器 |
 | slot render fn 投递 | container / content 模板跨树投送；与 Vue slot 语义同构 |
-| content remount on open | 框架托管 render，每次 open 强制重建以兑现快照语义 |
+| content remount | close 后再 open 时框架重建 content；已打开时 open 只更新 props |
 | 无 `useLayer` | 仍须选 layer，意义不大 |
 | 无 `LayerTemplate ref` 连线 | `name` self-register |
 | 无独立 `transform` API | adapt 内聚在注册时 |

@@ -729,7 +729,7 @@ describe('createLayer (integration)', () => {
     })
   })
 
-  it('remounts content on each show()', async () => {
+  it('updates content props when open while already visible without remounting', async () => {
     const useLayer = createLayer(Container)
     let setupCount = 0
 
@@ -755,6 +755,69 @@ describe('createLayer (integration)', () => {
     await wrapper.vm.$nextTick()
     await new Promise((r) => setTimeout(r, 0))
     expect(setupCount).toBe(1)
+
+    dialog.open({ props: { message: 'second' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(setupCount).toBe(1)
+    expect(document.body.querySelector('.msg')?.textContent).toBe('second')
+  })
+
+  it('open() without config clears open tier and falls back to lower merge tiers', async () => {
+    const useLayer = createLayer(Container, {
+      content: { props: { message: 'default-msg' } },
+    })
+    const Content = makeContent()
+    let dialog!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.open({ props: { message: 'override' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(document.body.querySelector('.msg')?.textContent).toBe('override')
+
+    dialog.open()
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(document.body.querySelector('.msg')?.textContent).toBe('default-msg')
+  })
+
+  it('remounts content after close then open', async () => {
+    const useLayer = createLayer(Container)
+    let setupCount = 0
+
+    const Content = defineComponent({
+      name: 'RemountContent',
+      props: { message: String },
+      setup(props) {
+        setupCount++
+        return () => h('span', { class: 'msg' }, props.message)
+      },
+    })
+
+    let dialog!: LayerInstance
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.open({ props: { message: 'first' } })
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(setupCount).toBe(1)
+
+    dialog.close()
+    await wrapper.vm.$nextTick()
 
     dialog.open({ props: { message: 'second' } })
     await wrapper.vm.$nextTick()

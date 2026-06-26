@@ -12,7 +12,6 @@ export interface LayerConfigStore {
   create: LayerConfigFragment
   /** internal: createLayer config.adapter; factory-level, shared by clone; not merged */
   adapter?: LayerAdapter
-  define: LayerConfigFragment | null
   use: LayerConfigFragment
   clone: LayerConfigFragment
   open: LayerConfigFragment
@@ -66,7 +65,6 @@ export function createLayerConfigStore(init: LayerConfigStoreInit): LayerConfigS
   const configStore = reactive<LayerConfigStore>({
     create: init.create,
     adapter: init.adapter,
-    define: null,
     use: init.use ?? EMPTY_LAYER_FRAGMENT,
     clone: init.clone ?? EMPTY_LAYER_FRAGMENT,
     open: init.open ?? EMPTY_LAYER_FRAGMENT,

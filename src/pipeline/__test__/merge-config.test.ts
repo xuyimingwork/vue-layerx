@@ -14,19 +14,16 @@ function entry(label: string): LayerTemplateEntry {
 
 function createTestStore(overrides: {
   create?: LayerConfigFragment
-  define?: LayerConfigFragment | null
   use?: LayerConfigFragment
   clone?: LayerConfigFragment
   open?: LayerConfigFragment
 } = {}): LayerConfigStoreWithRegistry {
-  const store = createLayerConfigStore({
+  return createLayerConfigStore({
     create: overrides.create ?? {},
     use: overrides.use,
     clone: overrides.clone,
     open: overrides.open,
   })
-  if (overrides.define !== undefined) store.define = overrides.define
-  return store
 }
 
 describe('mergeFragment', () => {
@@ -54,11 +51,11 @@ describe('mergeLayerConfigStore', () => {
     const merged = mergeLayerConfigStore(
       createTestStore({
         create: toFragmentFromStatic({ props: { title: 'Create', width: '400px' } }),
-        define: toFragmentFromStatic({ props: { title: 'Defined' } }),
         use: toFragmentFromInstance({ container: { props: { width: '640px' } } }),
         open: toFragmentFromInstance({ container: { props: { title: 'Open' } } }),
         clone: toFragmentFromInstance({ container: { props: { width: '720px' } } }),
       }),
+      toFragmentFromStatic({ props: { title: 'Defined' } }),
     )
 
     expect(merged.container.props).toEqual({ title: 'Open', width: '720px' })
@@ -88,18 +85,17 @@ describe('mergeLayerConfigStore', () => {
 
     expect(
       mergeLayerConfigStore(
-        createTestStore({
-          define: toFragmentFromStatic({ content: { closeOn: ['submit'] } }),
-        }),
+        createTestStore(),
+        toFragmentFromStatic({ content: { closeOn: ['submit'] } }),
       ).content.closeOn,
     ).toEqual(['submit'])
 
     expect(
       mergeLayerConfigStore(
         createTestStore({
-          define: toFragmentFromStatic({ content: { closeOn: ['submit'] } }),
           use: toFragmentFromInstance({ closeOn: ['done'] }),
         }),
+        toFragmentFromStatic({ content: { closeOn: ['submit'] } }),
       ).content.closeOn,
     ).toEqual(['done'])
 
@@ -126,11 +122,11 @@ describe('mergeLayerConfigStore', () => {
     const merged = mergeLayerConfigStore(
       createTestStore({
         create: toFragmentFromStatic({ model: 'open' }),
-        define: toFragmentFromStatic({ model: 'visible' }),
         use: toFragmentFromInstance({ container: { model: 'show' } }),
         clone: toFragmentFromInstance({ container: { model: 'active' } }),
         open: toFragmentFromInstance({ container: { model: 'modelValue' } }),
       }),
+      toFragmentFromStatic({ model: 'visible' }),
     )
 
     expect(merged.container.model).toBe('modelValue')
@@ -142,9 +138,9 @@ describe('mergeLayerConfigStore', () => {
 
     const merged = mergeLayerConfigStore(
       createTestStore({
-        define: { container: { slots: { footer: containerSlot } } },
         use: toFragmentFromInstance({ slots: { header: contentSlot } }),
       }),
+      { container: { slots: { footer: containerSlot } } },
     )
 
     expect(merged.content.slots).toEqual({ header: contentSlot })
@@ -159,14 +155,13 @@ describe('mergeLayerConfigStore', () => {
 
     const store = createTestStore({
       create: { container: { slots: { footer: create } } },
-      define: { container: { slots: { footer: define } } },
       use: toFragmentFromInstance({ container: { slots: { footer: useX } } }),
       open: toFragmentFromInstance({ container: { slots: { footer: open } } }),
     })
     store.registerCreatorContainerTemplate('footer', entry('creator'))
     store.registerCallerContainerTemplate('footer', entry('caller'))
 
-    const merged = mergeLayerConfigStore(store)
+    const merged = mergeLayerConfigStore(store, { container: { slots: { footer: define } } })
 
     expect(merged.container.slots?.footer).toBe(open)
   })
@@ -176,12 +171,11 @@ describe('mergeLayerConfigStore', () => {
 
     const store = createTestStore({
       create: { container: { slots: { footer: () => null } } },
-      define: { container: { slots: { footer: define } } },
     })
     store.registerCreatorContainerTemplate('footer', entry('creator'))
     store.registerCallerContainerTemplate('footer', entry('caller'))
 
-    const merged = mergeLayerConfigStore(store)
+    const merged = mergeLayerConfigStore(store, { container: { slots: { footer: define } } })
 
     const footer = merged.container.slots?.footer
     expect(footer).toBeTypeOf('function')
@@ -191,12 +185,10 @@ describe('mergeLayerConfigStore', () => {
   it('define container slot wins over creator template', () => {
     const define = () => null
 
-    const store = createTestStore({
-      define: { container: { slots: { footer: define } } },
-    })
+    const store = createTestStore()
     store.registerCreatorContainerTemplate('footer', entry('creator'))
 
-    const merged = mergeLayerConfigStore(store)
+    const merged = mergeLayerConfigStore(store, { container: { slots: { footer: define } } })
 
     expect(merged.container.slots?.footer).toBe(define)
   })
