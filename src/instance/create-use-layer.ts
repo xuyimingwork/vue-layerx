@@ -2,21 +2,22 @@ import {
   getCurrentInstance,
   onUnmounted,
   reactive,
-  type AppContext,
   type Component,
+  type ComponentInternalInstance,
 } from 'vue'
 import type { LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
 import { attachConfigStore } from '@/instance/instance-registry'
 import { createLayerConfigStore, type LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { buildLayerView, type LayerViewState, type UseLayerContext } from './layer-view'
-import { createLayerRuntime } from './layer-runtime'
+import { createLayerRuntime, type GetViewHost } from './layer-runtime'
 
 interface CreateInstanceOptions {
   Content?: Component
   use: LayerConfigInstance
   clone: LayerConfigInstance
-  appContext: AppContext | null
+  getViewHost: GetViewHost
+  bindHost: () => void
   lifecycle: InstanceLifecycle
 }
 
@@ -60,8 +61,15 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     viewState.visible = false
   }
 
-  const LayerView = buildLayerView(ctx, { Content: opts.Content }, configStore, viewState, close)
-  const runtime = createLayerRuntime(LayerView, opts.appContext)
+  const LayerView = buildLayerView(
+    ctx,
+    { Content: opts.Content },
+    configStore,
+    viewState,
+    close,
+    opts.getViewHost,
+  )
+  const runtime = createLayerRuntime(LayerView, opts.getViewHost)
 
   const dispose = () => {
     viewState.visible = false
@@ -81,12 +89,14 @@ function createInstance(ctx: UseLayerContext, opts: CreateInstanceOptions): Laye
     open,
     close,
     unmount: dispose,
+    bindHost: opts.bindHost,
     clone(config?: LayerConfigInstance) {
       const bundle = createInstance(ctx, {
         Content: opts.Content,
         use: opts.use,
         clone: config ?? {},
-        appContext: opts.appContext,
+        getViewHost: opts.getViewHost,
+        bindHost: opts.bindHost,
         lifecycle: opts.lifecycle,
       })
       opts.lifecycle.register(bundle.dispose)
@@ -106,22 +116,32 @@ export function createUseLayer(ctx: UseLayerContext) {
     Content?: Component,
     config: LayerConfigInstance = {},
   ): LayerInstance {
-    const hostInstance = getCurrentInstance()
-    const appContext = hostInstance?.appContext ?? null
-
+    let viewHost: ComponentInternalInstance | null = null
     const lifecycle = createInstanceLifecycle()
+
+    const getViewHost = () => viewHost
+
+    const bindHost = () => {
+      const host = getCurrentInstance()
+      if (!host || viewHost) return
+      viewHost = host
+      onUnmounted(() => {
+        viewHost = null
+        lifecycle.dispose()
+      })
+    }
+
     const { instance, dispose } = createInstance(ctx, {
       Content,
       use: config,
       clone: {},
-      appContext,
+      getViewHost,
+      bindHost,
       lifecycle,
     })
     lifecycle.register(dispose)
 
-    if (hostInstance) {
-      onUnmounted(() => lifecycle.dispose())
-    }
+    bindHost()
 
     return instance
   }

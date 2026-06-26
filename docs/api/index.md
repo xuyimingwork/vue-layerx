@@ -71,6 +71,19 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 
 `visible-outside`：页内 edit 也要保存按钮时再加。view 模式不需要 footer。
 
+## `LayerInstance`
+
+| 方法 / 属性 | 说明 |
+|-------------|------|
+| `open(config?)` | 打开弹层；每次 open 重建 content |
+| `close()` | 关闭（不卸 DOM 挂载点） |
+| `unmount()` | 卸 portal DOM；**不**清 viewHost |
+| `clone(config?)` | 并行实例，共享 viewHost / lifecycle |
+| `visible` | 只读是否打开 |
+| `bindHost()` | 绑定当前 setup Host 的 provide / appContext；`useLayer` 在 setup 内自动调用 |
+
+**全局单例**（模块 `export const messageBox = useLayer(...)`）须在 App 或 `ElConfigProvider` **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject ConfigProvider。
+
 ## 教程
 
 [§1 列表详情](/guide/detail)

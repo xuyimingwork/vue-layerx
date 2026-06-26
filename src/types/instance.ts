@@ -15,4 +15,6 @@ export interface LayerInstance {
   unmount: () => void
   clone: (config?: LayerConfigInstance) => LayerInstance
   readonly visible: boolean
+  /** Bind portal inherit context to current setup host; no-op if already bound or outside setup */
+  bindHost: () => void
 }

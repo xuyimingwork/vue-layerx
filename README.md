@@ -69,6 +69,7 @@ pnpm playground # 交互式 demo
 ## 已知限制
 
 - **不支持 SSR**
+- Portal 不在 Host DOM 子树内；content 的 `inject` / 全局组件依赖 **`bindHost()`**（setup 内 `useLayer` 自动 bind；模块单例须在 ConfigProvider 子树内手动 `bindHost()`）
 - 0.0.x 为早期版本，公共 API 可能调整
 
 ## 开发

@@ -1,4 +1,4 @@
-import { defineComponent, h, onMounted } from 'vue'
+import { defineComponent, h, inject, onMounted, provide } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, LayerTemplate } from '@/index'
@@ -681,5 +681,222 @@ describe('createLayer (integration)', () => {
     await new Promise((r) => setTimeout(r, 0))
     expect(setupCount).toBe(2)
     expect(document.body.querySelector('.msg')?.textContent).toBe('second')
+  })
+
+  it('content injects value provided by host setup useLayer', async () => {
+    const HOST_KEY = Symbol('host-key')
+    const useLayer = createLayer(Container)
+    let dialog!: LayerInstance
+    let injected: string | undefined
+
+    const Content = defineComponent({
+      name: 'InjectContent',
+      setup() {
+        injected = inject<string>(HOST_KEY)
+        return () => h('span', { class: 'injected' }, injected ?? '')
+      },
+    })
+
+    const Host = defineComponent({
+      setup() {
+        provide(HOST_KEY, 'from-host')
+        dialog = useLayer(Content)
+        onMounted(() => dialog.open())
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.injected')?.textContent).toBe('from-host')
+    expect(injected).toBe('from-host')
+  })
+
+  it('content injects from ancestor provider wrapping host', async () => {
+    const CONFIG_KEY = Symbol('config-key')
+    const useLayer = createLayer(Container)
+    let dialog!: LayerInstance
+
+    const Content = defineComponent({
+      name: 'ConfigInjectContent',
+      setup() {
+        const locale = inject<string>(CONFIG_KEY, 'missing')
+        return () => h('span', { class: 'locale' }, locale)
+      },
+    })
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        onMounted(() => dialog.open())
+        return () => h('motion-host')
+      },
+    })
+
+    const Root = defineComponent({
+      setup() {
+        provide(CONFIG_KEY, 'zh-cn')
+        return () => h(Host)
+      },
+    })
+
+    mount(Root)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.locale')?.textContent).toBe('zh-cn')
+  })
+
+  it('detached useLayer without bindHost opens bare without inject', async () => {
+    const HOST_KEY = Symbol('detached-key')
+    const useLayer = createLayer(Container)
+
+    const Content = defineComponent({
+      name: 'DetachedInjectContent',
+      setup() {
+        const value = inject<string>(HOST_KEY, 'fallback')
+        return () => h('span', { class: 'detached-inject' }, value)
+      },
+    })
+
+    const dialog = useLayer(Content)
+    dialog.open()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(queryBodyDialog()).toBeTruthy()
+    expect(document.body.querySelector('.detached-inject')?.textContent).toBe('fallback')
+  })
+
+  it('detached useLayer bindHost in setup inherits host provide', async () => {
+    const HOST_KEY = Symbol('bind-host-key')
+    const useLayer = createLayer(Container)
+    let dialog!: LayerInstance
+
+    const Content = defineComponent({
+      name: 'BindHostInjectContent',
+      setup() {
+        const value = inject<string>(HOST_KEY, 'fallback')
+        return () => h('span', { class: 'bind-inject' }, value)
+      },
+    })
+
+    dialog = useLayer(Content)
+
+    const App = defineComponent({
+      setup() {
+        provide(HOST_KEY, 'from-app')
+        dialog.bindHost()
+        onMounted(() => dialog.open())
+        return () => h('app-root')
+      },
+    })
+
+    mount(App)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.bind-inject')?.textContent).toBe('from-app')
+  })
+
+  it('bindHost ignores second call', async () => {
+    const FIRST_KEY = Symbol('first')
+    const SECOND_KEY = Symbol('second')
+    const useLayer = createLayer(Container)
+    let dialog!: LayerInstance
+
+    const Content = defineComponent({
+      name: 'BindOnceContent',
+      setup() {
+        const first = inject<string>(FIRST_KEY)
+        const second = inject<string>(SECOND_KEY)
+        const value = first ?? second ?? 'none'
+        return () => h('span', { class: 'bind-once' }, value)
+      },
+    })
+
+    dialog = useLayer(Content)
+
+    const SecondHost = defineComponent({
+      setup() {
+        provide(SECOND_KEY, 'second')
+        dialog.bindHost()
+        onMounted(() => dialog.open())
+        return () => h('second-host')
+      },
+    })
+
+    const FirstHost = defineComponent({
+      setup() {
+        provide(FIRST_KEY, 'first')
+        dialog.bindHost()
+        return () => h(SecondHost)
+      },
+    })
+
+    mount(FirstHost)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.bind-once')?.textContent).toBe('first')
+  })
+
+  it('manual unmount clears portal but keeps viewHost for reopen inject', async () => {
+    const HOST_KEY = Symbol('manual-unmount-key')
+    const useLayer = createLayer(Container)
+    let dialog!: LayerInstance
+
+    const Content = defineComponent({
+      name: 'ManualUnmountContent',
+      setup() {
+        const value = inject<string>(HOST_KEY, 'missing')
+        return () => h('span', { class: 'manual-inject' }, value)
+      },
+    })
+
+    const Host = defineComponent({
+      setup() {
+        provide(HOST_KEY, 'still-bound')
+        dialog = useLayer(Content)
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    dialog.open()
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(document.body.querySelector('.manual-inject')?.textContent).toBe('still-bound')
+
+    dialog.unmount()
+    await wrapper.vm.$nextTick()
+    expect(document.body.querySelector('div')).toBeFalsy()
+
+    dialog.open()
+    await wrapper.vm.$nextTick()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(document.body.querySelector('.manual-inject')?.textContent).toBe('still-bound')
+  })
+
+  it('bind point unmount clears viewHost and disposes portal containers', async () => {
+    const useLayer = createLayer(Container)
+    const Content = makeContent()
+    let dialog!: LayerInstance
+
+    const Host = defineComponent({
+      setup() {
+        dialog = useLayer(Content)
+        onMounted(() => dialog.open({ props: { message: 'host-gone' } }))
+        return () => h('motion-host')
+      },
+    })
+
+    const wrapper = mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+    expect(queryBodyDialog()).toBeTruthy()
+    expect(document.body.querySelector('div')).toBeTruthy()
+
+    wrapper.unmount()
+    await wrapper.vm.$nextTick()
+
+    expect(document.body.querySelector('div')).toBeFalsy()
+    expect(queryBodyDialog()).toBeFalsy()
   })
 })

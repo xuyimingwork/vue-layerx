@@ -15,7 +15,7 @@ afterEach(() => {
 
 describe('createLayerRuntime', () => {
   it('appends container to document.body on first mount', () => {
-    const runtime = createLayerRuntime(Marker, null)
+    const runtime = createLayerRuntime(Marker, () => null)
     runtime.mount()
 
     expect(document.body.querySelector('.body-marker')).toBeTruthy()
@@ -23,7 +23,7 @@ describe('createLayerRuntime', () => {
   })
 
   it('reuses container on subsequent mounts', () => {
-    const runtime = createLayerRuntime(Marker, null)
+    const runtime = createLayerRuntime(Marker, () => null)
     runtime.mount()
     const container = document.body.querySelector('div')
     runtime.mount()
@@ -32,7 +32,7 @@ describe('createLayerRuntime', () => {
   })
 
   it('exposes mounted state', () => {
-    const runtime = createLayerRuntime(Marker, null)
+    const runtime = createLayerRuntime(Marker, () => null)
     expect(runtime.mounted).toBe(false)
     runtime.mount()
     expect(runtime.mounted).toBe(true)
@@ -41,7 +41,7 @@ describe('createLayerRuntime', () => {
   })
 
   it('unmount removes container and unmounts view', () => {
-    const runtime = createLayerRuntime(Marker, null)
+    const runtime = createLayerRuntime(Marker, () => null)
     runtime.mount()
     expect(document.body.querySelector('.body-marker')).toBeTruthy()
 
@@ -51,13 +51,14 @@ describe('createLayerRuntime', () => {
   })
 
   it('unmount is safe when never mounted', () => {
-    const runtime = createLayerRuntime(Marker, null)
+    const runtime = createLayerRuntime(Marker, () => null)
     expect(() => runtime.unmount()).not.toThrow()
   })
 
-  it('passes appContext to view vnode when provided', () => {
+  it('passes appContext to view vnode when viewHost is alive', () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
-    const runtime = createLayerRuntime(Marker, wrapper.vm.$.appContext)
+    const host = wrapper.vm.$
+    const runtime = createLayerRuntime(Marker, () => host)
     runtime.mount()
     expect(document.body.querySelector('.body-marker')).toBeTruthy()
     runtime.unmount()

@@ -1,4 +1,4 @@
-import { defineComponent, provide, type Component } from 'vue'
+import { defineComponent, getCurrentInstance, provide, type Component } from 'vue'
 import { mergeLayerConfigStore } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
 import type { LayerAdapt, LayerConfigFragment, LayerRenderPlan } from '@/types'
@@ -9,6 +9,7 @@ import {
   LAYER_DEFINE_KEY,
   CONTAINER_TEMPLATE_REGISTRY_KEY,
 } from '@/di/injection-keys'
+import type { GetViewHost } from './layer-runtime'
 
 export interface UseLayerContext {
   Container: Component
@@ -32,12 +33,19 @@ export function buildLayerView(
   configStore: LayerConfigStoreWithRegistry,
   state: LayerViewState,
   close: () => void,
+  getViewHost: GetViewHost,
 ) {
   let lastMountKey = -1
 
   return defineComponent({
     name: `LayerView_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
     setup() {
+      const host = getViewHost()
+      if (host && !host.isUnmounted) {
+        const instance = getCurrentInstance()!
+        instance.provides = Object.create(host.provides)
+      }
+
       provide(LAYER_DEFINE_KEY, {
         register(fragment: LayerConfigFragment) {
           configStore.define = fragment

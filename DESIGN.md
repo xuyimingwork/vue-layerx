@@ -68,7 +68,42 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 - `LayerTemplate` 在当次上下文中重新 self-register；
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层（`open` payload 为当次快照）。
 
-首次 `open()` 才挂载 portal；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；父组件 `onUnmounted` 时 dispose。
+首次 `open()` 才挂载 portal；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时 `lifecycle.dispose()` 卸 portal（含 clone）。
+
+### viewHost 与 bindHost（portal inject 上下文）
+
+Layer 通过 `render` 挂到 `document.body`，与 Host 组件树 DOM 分离。为让 content 能 `inject` Host / `ConfigProvider` 等祖先 provide，每个 instance 族（base + clone）共享 closure 内 **`viewHost`**：
+
+- **`viewHost` 存活**：LayerView setup 时 `provides = Object.create(viewHost.provides)`，runtime mount 时 `vnode.appContext = viewHost.appContext`
+- **无 viewHost 或已卸载**：bare portal（可 `open()`，但无 inject / 无全局组件解析）
+
+**统一 `bindHost()`**（内外同一函数）：
+
+```ts
+const bindHost = () => {
+  const host = getCurrentInstance()
+  if (!host || viewHost) return
+  viewHost = host
+  onUnmounted(() => {
+    viewHost = null
+    lifecycle.dispose() // 仅 portal dispose（base + clone）
+  })
+}
+```
+
+- `useLayer()` 末尾自动 `bindHost()`；setup 内有 host 则立即绑定
+- **`instance.bindHost`** 暴露给用户（全局单例在 App / ConfigProvider 子树内 setup 调用）
+- **`instance.unmount()`** 只调自身 `dispose()`（卸 portal DOM），**不**清 viewHost、**不**走 `lifecycle.dispose()`
+
+**生命周期 registry**：`lifecycle.register(dispose)` 只登记 portal 卸载；`clone()` 共享同一 `lifecycle` 与 `viewHost`，Host 卸载时整族 dispose。
+
+| 场景 | 用法 |
+|------|------|
+| 页面 setup | `useLayer()` 自动 bindHost |
+| 全局单例 | 模块 `useLayer()` + App 内 `messageBox.bindHost()` |
+| 多页共享配置 | `() => useLayer(...)` wrapper，各页 setup 自动 bind |
+
+未 bindHost 可 bare open；ConfigProvider locale 等须在 **Provider 子树内** bindHost。
 
 ### 跨树 slot 投递（render fn）
 

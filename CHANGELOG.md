@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`LayerInstance.bindHost()`**：将 detached portal 绑定到当前 setup 的 Host，使 content 能 inherit `provide` / `appContext`（`useLayer` 在 setup 内自动调用；模块单例在 App setup 手动调用）
+- LayerView provides 桥接：从 live `viewHost` 读取 `provides` 与 `appContext`
 - `LayerTemplate` **`container`** prop: with `:to`, register into container slot chain (remote MyDialog slots)
 
 ### Changed

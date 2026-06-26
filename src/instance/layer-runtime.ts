@@ -1,4 +1,4 @@
-import { h, render, type AppContext, type Component } from 'vue'
+import { h, render, type Component, type ComponentInternalInstance } from 'vue'
 
 export interface LayerRuntime {
   readonly mounted: boolean
@@ -6,7 +6,9 @@ export interface LayerRuntime {
   unmount: () => void
 }
 
-export function createLayerRuntime(view: Component, appContext: AppContext | null): LayerRuntime {
+export type GetViewHost = () => ComponentInternalInstance | null
+
+export function createLayerRuntime(view: Component, getViewHost: GetViewHost): LayerRuntime {
   let container: HTMLElement | null = null
 
   return {
@@ -19,7 +21,10 @@ export function createLayerRuntime(view: Component, appContext: AppContext | nul
         document.body.appendChild(container)
       }
       const vnode = h(view)
-      if (appContext) vnode.appContext = appContext
+      const host = getViewHost()
+      if (host && !host.isUnmounted) {
+        vnode.appContext = host.appContext
+      }
       render(vnode, container)
     },
     unmount() {
