@@ -2,11 +2,9 @@ import {
   getCurrentInstance,
   onUnmounted,
   reactive,
-  type Component,
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
 import { EMPTY_LAYER_FRAGMENT, toFragmentFromInstance } from '@/pipeline/to-fragment'
-import { mergeFragment } from '@/pipeline/merge-node-config'
 import { attachConfigStore } from '@/instance/instance-registry'
 import {
   createLayerConfigStore,
@@ -110,7 +108,7 @@ function spawnLayerInstance(
   return { instance, dispose }
 }
 
-function createLayerInstance(opts: {
+export function createLayerInstance(opts: {
   create: LayerConfigFragment
   adapter?: LayerAdapter
   use: LayerConfigFragment
@@ -140,25 +138,5 @@ function createLayerInstance(opts: {
     runtime,
   )
   lifecycle.register(bundle.dispose)
-  bindHost()
   return bundle
-}
-
-export function createUseLayer({
-  create,
-  adapter,
-}: {
-  create: LayerConfigFragment
-  adapter?: LayerAdapter
-}) {
-  return function useLayer(
-    Content?: Component,
-    config: LayerConfigInstance = {},
-  ): LayerInstance {
-    const use = mergeFragment(
-      toFragmentFromInstance(config),
-      Content ? { content: { component: Content } } : undefined,
-    )
-    return createLayerInstance({ create, adapter, use }).instance
-  }
 }
