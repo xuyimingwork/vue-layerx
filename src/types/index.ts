@@ -11,6 +11,7 @@ export type {
   LayerProps,
   LayerRenderPlan,
   LayerConfigStatic,
+  LayerConfigCreate,
   LayerConfigInstance,
   LayerTemplateEntry,
   SlotRenderFn,

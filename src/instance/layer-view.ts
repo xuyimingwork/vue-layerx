@@ -1,7 +1,7 @@
 import { defineComponent, getCurrentInstance, provide, type Component } from 'vue'
 import { mergeLayerConfigStore } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan } from '@/types'
+import type { LayerConfigFragment, LayerRenderPlan } from '@/types'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
 import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
@@ -12,36 +12,29 @@ import {
 import type { GetViewHost } from './view-host'
 import { asViewHost } from './view-host'
 
-export interface UseLayerContext {
-  Container: Component
-  create: LayerConfigFragment
-  defaultModel: string
-  adapter?: LayerAdapter
-}
-
 export interface LayerViewState {
   visible: boolean
   contentMountKey: number
 }
 
-export interface LayerViewOptions {
-  Content?: Component
-}
-
 export function buildLayerView(
-  ctx: UseLayerContext,
-  opts: LayerViewOptions,
   configStore: LayerConfigStoreWithRegistry,
-  state: LayerViewState,
-  close: () => void,
-  getViewHost: GetViewHost,
+  runtime: {
+    state: LayerViewState
+    close: () => void
+    getViewHost: GetViewHost
+  },
 ) {
   let lastMountKey = -1
+  const contentComponent = configStore.use.content?.component as Component | undefined
+  const contentName = contentComponent
+    ? (contentComponent as { name?: string }).name ?? 'Anonymous'
+    : 'Shell'
 
   return defineComponent({
-    name: `LayerView_${opts.Content ? (opts.Content as { name?: string }).name ?? 'Anonymous' : 'Shell'}`,
+    name: `LayerView_${contentName}`,
     setup() {
-      const host = getViewHost()
+      const host = runtime.getViewHost()
       if (host && !host.isUnmounted) {
         const instance = asViewHost(getCurrentInstance()!)
         instance.provides = Object.create(host.provides)
@@ -58,9 +51,9 @@ export function buildLayerView(
       })
 
       return () => {
-        if (state.contentMountKey !== lastMountKey) {
+        if (runtime.state.contentMountKey !== lastMountKey) {
           configStore.define = null
-          lastMountKey = state.contentMountKey
+          lastMountKey = runtime.state.contentMountKey
         }
 
         void configStore.define
@@ -70,26 +63,19 @@ export function buildLayerView(
 
         const merged = mergeLayerConfigStore(configStore)
 
-        const resolveCtx = {
-          merged,
-          Container: ctx.Container,
-          boundContent: opts.Content,
-          close,
-        }
-
-        const resolved = defaultResolve(resolveCtx)
-        const normalized = ctx.adapter ? ctx.adapter(resolved) : resolved
+        const resolved = defaultResolve({ merged, close: runtime.close })
+        const normalized = configStore.adapter ? configStore.adapter(resolved) : resolved
 
         const plan: LayerRenderPlan = {
           ...normalized,
-          visible: state.visible,
-          model: merged.container.model ?? ctx.defaultModel ?? DEFAULT_CONTAINER_MODEL,
-          onClose: close,
+          visible: runtime.state.visible,
+          model: merged.container.model ?? DEFAULT_CONTAINER_MODEL,
+          onClose: runtime.close,
         }
 
         return renderLayerTree({
           plan,
-          contentMountKey: normalized.content ? state.contentMountKey : undefined,
+          contentMountKey: normalized.content ? runtime.state.contentMountKey : undefined,
         })
       }
     },

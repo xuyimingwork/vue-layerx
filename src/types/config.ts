@@ -75,4 +75,9 @@ export interface LayerRenderPlan extends LayerNormalized {
 
 export type LayerAdapter = (normalized: LayerNormalized) => LayerNormalized
 
+/** createLayer second argument only; adapter is not valid on defineLayer / use / open / clone */
+export type LayerConfigCreate = LayerConfigStatic & {
+  adapter?: LayerAdapter
+}
+
 export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const

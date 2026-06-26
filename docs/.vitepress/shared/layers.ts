@@ -37,4 +37,4 @@ const detailAdapt: LayerAdapter = (normalized) => {
 }
 
 /** 详情 / 编辑 / 新建：同一工厂，adapt 负责窄屏换 Drawer */
-export const useDetailLayer = createLayer(BaseDialog, {}, detailAdapt)
+export const useDetailLayer = createLayer(BaseDialog, { adapter: detailAdapt })

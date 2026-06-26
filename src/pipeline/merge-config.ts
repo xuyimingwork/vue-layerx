@@ -5,7 +5,7 @@ import type {
   LayerMerged,
 } from '@/types/config'
 import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
-import { mergeContainerNode, mergeContentNode } from './merge-node-config'
+import { mergeContainerNode, mergeContentNode, mergeFragment } from './merge-node-config'
 
 function pickSlotsFragment(
   fragment: LayerConfigFragment | null | undefined,
@@ -49,24 +49,18 @@ function mergeContentSlots(store: LayerConfigStoreWithRegistry): LayerConfigNode
 }
 
 export function mergeLayerConfigStore(store: LayerConfigStoreWithRegistry): LayerMerged {
-  const contentBase = mergeContentNode(
-    store.create.content,
-    store.define?.content,
-    store.use.content,
-    store.clone.content,
-    store.open.content,
-  )
-
-  const containerBase = mergeContainerNode(
-    store.create.container,
-    store.define?.container,
-    store.use.container,
-    store.clone.container,
-    store.open.container,
+  const base = mergeFragment(
+    store.create,
+    store.define,
+    store.use,
+    store.clone,
+    store.open,
   )
 
   return {
-    content: { ...contentBase, slots: mergeContentSlots(store) },
-    container: { ...containerBase, slots: mergeContainerSlots(store) },
+    content: { ...(base.content ?? {}), slots: mergeContentSlots(store) },
+    container: { ...(base.container ?? {}), slots: mergeContainerSlots(store) },
   }
 }
+
+export { mergeFragment } from './merge-node-config'

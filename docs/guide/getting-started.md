@@ -3,7 +3,7 @@
 默认配置在 **BaseDialog** 里 → `createLayer` 只传组件：
 
 ```ts
-export const useDetailLayer = createLayer(BaseDialog, {}, detailAdapt)
+export const useDetailLayer = createLayer(BaseDialog, { adapter: detailAdapt })
 ```
 
 - 详情 / 编辑 / 新建共用 **`useDetailLayer`**

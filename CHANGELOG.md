@@ -22,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking (internal):** Rename `LayerState` → `LayerConfigStore`, `mergeLayerState` → `mergeLayerConfigStore`, `createLayerState` → `createLayerConfigStore`; instance registry helpers `attachInternal` / `getInternal` → `attachConfigStore` / `getConfigStore`.
 - **Breaking:** Unify public config types: `LayerConfigStatic` (`createLayer` + `defineLayer`, top-level = container) and `LayerConfigInstance` (`useX` / `open` / `clone`, top-level = content). Remove legacy payload type names.
 - **Breaking:** `createLayer` second argument: container props at top-level (`props`) instead of `container: { props }`.
-- **Breaking:** Internal merge input consolidated into per-instance `LayerConfigStore` (`create` / `define` / `use` / `clone` / `open` / `templates` tiers).
+- **Breaking:** `createLayer` third `adapter` argument removed; use `createLayer(Container, { adapter })`. `adapter` stored on `store.adapter` (not merged).
+- **Breaking (internal):** Remove `UseLayerContext`; config flows through `LayerConfigStore`. Container component written to `store.create.container.component`; content component written to `store.use` via `mergeFragment`.
 - **Breaking:** Merge tier rename: `partial` → `clone` in priority chains.
 - **Breaking:** LayerTemplate slot delivery now merges through **slot tiers** in `mergeLayerConfigStore`. Resolve no longer overlays templates after merge.
 - **Breaking:** Container slot priority: `open > clone > use > caller LayerTemplate (:to container) > define > creator LayerTemplate > create`

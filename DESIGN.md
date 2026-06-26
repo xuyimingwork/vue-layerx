@@ -380,23 +380,24 @@ defineLayer({
 框架导出：`createLayer`、`defineLayer`、`LayerTemplate`。  
 应用层别名 `useDialog` / `useDrawer` 由项目 `createLayer` 注册，非框架内置。
 
-### `createLayer(layer, config?, adapt?)`
+### `createLayer(layer, config?)`
 
 注册容器，返回工厂（如 `useDialog`）。
 
 ```ts
 type LayerAdapter = (normalized: LayerNormalized) => LayerNormalized
 
+type LayerConfigCreate = LayerConfigStatic & { adapter?: LayerAdapter }
+
 function createLayer(
   layer: Component,
-  config?: LayerConfigStatic,
-  adapter?: LayerAdapter,
+  config?: LayerConfigCreate,
 ): (Content?: Component, config?: LayerConfigInstance) => LayerInstance
 ```
 
-**第 1 参** `layer`：工厂默认容器（`defaultResolve` 用于补全 `normalized.container.component`）。
+**第 1 参** `layer`：写入 `store.create.container.component`（merge 最高优先级）。
 
-**第 2 参** `config`：最低优先级 merge 片段（`create` tier）。
+**第 2 参** `config`：最低优先级 merge 片段（`create` tier）；可选 `adapter` 写入 `store.adapter`（不参与 merge）。
 
 ```ts
 export const useDialog = createLayer(MyDialog, {
@@ -408,27 +409,24 @@ export const useDialog = createLayer(MyDialog, {
 })
 ```
 
-**第 3 参** `adapt`：可选；在 `defaultResolve` 之后执行。
+**`adapter`**：可选；在 `defaultResolve` 之后执行。
 
 ```ts
-export const useDialog = createLayer(
-  MyDialog,
-  {
-    props: { width: '480px' },
-  },
-  (normalized) => ({
+export const useDialog = createLayer(MyDialog, {
+  props: { width: '480px' },
+  adapter: (normalized) => ({
     ...normalized,
     container: {
       ...normalized.container,
       props: omit(normalized.container.props, ['direction']),
     },
   }),
-)
+})
 ```
 
-无 `adapt` 时：`normalized = defaultResolve(merged)`。
+无 `adapter` 时：`normalized = defaultResolve(merged)`。
 
-**API 形态**：固定三参 `(layer, config?, adapt?)`，实现简单、职责清晰；暂不提供 `createLayer(layer, fn)` 两参、`createLayer(fn)` 等重载糖。
+**API 形态**：两参 `(layer, config?)`；`adapter` 在 `config` 内，仅 `createLayer` 可配置。
 
 ### `defineLayer(config?)`（content.setup）
 
@@ -704,7 +702,7 @@ userDialog.open({
 ## 架构图
 
 ```text
-createLayer(MyDialog, defaults, adapt?)
+createLayer(MyDialog, { ...defaults, adapter? })
         │
         ▼
 useDialog / useDrawer
@@ -882,7 +880,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 8. **无 `layerId` / `surface`**；多容器靠多工厂 + 各自 `adapt`。
 9. **细粒度扩展**用 Vue `<slot>`；`LayerTemplate :to` 在弹层下填充同名 content slot。
 10. **`to` 分流**：无 `to` → creator container；`:to` → caller content；`:to container` → caller container。
-11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；固定三参 `createLayer`；不导出 `useLayer`。
+11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；`createLayer(layer, config?)` 两参；不导出 `useLayer`。
 12. **`clone`**：`open > clone > use > define > create`；`closeOn` 与用户 `onXxx` 合并为 wrapper（用户先、`close()` 后）。
 13. **`model`**：container v-model prop 名，默认 `modelValue`；`bindContainerModel` 在 render 写入。
 14. 同名 `LayerTemplate` 重复注册：**warning + 后者覆盖**（各注册域内）。
@@ -909,7 +907,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | 决策 | 理由 |
 |------|------|
 | merge 与 adapt 分离 | 优先级在框架，项目在 adapt 整形 |
-| 固定三参 `createLayer` | defaults / adapt 职责清晰，实现简单 |
+| 两参 `createLayer` + `config.adapter` | defaults / adapter 职责清晰；adapter 存 store 顶层 |
 | `defineLayer` 全局 inject | 与 Vue `defineXxx` 拉齐；content 不感知容器 |
 | slot render fn 投递 | container / content 模板跨树投送；与 Vue slot 语义同构 |
 | content remount on open | 框架托管 render，每次 open 强制重建以兑现快照语义 |

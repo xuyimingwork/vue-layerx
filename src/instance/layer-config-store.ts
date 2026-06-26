@@ -1,5 +1,5 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
+import type { LayerAdapter, LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
 import { EMPTY_LAYER_FRAGMENT } from '@/pipeline/to-fragment'
 
 export interface LayerTemplateBuckets {
@@ -10,6 +10,8 @@ export interface LayerTemplateBuckets {
 
 export interface LayerConfigStore {
   create: LayerConfigFragment
+  /** internal: createLayer config.adapter; factory-level, shared by clone; not merged */
+  adapter?: LayerAdapter
   define: LayerConfigFragment | null
   use: LayerConfigFragment
   clone: LayerConfigFragment
@@ -19,6 +21,7 @@ export interface LayerConfigStore {
 
 export interface LayerConfigStoreInit {
   create: LayerConfigFragment
+  adapter?: LayerAdapter
   use?: LayerConfigFragment
   clone?: LayerConfigFragment
   open?: LayerConfigFragment
@@ -62,6 +65,7 @@ export function createLayerConfigStore(init: LayerConfigStoreInit): LayerConfigS
 
   const configStore = reactive<LayerConfigStore>({
     create: init.create,
+    adapter: init.adapter,
     define: null,
     use: init.use ?? EMPTY_LAYER_FRAGMENT,
     clone: init.clone ?? EMPTY_LAYER_FRAGMENT,

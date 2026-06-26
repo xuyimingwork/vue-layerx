@@ -3,7 +3,7 @@
 ## 核心模式
 
 ```ts
-export const useDetailLayer = createLayer(BaseDialog, {}, detailAdapt)
+export const useDetailLayer = createLayer(BaseDialog, { adapter: detailAdapt })
 
 const userLayer = useDetailLayer(UserForm)
 userLayer.open({ props: { mode: 'view' | 'edit' | 'create', ... } })
@@ -14,8 +14,8 @@ userLayer.open({ props: { mode: 'view' | 'edit' | 'create', ... } })
 ## `createLayer`
 
 ```ts
-createLayer(BaseDialog)                    // 配置可在 BaseDialog 内
-createLayer(BaseDialog, {}, adaptFn)       // useDetailLayer
+createLayer(BaseDialog)                              // 配置可在 BaseDialog 内
+createLayer(BaseDialog, { adapter: adaptFn })        // useDetailLayer
 ```
 
 ### `adapt`
