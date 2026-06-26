@@ -586,9 +586,9 @@ create > caller LayerTemplate (:to) > use > clone > open
 
 `clone` 派生实例：`clone` tier 介于 `open` 与 `use` 之间（props 与 slots 均适用）。
 
-### 内部 LayerConfigStore
+### 内部 LayerInstanceStore
 
-每个 layer 实例维护 **`LayerConfigStore`**（`create` / `use` / `clone` / `open` / `templates`）；**`defineLayer` tier 由 LayerView 内部 `defineFragment` 维护**，render 时 `mergeLayerConfigStore(store, defineFragment)` 汇合并 resolve。`:to` 注册通过 instance 私有 `Symbol` 访问 store。
+每个 layer 实例维护 **`LayerInstanceStore`**（`create` / `use` / `clone` / `open` / `callerContainer` / `callerContent`）；**`defineLayer` tier 与 creator `LayerTemplate` 由 LayerView 内部维护**，render 时 `mergeLayerConfigStore(store, defineFragment, creatorContainer)` 汇合并 resolve。`:to` 注册通过 instance 私有 `Symbol` 访问 store 的 `registerContainerTemplate` / `registerContentTemplate`。
 
 ### merge 后字段来源示例
 

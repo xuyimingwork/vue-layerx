@@ -3,6 +3,7 @@ import {
   getCurrentInstance,
   h,
   provide,
+  reactive,
   ref,
   render,
   shallowRef,
@@ -13,9 +14,9 @@ import {
 } from 'vue'
 import { mergeLayerConfigStore } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerConfigFragment, LayerRenderPlan } from '@/types'
+import type { LayerConfigFragment, LayerRenderPlan, LayerTemplateEntry } from '@/types'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
-import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
+import type { LayerInstanceStoreWithRegistry } from '@/instance/layer-instance-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
@@ -33,13 +34,14 @@ export interface LayerViewHandle {
 }
 
 export function createLayerView(options: {
-  store: LayerConfigStoreWithRegistry
+  store: LayerInstanceStoreWithRegistry
   state: LayerViewState
   host: ShallowRef<ViewHost | null>
 }): LayerViewHandle {
   const { store, state, host } = options
 
   const defineFragment = shallowRef<LayerConfigFragment | null>(null)
+  const creatorContainer = reactive<LayerConfigFragment>({ container: { slots: {} } })
   const contentMountKey = ref(0)
   let container: HTMLElement | null = null
 
@@ -79,18 +81,22 @@ export function createLayerView(options: {
       })
 
       provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
-        registerCreatorContainerTemplate: store.registerCreatorContainerTemplate,
+        registerContainerTemplate(name: string, entry: LayerTemplateEntry) {
+          if (!creatorContainer.container) creatorContainer.container = {}
+          if (!creatorContainer.container.slots) creatorContainer.container.slots = {}
+          creatorContainer.container.slots[name] = (slotProps) => entry.render(slotProps ?? {})
+        },
       })
 
       return () => {
         void defineFragment.value
         void store.open
-        void store.templates.creatorContainer.container?.slots
-        void store.templates.callerContainer.container?.slots
-        void store.templates.callerContent.content?.slots
+        void creatorContainer.container?.slots
+        void store.callerContainer.container?.slots
+        void store.callerContent.content?.slots
         void contentMountKey.value
 
-        const merged = mergeLayerConfigStore(store, defineFragment.value)
+        const merged = mergeLayerConfigStore(store, defineFragment.value, creatorContainer)
 
         const resolved = defaultResolve({ merged, close: props.onClose })
         const normalized = store.adapter ? store.adapter(resolved) : resolved
@@ -140,6 +146,7 @@ export function createLayerView(options: {
     (visible, prev) => {
       if (visible && !prev) {
         defineFragment.value = null
+        if (creatorContainer.container) creatorContainer.container.slots = {}
         contentMountKey.value++
       }
       if (!container && !visible) return

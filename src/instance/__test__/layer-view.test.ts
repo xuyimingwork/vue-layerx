@@ -1,13 +1,13 @@
 import { defineComponent, h, reactive, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayerConfigStore } from '@/instance/layer-config-store'
+import { createLayerInstanceStore } from '@/instance/layer-instance-store'
 import { createLayerView } from '@/instance/layer-view'
 import { asViewHost } from '@/instance/view-host'
 import { Container } from '@/__test__/fixtures/components'
 
 function createTestView() {
-  const store = createLayerConfigStore({
+  const store = createLayerInstanceStore({
     create: { container: { component: Container } },
   })
   const state = reactive({ visible: false })

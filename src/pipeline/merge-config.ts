@@ -4,7 +4,7 @@ import type {
   LayerConfigNodeContent,
   LayerMerged,
 } from '@/types/config'
-import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
+import type { LayerInstanceStoreWithRegistry } from '@/instance/layer-instance-store'
 import { mergeContainerNode, mergeContentNode, mergeFragment } from './merge-node-config'
 
 function pickSlotsFragment(
@@ -22,14 +22,15 @@ function pickSlotsFragment(
  * create > creator template > define > caller template > use > clone > open
  */
 function mergeContainerSlots(
-  store: LayerConfigStoreWithRegistry,
+  store: LayerInstanceStoreWithRegistry,
   define: LayerConfigFragment | null,
+  creatorContainer: LayerConfigFragment | null,
 ): LayerConfigNodeContainer['slots'] {
   return mergeContainerNode(
     pickSlotsFragment(store.create, 'container') as LayerConfigNodeContainer | undefined,
-    pickSlotsFragment(store.templates.creatorContainer, 'container') as LayerConfigNodeContainer | undefined,
+    pickSlotsFragment(creatorContainer, 'container') as LayerConfigNodeContainer | undefined,
     pickSlotsFragment(define, 'container') as LayerConfigNodeContainer | undefined,
-    pickSlotsFragment(store.templates.callerContainer, 'container') as LayerConfigNodeContainer | undefined,
+    pickSlotsFragment(store.callerContainer, 'container') as LayerConfigNodeContainer | undefined,
     pickSlotsFragment(store.use, 'container') as LayerConfigNodeContainer | undefined,
     pickSlotsFragment(store.clone, 'container') as LayerConfigNodeContainer | undefined,
     pickSlotsFragment(store.open, 'container') as LayerConfigNodeContainer | undefined,
@@ -41,12 +42,12 @@ function mergeContainerSlots(
  * create > caller template > define > use > clone > open
  */
 function mergeContentSlots(
-  store: LayerConfigStoreWithRegistry,
+  store: LayerInstanceStoreWithRegistry,
   define: LayerConfigFragment | null,
 ): LayerConfigNodeContent['slots'] {
   return mergeContentNode(
     pickSlotsFragment(store.create, 'content') as LayerConfigNodeContent | undefined,
-    pickSlotsFragment(store.templates.callerContent, 'content') as LayerConfigNodeContent | undefined,
+    pickSlotsFragment(store.callerContent, 'content') as LayerConfigNodeContent | undefined,
     pickSlotsFragment(define, 'content') as LayerConfigNodeContent | undefined,
     pickSlotsFragment(store.use, 'content') as LayerConfigNodeContent | undefined,
     pickSlotsFragment(store.clone, 'content') as LayerConfigNodeContent | undefined,
@@ -55,8 +56,9 @@ function mergeContentSlots(
 }
 
 export function mergeLayerConfigStore(
-  store: LayerConfigStoreWithRegistry,
+  store: LayerInstanceStoreWithRegistry,
   define: LayerConfigFragment | null = null,
+  creatorContainer: LayerConfigFragment | null = null,
 ): LayerMerged {
   const base = mergeFragment(
     store.create,
@@ -68,7 +70,7 @@ export function mergeLayerConfigStore(
 
   return {
     content: { ...(base.content ?? {}), slots: mergeContentSlots(store, define) },
-    container: { ...(base.container ?? {}), slots: mergeContainerSlots(store, define) },
+    container: { ...(base.container ?? {}), slots: mergeContainerSlots(store, define, creatorContainer) },
   }
 }
 

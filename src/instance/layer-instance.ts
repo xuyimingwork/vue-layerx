@@ -7,7 +7,7 @@ import {
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
 import { attachLayerStore } from '@/instance/layer-internal'
-import { createLayerConfigStore } from '@/instance/layer-config-store'
+import { createLayerInstanceStore } from '@/instance/layer-instance-store'
 import { createLayerView } from './layer-view'
 import { asViewHost, type ViewHost } from './view-host'
 
@@ -22,7 +22,7 @@ export function createLayerInstance({
   use: LayerConfigFragment
   clone?: LayerConfigFragment
 }): LayerInstance {
-  const store = createLayerConfigStore({
+  const store = createLayerInstanceStore({
     create,
     adapter,
     use,

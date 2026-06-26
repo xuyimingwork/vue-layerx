@@ -68,14 +68,14 @@ export const LayerTemplate = defineComponent({
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         }
         if (props.container) {
-          internal.registerCallerContainerTemplate(props.name, entry)
+          internal.registerContainerTemplate(props.name, entry)
         } else {
-          internal.registerCallerContentTemplate(props.name, entry)
+          internal.registerContentTemplate(props.name, entry)
         }
         return
       }
       if (inLayer.value && containerRegistry) {
-        containerRegistry.registerCreatorContainerTemplate(props.name, {
+        containerRegistry.registerContainerTemplate(props.name, {
           render: renderWithScope({ inLayer: true, outsideLayer: false }),
         })
       }
