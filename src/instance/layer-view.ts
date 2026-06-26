@@ -1,7 +1,7 @@
 import { defineComponent, getCurrentInstance, provide, type Component } from 'vue'
 import { mergeLayerConfigStore } from '@/pipeline/merge-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerAdapt, LayerConfigFragment, LayerRenderPlan } from '@/types'
+import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan } from '@/types'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
 import type { LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
@@ -16,7 +16,7 @@ export interface UseLayerContext {
   Container: Component
   create: LayerConfigFragment
   defaultModel: string
-  adapt?: LayerAdapt
+  adapter?: LayerAdapter
 }
 
 export interface LayerViewState {
@@ -78,7 +78,7 @@ export function buildLayerView(
         }
 
         const resolved = defaultResolve(resolveCtx)
-        const normalized = ctx.adapt ? ctx.adapt(resolved) : resolved
+        const normalized = ctx.adapter ? ctx.adapter(resolved) : resolved
 
         const plan: LayerRenderPlan = {
           ...normalized,

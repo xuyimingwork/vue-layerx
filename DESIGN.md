@@ -385,12 +385,12 @@ defineLayer({
 注册容器，返回工厂（如 `useDialog`）。
 
 ```ts
-type LayerAdapt = (normalized: LayerNormalized) => LayerNormalized
+type LayerAdapter = (normalized: LayerNormalized) => LayerNormalized
 
 function createLayer(
   layer: Component,
   config?: LayerConfigStatic,
-  adapt?: LayerAdapt,
+  adapter?: LayerAdapter,
 ): (Content?: Component, config?: LayerConfigInstance) => LayerInstance
 ```
 

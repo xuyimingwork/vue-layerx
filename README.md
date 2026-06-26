@@ -1,6 +1,16 @@
 # vue-layerx
 
-Vue 3 弹层工厂：用 **一个 content 组件 + 一个 `createLayer` 工厂** 覆盖详情、编辑、新建等场景，无需维护 `v-model` 和重复的 dialog 模板。
+Vue3 命令式弹窗工具库，告别冗余模板，随用随开
+
+```ts
+import { createLayer } from 'vue-layerx'
+import { ElDialog } from 'element-plus'
+import UserForm from './UserForm.vue'
+
+const useDialog = createLayer(ElDialog);
+const dialog = useDialog(UserForm);
+dialog.open({ props: { id: '1' } })
+```
 
 ## 安装
 
@@ -10,76 +20,4 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
-**Peer dependency:** Vue `^3.5.0`
 
-## 快速开始
-
-```ts
-// layers/detail.ts
-import { createLayer } from 'vue-layerx'
-import BaseDialog from './BaseDialog.vue'
-
-export const useDetailLayer = createLayer(BaseDialog)
-```
-
-```ts
-// UserList.vue
-import { useDetailLayer } from './layers/detail'
-import UserForm from './UserForm.vue'
-
-const userLayer = useDetailLayer(UserForm)
-
-userLayer.open({ props: { mode: 'view', ...row } })   // 详情
-userLayer.open({ props: { mode: 'edit', onSubmit } }) // 编辑
-```
-
-```vue
-<!-- UserForm.vue -->
-<script setup lang="ts">
-import { defineLayer, LayerTemplate } from 'vue-layerx'
-
-defineLayer({ props: { title: '用户' }, content: { closeOn: ['submit'] } })
-</script>
-
-<template>
-  <ElInput v-model="name" :disabled="mode === 'view'" />
-  <LayerTemplate v-if="mode !== 'view'" name="footer" #default="{ inLayer }">
-    <ElButton v-if="inLayer" type="primary" @click="submit">保存</ElButton>
-  </LayerTemplate>
-</template>
-```
-
-## 核心 API
-
-| 导出 | 用途 |
-|------|------|
-| `createLayer(Layer, defaults?, adapt?)` | 创建弹层工厂，返回 `useX(Content)` |
-| `defineLayer(options)` | 在 content 内声明默认 container 配置 |
-| `LayerTemplate` | 声明式 slot 配置（`:to` / `container` 远程投递；无 `to` 为 creator tier） |
-
-## 文档
-
-```bash
-pnpm docs:dev   # 本地文档站
-pnpm playground # 交互式 demo
-```
-
-教程与 API 详见仓库内 [docs/](docs/) 目录，或克隆后运行 `pnpm docs:dev`。
-
-## 已知限制
-
-- **不支持 SSR**
-- Portal 不在 Host DOM 子树内；content 的 `inject` / 全局组件依赖 **`bindHost()`**（setup 内 `useLayer` 自动 bind；模块单例须在 ConfigProvider 子树内手动 `bindHost()`）
-- 0.0.x 为早期版本，公共 API 可能调整
-
-## 开发
-
-```bash
-pnpm install
-pnpm test
-pnpm build
-```
-
-## License
-
-[MIT](LICENSE)

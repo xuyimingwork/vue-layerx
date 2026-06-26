@@ -1,5 +1,5 @@
 export type {
-  LayerAdapt,
+  LayerAdapter,
   CloseOnConfig,
   LayerConfigFragment,
   LayerConfigNodeContainer,

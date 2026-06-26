@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { LayerAdapt } from 'vue-layerx'
+import type { LayerAdapter } from 'vue-layerx'
 import BaseDialog from '../../examples/shared/BaseDialog.vue'
 import BaseDrawer from '../../examples/shared/BaseDrawer.vue'
 import { createLayer } from 'vue-layerx'
@@ -11,7 +11,7 @@ function stripProps(props: Record<string, unknown>, ...keys: string[]) {
   return Object.fromEntries(Object.entries(props).filter(([key]) => !keys.includes(key)))
 }
 
-const detailAdapt: LayerAdapt = (normalized) => {
+const detailAdapt: LayerAdapter = (normalized) => {
   const mobile =
     detailViewportMobile.value ||
     (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)

@@ -73,6 +73,6 @@ export interface LayerRenderPlan extends LayerNormalized {
   onClose: () => void
 }
 
-export type LayerAdapt = (normalized: LayerNormalized) => LayerNormalized
+export type LayerAdapter = (normalized: LayerNormalized) => LayerNormalized
 
 export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const

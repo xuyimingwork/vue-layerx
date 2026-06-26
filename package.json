@@ -1,7 +1,7 @@
 {
   "name": "vue-layerx",
   "version": "0.0.1",
-  "description": "Vue 3 hook factory for declarative + imperative layered UI (dialogs, drawers, etc.)",
+  "description": "Vue3 命令式弹窗，一行唤起，零模板冗余",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
