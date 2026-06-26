@@ -2,6 +2,7 @@ import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createLayerRuntime } from '../layer-runtime'
+import { asViewHost } from '../view-host'
 
 const Marker = defineComponent({
   setup() {
@@ -58,7 +59,7 @@ describe('createLayerRuntime', () => {
   it('passes appContext to view vnode when viewHost is alive', () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
     const host = wrapper.vm.$
-    const runtime = createLayerRuntime(Marker, () => host)
+    const runtime = createLayerRuntime(Marker, () => asViewHost(host))
     runtime.mount()
     expect(document.body.querySelector('.body-marker')).toBeTruthy()
     runtime.unmount()

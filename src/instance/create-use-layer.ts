@@ -3,7 +3,6 @@ import {
   onUnmounted,
   reactive,
   type Component,
-  type ComponentInternalInstance,
 } from 'vue'
 import type { LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
@@ -11,6 +10,7 @@ import { attachConfigStore } from '@/instance/instance-registry'
 import { createLayerConfigStore, type LayerConfigStoreWithRegistry } from '@/instance/layer-config-store'
 import { buildLayerView, type LayerViewState, type UseLayerContext } from './layer-view'
 import { createLayerRuntime, type GetViewHost } from './layer-runtime'
+import { asViewHost, type ViewHost } from './view-host'
 
 interface CreateInstanceOptions {
   Content?: Component
@@ -116,7 +116,7 @@ export function createUseLayer(ctx: UseLayerContext) {
     Content?: Component,
     config: LayerConfigInstance = {},
   ): LayerInstance {
-    let viewHost: ComponentInternalInstance | null = null
+    let viewHost: ViewHost | null = null
     const lifecycle = createInstanceLifecycle()
 
     const getViewHost = () => viewHost
@@ -124,7 +124,7 @@ export function createUseLayer(ctx: UseLayerContext) {
     const bindHost = () => {
       const host = getCurrentInstance()
       if (!host || viewHost) return
-      viewHost = host
+      viewHost = asViewHost(host)
       onUnmounted(() => {
         viewHost = null
         lifecycle.dispose()

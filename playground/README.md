@@ -20,6 +20,7 @@ src/
     06-before-close/       # Lv.6 未保存拦截
     07-config-merge/       # Lv.7 配置合并
     08-lifecycle/          # Lv.8 工厂默认与卸载清理
+    09-provide-inject/     # Lv.9 provide / inject · bindHost
 ```
 
 每个 demo 目录：

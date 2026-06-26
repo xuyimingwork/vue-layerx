@@ -1,12 +1,13 @@
-import { h, render, type Component, type ComponentInternalInstance } from 'vue'
+import { h, render, type Component } from 'vue'
+import type { GetViewHost } from './view-host'
+
+export type { GetViewHost } from './view-host'
 
 export interface LayerRuntime {
   readonly mounted: boolean
   mount: () => void
   unmount: () => void
 }
-
-export type GetViewHost = () => ComponentInternalInstance | null
 
 export function createLayerRuntime(view: Component, getViewHost: GetViewHost): LayerRuntime {
   let container: HTMLElement | null = null

@@ -8,11 +8,12 @@ const emit = defineEmits<{
 
 defineLayer({
   props: { title: '你好，vue-layerx' },
+  content: { closeOn: ['close'] },
 })
 </script>
 
 <template>
-  <p class="message">最简用法：content 声明 container 配置，调用方 <code>open()</code> 即可打开。</p>
+  <p class="message">调用方三行即可；标题与 closeOn 由 content 内 defineLayer 声明。</p>
 
   <LayerTemplate name="footer">
     <ElButton type="primary" @click="emit('close')">关闭</ElButton>

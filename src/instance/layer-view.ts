@@ -9,7 +9,8 @@ import {
   LAYER_DEFINE_KEY,
   CONTAINER_TEMPLATE_REGISTRY_KEY,
 } from '@/di/injection-keys'
-import type { GetViewHost } from './layer-runtime'
+import type { GetViewHost } from './view-host'
+import { asViewHost } from './view-host'
 
 export interface UseLayerContext {
   Container: Component
@@ -42,7 +43,7 @@ export function buildLayerView(
     setup() {
       const host = getViewHost()
       if (host && !host.isUnmounted) {
-        const instance = getCurrentInstance()!
+        const instance = asViewHost(getCurrentInstance()!)
         instance.provides = Object.create(host.provides)
       }
 

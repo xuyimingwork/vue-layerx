@@ -9,6 +9,7 @@ import CloneParallelDemo from './05-clone-parallel/index.vue'
 import BeforeCloseDemo from './06-before-close/index.vue'
 import ConfigMergeDemo from './07-config-merge/index.vue'
 import LifecycleDemo from './08-lifecycle/index.vue'
+import ProvideInjectDemo from './09-provide-inject/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -19,10 +20,10 @@ export const demoGroups: DemoGroup[] = [
       {
         id: 'basic-open',
         level: 1,
-        title: '打开与关闭',
+        title: '三行打开',
         description:
-          '最简路径：content 内 defineLayer 声明标题、LayerTemplate name 声明 footer，调用方 useDialog(Content) + open()，closeOn 自动关闭。',
-        tags: ['useDialog', 'open()', 'closeOn', 'defineLayer', 'LayerTemplate'],
+          '调用方仅 createLayer(Container) + useLayer(Content) + open()，全部默认参数；标题、closeOn、footer 由 content 内 defineLayer / LayerTemplate 声明。',
+        tags: ['createLayer', 'useLayer', 'open()', 'defineLayer', 'LayerTemplate'],
         component: BasicDemo,
       },
       {
@@ -124,6 +125,22 @@ export const demoGroups: DemoGroup[] = [
           'createLayer content.props 工厂默认；open 覆盖 props / container / closeOn；倒计时 close() 与 onUnmounted 清理。',
         tags: ['createLayer', 'content.props', 'open.closeOn', 'close()', 'onUnmounted'],
         component: LifecycleDemo,
+      },
+    ],
+  },
+  {
+    id: 'context',
+    title: 'Host 上下文',
+    subtitle: 'provide / inject · bindHost',
+    items: [
+      {
+        id: 'provide-inject',
+        level: 9,
+        title: 'Provide / Inject · ConfigProvider',
+        description:
+          'ElConfigProvider 须在 bindHost 组件的祖先；Content inherit size / locale 与自定义 provide。模块单例同样需在 Provider 子树内 bindHost()。',
+        tags: ['provide', 'inject', 'bindHost', 'ElConfigProvider', 'useGlobalConfig'],
+        component: ProvideInjectDemo,
       },
     ],
   },
