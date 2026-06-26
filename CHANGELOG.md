@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `clone()` creates a fully independent instance with its own `viewHost` and `bindHost()` (auto-called in setup at clone time); no longer shares bind state or lifecycle registry with the parent instance.
 - **Breaking:** Instance lifecycle API: `show` / `hide` → `open` / `close`; readonly state getter `visible`.
 - **Breaking:** Container visibility: `visible: [prop, event]` tuple removed; use `model?: string` on container config (default `modelValue`, event `onUpdate:${model}`). Render via `bindContainerModel`.
 - **Breaking:** `hideOn` renamed to `closeOn`; lives on **content** node. `defineLayer` uses `content: { closeOn: [...] }`; `useX` / `open` keep top-level `closeOn`.

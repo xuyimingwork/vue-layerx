@@ -68,16 +68,16 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 - `LayerTemplate` 在当次上下文中重新 self-register；
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层（`open` payload 为当次快照）。
 
-首次 `open()` 才挂载 portal；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时 `lifecycle.dispose()` 卸 portal（含 clone）。
+首次 `open()` 才挂载 portal；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
 
 ### viewHost 与 bindHost（portal inject 上下文）
 
-Layer 通过 `render` 挂到 `document.body`，与 Host 组件树 DOM 分离。为让 content 能 `inject` Host / `ConfigProvider` 等祖先 provide，每个 instance 族（base + clone）共享 closure 内 **`viewHost`**：
+Layer 通过 `render` 挂到 `document.body`，与 Host 组件树 DOM 分离。为让 content 能 `inject` Host / `ConfigProvider` 等祖先 provide，**每个 LayerInstance 各自维护 `viewHost`**：
 
 - **`viewHost` 存活**：LayerView setup 时 `provides = Object.create(viewHost.provides)`，runtime mount 时 `vnode.appContext = viewHost.appContext`
 - **无 viewHost 或已卸载**：bare portal（可 `open()`，但无 inject / 无全局组件解析）
 
-**统一 `bindHost()`**（内外同一函数）：
+**`bindHost()`**（per-instance，重复调用 no-op）：
 
 ```ts
 const bindHost = () => {
@@ -86,21 +86,21 @@ const bindHost = () => {
   viewHost = host
   onUnmounted(() => {
     viewHost = null
-    lifecycle.dispose() // 仅 portal dispose（base + clone）
+    dispose() // 仅卸本 instance portal
   })
 }
 ```
 
 - `useLayer()` 末尾自动 `bindHost()`；setup 内有 host 则立即绑定
 - **`instance.bindHost`** 暴露给用户（全局单例在 App / ConfigProvider 子树内 setup 调用）
-- **`instance.unmount()`** 只调自身 `dispose()`（卸 portal DOM），**不**清 viewHost、**不**走 `lifecycle.dispose()`
-
-**生命周期 registry**：`lifecycle.register(dispose)` 只登记 portal 卸载；`clone()` 共享同一 `lifecycle` 与 `viewHost`，Host 卸载时整族 dispose。
+- **`clone()`** 内部走完整 instance 创建并自动 `bindHost()`（等价于在 clone 调用点再 `useLayer` 一次）
+- **`instance.unmount()`** 只调自身 `dispose()`（卸 portal DOM），**不**清 viewHost
 
 | 场景 | 用法 |
 |------|------|
 | 页面 setup | `useLayer()` 自动 bindHost |
 | 全局单例 | 模块 `useLayer()` + App 内 `messageBox.bindHost()` |
+| clone | `clone()` 在 setup 内自动 bindHost；parent 的 bindHost **不影响** clone |
 | 多页共享配置 | `() => useLayer(...)` wrapper，各页 setup 自动 bind |
 
 未 bindHost 可 bare open；ConfigProvider locale 等须在 **Provider 子树内** bindHost。
@@ -548,6 +548,7 @@ open > clone（clone 入参）> use > define > create
 - **`use`**：创建父实例时传入的 config（含 `closeOn`、默认 `props` / `container.props` 等）。
 - 父实例某次 `open` 的 config **不**继承给克隆；克隆只带 `use` + 自己的 `clone` tier。
 - 克隆与父实例**共享同一工厂**及其 `adapt`；**各自独立 `layerRuntime`**（独立挂载点，`open` / `close` 互不影响 DOM）。
+- **`clone()` 等价于再 `useLayer` 一次**：完整新建 instance，继承 `create` / `adapter` / `use`，写入 `clone` tier，并在 setup 内自动 `bindHost()`；parent 的 bindHost 不影响 clone。
 
 ```ts
 const base = useDialog(DetailContent, { closeOn: ['close'] })

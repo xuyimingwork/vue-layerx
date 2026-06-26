@@ -441,6 +441,86 @@ describe('createLayer (integration)', () => {
     expect(document.body.querySelector('.msg')?.textContent).toBe('cloned')
   })
 
+  it('clone bindHost is independent from parent bindHost', async () => {
+    const OUTER_KEY = Symbol('outer')
+    const INNER_KEY = Symbol('inner')
+    const useLayer = createLayer(Container)
+    let base!: LayerInstance
+    let cloned!: LayerInstance
+
+    const Content = defineComponent({
+      name: 'CloneIndependentInjectContent',
+      setup() {
+        const outer = inject<string>(OUTER_KEY, 'no-outer')
+        const inner = inject<string>(INNER_KEY, 'no-inner')
+        return () => h('span', { class: 'clone-independent-inject' }, `${outer}|${inner}`)
+      },
+    })
+
+    base = useLayer(Content)
+
+    const InnerHost = defineComponent({
+      setup() {
+        provide(INNER_KEY, 'from-inner')
+        cloned = base.clone()
+        onMounted(() => cloned.open())
+        return () => h('inner-host')
+      },
+    })
+
+    const OuterHost = defineComponent({
+      setup() {
+        provide(OUTER_KEY, 'from-outer')
+        onMounted(() => base.bindHost())
+        return () => h(InnerHost)
+      },
+    })
+
+    mount(OuterHost)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.clone-independent-inject')?.textContent).toBe(
+      'from-outer|from-inner',
+    )
+
+    base.open()
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.clone-independent-inject')?.textContent).toBe(
+      'from-outer|from-inner',
+    )
+  })
+
+  it('detached base clone in setup auto bindHost inherits host provide', async () => {
+    const HOST_KEY = Symbol('detached-clone-bind')
+    const useLayer = createLayer(Container)
+    let cloned!: LayerInstance
+
+    const Content = defineComponent({
+      name: 'DetachedCloneBindContent',
+      setup() {
+        const value = inject<string>(HOST_KEY, 'fallback')
+        return () => h('span', { class: 'detached-clone-inject' }, value)
+      },
+    })
+
+    const base = useLayer(Content)
+
+    const Host = defineComponent({
+      setup() {
+        provide(HOST_KEY, 'from-host')
+        cloned = base.clone()
+        onMounted(() => cloned.open())
+        return () => h('motion-host')
+      },
+    })
+
+    mount(Host)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(document.body.querySelector('.detached-clone-inject')?.textContent).toBe('from-host')
+  })
+
   it('defineLayer does not activate when content used outside layer', () => {
     const Content = makeContent(true)
     const wrapper = mount(Content, { props: { message: 'page' } })

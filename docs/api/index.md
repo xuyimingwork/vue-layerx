@@ -78,9 +78,9 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 | `open(config?)` | 打开弹层；每次 open 重建 content |
 | `close()` | 关闭（不卸 DOM 挂载点） |
 | `unmount()` | 卸 portal DOM；**不**清 viewHost |
-| `clone(config?)` | 并行实例，共享 viewHost / lifecycle |
+| `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier；setup 内自动 `bindHost()` |
 | `visible` | 只读是否打开 |
-| `bindHost()` | 绑定当前 setup Host 的 provide / appContext；`useLayer` 在 setup 内自动调用 |
+| `bindHost()` | 绑定**本 instance** 当前 setup Host 的 provide / appContext；重复调用 no-op；`useLayer` 在 setup 内自动调用 |
 
 **全局单例**（模块 `export const messageBox = useLayer(...)`）须在 App 或 `ElConfigProvider` **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject ConfigProvider。
 
