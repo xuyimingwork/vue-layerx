@@ -36,6 +36,36 @@ describe('bindContainerModel', () => {
     result['onUpdate:open']?.(true)
     expect(close).not.toHaveBeenCalled()
   })
+
+  it('calls user onUpdate handler before close', () => {
+    const close = vi.fn()
+    const onUpdate = vi.fn()
+    const result = bindContainerModel(
+      { 'onUpdate:modelValue': onUpdate },
+      true,
+      'modelValue',
+      close,
+    )
+
+    result['onUpdate:modelValue']?.(false)
+    expect(onUpdate).toHaveBeenCalledWith(false)
+    expect(close).toHaveBeenCalled()
+  })
+
+  it('calls user custom model onUpdate without closing when value stays true', () => {
+    const close = vi.fn()
+    const onUpdate = vi.fn()
+    const result = bindContainerModel(
+      { 'onUpdate:open': onUpdate },
+      true,
+      'open',
+      close,
+    )
+
+    result['onUpdate:open']?.(true)
+    expect(onUpdate).toHaveBeenCalledWith(true)
+    expect(close).not.toHaveBeenCalled()
+  })
 })
 
 describe('DEFAULT_CONTAINER_MODEL', () => {

@@ -9,10 +9,12 @@ export function bindContainerModel(
   close: () => void,
 ): LayerProps {
   const updateEvent = `onUpdate:${model}`
+  const prev = containerProps[updateEvent] as ((value: unknown) => unknown) | undefined
   return {
     ...containerProps,
     [model]: visible,
     [updateEvent]: (value: unknown) => {
+      prev?.(value)
       if (value === false || value === undefined) close()
     },
   }
