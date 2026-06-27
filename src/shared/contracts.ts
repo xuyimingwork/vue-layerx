@@ -1,4 +1,9 @@
-import type { ComponentInternalInstance } from 'vue'
+import type { ComponentInternalInstance, InjectionKey } from 'vue'
+import type { LayerDefineRegistry } from '@/types/store'
+
+/** global inject key; value provided per LayerView render context */
+export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
+  Symbol('vue-layerx-define') as InjectionKey<LayerDefineRegistry>
 
 /** Set by renderLayerTree on the content root vnode only. */
 export const LAYER_CONTENT = Symbol('vue-layerx:layer-content')

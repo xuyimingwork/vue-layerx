@@ -68,10 +68,11 @@ UserDialog = MyDialog + UserForm
 src/
 ├── index.ts                 # 包入口 barrel
 ├── api/                     # createLayer / defineLayer / LayerTemplate
-├── types/                   # 纯类型契约（config / instance / store）
+├── types/                   # 纯类型契约（config / instance / store / view-host）
+├── shared/                  # 跨层运行时契约（Symbol、inject key、检测函数）
 ├── config/                  # fragment 构造、merge、bind
-├── runtime/                 # store、instance 生命周期、viewHost
-└── view/                    # LayerView、portal、VNode 渲染、运行时标记
+├── runtime/                 # store、instance 生命周期、portal 挂载
+└── view/                    # LayerView 组件、纯 h() 渲染
 
 tests/
 └── integration/             # createLayer 端到端测试（与 src/ 分离）
@@ -79,66 +80,70 @@ tests/
 
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
-| **types/** | 配置 / 实例 / Store 接口；不含业务逻辑 | `config.ts`、`instance.ts`、`store.ts` |
-| **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts` |
-| **runtime/** | 响应式 store 桶、LayerInstance 生命周期、store 附着 | `layer-store.ts`、`layer-instance.ts`、`layer-internal.ts`、`view-host.ts` |
-| **view/** | Vue 组件、portal、`h()` 渲染、content 标记、inject key | `layer-view-component.ts`、`layer-view.ts`、`render-layer-tree.ts` |
+| **types/** | 配置 / 实例 / Store 接口；ViewHost 类型断言 | `config.ts`、`instance.ts`、`store.ts`、`view-host.ts` |
+| **shared/** | 跨 api / view / runtime 的 Symbol 与无状态检测 | `contracts.ts` |
+| **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts`、`container-model.ts` |
+| **runtime/** | store、instance 生命周期、portal 挂载、store 附着 | `layer-store.ts`、`layer-instance.ts`、`layer-internal.ts`、`layer-view-portal.ts` |
+| **view/** | Vue 组件与纯 `h()` 渲染 | `layer-view-component.ts`、`render-layer-tree.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
 各层 `__test__/` 与模块同目录；集成测试在 `tests/integration/`。
 
 ### 模块依赖
 
-上层只能依赖下层；**`config` 与 `runtime` 互不依赖**。
+上层只能依赖下层；**`config` 与 `runtime` 互不依赖**；**`view` 不依赖 `runtime`**（portal 与 store 创建在 runtime）。
 
 ```mermaid
 flowchart TB
   index[index.ts]
   api[api]
-  view[view]
   runtime[runtime]
+  view[view]
   config[config]
+  shared[shared]
   types[types]
 
   index --> api
   index --> types
-  api --> view
   api --> runtime
   api --> config
+  api --> shared
   api --> types
-  view --> runtime
-  view --> config
-  view --> types
+  runtime --> view
   runtime --> config
   runtime --> types
+  view --> config
+  view --> shared
+  view --> types
+  shared --> types
   config --> types
 ```
 
 | 层 | 允许 import | 禁止 import |
 |----|-------------|-------------|
 | **types/** | Vue 类型 only | 任何 `src/` 模块 |
-| **config/** | `types/` | `runtime`、`view`、`api` |
-| **runtime/** | `types/`、`config/` | `api` |
-| **view/** | `types/`、`config/`、`runtime/` | `api` |
+| **shared/** | `types/` | `config`、`runtime`、`view`、`api` |
+| **config/** | `types/` | `shared`、`runtime`、`view`、`api` |
+| **view/** | `types/`、`config/`、`shared/` | `runtime`、`api` |
+| **runtime/** | `types/`、`config/`、`view/` | `api` |
 | **api/** | 以上所有层 | — |
 
-**依赖规则一句话**：上层只能依赖下层；`config` 和 `runtime` 互不依赖。
+**依赖规则**：`types` / `shared` / `config` 为底层；`view` 为纯渲染；`runtime` 编排 store + portal 并驱动 `LayerView`；`api` 在最外。
 
 #### 跨层依赖矩阵（生产代码）
 
-| Importer ↓ / Importee → | `types` | `config` | `runtime` | `view` |
-|---------------------------|:-------:|:--------:|:---------:|:------:|
-| **api** | ✓ | ✓ | ✓ | ✓ |
-| **view** | ✓ | ✓ | ✓ | internal |
-| **runtime** | ✓ | ✓ | internal | ✓* |
-| **config** | ✓ | internal | — | — |
-| **types** | — | — | — | — |
+| Importer ↓ / Importee → | `types` | `shared` | `config` | `view` | `runtime` |
+|---------------------------|:-------:|:--------:|:--------:|:------:|:---------:|
+| **api** | ✓ | ✓ | ✓ | — | ✓ |
+| **runtime** | ✓ | — | ✓ | ✓ | internal |
+| **view** | ✓ | ✓ | ✓ | internal | — |
+| **shared** | ✓ | — | — | — | — |
+| **config** | ✓ | — | internal | — | — |
+| **types** | — | — | — | — | — |
 
-\* **`runtime → view`**：`layer-instance` 通过 `createLayerView` 委托 portal 挂载，是 runtime 对 view 的唯一生产依赖。
+**runtime → view**：`layer-view-portal` 挂载 `LayerView` 组件并创建 per-portal 的 `viewStore`（define / define:template）；`layer-instance` 只持有 instance store 并委托 portal。
 
-**api → view**（`define-layer`）：`inject(LAYER_DEFINE_KEY)` 与 `isLayerContent` 依赖 view 层运行时契约（`injection-keys.ts`、`layer-content.ts`）。
-
-**types/store.ts** 与 **view/injection-keys.ts** 分工：`LayerDefineRegistry` 类型在 types；`LAYER_DEFINE_KEY` 常量在 view（provide 侧在 `LayerView`）。
+**shared/contracts.ts**：`LAYER_DEFINE_KEY`（defineLayer inject / LayerView provide）、`LAYER_CONTENT` + `isLayerContent`（content 根检测）。类型 `LayerDefineRegistry` 在 `types/store.ts`。
 
 ### 与核心管线的对应
 
@@ -146,10 +151,10 @@ flowchart TB
 createLayer / defineLayer / LayerTemplate          api/
         │
         ▼
-createLayerInstance + layer-store                  runtime/
+createLayerInstance + layer-store + layer-view-portal    runtime/
         │
         ▼
-createLayerView → LayerView                        view/
+LayerView → renderLayerTree                            view/
         │
         ├── mergeFragment / toFragment*            config/fragment.ts
         ├── mergeNodeConfig                        config/merge-node-config.ts
@@ -174,7 +179,7 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 - **已打开时再次 `open(config?)`**：只更新 `store.open` tier 并下发新 props，**不** remount content。
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
-首次 `visible=true` 才挂载 portal（`createLayerView` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
+首次 `visible=true` 才挂载 portal（`layer-view-portal` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
 
 ### viewHost 与 bindHost（portal inject 上下文）
 

@@ -8,8 +8,8 @@ import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInsta
 import { toFragmentFromInstance, mergeFragment } from '@/config/fragment'
 import { attachLayerStore } from '@/runtime/layer-internal'
 import { createLayerInstanceStore } from '@/runtime/layer-store'
-import { createLayerView } from '@/view/layer-view'
-import { asViewHost, type ViewHost } from '@/runtime/view-host'
+import { createLayerView } from '@/runtime/layer-view-portal'
+import { asViewHost, type ViewHost } from '@/types/view-host'
 
 export function createLayerInstance({
   create,

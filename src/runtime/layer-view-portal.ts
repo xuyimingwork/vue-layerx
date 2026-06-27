@@ -5,10 +5,12 @@ import {
   type ShallowRef,
 } from 'vue'
 import type { LayerAdapter } from '@/types'
-import type { LayerInstanceStoreWithTemplate } from '@/types/store'
+import type {
+  LayerInstanceStoreWithTemplate,
+} from '@/types/store'
 import { createLayerViewStore } from '@/runtime/layer-store'
-import { LayerView } from './layer-view-component'
-import { type ViewHost } from '@/runtime/view-host'
+import { LayerView } from '@/view/layer-view-component'
+import { type ViewHost } from '@/types/view-host'
 
 export interface LayerViewState {
   visible: boolean
@@ -26,8 +28,8 @@ export function createLayerView(options: {
   adapter?: LayerAdapter
 }): LayerViewHandle {
   const { store, state, host, adapter } = options
-
   const viewStore = createLayerViewStore()
+
   let container: HTMLElement | null = null
 
   function buildProps() {

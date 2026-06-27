@@ -14,8 +14,8 @@ import type {
   LayerViewStoreWithTemplate,
 } from '@/types/store'
 import { renderLayerTree } from '@/view/render-layer-tree'
-import { LAYER_DEFINE_KEY } from '@/view/injection-keys'
-import { asViewHost, type ViewHost } from '@/runtime/view-host'
+import { LAYER_DEFINE_KEY } from '@/shared/contracts'
+import { asViewHost, type ViewHost } from '@/types/view-host'
 
 export const LayerView = defineComponent({
   name: 'LayerView',

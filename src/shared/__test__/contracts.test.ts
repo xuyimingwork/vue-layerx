@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isLayerContent, LAYER_CONTENT } from '../layer-content'
+import { isLayerContent, LAYER_CONTENT } from '../contracts'
 
 describe('isLayerContent', () => {
   it('returns false for null/undefined', () => {

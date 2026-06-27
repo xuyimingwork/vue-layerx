@@ -2,8 +2,8 @@ import { defineComponent, h, reactive, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-store'
-import { createLayerView } from '@/view/layer-view'
-import { asViewHost } from '@/runtime/view-host'
+import { createLayerView } from '@/runtime/layer-view-portal'
+import { asViewHost } from '@/types/view-host'
 import { Container } from '@tests/fixtures/components'
 
 function createTestView() {
