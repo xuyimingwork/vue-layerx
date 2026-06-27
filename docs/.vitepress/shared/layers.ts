@@ -7,31 +7,33 @@ import { createLayer } from 'vue-layerx'
 /** 教程 Demo：模拟窄屏，真实项目里删掉，直接用 matchMedia */
 export const detailViewportMobile = ref(false)
 
-function stripProps(props: Record<string, unknown>, ...keys: string[]) {
-  return Object.fromEntries(Object.entries(props).filter(([key]) => !keys.includes(key)))
+function stripProps(props: Record<string, unknown> | undefined, ...keys: string[]) {
+  return Object.fromEntries(
+    Object.entries(props ?? {}).filter(([key]) => !keys.includes(key)),
+  )
 }
 
-const detailAdapt: LayerAdapter = (normalized) => {
+const detailAdapt: LayerAdapter = (merged) => {
   const mobile =
     detailViewportMobile.value ||
     (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
 
   if (!mobile) {
     return {
-      ...normalized,
+      ...merged,
       container: {
-        ...normalized.container,
-        props: stripProps(normalized.container.props, 'size', 'direction'),
+        ...merged.container,
+        props: stripProps(merged.container.props, 'size', 'direction'),
       },
     }
   }
 
   return {
-    ...normalized,
+    ...merged,
     container: {
-      ...normalized.container,
+      ...merged.container,
       component: BaseDrawer,
-      props: stripProps(normalized.container.props, 'width'),
+      props: stripProps(merged.container.props, 'width'),
     },
   }
 }

@@ -53,7 +53,7 @@ export interface LayerMerged {
   container: LayerConfigNodeContainer
 }
 
-/** resolve / adapt output — ready for h() except open model binding */
+/** bind output — props include closeOn / model bindings, ready for h() */
 export interface LayerNodeNormalized {
   component: Component
   props: LayerProps
@@ -65,15 +65,7 @@ export interface LayerNormalized {
   container: LayerNodeNormalized
 }
 
-/** after adapt, before h() */
-export interface LayerRenderPlan extends LayerNormalized {
-  visible: boolean
-  /** v-model prop name on container; event is onUpdate:${model} */
-  model: string
-  onClose: () => void
-}
-
-export type LayerAdapter = (normalized: LayerNormalized) => LayerNormalized
+export type LayerAdapter = (merged: LayerMerged) => LayerMerged
 
 /** createLayer second argument only; adapter is not valid on defineLayer / use / open / clone */
 export type LayerConfigCreate = LayerConfigStatic & {

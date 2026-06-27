@@ -7,9 +7,8 @@ import {
   type PropType,
 } from 'vue'
 import { mergeFragment } from '@/pipeline/merge-node-config'
-import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan } from '@/types'
-import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
+import { bindLayerTree } from '@/pipeline/bind-layer-tree'
+import type { LayerAdapter, LayerConfigFragment } from '@/types'
 import { createLayerFragment } from '@/instance/layer-fragment'
 import type {
   LayerInstanceStoreWithTemplate,
@@ -94,19 +93,13 @@ export const LayerView = defineComponent({
 
       const close = () => emit('update:visible', false)
 
-      const resolved = defaultResolve({ merged, close })
-      const normalized = props.adapter ? props.adapter(resolved) : resolved
-
-      const plan: LayerRenderPlan = {
-        ...normalized,
-        visible: props.visible,
-        model: merged.container.model ?? DEFAULT_CONTAINER_MODEL,
-        onClose: close,
-      }
+      const adapted = props.adapter ? props.adapter(merged) : merged
+      const bound = bindLayerTree({ merged: adapted, visible: props.visible, close })
 
       return renderLayerTree({
-        plan,
-        contentMountKey: normalized.content ? contentMountKey.value : undefined,
+        container: bound.container,
+        content: bound.content,
+        contentMountKey: bound.content ? contentMountKey.value : undefined,
       })
     }
   },

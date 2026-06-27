@@ -1,25 +1,16 @@
 import { h, type VNode } from 'vue'
 import { LAYERX_LAYER_CONTENT } from '@/content/layer-content'
-import type { LayerRenderPlan } from '@/types'
-import { bindContainerModel } from './bind-container-model'
+import type { LayerNormalized } from '@/types'
 
-export interface RenderLayerTreeOptions {
-  plan: LayerRenderPlan
+export interface RenderLayerTreeOptions extends LayerNormalized {
   contentMountKey?: number
 }
 
 export function renderLayerTree({
-  plan,
+  container,
+  content,
   contentMountKey,
 }: RenderLayerTreeOptions): VNode {
-  const containerProps = bindContainerModel(
-    plan.container.props,
-    plan.visible,
-    plan.model,
-    plan.onClose,
-  )
-
-  const content = plan.content
   const defaultSlot = content
     ? () =>
         h(
@@ -33,8 +24,8 @@ export function renderLayerTree({
         )
     : () => null
 
-  return h(plan.container.component, containerProps, {
+  return h(container.component, container.props, {
     default: defaultSlot,
-    ...plan.container.slots,
+    ...container.slots,
   })
 }

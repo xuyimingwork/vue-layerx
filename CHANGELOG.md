@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `LayerAdapter` signature is `(merged: LayerMerged) => LayerMerged` (was `(normalized: LayerNormalized) => LayerNormalized`). Adapter runs after merge, before bind.
+- **Breaking (internal):** Pipeline reordered to `merge → adapter → bind → render`. `defaultResolve` replaced by `bindLayerTree` (normalize + `closeOn` + `model` binding). `renderLayerTree` is pure `h()`; removed internal `LayerRenderPlan` type.
 - **Breaking:** `LayerTemplate` `:to` is required. Creator passes `defineLayer()` return value (`LayerDefine` with `inLayer` / `outsideLayer`); caller passes `LayerInstance`. Creator templates always register to `define:template.container`. Remove implicit creator path (`isInDirectLayerContent` / `CONTAINER_TEMPLATE_REGISTRY_KEY`).
 - **Breaking:** `defineLayer()` always returns `LayerDefine` (registers config only when `inLayer`); store attached via internal `LAYER_STORE` when in layer context.
 - **Breaking (internal):** Layer config store refactor: `layer-store.ts` with `createLayerStore` / `createLayerInstanceStore` / `createLayerViewStore`; `template({ key, name, entry })` replaces `registerContainerTemplate` / `registerContentTemplate`; `adapter` passed to `createLayerView` (not on store); merge via single `mergeFragment` in LayerView (remove `mergeLayerConfigStore`).

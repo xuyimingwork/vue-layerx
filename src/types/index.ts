@@ -9,7 +9,6 @@ export type {
   LayerNodeNormalized,
   LayerNormalized,
   LayerProps,
-  LayerRenderPlan,
   LayerConfigStatic,
   LayerConfigCreate,
   LayerConfigInstance,

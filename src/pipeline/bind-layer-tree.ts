@@ -1,19 +1,28 @@
 import type { LayerMerged, LayerNormalized } from '@/types/config'
+import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
+import { bindContainerModel } from '@/render/bind-container-model'
 import { bindCloseOn } from './bind-close-on'
 
-export interface ResolveContext {
+export interface BindLayerTreeContext {
   merged: LayerMerged
+  visible: boolean
   close: () => void
 }
 
-export function defaultResolve(ctx: ResolveContext): LayerNormalized {
-  const { merged, close } = ctx
+export function bindLayerTree(ctx: BindLayerTreeContext): LayerNormalized {
+  const { merged, visible, close } = ctx
 
   const contentComponent = merged.content.component
+  const model = merged.container.model ?? DEFAULT_CONTAINER_MODEL
 
   const containerNormalized = {
     component: merged.container.component!,
-    props: merged.container.props ?? {},
+    props: bindContainerModel(
+      merged.container.props ?? {},
+      visible,
+      model,
+      close,
+    ),
     slots: merged.container.slots ?? {},
   }
 
