@@ -1,7 +1,7 @@
 import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
 import { toFragmentFromStatic } from '@/pipeline/to-fragment'
-import { hasDirectLayerMarker } from '@/context/layer-marker'
+import { isLayerContent } from '@/content/layer-content'
 import { LAYER_DEFINE_KEY } from '@/di/injection-keys'
 import { attachLayerStore } from '@/instance/layer-internal'
 
@@ -14,7 +14,7 @@ export function isLayerDefine(to: object): to is LayerDefine {
 export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
   const ctx = inject(LAYER_DEFINE_KEY, null)
   const instance = getCurrentInstance()
-  const inLayer = !!(ctx && hasDirectLayerMarker(instance))
+  const inLayer = !!(ctx && isLayerContent(instance))
   const outsideLayer = !inLayer
 
   if (inLayer) ctx!.register(toFragmentFromStatic(config))

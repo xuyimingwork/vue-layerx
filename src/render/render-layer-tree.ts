@@ -1,5 +1,5 @@
 import { h, type VNode } from 'vue'
-import { LAYERX_DIRECT_CONTENT } from '@/constants/markers'
+import { LAYERX_LAYER_CONTENT } from '@/content/layer-content'
 import type { LayerRenderPlan } from '@/types'
 import { bindContainerModel } from './bind-container-model'
 
@@ -27,7 +27,7 @@ export function renderLayerTree({
           {
             ...content.props,
             key: contentMountKey,
-            [LAYERX_DIRECT_CONTENT]: true,
+            [LAYERX_LAYER_CONTENT]: true,
           },
           content.slots,
         )
