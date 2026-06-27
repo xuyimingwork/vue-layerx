@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
+import type {
+  LayerConfigFragment,
+  LayerTemplateEntry,
+} from '@/types/config'
+import type {
+  LayerInstanceStoreWithTemplate,
+  LayerViewStoreWithTemplate,
+} from '@/types/store'
 import {
   mergeFragment,
   toFragmentFromInstance,
   toFragmentFromStatic,
 } from '@/config/fragment'
-import {
-  type LayerInstanceStoreWithTemplate,
-  type LayerViewStoreWithTemplate,
-} from '@/runtime/layer-store'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerViewStore } from '@/runtime/layer-view'
 

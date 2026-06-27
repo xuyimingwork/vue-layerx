@@ -81,17 +81,17 @@ tests/
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
 | **types/** | 配置 / 实例 / Store 接口；ViewHost 类型断言 | `config.ts`、`instance.ts`、`store.ts`、`view-host.ts` |
-| **shared/** | 跨 api / view / runtime 的 Symbol 与无状态检测 | `contracts.ts` |
+| **shared/** | 跨层 Symbol 契约、store 附着、content 根检测 | `contracts.ts`、`layer-store-host.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts`、`container-model.ts` |
-| **runtime/** | store、instance 生命周期、portal 挂载、store 附着 | `layer-store.ts`、`layer-instance.ts`、`layer-internal.ts`、`layer-view-portal.ts` |
-| **view/** | Vue 组件与纯 `h()` 渲染 | `layer-view-component.ts`、`render-layer-tree.ts` |
+| **runtime/** | 响应式 store 工厂、instance 生命周期、portal 挂载 | `layer-store.ts`、`layer-instance.ts`、`layer-view.ts` |
+| **view/** | `LayerView` 组件（merge → adapter → bind → render 编排）与纯 `h()` 渲染 | `layer-view.ts`、`render-layer-tree.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
 各层 `__test__/` 与模块同目录；集成测试在 `tests/integration/`。
 
 ### 模块依赖
 
-上层只能依赖下层；**`config` 与 `runtime` 互不依赖**；**`view` 不依赖 `runtime`**（portal 与 store 创建在 runtime）。
+上层只能依赖下层；**`config` 不依赖 `runtime`**；**`view` 不依赖 `runtime`**（portal 与 store 创建在 runtime）。
 
 ```mermaid
 flowchart TB
@@ -105,12 +105,14 @@ flowchart TB
 
   index --> api
   index --> types
+  index --> config
   api --> runtime
   api --> config
   api --> shared
   api --> types
   runtime --> view
   runtime --> config
+  runtime --> shared
   runtime --> types
   view --> config
   view --> shared
@@ -125,25 +127,27 @@ flowchart TB
 | **shared/** | `types/` | `config`、`runtime`、`view`、`api` |
 | **config/** | `types/` | `shared`、`runtime`、`view`、`api` |
 | **view/** | `types/`、`config/`、`shared/` | `runtime`、`api` |
-| **runtime/** | `types/`、`config/`、`view/` | `api` |
+| **runtime/** | `types/`、`config/`、`shared/`、`view/` | `api` |
 | **api/** | 以上所有层 | — |
 
-**依赖规则**：`types` / `shared` / `config` 为底层；`view` 为纯渲染；`runtime` 编排 store + portal 并驱动 `LayerView`；`api` 在最外。
+**依赖规则**：`types` / `shared` / `config` 为底层；`view` 负责渲染编排；`runtime` 管理 store + portal 并驱动 `LayerView`；`api` 在最外。`defineLayer` / `LayerTemplate` 通过 `shared/layer-store-host` 访问 store，**不** import `runtime/`。
 
 #### 跨层依赖矩阵（生产代码）
 
 | Importer ↓ / Importee → | `types` | `shared` | `config` | `view` | `runtime` |
 |---------------------------|:-------:|:--------:|:--------:|:------:|:---------:|
-| **api** | ✓ | ✓ | ✓ | — | ✓ |
-| **runtime** | ✓ | — | ✓ | ✓ | internal |
+| **api** | ✓ | ✓ | ✓ | — | ✓（仅 `create-layer`） |
+| **runtime** | ✓ | ✓ | ✓ | ✓ | internal |
 | **view** | ✓ | ✓ | ✓ | internal | — |
 | **shared** | ✓ | — | — | — | — |
 | **config** | ✓ | — | internal | — | — |
 | **types** | — | — | — | — | — |
 
-**runtime → view**：`layer-view-portal` 挂载 `LayerView` 组件并创建 per-portal 的 `viewStore`（define / define:template）；`layer-instance` 只持有 instance store 并委托 portal。
+**runtime → view**：`runtime/layer-view.ts`（`createLayerView`）挂载 `view/layer-view.ts`（`LayerView` 组件）并创建 per-portal 的 `viewStore`（define / define:template）；`layer-instance` 持有 instance store 并委托 portal。
 
 **shared/contracts.ts**：`LAYER_DEFINE_KEY`（defineLayer inject / LayerView provide）、`LAYER_CONTENT` + `isLayerContent`（content 根检测）。类型 `LayerDefineRegistry` 在 `types/store.ts`。
+
+**shared/layer-store-host.ts**：`LAYER_STORE` + `attachLayerStore` / `resolveLayerStore`（`LayerInstance` 与 inLayer 的 `LayerDefine` 挂载 store，供 `LayerTemplate` 读取）。
 
 ### 与核心管线的对应
 
@@ -151,7 +155,7 @@ flowchart TB
 createLayer / defineLayer / LayerTemplate          api/
         │
         ▼
-createLayerInstance + layer-store + layer-view-portal    runtime/
+createLayerInstance + layer-store + createLayerView      runtime/
         │
         ▼
 LayerView → renderLayerTree                            view/
@@ -165,7 +169,7 @@ LayerView → renderLayerTree                            view/
 
 - **merge**：`config/fragment.ts`（`createFragment`、`toFragmentFrom*`、`mergeFragment`）+ `config/merge-node-config.ts`（node 级 merge 原语）。
 - **bind**：`config/bind-layer-tree.ts` 编排 `container-model`、`bind-close-on`。
-- **render**：`view/render-layer-tree.ts` 纯 `h()`；`layer-view-component.ts` 是唯一的 merge → adapter → bind → render 编排点。
+- **render**：`view/render-layer-tree.ts` 纯 `h()`；`view/layer-view.ts` 是唯一的 merge → adapter → bind → render 编排点。
 
 ---
 
@@ -179,7 +183,7 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 - **已打开时再次 `open(config?)`**：只更新 `store.open` tier 并下发新 props，**不** remount content。
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
-首次 `visible=true` 才挂载 portal（`layer-view-portal` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
+首次 `visible=true` 才挂载 portal（`createLayerView` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
 
 ### viewHost 与 bindHost（portal inject 上下文）
 
@@ -664,7 +668,7 @@ open > clone（clone 入参）> use > define > create
 - **`clone` tier**：仅 `clone(config)` 时写入，对该克隆实例持久。
 - **`use`**：创建父实例时传入的 config（含 `closeOn`、默认 `props` / `container.props` 等）。
 - 父实例某次 `open` 的 config **不**继承给克隆；克隆只带 `use` + 自己的 `clone` tier。
-- 克隆与父实例**共享同一工厂**及其 `adapter`；**各自独立 `layerRuntime`**（独立挂载点，`open` / `close` 互不影响 DOM）。
+- 克隆与父实例**共享同一工厂**及其 `adapter`；**各自独立 portal**（独立挂载点，`open` / `close` 互不影响 DOM）。
 - **`clone()` 等价于再 `useLayer` 一次**：完整新建 instance，继承 `create` / `adapter` / `use`，写入 `clone` tier，并在 setup 内自动 `bindHost()`；parent 的 bindHost 不影响 clone。
 
 ```ts
@@ -693,7 +697,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`create` / `use` / `open` / `use:template`）；**LayerView 内部 `createLayerViewStore`**（`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → bind。`:to` 注册通过 instance 私有 `Symbol` 访问 `store.template({ key: 'use:template.*', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `runtime/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template`）；**LayerView 内部 `createLayerViewStore`**（`runtime/layer-view.ts`；bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → bind。`:to` 注册通过 `shared/layer-store-host` 的 `LAYER_STORE` 访问 `store.template({ key: 'use:template.*', ... })`。
 
 ### merge 后字段来源示例
 
