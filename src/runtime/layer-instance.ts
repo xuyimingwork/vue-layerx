@@ -9,7 +9,7 @@ import { toFragmentFromInstance, mergeFragment, createFragment } from '@/config/
 import { attachLayerStore } from '@/runtime/layer-internal'
 import { createLayerView } from '@/runtime/layer-view'
 import type { ViewHost } from '@/types/view-host'
-import { createLayerStore } from '@/shared/layer-store'
+import { createLayerStore } from '@/runtime/layer-store'
 
 export function createLayerInstance({
   create,

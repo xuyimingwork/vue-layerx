@@ -8,7 +8,7 @@ import {
 import {
   type LayerInstanceStoreWithTemplate,
   type LayerViewStoreWithTemplate,
-} from '@/shared/layer-store'
+} from '@/runtime/layer-store'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerViewStore } from '@/runtime/layer-view'
 

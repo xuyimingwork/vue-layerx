@@ -9,7 +9,7 @@ import type {
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
 } from '@/types/store'
-import { createLayerStore } from '@/shared/layer-store'
+import { createLayerStore } from '@/runtime/layer-store'
 import { LayerView } from '@/view/layer-view'
 import { type ViewHost } from '@/types/view-host'
 import { createFragment } from '@/config/fragment'
