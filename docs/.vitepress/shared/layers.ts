@@ -13,27 +13,28 @@ function stripProps(props: Record<string, unknown> | undefined, ...keys: string[
   )
 }
 
-const detailAdapt: LayerAdapter = (merged) => {
+const detailAdapt: LayerAdapter = (fragment) => {
+  const container = fragment.container ?? {}
   const mobile =
     detailViewportMobile.value ||
     (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches)
 
   if (!mobile) {
     return {
-      ...merged,
+      ...fragment,
       container: {
-        ...merged.container,
-        props: stripProps(merged.container.props, 'size', 'direction'),
+        ...container,
+        props: stripProps(container.props, 'size', 'direction'),
       },
     }
   }
 
   return {
-    ...merged,
+    ...fragment,
     container: {
-      ...merged.container,
+      ...container,
       component: BaseDrawer,
-      props: stripProps(merged.container.props, 'width'),
+      props: stripProps(container.props, 'width'),
     },
   }
 }

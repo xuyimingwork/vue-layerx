@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   createFragment,
   mergeFragment,
+  stripFragment,
   toFragmentFromInstance,
   toFragmentFromStatic,
 } from '../fragment'
@@ -68,5 +69,29 @@ describe('mergeFragment', () => {
 
   it('returns empty fragment when all sources are empty', () => {
     expect(mergeFragment({}, undefined, null)).toEqual({})
+  })
+})
+
+describe('stripFragment', () => {
+  it('removes fields matching path predicate', () => {
+    expect(
+      stripFragment(
+        {
+          container: { props: { title: 'x', ref: vi.fn() } },
+          content: { props: { message: 'hi', ref: vi.fn() }, closeOn: ['done'] },
+        },
+        (path) => path.endsWith('.props.ref'),
+      ),
+    ).toEqual({
+      container: { props: { title: 'x' } },
+      content: { props: { message: 'hi' }, closeOn: ['done'] },
+    })
+  })
+
+  it('does not mutate input', () => {
+    const input = { content: { props: { ref: vi.fn(), a: 1 } } }
+    stripFragment(input, (path) => path.endsWith('.props.ref'))
+    expect(input.content?.props?.ref).toBeTypeOf('function')
+    expect(input.content?.props?.a).toBe(1)
   })
 })

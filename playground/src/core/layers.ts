@@ -1,44 +1,39 @@
 import { ElDialog, ElDrawer } from 'element-plus'
 import { createLayer } from 'vue-layerx'
 
-export const useDialog = createLayer(
-  ElDialog,
-  {
-    props: {
-      width: '480px',
-      destroyOnClose: true,
-      appendToBody: true,
-    },
+export const useDialog = createLayer(ElDialog, {
+  props: {
+    width: '480px',
+    destroyOnClose: true,
+    appendToBody: true,
   },
-  (normalized) => ({
-    ...normalized,
+  adapter: (fragment) => ({
+    ...fragment,
     container: {
-      ...normalized.container,
+      ...fragment.container,
       props: Object.fromEntries(
-        Object.entries(normalized.container.props).filter(([key]) => key !== 'direction'),
+        Object.entries(fragment.container?.props ?? {}).filter(([key]) => key !== 'direction'),
       ),
     },
   }),
-)
+})
 
-export const useDrawer = createLayer(
-  ElDrawer,
-  {
-    props: {
-      direction: 'rtl',
-      size: '360px',
-      destroyOnClose: true,
-      appendToBody: true,
-    },
+export const useDrawer = createLayer(ElDrawer, {
+  props: {
+    direction: 'rtl',
+    size: '360px',
+    destroyOnClose: true,
+    appendToBody: true,
   },
-  (normalized) => {
-    const { title, footer, ...rest } = normalized.container.slots
+  adapter: (fragment) => {
+    const container = fragment.container ?? {}
+    const { title, footer, ...rest } = container.slots ?? {}
     return {
-      ...normalized,
+      ...fragment,
       container: {
-        ...normalized.container,
+        ...container,
         props: Object.fromEntries(
-          Object.entries(normalized.container.props).filter(([key]) => key !== 'width'),
+          Object.entries(container.props ?? {}).filter(([key]) => key !== 'width'),
         ),
         slots: {
           ...rest,
@@ -48,7 +43,7 @@ export const useDrawer = createLayer(
       },
     }
   },
-)
+})
 
 export const useAlertDialog = createLayer(ElDialog, {
   props: {

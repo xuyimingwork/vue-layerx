@@ -1,3 +1,8 @@
+import {
+  isRef,
+  type ComponentPublicInstance,
+  type Ref,
+} from 'vue'
 import type {
   LayerConfigNode,
   LayerConfigContainer,
@@ -5,11 +10,56 @@ import type {
   LayerProps,
 } from '@/types/config'
 
+type RefCallback = (el: ComponentPublicInstance | null) => void
+
+function warnRef(message: string) {
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return
+  console.warn(`[vue-layerx] ${message}`)
+}
+
+function normalizeRef(value: unknown): RefCallback | undefined {
+  if (typeof value === 'function') {
+    return value as RefCallback
+  }
+  if (isRef(value)) {
+    const ref = value as Ref<ComponentPublicInstance | null>
+    return (el) => {
+      ref.value = el
+    }
+  }
+  if (typeof value === 'string') {
+    warnRef('string ref on layer props is not supported; ignored')
+    return undefined
+  }
+  if (value != null) {
+    warnRef('invalid props.ref value; ignored')
+    return undefined
+  }
+  return undefined
+}
+
+function composePropRef(prev: unknown, next: unknown): unknown {
+  const prevFn = normalizeRef(prev)
+  const nextFn = normalizeRef(next)
+  if (!prevFn) return nextFn ?? next
+  if (!nextFn) return prevFn
+  return (el: ComponentPublicInstance | null) => {
+    prevFn(el)
+    nextFn(el)
+  }
+}
+
 export function mergeProps(...sources: (LayerProps | undefined)[]): LayerProps {
   const result: LayerProps = {}
   for (const source of sources) {
     if (!source) continue
-    Object.assign(result, source)
+    for (const [key, value] of Object.entries(source)) {
+      if (key === 'ref') {
+        result.ref = composePropRef(result.ref, value)
+      } else {
+        result[key] = value
+      }
+    }
   }
   return result
 }

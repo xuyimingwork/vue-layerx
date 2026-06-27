@@ -41,20 +41,22 @@ UserDialog = MyDialog + UserForm
 每次 `open()`：**重建 content 子树**（setup 再跑，`defineLayer` / `LayerTemplate` 在当次上下文中重新注册），再执行：
 
 ```text
-① merge      open > clone > use > define > create  →  LayerMerged
-② adapt      该实例工厂的 createLayer adapter（可选）(merged) => LayerMerged
-③ bind       bindLayerTree(merged, visible, close)  →  LayerNormalized
-④ render     renderLayerTree(normalized)  →  h(...)
+① merge      open > use > define > create  →  LayerConfigFragment
+② adapt      该实例工厂的 createLayer adapter（可选）(fragment) => fragment
+③ refs       mergeFragment(store.refs, adapted)  // 框架 internal ref，refs 为第一源
+④ bind       bindLayerTree(fragment, visible, close)  →  LayerNormalized
+⑤ render     renderLayerTree(normalized)  →  h(...)
 ```
 
 - **merge**：各层贡献 **LayerConfigNode 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
-- **adapt**：在 **LayerMerged** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
-- **bind**：`bindLayerTree` 将 merge/adapt 结果归一化，并把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + `onUpdate:${model}`。
+- **adapt**：在 **LayerConfigFragment** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
+- **refs**：`store.refs` 桶在 adapter 之后合并；`props.ref` 链式 compose，internal 先于各 tier 用户 ref。
+- **bind**：`bindLayerTree` 将 merge/adapt/refs 结果归一化，并把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + `onUpdate:${model}`。
 - **render**：纯 `h()` 绑定 props / slots；**close 后再 open** 时 remount content；已打开时再次 `open()` 只更新 merge/props。
 
-使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域的 LayerMerged**；**bind 产出 LayerNormalized**（可直接 `h()`）。
+使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域 fragment**；**bind 产出 LayerNormalized**（可直接 `h()`）。
 
-`open` 可覆盖 merge 输入（含 `component`、`container.component`），但**不跳过 adapter**——仍走 merge → adapter → bind → render；adapter 可改回或替换 `container.component`。
+`open` 可覆盖 merge 输入（含 `component`、`container.component`），但**不跳过 adapter**——仍走 merge → adapter → refs → bind → render；adapter 可改回或替换 `container.component`。
 
 ---
 
@@ -274,10 +276,10 @@ type LayerConfigContainer = LayerConfigNode & { model?: string }
 /** content：closeOn = content emit → layer.close() */
 type LayerConfigContent = LayerConfigNode & { closeOn?: string[] }
 
-/** merge 完成后 */
-type LayerMerged = {
-  content: LayerConfigContent
-  container: LayerConfigContainer
+/** merge tier：两侧可选 */
+type LayerConfigFragment = {
+  content?: LayerConfigContent
+  container?: LayerConfigContainer
 }
 
 type LayerNodeNormalized = {
@@ -299,7 +301,7 @@ type LayerNormalized = {
 | **container** | 外层容器，如 `MyDialog` |
 | **content** | 内层业务组件，如 `UserForm` |
 | **UserDialog** | `useDialog(UserForm)` 构建的逻辑组合体：`MyDialog` + `UserForm` |
-| **Layer 实例** | `useDialog(UserForm)` 返回值 `{ open, close, clone, visible }` |
+| **Layer 实例** | `useDialog(UserForm)` 返回值；含 `open` / `close` / `clone` / `visible` / `contentRef` / `containerRef` |
 | **模板名 / 插槽名** | `LayerTemplate` 的 `name`，与目标组件 slot 同名，如 `title`、`footer` |
 | **direct layer content** | `useX` / `open` 绑定的根 content 组件；仅其内部 `:to="layer"` 的 `LayerTemplate` 进外层 MyDialog |
 
@@ -443,7 +445,7 @@ const layer = defineLayer({ props: { title: '...' } })
 **container 侧**
 
 1. UserForm 内 `:to="layer" name="title"` → define:template.container tier。
-2. **merge** 阶段：按 slot tier 合并（见下）；`LayerMerged.container.slots` 为最终结果。
+2. **merge** 阶段：按 slot tier 合并（见下）；`fragment.container.slots` 为最终结果。
 3. `h(MyDialog, props, bound.container.slots)` — MyDialog 无 `#title` 则不展示。
 
 **content 侧**
@@ -462,8 +464,8 @@ const layer = defineLayer({ props: { title: '...' } })
 | **defineLayer** | ✅ | `define` tier；顶层 `props` / `slots` = container | 选 `component`、适配容器 |
 | **useX(Content, config?)** | ✅ | `use` tier；使用侧片段、`closeOn`、可绑 Content | 适配 MyDialog |
 | **open(payload?)** | ✅ 最高 | 可覆盖 merge 一切，含 `component`、`container.component` | 仍走 adapter |
-| **bindLayerTree** | — | `LayerMerged` + runtime → `LayerNormalized` | 不参与优先级 |
-| **createLayer adapter** | — | `LayerMerged` → `LayerMerged` | 不实现 merge |
+| **bindLayerTree** | — | `LayerConfigFragment` + runtime → `LayerNormalized` | 不参与优先级 |
+| **createLayer adapter** | — | `LayerConfigFragment` → `LayerConfigFragment` | 不实现 merge |
 | **LayerTemplate** `:to="layer"` | ✅ define:template | content 内声明 container slot | — |
 | **LayerTemplate** `:to="instance"` | ✅ use:template.content | 远程 content slot | — |
 | **LayerTemplate** `:to="instance" container` | ✅ use:template.container | 远程 container slot；高于 creator | — |
@@ -506,7 +508,7 @@ const layer = defineLayer({
 注册容器，返回工厂（如 `useDialog`）。
 
 ```ts
-type LayerAdapter = (merged: LayerMerged) => LayerMerged
+type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
 
 type LayerConfigCreate = LayerConfigStatic & { adapter?: LayerAdapter }
 
@@ -632,7 +634,7 @@ xxx.open({
 })
 ```
 
-`open` 可改 `container.component`；merge 后仍走**创建该实例的工厂**所注册的 `adapter`（如 `useDialog` 的 adapter）。`adapter` 收到完整 `LayerMerged`，**可改回或改成别的 `container.component`**、改 `model` 等，以 adapter 返回为准。常规双容器仍推荐 `useDialog` / `useDrawer` 分工厂。
+`open` 可改 `container.component`；merge 后仍走**创建该实例的工厂**所注册的 `adapter`（如 `useDialog` 的 adapter）。`adapter` 收到 merge 后的 **fragment**，**可改回或改成别的 `container.component`**、改 `model` 等，以 adapter 返回为准。常规双容器仍推荐 `useDialog` / `useDrawer` 分工厂。
 
 **`open` 换 `container.component`** 属进阶能力：框架只提供 merge + adapter 钩子，**不替用户处理**容器差异（slot 名、model 协议等）；非常规需求下用户须在 `adapter` 内自行处理，或对默认 Layer 做二次封装。
 
@@ -652,32 +654,28 @@ interface LayerInstance {
   close(): void
   clone(config?: LayerConfigInstance): LayerInstance
   readonly visible: boolean
+  readonly contentRef: ComputedRef<ComponentPublicInstance | null>
+  readonly containerRef: ComputedRef<ComponentPublicInstance | null>
+  bindHost(): void
 }
 ```
 
+`contentRef` / `containerRef`：内部 `shallowRef` + `store.refs` 桶 `props.ref`；对外 `computed(() => visible ? target : null)`。`close()` 后立即可见为 `null`。
+
 ### `clone(config?)`
 
-`clone` 从当前实例派生**新实例**（独立 `visible`、独立 `open`/`close`），继承父实例的 **content 绑定**与 **`useX` 时的 config**；`config` 写入该克隆的 **`clone` tier**，在后续每次 `open` 的 merge 中生效。
-
-克隆实例 merge 优先级（在 `define`、`create` 之上多一层 `clone`）：
-
-```text
-open > clone（clone 入参）> use > define > create
-```
-
-- **`clone` tier**：仅 `clone(config)` 时写入，对该克隆实例持久。
-- **`use`**：创建父实例时传入的 config（含 `closeOn`、默认 `props` / `container.props` 等）。
-- 父实例某次 `open` 的 config **不**继承给克隆；克隆只带 `use` + 自己的 `clone` tier。
-- 克隆与父实例**共享同一工厂**及其 `adapter`；**各自独立 portal**（独立挂载点，`open` / `close` 互不影响 DOM）。
-- **`clone()` 等价于再 `useLayer` 一次**：完整新建 instance，继承 `create` / `adapter` / `use`，写入 `clone` tier，并在 setup 内自动 `bindHost()`；parent 的 bindHost 不影响 clone。
+`clone` 从当前实例派生**新实例**（独立 `visible`、独立 `open`/`close`、独立 `contentRef`/`containerRef`），继承工厂 `create` / `adapter`；父实例 **`use` tier** 与 `clone(config)` 在创建时折叠进子实例的 **`use`**：
 
 ```ts
-const base = useDialog(DetailContent, { closeOn: ['close'] })
-const wide = base.clone({ container: { props: { width: '640px' } } })
-
-wide.open({ props: { id: 1 } })
-// merge：open.props > clone.container.props.width > use.closeOn > …
+use: mergeFragment(
+  stripFragment(parent.use, (path) => path.endsWith('.props.ref')),
+  toFragmentFromInstance(config),
+)
 ```
+
+- **不继承**父 `use` 的 `props.ref`（避免多 instance 共享用户 `Ref`）；需要时在 `clone(config)` 显式传 `props.ref`。
+- 父实例某次 `open` 的 config **不**继承给克隆；克隆只带折叠后的 `use`。
+- **`clone()` 等价于再 `useLayer` 一次**：完整新建 instance，setup 内自动 `bindHost()`；parent 的 bindHost 不影响 clone。
 
 ---
 
@@ -691,13 +689,15 @@ wide.open({ props: { id: 1 } })
 open > use > use:template > define > define:template > create
 ```
 
-`LayerTemplate` 与命令式 `slots` **同构**：均为 `SlotRenderFn`，在 merge 阶段按 tier 合并。adapter 在 `LayerMerged.*.slots` 上整形；bind 透传 slots 并写入 props 绑定。
+`LayerTemplate` 与命令式 `slots` **同构**：均为 `SlotRenderFn`，在 merge 阶段按 tier 合并。adapter 在 `fragment.*.slots` 上整形；bind 透传 slots 并写入 props 绑定。
 
-`clone()` 派生实例：**无独立 `clone` tier**；`clone(config)` 时用 `mergeFragment(parent.use, config)` 写入新实例的 `use`（等效 clone 默认高于原 `use`、低于 `open`）。
+`clone()` 派生实例：**无独立 `clone` tier**；`clone(config)` 时用 `stripFragment` + `mergeFragment` 写入新实例的 `use`（等效 clone 默认高于原 `use`、低于 `open`）。`props.ref` 不继承，见上。
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `runtime/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template`）；**LayerView 内部 `createLayerViewStore`**（`runtime/layer-view.ts`；bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → bind。`:to` 注册通过 `shared/layer-store-host` 的 `LAYER_STORE` 访问 `store.template({ key: 'use:template.*', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `runtime/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerViewStore`**（`runtime/layer-view.ts`；bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。`:to` 注册通过 `shared/layer-store-host` 的 `LAYER_STORE` 访问 `store.template({ key: 'use:template.*', ... })`。
+
+`mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 
 ### merge 后字段来源示例
 
@@ -980,7 +980,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 1. **配置片段** merge：props/component 常规 `open > clone > use > define > create`；**slots** 含 LayerTemplate tier（见「配置 merge」）。
 2. **content / container 同构**（`LayerConfigNode`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
 3. **merge → adapter → bind → render**；每实例**单一** `adapter`；`open` 覆盖 merge 但不跳过 adapter；close 后再 open remount content。
-4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `LayerMerged.*.slots`；adapter 可搬 slot key；bind 透传。
+4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `fragment.*.slots`；adapter 可搬 slot key；bind 透传。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
 6. **`LayerTemplate`**：`:to` 必填；`:to="layer"` → define:template.container；`:to="instance"` → use:template.content；`:to="instance" container` → use:template.container。
 7. **容器 slot 名差异**在工厂 **`adapter`** 调整 `merged.container.slots`，不用 merge 名表。

@@ -11,6 +11,7 @@ export interface LayerInstanceStore {
   use: LayerConfigFragment
   open: LayerConfigFragment
   'use:template': LayerConfigFragment
+  refs: LayerConfigFragment
 }
 
 export interface LayerViewStore {
@@ -21,6 +22,7 @@ export interface LayerViewStore {
 export interface LayerInstanceStoreInit {
   create: LayerConfigFragment
   use?: LayerConfigFragment
+  refs?: LayerConfigFragment
 }
 
 type LayerStoreMethods = {

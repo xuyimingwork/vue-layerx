@@ -9,14 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`LayerInstance.contentRef` / `containerRef`**：`computed`，仅 `visible=true` 时非 null；命令式访问 content / container 组件实例（`expose` 与模板 ref 同语义）
+- **`stripFragment(fragment, shouldStrip)`**：按点分 path 浅拷贝并剔除字段；`clone()` 折叠 `use` 前 strip 父 `use` 的 `*.props.ref`，避免多 instance 共享用户 Ref
 - **`LayerInstance.bindHost()`**：将 detached portal 绑定到当前 setup 的 Host，使 content 能 inherit `provide` / `appContext`（`useLayer` 在 setup 内自动调用；模块单例在 App setup 手动调用）
 - LayerView provides 桥接：从 live `viewHost` 读取 `provides` 与 `appContext`
 - `LayerTemplate` **`container`** prop: with `:to`, register into container slot chain (remote MyDialog slots)
 
 ### Changed
 
-- **Breaking:** `LayerAdapter` signature is `(merged: LayerMerged) => LayerMerged` (was `(normalized: LayerNormalized) => LayerNormalized`). Adapter runs after merge, before bind.
-- **Breaking (internal):** Pipeline reordered to `merge → adapter → bind → render`. `defaultResolve` replaced by `bindLayerTree` (normalize + `closeOn` + `model` binding). `renderLayerTree` is pure `h()`; removed internal `LayerRenderPlan` type.
+- **Breaking:** `LayerAdapter` signature is `(fragment: LayerConfigFragment) => LayerConfigFragment`（移除 `LayerMerged` 类型）
+- **Breaking:** 管线增加 `mergeFragment(store.refs, adapted)`；`props.ref` 跨 tier **链式 compose**（`refs` 桶 internal ref 为第一源）；不支持 string ref
+- **Breaking:** `bindLayerTree` 入参 `merged` 改为 `fragment: LayerConfigFragment`
+- **Breaking:** 管线为 `merge → adapter → mergeFragment(refs, adapted) → bind → render`（`defaultResolve` replaced by `bindLayerTree`）
 - **Breaking:** `LayerTemplate` `:to` is required. Creator passes `defineLayer()` return value (`LayerDefine` with `inLayer` / `outsideLayer`); caller passes `LayerInstance`. Creator templates always register to `define:template.container`. Remove implicit creator path (`isInDirectLayerContent` / `CONTAINER_TEMPLATE_REGISTRY_KEY`).
 - **Breaking:** `defineLayer()` always returns `LayerDefine` (registers config only when `inLayer`); store attached via internal `LAYER_STORE` when in layer context.
 - **Breaking (internal):** Layer config store refactor: `layer-store.ts` with `createLayerStore` / `createLayerInstanceStore` / `createLayerViewStore`; `template({ key, name, entry })` replaces `registerContainerTemplate` / `registerContentTemplate`; `adapter` passed to `createLayerView` (not on store); merge via single `mergeFragment` in LayerView (remove `mergeLayerConfigStore`).

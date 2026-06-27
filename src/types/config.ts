@@ -47,12 +47,6 @@ export type LayerConfigInstance = LayerConfigContent & {
   container?: LayerConfigContainer
 }
 
-/** merge phase output */
-export interface LayerMerged {
-  content: LayerConfigContent
-  container: LayerConfigContainer
-}
-
 /** bind output — props include closeOn / model bindings, ready for h() */
 export interface LayerNodeNormalized {
   component: Component
@@ -65,7 +59,7 @@ export interface LayerNormalized {
   container: LayerNodeNormalized
 }
 
-export type LayerAdapter = (merged: LayerMerged) => LayerMerged
+export type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
 
 /** createLayer second argument only; adapter is not valid on defineLayer / use / open / clone */
 export type LayerConfigCreate = LayerConfigStatic & {

@@ -85,15 +85,11 @@ export const LayerView = defineComponent({
         props.store.open,
       )
 
-      const merged = {
-        container: fragment.container ?? {},
-        content: fragment.content ?? {},
-      }
-
       const close = () => emit('update:visible', false)
 
-      const adapted = props.adapter ? props.adapter(merged) : merged
-      const bound = bindLayerTree({ merged: adapted, visible: props.visible, close })
+      const adapted = props.adapter ? props.adapter(fragment) : fragment
+      const withRefs = mergeFragment(props.store.refs, adapted)
+      const bound = bindLayerTree({ fragment: withRefs, visible: props.visible, close })
 
       return renderLayerTree({
         container: bound.container,

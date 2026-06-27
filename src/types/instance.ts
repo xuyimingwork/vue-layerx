@@ -1,3 +1,4 @@
+import type { ComputedRef, ComponentPublicInstance } from 'vue'
 import type { LayerConfigInstance } from './config'
 
 export interface LayerTemplateScope<
@@ -21,6 +22,8 @@ export interface LayerInstance {
   unmount: () => void
   clone: (config?: LayerConfigInstance) => LayerInstance
   readonly visible: boolean
+  readonly contentRef: ComputedRef<ComponentPublicInstance | null>
+  readonly containerRef: ComputedRef<ComponentPublicInstance | null>
   /** Bind portal inherit context to current setup host; no-op if already bound or outside setup */
   bindHost: () => void
 }

@@ -83,11 +83,15 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 | `open(config?)` | 打开弹层；关闭后再打开会重建 content；已打开时 open 更新配置 |
 | `close()` | 关闭（不卸 DOM 挂载点） |
 | `unmount()` | 卸 portal DOM；**不**清 viewHost |
-| `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier；setup 内自动 `bindHost()` |
+| `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier（**不继承**父 `use` 的 `props.ref`）；setup 内自动 `bindHost()` |
+| `contentRef` | 只读 computed；打开时指向 content 组件实例，关闭后为 `null` |
+| `containerRef` | 只读 computed；打开时指向 container 组件实例，关闭后为 `null` |
 | `visible` | 只读是否打开 |
 | `bindHost()` | 绑定**本 instance** 当前 setup Host 的 provide / appContext；重复调用 no-op；`useLayer` 在 setup 内自动调用 |
 
 **全局单例**（模块 `export const messageBox = useLayer(...)`）须在 App 或 `ElConfigProvider` **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject ConfigProvider。
+
+`props.ref`（`use` / `open` / `defineLayer` 的 props）与各 tier merge 时 **链式执行**；命令式场景推荐 `contentRef` / `containerRef`。`clone()` 不传 `props.ref` 时不会继承父 instance `use` tier 的用户 ref，需在 `clone(config)` 显式传入。
 
 ## 教程
 

@@ -8,7 +8,7 @@ const Content = defineComponent({ name: 'Content', setup: () => () => null })
 describe('bindLayerTree', () => {
   it('omits content when no content component is merged', () => {
     const bound = bindLayerTree({
-      merged: {
+      fragment: {
         content: {},
         container: { component: Container, props: { title: 'Shell' } },
       },
@@ -27,7 +27,7 @@ describe('bindLayerTree', () => {
 
   it('resolves content from merged use tier', () => {
     const bound = bindLayerTree({
-      merged: {
+      fragment: {
         content: { component: Content },
         container: { component: Container },
       },
@@ -42,7 +42,7 @@ describe('bindLayerTree', () => {
   it('binds closeOn into content props', () => {
     const close = vi.fn()
     const bound = bindLayerTree({
-      merged: {
+      fragment: {
         content: { component: Content, closeOn: ['done'] },
         container: { component: Container },
       },
@@ -57,7 +57,7 @@ describe('bindLayerTree', () => {
   it('binds custom model prop on container', () => {
     const close = vi.fn()
     const bound = bindLayerTree({
-      merged: {
+      fragment: {
         content: {},
         container: { component: Container, model: 'open' },
       },
@@ -74,7 +74,7 @@ describe('bindLayerTree', () => {
   it('binds closeOn and model together', () => {
     const close = vi.fn()
     const bound = bindLayerTree({
-      merged: {
+      fragment: {
         content: { component: Content, closeOn: ['save'] },
         container: { component: Container, model: 'visible' },
       },

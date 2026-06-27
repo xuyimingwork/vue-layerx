@@ -5,7 +5,6 @@ export type {
   LayerConfigContainer,
   LayerConfigContent,
   LayerConfigNode,
-  LayerMerged,
   LayerNodeNormalized,
   LayerNormalized,
   LayerProps,
