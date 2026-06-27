@@ -20,7 +20,6 @@ import { createLayerViewStore } from '@/instance/layer-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
-  CONTAINER_TEMPLATE_REGISTRY_KEY,
 } from '@/di/injection-keys'
 import { asViewHost, type ViewHost } from './view-host'
 
@@ -78,9 +77,8 @@ export function createLayerView(options: {
         register(fragment: LayerConfigFragment) {
           viewStore.define = fragment
         },
+        store: viewStore,
       })
-
-      provide(CONTAINER_TEMPLATE_REGISTRY_KEY, { template: viewStore.template })
 
       return () => {
         store.track()

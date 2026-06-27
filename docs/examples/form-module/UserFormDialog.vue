@@ -16,7 +16,7 @@ const emit = defineEmits<{
 const name = ref(props.initialName ?? '')
 const submitting = ref(false)
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
     width: '480px',
@@ -51,7 +51,7 @@ async function handleSubmit() {
   </ElForm>
 
   <!-- 弹层：主操作挂 AppDialog #footer；页内：visible-outside 落在表单下 -->
-  <LayerTemplate name="footer" visible-outside>
+  <LayerTemplate :to="layer" name="footer" visible-outside>
     <template #default="{ inLayer, outsideLayer }">
       <div v-if="outsideLayer" class="inline-actions">
         <ElButton type="primary" :loading="submitting" @click="handleSubmit">保存</ElButton>

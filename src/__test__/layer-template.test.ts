@@ -2,7 +2,7 @@ import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { LayerTemplateScope } from '@/types'
-import { createLayer, LayerTemplate } from '@/index'
+import { createLayer, defineLayer, LayerTemplate } from '@/index'
 import { Container } from '@/__test__/fixtures/components'
 import { LayerTemplate as LayerTemplateComponent } from '../layer-template'
 
@@ -15,8 +15,9 @@ describe('LayerTemplate', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
+          const layer = defineLayer()
           return () =>
-            h(LayerTemplateComponent, { name: 'footer' }, () =>
+            h(LayerTemplateComponent, { to: layer, name: 'footer' }, () =>
               h('button', { class: 'footer-btn' }, 'footer'),
             )
         },
@@ -29,10 +30,11 @@ describe('LayerTemplate', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
+          const layer = defineLayer()
           return () =>
             h(
               LayerTemplateComponent,
-              { name: 'footer', visibleOutside: true },
+              { to: layer, name: 'footer', visibleOutside: true },
               ({ outsideLayer, inLayer, slotProps }: LayerTemplateScope) => [
                 h('span', { class: 'scope-outside' }, String(outsideLayer)),
                 h('span', { class: 'scope-layer' }, String(inLayer)),
@@ -120,9 +122,10 @@ describe('LayerTemplate', () => {
     const Content = defineComponent({
       name: 'ContentWithCreatorFooter',
       setup() {
+        const layer = defineLayer()
         return () =>
           h('div', { class: 'content' }, [
-            h(LayerTemplate, { name: 'footer' }, () =>
+            h(LayerTemplate, { to: layer, name: 'footer' }, () =>
               h('span', { class: 'creator-footer' }, 'creator'),
             ),
           ])

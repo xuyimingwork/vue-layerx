@@ -16,7 +16,7 @@ const emit = defineEmits<{
 
 const name = ref(props.initialName ?? '')
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
   },
@@ -54,7 +54,7 @@ function cancel() {
     </ElFormItem>
   </ElForm>
 
-  <LayerTemplate name="footer" visible-outside>
+  <LayerTemplate :to="layer" name="footer" visible-outside>
     <template #default="{ inLayer, outsideLayer }">
       <div :class="['form-footer', { 'form-footer--inline': outsideLayer }]">
         <ElTag v-if="outsideLayer" size="small" type="info" effect="plain">

@@ -9,6 +9,12 @@ export interface LayerTemplateScope<
   slotProps: T
 }
 
+/** Returned by defineLayer(); store attached via LAYER_STORE when inLayer */
+export interface LayerDefine {
+  readonly inLayer: boolean
+  readonly outsideLayer: boolean
+}
+
 export interface LayerInstance {
   open: (config?: LayerConfigInstance) => void
   close: () => void

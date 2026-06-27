@@ -19,4 +19,4 @@ export type {
 
 export { DEFAULT_CONTAINER_MODEL } from './config'
 
-export type { LayerInstance, LayerTemplateScope } from './instance'
+export type { LayerInstance, LayerDefine, LayerTemplateScope } from './instance'

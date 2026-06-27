@@ -1,11 +1,12 @@
 export { createLayer } from './create-layer'
-export { defineLayer } from './define-layer'
+export { defineLayer, isLayerDefine } from './define-layer'
 export { LayerTemplate } from './layer-template'
 export type {
   LayerAdapter,
   CloseOnConfig,
   LayerConfigFragment,
   LayerInstance,
+  LayerDefine,
   LayerConfigInstance,
   LayerConfigNodeBase,
   LayerConfigNodeContainer,

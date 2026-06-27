@@ -15,7 +15,7 @@ const emit = defineEmits<{
 const content = ref(props.initialContent ?? '')
 const dirty = computed(() => content.value !== (props.initialContent ?? ''))
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: '编辑草稿',
     beforeClose: (done: () => void) => {
@@ -51,7 +51,7 @@ function cancel() {
   <ElInput v-model="content" type="textarea" :rows="4" placeholder="写点什么..." />
   <p v-if="dirty" class="dirty">● 有未保存修改</p>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton type="primary" :disabled="!dirty" @click="save">保存</ElButton>
     <ElButton @click="cancel">取消</ElButton>
   </LayerTemplate>

@@ -23,17 +23,17 @@ export function makeContent(withLayer = false) {
     props: { message: String },
     emits: ['done', 'cancel'],
     setup(props, { emit }) {
-      if (withLayer) {
-        defineLayer({
-          props: { title: 'FromLayer', width: '600px' },
-        })
-      }
+      const layer = withLayer
+        ? defineLayer({
+            props: { title: 'FromLayer', width: '600px' },
+          })
+        : null
 
       return () =>
         h('motion-div', { class: 'content' }, [
           h('span', { class: 'msg' }, props.message),
-          withLayer
-            ? h(LayerTemplate, { name: 'footer' }, () =>
+          layer
+            ? h(LayerTemplate, { to: layer, name: 'footer' }, () =>
                 h('button', { class: 'footer-btn' }, 'footer'),
               )
             : null,

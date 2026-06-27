@@ -22,7 +22,7 @@ const epSize = useGlobalConfig('size', 'default')
 const epLocale = useGlobalConfig('locale')
 const epLocaleName = computed(() => epLocale.value?.name ?? 'unknown')
 
-defineLayer({
+const layer = defineLayer({
   props: { title: 'Provide / Inject · ConfigProvider' },
 })
 
@@ -63,7 +63,7 @@ const configHint = computed(() =>
   <p class="demo-note">Pagination 文案随 locale 变化（共 xx 条 / Total）</p>
   <ElPagination :total="50" :page-size="10" layout="total, prev, pager, next" />
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton @click="emit('close')">关闭</ElButton>
   </LayerTemplate>
 </template>

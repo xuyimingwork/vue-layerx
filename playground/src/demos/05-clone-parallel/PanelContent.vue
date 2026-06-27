@@ -13,7 +13,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: props.instanceId === 'A' ? '实例 A（base）' : '实例 B（clone）',
   },
@@ -38,7 +38,7 @@ function onActionClick() {
     </ElButton>
   </div>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton v-if="instanceId === 'A' && onOpenB" type="warning" @click="onOpenB">
       从 A 打开 B（不关 A）
     </ElButton>

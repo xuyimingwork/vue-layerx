@@ -1,28 +1,13 @@
 import {
   defineComponent,
-  getCurrentInstance,
-  inject,
   type PropType,
   type VNode,
 } from 'vue'
-import type { LayerInstance } from '@/types'
-import { isInDirectLayerContent } from '@/context/in-layer-content'
-import {
-  CONTAINER_TEMPLATE_REGISTRY_KEY,
-  type ContainerTemplateRegistry,
-} from '@/di/injection-keys'
+import type { LayerDefine, LayerInstance } from '@/types'
+import { isLayerDefine } from '@/define-layer'
 import { resolveLayerStore } from '@/instance/layer-internal'
-import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
 
-function useLayerInstanceStore(
-  instance: LayerInstance,
-): LayerInstanceStoreWithTemplate {
-  return resolveLayerStore(instance)
-}
-
-function useLayerViewStore(): ContainerTemplateRegistry | null {
-  return inject(CONTAINER_TEMPLATE_REGISTRY_KEY, null)
-}
+export type LayerTemplateTo = LayerInstance | LayerDefine
 
 export const LayerTemplate = defineComponent({
   name: 'LayerTemplate',
@@ -32,10 +17,10 @@ export const LayerTemplate = defineComponent({
       required: true,
     },
     to: {
-      type: Object as PropType<LayerInstance>,
-      default: undefined,
+      type: Object as PropType<LayerTemplateTo>,
+      required: true,
     },
-    /** With `:to`, register into container slot chain instead of content slot chain */
+    /** With LayerInstance `:to`, register into container slot chain instead of content slot chain */
     container: {
       type: Boolean,
       default: false,
@@ -46,44 +31,37 @@ export const LayerTemplate = defineComponent({
     },
   },
   setup(props, { slots }) {
-    const instance = getCurrentInstance()
+    const to = props.to
 
-    if (props.to) {
-      useLayerInstanceStore(props.to).template({
-        key: props.container ? 'use:template.container' : 'use:template.content',
-        name: props.name,
-        entry: {
-          render: (slotProps = {}) => slots.default?.(slotProps) ?? null,
-        },
-      })
-      return () => null
-    }
-
-    if (isInDirectLayerContent(instance)) {
-      useLayerViewStore()?.template({
-        key: 'define:template.container',
-        name: props.name,
-        entry: {
-          render: (slotProps = {}) =>
-            slots.default?.({
-              slotProps,
-              inLayer: true,
-              outsideLayer: false,
-            }) ?? null,
-        },
-      })
-      return () => null
-    }
-
-    return (): VNode | VNode[] | null => {
-      if (!props.visibleOutside) return null
-      return (
+    if (isLayerDefine(to) && to.outsideLayer) {
+      if (!props.visibleOutside) return () => null
+      return (): VNode | VNode[] | null =>
         slots.default?.({
+          inLayer: to.inLayer,
+          outsideLayer: to.outsideLayer,
           slotProps: {},
-          inLayer: false,
-          outsideLayer: true,
         }) ?? null
-      )
     }
+
+    const store = resolveLayerStore(to)
+    const define = isLayerDefine(to)
+    const key = define
+      ? 'define:template.container'
+      : props.container
+        ? 'use:template.container'
+        : 'use:template.content'
+
+    const render = define
+      ? (slotProps: Record<string, unknown> = {}) =>
+          slots.default?.({
+            slotProps,
+            inLayer: to.inLayer,
+            outsideLayer: to.outsideLayer,
+          }) ?? null
+      : (slotProps: Record<string, unknown> = {}) =>
+          slots.default?.(slotProps ?? {}) ?? null
+
+    store.template({ key, name: props.name, entry: { render } })
+    return () => null
   },
 })

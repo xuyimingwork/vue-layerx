@@ -23,7 +23,7 @@ const title = computed(() => {
   return map[props.tone]
 })
 
-defineLayer({
+const layer = defineLayer({
   props: { title: title.value },
 })
 </script>
@@ -31,7 +31,7 @@ defineLayer({
 <template>
   <p :class="['message', `message--${tone}`]">{{ message }}</p>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton type="primary" @click="emit('confirm')">知道了</ElButton>
   </LayerTemplate>
 </template>

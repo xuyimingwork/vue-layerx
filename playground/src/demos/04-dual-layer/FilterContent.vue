@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 const status = ref<string[]>([...(props.initialStatus ?? ['active'])])
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: '筛选条件',
     width: '420px',
@@ -43,7 +43,7 @@ function reset() {
     </ElFormItem>
   </ElForm>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton type="primary" @click="apply">应用</ElButton>
     <ElButton @click="reset">重置</ElButton>
   </LayerTemplate>

@@ -12,7 +12,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-defineLayer({
+const layer = defineLayer({
   props: { title: '用户详情' },
 })
 </script>
@@ -24,7 +24,7 @@ defineLayer({
     <ElDescriptionsItem label="角色">{{ role }}</ElDescriptionsItem>
   </ElDescriptions>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton @click="emit('close')">关闭</ElButton>
   </LayerTemplate>
 </template>

@@ -6,7 +6,7 @@ const emit = defineEmits<{
   confirm: []
 }>()
 
-defineLayer({
+const layer = defineLayer({
   props: { title: '删除确认', width: '400px' },
   content: { closeOn: ['confirm'] },
 })
@@ -15,7 +15,7 @@ defineLayer({
 <template>
   <p class="body">确定删除这条记录吗？此操作不可撤销。</p>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton type="danger" @click="emit('confirm')">删除</ElButton>
   </LayerTemplate>
 </template>

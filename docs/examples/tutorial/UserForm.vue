@@ -26,7 +26,7 @@ const snapshot = computed(() => props.initialName ?? '')
 const dirty = computed(() => name.value !== snapshot.value)
 const readonly = computed(() => props.mode === 'view')
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title:
       props.mode === 'view'
@@ -86,7 +86,7 @@ async function handleSubmit() {
   </ElForm>
 
   <!-- §4 引入 visible-outside；view 模式无 footer -->
-  <LayerTemplate v-if="mode !== 'view'" name="footer" visible-outside>
+  <LayerTemplate :to="layer" v-if="mode !== 'view'" name="footer" visible-outside>
     <template #default="{ inLayer, outsideLayer }">
       <div v-if="outsideLayer" class="inline-actions">
         <ElButton type="primary" :loading="submitting" @click="handleSubmit">

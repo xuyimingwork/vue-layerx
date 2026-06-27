@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** `LayerTemplate` `:to` is required. Creator passes `defineLayer()` return value (`LayerDefine` with `inLayer` / `outsideLayer`); caller passes `LayerInstance`. Creator templates always register to `define:template.container`. Remove implicit creator path (`isInDirectLayerContent` / `CONTAINER_TEMPLATE_REGISTRY_KEY`).
+- **Breaking:** `defineLayer()` always returns `LayerDefine` (registers config only when `inLayer`); store attached via internal `LAYER_STORE` when in layer context.
 - **Breaking (internal):** Layer config store refactor: `layer-store.ts` with `createLayerStore` / `createLayerInstanceStore` / `createLayerViewStore`; `template({ key, name, entry })` replaces `registerContainerTemplate` / `registerContentTemplate`; `adapter` passed to `createLayerView` (not on store); merge via single `mergeFragment` in LayerView (remove `mergeLayerConfigStore`).
 - **Breaking (internal):** Unified merge priority: `open > use > use:template > define > define:template > create` (container/content same chain). `clone()` folds config into `use` at clone time (no `clone` store bucket).
 - **Breaking:** `open()` while already visible updates merge/props only; content remounts on **close then open** (not on every `open()`).

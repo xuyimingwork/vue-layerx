@@ -6,7 +6,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-defineLayer({
+const layer = defineLayer({
   props: { title: '你好，vue-layerx' },
   content: { closeOn: ['close'] },
 })
@@ -15,7 +15,7 @@ defineLayer({
 <template>
   <p class="message">调用方三行即可；标题与 closeOn 由 content 内 defineLayer 声明。</p>
 
-  <LayerTemplate name="footer">
+  <LayerTemplate :to="layer" name="footer">
     <ElButton type="primary" @click="emit('close')">关闭</ElButton>
   </LayerTemplate>
 </template>

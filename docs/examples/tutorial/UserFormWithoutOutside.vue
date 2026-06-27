@@ -22,7 +22,7 @@ const snapshot = computed(() => props.initialName ?? '')
 const dirty = computed(() => name.value !== snapshot.value)
 const readonly = computed(() => props.mode === 'view')
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title:
       props.mode === 'view'
@@ -71,7 +71,7 @@ async function handleSubmit() {
   </ElForm>
 
   <!-- 无 visible-outside：footer 只在弹层 inLayer 时出现 -->
-  <LayerTemplate v-if="mode !== 'view'" name="footer">
+  <LayerTemplate :to="layer" v-if="mode !== 'view'" name="footer">
     <ElButton type="primary" :loading="submitting" @click="handleSubmit">
       {{ mode === 'edit' ? '保存' : '创建' }}
     </ElButton>

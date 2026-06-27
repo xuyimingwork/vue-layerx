@@ -534,7 +534,7 @@ describe('createLayer (integration)', () => {
     const InnerContent = defineComponent({
       name: 'InnerContent',
       setup() {
-        defineLayer({
+        const layer = defineLayer({
           props: { title: 'InnerShouldNotApply' },
         })
 
@@ -542,7 +542,7 @@ describe('createLayer (integration)', () => {
           h('div', { class: 'inner' }, [
             h(
               LayerTemplate,
-              { name: 'footer', visibleOutside: true },
+              { to: layer, name: 'footer', visibleOutside: true },
               ({ inLayer, outsideLayer, slotProps }: LayerTemplateScope) => [
                 h('span', { class: 'inner-in-layer' }, String(inLayer)),
                 h('span', { class: 'inner-outside-layer' }, String(outsideLayer)),
@@ -557,7 +557,7 @@ describe('createLayer (integration)', () => {
     const OuterContent = defineComponent({
       name: 'OuterContent',
       setup() {
-        defineLayer({
+        const layer = defineLayer({
           props: { title: 'OuterTitle' },
         })
 
@@ -565,7 +565,7 @@ describe('createLayer (integration)', () => {
           h('div', { class: 'outer' }, [
             h('span', { class: 'outer-msg' }, 'outer'),
             h(InnerContent),
-            h(LayerTemplate, { name: 'footer' }, () =>
+            h(LayerTemplate, { to: layer, name: 'footer' }, () =>
               h('button', { class: 'outer-footer' }, 'outer'),
             ),
           ])
@@ -599,12 +599,13 @@ describe('createLayer (integration)', () => {
       name: 'ContentWithScopeCapture',
       props: { message: String },
       setup(props) {
+        const layer = defineLayer()
         return () =>
           h('motion-div', { class: 'content' }, [
             h('span', { class: 'msg' }, props.message),
             h(
               LayerTemplate,
-              { name: 'footer' },
+              { to: layer, name: 'footer' },
               (templateScope: LayerTemplateScope) => {
                 captured = templateScope
                 return h('button', { class: 'footer-btn' }, 'footer')
@@ -689,10 +690,11 @@ describe('createLayer (integration)', () => {
     const Content = defineComponent({
       name: 'ContentWithLayerScopedFooter',
       setup() {
+        const layer = defineLayer()
         return () =>
           h(
             LayerTemplate,
-            { name: 'footer' },
+            { to: layer, name: 'footer' },
             (templateScope: LayerTemplateScope) => {
               captured = templateScope
               return h(
