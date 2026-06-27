@@ -2,7 +2,6 @@ import type {
   LayerConfigNodeBase,
   LayerConfigNodeContainer,
   LayerConfigNodeContent,
-  LayerConfigFragment,
   LayerProps,
 } from '@/types/config'
 
@@ -48,16 +47,4 @@ export function mergeContentNode(
     if (source?.closeOn !== undefined) result.closeOn = source.closeOn
   }
   return result
-}
-
-/** Merge fragments; later sources win per side. */
-export function mergeFragment(
-  ...sources: (LayerConfigFragment | null | undefined)[]
-): LayerConfigFragment {
-  const container = mergeContainerNode(...sources.map((s) => s?.container))
-  const content = mergeContentNode(...sources.map((s) => s?.content))
-  const fragment: LayerConfigFragment = {}
-  if (Object.keys(container).length > 0) fragment.container = container
-  if (Object.keys(content).length > 0) fragment.content = content
-  return fragment
 }

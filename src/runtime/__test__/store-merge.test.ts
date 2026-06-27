@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
-import { mergeFragment } from '@/config/merge-node-config'
-import { toFragmentFromInstance, toFragmentFromStatic } from '../to-fragment'
+import {
+  mergeFragment,
+  toFragmentFromInstance,
+  toFragmentFromStatic,
+} from '@/config/fragment'
 import {
   createLayerInstanceStore,
   createLayerViewStore,
@@ -47,26 +50,6 @@ function mergeLayerStores(
     content: fragment.content ?? {},
   }
 }
-
-describe('mergeFragment', () => {
-  it('merges container and content sides with later wins', () => {
-    const A = {} as never
-    const B = {} as never
-    expect(
-      mergeFragment(
-        { container: { model: 'a', props: { width: '400px' } } },
-        { container: { model: 'b', props: { title: 'hi' } } },
-        { container: { component: A } },
-      ),
-    ).toEqual({
-      container: { model: 'b', props: { title: 'hi', width: '400px' }, component: A },
-    })
-  })
-
-  it('returns empty fragment when all sources are empty', () => {
-    expect(mergeFragment({}, undefined, null)).toEqual({})
-  })
-})
 
 describe('layer store merge', () => {
   it('merges container props with priority open > use > define > create', () => {

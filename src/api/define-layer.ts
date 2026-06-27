@@ -1,6 +1,6 @@
 import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
-import { toFragmentFromStatic } from '@/config/to-fragment'
+import { toFragmentFromStatic } from '@/config/fragment'
 import { isLayerContent } from '@/view/layer-content'
 import { LAYER_DEFINE_KEY } from '@/view/injection-keys'
 import { attachLayerStore } from '@/runtime/layer-internal'

@@ -5,8 +5,8 @@ import type {
   LayerViewStoreWithTemplate,
   TemplateSlotKey,
 } from '@/types/store'
-import type { LayerTemplateEntry } from '@/types/config'
-import { createLayerFragment, type LayerFragment } from '@/runtime/layer-fragment'
+import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
+import { createFragment } from '@/config/fragment'
 
 export type {
   TemplateSlotKey,
@@ -45,7 +45,7 @@ function parseTemplateKey(key: TemplateSlotKey): {
 }
 
 function ensureSlots(
-  bucket: LayerFragment,
+  bucket: LayerConfigFragment,
   side: 'container' | 'content',
 ): Record<string, LayerTemplateEntry['render']> {
   if (side === 'container') {
@@ -59,7 +59,7 @@ function ensureSlots(
 }
 
 function trackFragmentBuckets(
-  store: Record<string, LayerFragment>,
+  store: Record<string, LayerConfigFragment>,
   bucketKeys: string[],
 ): void {
   for (const key of bucketKeys) {
@@ -82,7 +82,7 @@ function trackFragmentBuckets(
   }
 }
 
-function createLayerStore<T extends Record<string, LayerFragment>>(
+function createLayerStore<T extends Record<string, LayerConfigFragment>>(
   init: T,
 ): UnwrapNestedRefs<T> & LayerStoreMethods {
   const bucketKeys = Object.keys(init)
@@ -98,7 +98,7 @@ function createLayerStore<T extends Record<string, LayerFragment>>(
     entry: LayerTemplateEntry
   }) => {
     const { bucket, side } = parseTemplateKey(key)
-    const fragment = (store as Record<string, LayerFragment>)[bucket]
+    const fragment = (store as Record<string, LayerConfigFragment>)[bucket]
     if (!fragment) return
     const slots = ensureSlots(fragment, side)
     if (slots[name]) warnDuplicate(name, key)
@@ -106,7 +106,7 @@ function createLayerStore<T extends Record<string, LayerFragment>>(
   }
 
   const track = () => {
-    trackFragmentBuckets(store as Record<string, LayerFragment>, bucketKeys)
+    trackFragmentBuckets(store as Record<string, LayerConfigFragment>, bucketKeys)
   }
 
   return Object.assign(store, { template, track }) as UnwrapNestedRefs<T> &
@@ -117,16 +117,16 @@ export function createLayerInstanceStore(
   init: LayerInstanceStoreInit,
 ): LayerInstanceStoreWithTemplate {
   return createLayerStore({
-    create: createLayerFragment(init.create),
-    use: createLayerFragment(init.use),
-    open: createLayerFragment(),
-    'use:template': createLayerFragment(),
+    create: createFragment(init.create),
+    use: createFragment(init.use),
+    open: createFragment(),
+    'use:template': createFragment(),
   })
 }
 
 export function createLayerViewStore(): LayerViewStoreWithTemplate {
   return createLayerStore({
-    define: createLayerFragment(),
-    'define:template': createLayerFragment(),
+    define: createFragment(),
+    'define:template': createFragment(),
   })
 }

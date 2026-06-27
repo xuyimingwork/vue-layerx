@@ -6,10 +6,9 @@ import {
   watch,
   type PropType,
 } from 'vue'
-import { mergeFragment } from '@/config/merge-node-config'
+import { mergeFragment, createFragment } from '@/config/fragment'
 import { bindLayerTree } from '@/config/bind-layer-tree'
 import type { LayerAdapter, LayerConfigFragment } from '@/types'
-import { createLayerFragment } from '@/runtime/layer-fragment'
 import type {
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
@@ -50,8 +49,8 @@ export const LayerView = defineComponent({
       () => props.visible,
       (visible, prev) => {
         if (visible && !prev) {
-          props.viewStore.define = createLayerFragment()
-          props.viewStore['define:template'] = createLayerFragment()
+          props.viewStore.define = createFragment()
+          props.viewStore['define:template'] = createFragment()
           contentMountKey.value++
         }
       },

@@ -5,8 +5,7 @@ import {
   shallowRef,
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
-import { toFragmentFromInstance } from '@/config/to-fragment'
-import { mergeFragment } from '@/config/merge-node-config'
+import { toFragmentFromInstance, mergeFragment } from '@/config/fragment'
 import { attachLayerStore } from '@/runtime/layer-internal'
 import { createLayerInstanceStore } from '@/runtime/layer-store'
 import { createLayerView } from '@/view/layer-view'
