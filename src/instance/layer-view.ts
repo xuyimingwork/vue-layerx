@@ -1,27 +1,14 @@
 import {
-  defineComponent,
-  getCurrentInstance,
   h,
-  provide,
-  ref,
   render,
   watch,
-  type Component,
-  type PropType,
   type ShallowRef,
 } from 'vue'
-import { mergeFragment } from '@/pipeline/merge-node-config'
-import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan } from '@/types'
-import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
+import type { LayerAdapter } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
-import { createLayerFragment } from '@/instance/layer-fragment'
 import { createLayerViewStore } from '@/instance/layer-store'
-import { renderLayerTree } from '@/render/render-layer-tree'
-import {
-  LAYER_DEFINE_KEY,
-} from '@/di/injection-keys'
-import { asViewHost, type ViewHost } from './view-host'
+import { LayerView } from './layer-view-component'
+import { type ViewHost } from './view-host'
 
 export interface LayerViewState {
   visible: boolean
@@ -41,91 +28,18 @@ export function createLayerView(options: {
   const { store, state, host, adapter } = options
 
   const viewStore = createLayerViewStore()
-  const contentMountKey = ref(0)
   let container: HTMLElement | null = null
-
-  const contentComponent = store.use.content?.component as Component | undefined
-  const contentName = contentComponent
-    ? (contentComponent as { name?: string }).name ?? 'Anonymous'
-    : 'Shell'
-
-  const LayerView = defineComponent({
-    name: `LayerView_${contentName}`,
-    props: {
-      visible: {
-        type: Boolean,
-        required: true,
-      },
-      host: {
-        type: Object as PropType<ViewHost | null>,
-        default: null,
-      },
-      onClose: {
-        type: Function as PropType<() => void>,
-        required: true,
-      },
-    },
-    setup(props) {
-      const bridgeHost = props.host
-      if (bridgeHost && !bridgeHost.isUnmounted) {
-        const instance = asViewHost(getCurrentInstance()!)
-        instance.appContext = bridgeHost.appContext
-        instance.provides = Object.create(bridgeHost.provides)
-      }
-
-      provide(LAYER_DEFINE_KEY, {
-        register(fragment: LayerConfigFragment) {
-          viewStore.define = fragment
-        },
-        store: viewStore,
-      })
-
-      return () => {
-        store.track()
-        viewStore.track()
-        void contentMountKey.value
-
-        const fragment = mergeFragment(
-          store.create,
-          viewStore['define:template'],
-          viewStore.define,
-          store['use:template'],
-          store.use,
-          store.open,
-        )
-
-        const merged = {
-          container: fragment.container ?? {},
-          content: fragment.content ?? {},
-        }
-
-        const resolved = defaultResolve({ merged, close: props.onClose })
-        const normalized = adapter ? adapter(resolved) : resolved
-
-        const plan: LayerRenderPlan = {
-          ...normalized,
-          visible: props.visible,
-          model: merged.container.model ?? DEFAULT_CONTAINER_MODEL,
-          onClose: props.onClose,
-        }
-
-        return renderLayerTree({
-          plan,
-          contentMountKey: normalized.content ? contentMountKey.value : undefined,
-        })
-      }
-    },
-  })
-
-  const onClose = () => {
-    state.visible = false
-  }
 
   function buildProps() {
     return {
       visible: state.visible,
       host: host.value,
-      onClose,
+      'onUpdate:visible': (value: boolean) => {
+        state.visible = value
+      },
+      store,
+      viewStore,
+      adapter,
     }
   }
 
@@ -139,12 +53,7 @@ export function createLayerView(options: {
 
   watch(
     () => state.visible,
-    (visible, prev) => {
-      if (visible && !prev) {
-        viewStore.define = createLayerFragment()
-        viewStore['define:template'] = createLayerFragment()
-        contentMountKey.value++
-      }
+    (visible) => {
       if (!container && !visible) return
       patchPortal()
     },
