@@ -2,7 +2,7 @@ import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
 import { toFragmentFromStatic } from '@/config/fragment'
 import { isLayerContent, LAYER_DEFINE_KEY } from '@/shared/contracts'
-import { attachLayerStore } from '@/runtime/layer-internal'
+import { attachLayerStore } from '@/shared/layer-store-host'
 
 const LAYER_DEFINE = Symbol('vue-layerx:define')
 

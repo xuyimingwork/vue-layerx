@@ -6,7 +6,7 @@ import {
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance, LayerInstanceStoreInit, LayerInstanceStoreWithTemplate } from '@/types'
 import { toFragmentFromInstance, mergeFragment, createFragment } from '@/config/fragment'
-import { attachLayerStore } from '@/runtime/layer-internal'
+import { attachLayerStore } from '@/shared/layer-store-host'
 import { createLayerView } from '@/runtime/layer-view'
 import type { ViewHost } from '@/types/view-host'
 import { createLayerStore } from '@/runtime/layer-store'

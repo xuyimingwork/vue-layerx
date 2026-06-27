@@ -5,7 +5,7 @@ import {
 } from 'vue'
 import type { LayerDefine, LayerInstance } from '@/types'
 import { isLayerDefine } from './define-layer'
-import { resolveLayerStore } from '@/runtime/layer-internal'
+import { resolveLayerStore } from '@/shared/layer-store-host'
 
 export type LayerTemplateTo = LayerInstance | LayerDefine
 
