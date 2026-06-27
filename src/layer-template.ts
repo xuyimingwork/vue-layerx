@@ -16,6 +16,7 @@ export const LayerTemplate = defineComponent({
       type: String,
       required: true,
     },
+    /** Required. Creator: defineLayer() return value. Caller: LayerInstance from useX(). */
     to: {
       type: Object as PropType<LayerTemplateTo>,
       required: true,

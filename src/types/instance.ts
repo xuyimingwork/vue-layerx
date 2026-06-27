@@ -9,7 +9,7 @@ export interface LayerTemplateScope<
   slotProps: T
 }
 
-/** Returned by defineLayer(); store attached via LAYER_STORE when inLayer */
+/** Returned by defineLayer(); pass as LayerTemplate :to; store attached via LAYER_STORE when inLayer */
 export interface LayerDefine {
   readonly inLayer: boolean
   readonly outsideLayer: boolean

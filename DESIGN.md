@@ -120,9 +120,11 @@ const bindHost = () => {
 
 ### `LayerTemplate :to` 与实例绑定
 
-- `LayerTemplate :to="userDialog"` 绑定 `LayerInstance`，写入 **caller content** 注册表（`:to` 隔离，clone 实例各自独立）。
-- `LayerTemplate :to="userDialog" container` 写入 **caller container** 注册表，远程填充 MyDialog 同名 slot。
-- 无 `:to` 的 `LayerTemplate`（UserForm 内）写入 **creator container** 注册表；merge tier 最低（仅次于 `createLayer` 命令式 slots）。
+`:to` **必填**。creator 传 `defineLayer()` 返回值（`LayerDefine`）；caller 传 `useX(...)` 返回值（`LayerInstance`）。
+
+- `LayerTemplate :to="layer"`（`layer = defineLayer(...)`）写入 **define:template.container** 注册表（creator tier）；投进 MyDialog 同名 slot。
+- `LayerTemplate :to="userDialog"` 绑定 `LayerInstance`，写入 **use:template.content** 注册表（caller content tier；`:to` 隔离，clone 实例各自独立）；远程填充 content 同名 `<slot>`。
+- `LayerTemplate :to="userDialog" container` 写入 **use:template.container** 注册表；远程填充 MyDialog 同名 slot；优先级高于 creator。
 
 ### defineLayer 与 inject
 
@@ -188,7 +190,7 @@ type LayerRenderPlan = LayerNormalized & {
 | **UserDialog** | `useDialog(UserForm)` 构建的逻辑组合体：`MyDialog` + `UserForm` |
 | **Layer 实例** | `useDialog(UserForm)` 返回值 `{ open, close, clone, visible }` |
 | **模板名 / 插槽名** | `LayerTemplate` 的 `name`，与目标组件 slot 同名，如 `title`、`footer` |
-| **direct layer content** | `useX` / `open` 绑定的根 content 组件；仅其内部的 `LayerTemplate` 进外层 MyDialog |
+| **direct layer content** | `useX` / `open` 绑定的根 content 组件；仅其内部 `:to="layer"` 的 `LayerTemplate` 进外层 MyDialog |
 
 ### 工厂默认配置
 
@@ -214,7 +216,7 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 ## 命名模板与插槽填充
 
-`LayerTemplate` 只做一件事：**声明一块有名字的模板**（等同 Vue 的 `<template #name>`），在所属 Scope 内 self-register，无需 `ref`。
+`LayerTemplate` 只做一件事：**声明一块有名字的模板**（等同 Vue 的 `<template #name>`），通过 **`:to` 显式绑定**注册目标，无需 `ref`。
 
 ### 与 Vue slot 同构
 
@@ -227,12 +229,12 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 ```vue
 <!-- vue-layerx：content 内声明，resolve 后作为 layer 的 slots 传给 h() -->
-<LayerTemplate name="title">ABC</LayerTemplate>
+<LayerTemplate :to="layer" name="title">ABC</LayerTemplate>
 ```
 
 规则与 Vue 一致：
 
-1. **`LayerTemplate name="title"`** 即提供了名为 `title` 的模板。
+1. **`LayerTemplate :to="layer" name="title"`** 即提供了名为 `title` 的模板。
 2. resolve 后写入 `normalized.container.slots.title`（或 `normalized.content.slots.title`）。
 3. **目标组件有没有同名 `<slot name="title">`** 决定最终是否渲染——有则展示，无则静默丢弃。
 4. content 里有没有预留 `<slot name="title">` 对 **container 侧**模板不重要；container 侧只看 MyDialog 有没有 `#title`。
@@ -245,27 +247,33 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 | 用法 | 填充目标 | 说明 |
 |------|----------|------|
-| **UserForm 内**（无 `to`，弹层 direct content 上下文） | **MyDialog 的 slot** | `name` 须与 layer 组件 slot 同名（或经 `adapt` 对齐） |
+| **UserForm 内** `:to="layer"`（`defineLayer()` 返回值） | **MyDialog 的 slot** | `name` 须与 layer 组件 slot 同名（或经 `adapt` 对齐） |
 | **UserList `LayerTemplate :to`** | **UserForm 的 `<slot>`** | `name` 须与 content 组件 slot 同名 |
 | **UserList `LayerTemplate :to container`** | **MyDialog 的 slot** | `name` 须与 layer 组件 slot 同名 |
 
-纯字符串标题仍用 `defineLayer` / `container.props.title`；富标题区用 **`LayerTemplate name="title"`**（当 MyDialog 提供 `#title` 时）。
+纯字符串标题仍用 `defineLayer` / `container.props.title`；富标题区用 **`LayerTemplate :to="layer" name="title"`**（当 MyDialog 提供 `#title` 时）。
 
 ### `LayerTemplate`
 
 ```vue
-<ElForm>...</ElForm>
-<slot name="form-end" />
+<script setup lang="ts">
+const layer = defineLayer({ props: { title: '...' } })
+</script>
 
-<LayerTemplate name="title" />
-<!-- ... -->
-<LayerTemplate name="footer" visible-outside>
-  <template #default="{ inLayer, outsideLayer, slotProps }">
-    <ElButton type="primary" @click="submit">提交</ElButton>
-    <slot name="action-end" />
-    <ElButton @click="cancel">取消</ElButton>
-  </template>
-</LayerTemplate>
+<template>
+  <ElForm>...</ElForm>
+  <slot name="form-end" />
+
+  <LayerTemplate :to="layer" name="title" />
+  <!-- ... -->
+  <LayerTemplate :to="layer" name="footer" visible-outside>
+    <template #default="{ inLayer, outsideLayer, slotProps }">
+      <ElButton type="primary" @click="submit">提交</ElButton>
+      <slot name="action-end" />
+      <ElButton @click="cancel">取消</ElButton>
+    </template>
+  </LayerTemplate>
+</template>
 ```
 
 | 行为 | 说明 |
@@ -274,9 +282,10 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 | **outsideLayer**（页内等非 direct layer content 上下文） | 默认不占 DOM、不投递；见 `visible-outside` |
 | `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**inLayer 时忽略此配置**，仍走 slot render fn 投进 layer slot |
 | `#default` 参数（creator / `visible-outside`） | `LayerTemplateScope`：`inLayer` / `outsideLayer` 表示渲染上下文；`slotProps` 为容器 slot 的 scoped props 原样转发，默认 `{}` |
-| `#default` 参数（`:to` / `:to container`） | 与 Vue scoped slot 相同：目标 slot 的 scoped props **flat 透传**（无 `inLayer` / `outsideLayer` / `slotProps` 包装） |
-| `:to` | 绑定 `LayerInstance`，注册进 **caller content** tier；远程填充 content 同名 `<slot>` |
-| `:to` + `container` | 注册进 **caller container** tier；远程填充 MyDialog 同名 slot |
+| `#default` 参数（caller `:to` / `:to container`） | 与 Vue scoped slot 相同：目标 slot 的 scoped props **flat 透传**（无 `inLayer` / `outsideLayer` / `slotProps` 包装） |
+| `:to="layer"`（`defineLayer()` 返回值） | 注册进 **define:template.container** tier（creator）；投进 MyDialog 同名 slot；`container` prop 无效 |
+| `:to="instance"` | 绑定 `LayerInstance`，注册进 **use:template.content** tier；远程填充 content 同名 `<slot>` |
+| `:to="instance"` + `container` | 注册进 **use:template.container** tier；远程填充 MyDialog 同名 slot；高于 creator |
 
 **调用方示例：**
 
@@ -296,15 +305,15 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 | 用法 | 投递链 | 说明 |
 |------|--------|------|
-| UserForm 内 `LayerTemplate`（无 `to`） | **MyDialog** slot（creator tier） | 调用方 `:to container` 可覆盖 |
-| `LayerTemplate :to` | **UserForm** `<slot>`（caller content tier） | |
-| `LayerTemplate :to container` | **MyDialog** slot（caller container tier） | 高于 creator tier |
+| UserForm 内 `:to="layer"` | **MyDialog** slot（define:template.container） | 调用方 `:to container` 可覆盖 |
+| `LayerTemplate :to="instance"` | **UserForm** `<slot>`（use:template.content） | |
+| `LayerTemplate :to="instance" container` | **MyDialog** slot（use:template.container） | 高于 creator |
 
 **与 Vue 相同，框架不持有、也不校验 slot 清单：**
 
 - Vue 无法从子组件「读出」`defineSlots` / template 里有哪些 `<slot name>`；`useDialog(UserForm)` + `LayerTemplate :to` **同样做不到**按契约拦截 `name`。
 - `:to` 下 `name="form-end"` 走 caller content tier，resolve 后作为 `h(UserForm, …, { 'form-end': fn })` 的 slot 传入；**UserForm 没有 `<slot name="form-end">` 就不展示**——与父组件写了 `<template #form-end>` 但子组件没开口一样，不是框架 warning，是静默无渲染。
-- UserList 写 `name="footer"` 且 `:to` **无** `container`，而 UserForm 只有 creator `LayerTemplate name="footer"`：内容走 **content** 链，对不上口 → **不展示**；应改用 `:to container` 覆盖 MyDialog footer。
+- UserList 写 `name="footer"` 且 `:to` **无** `container`，而 UserForm 只有 creator `:to="layer" name="footer"`：内容走 **content** 链，对不上口 → **不展示**；应改用 `:to container` 覆盖 MyDialog footer。
 
 同一 tier 内同名 `LayerTemplate` 重复注册：**dev warning**，**后者覆盖前者**（同 tier 内仍按 mount 顺序）。
 
@@ -312,7 +321,7 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 | 机制 | 用途 |
 |------|------|
-| `LayerTemplate name="title"` / `footer` | 块级模板 → MyDialog 同名 slot |
+| `LayerTemplate :to="layer" name="title"` / `footer` | 块级模板 → MyDialog 同名 slot |
 | Vue `<slot name="action-end">` | 结构级：操作区内部扩展 |
 | `LayerTemplate :to` + `name="action-end"` | 弹层下远程填充 content 同名 slot |
 
@@ -322,7 +331,7 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 **container 侧**
 
-1. UserForm 内 `LayerTemplate name="title"` → creator container tier。
+1. UserForm 内 `:to="layer" name="title"` → define:template.container tier。
 2. **merge** 阶段：按 slot tier 合并（见下）；`LayerMerged.container.slots` 为最终结果。
 3. `h(MyDialog, props, normalized.container.slots)` — MyDialog 无 `#title` 则不展示。
 
@@ -344,9 +353,9 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 | **open(payload?)** | ✅ 最高 | 可覆盖 merge 一切，含 `component`、`container.component` | 仍走 adapt |
 | **defaultResolve** | — | `LayerMerged` → `LayerNormalized` | 不参与优先级 |
 | **createLayer 第 3 参 adapt** | — | `LayerNormalized` → `LayerNormalized` | 不实现 merge |
-| **LayerTemplate**（UserForm 内，无 `to`） | ✅ creator tier | content 内声明 container slot | — |
-| **LayerTemplate**（`:to`） | ✅ caller tier | 远程 content slot | — |
-| **LayerTemplate**（`:to container`） | ✅ caller tier | 远程 container slot；高于 creator | — |
+| **LayerTemplate** `:to="layer"` | ✅ define:template | content 内声明 container slot | — |
+| **LayerTemplate** `:to="instance"` | ✅ use:template.content | 远程 content slot | — |
+| **LayerTemplate** `:to="instance" container` | ✅ use:template.container | 远程 container slot；高于 creator | — |
 
 ### 绑定分层
 
@@ -367,7 +376,7 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 - **各自工厂**的 `adapt` 过滤无效 props，并按需 **重排 `normalized.container.slots` 的 key**（如 `title` → `header`）。
 
 ```ts
-defineLayer({
+const layer = defineLayer({
   props: { title: '筛选', direction: 'rtl', width: '420px' },
 })
 
@@ -436,7 +445,7 @@ export const useDialog = createLayer(MyDialog, {
 ```ts
 const props = defineProps<{ mode?: 'create' | 'edit' }>()
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
     direction: 'rtl',
@@ -452,21 +461,21 @@ defineLayer({
 
 | 方式 | 典型用途 | 优先级 |
 |------|----------|--------|
-| `LayerTemplate name="footer"` | 声明 container 侧块级模板（`name` = MyDialog slot 名） | 默认 |
+| `LayerTemplate :to="layer" name="footer"` | 声明 container 侧块级模板（`name` = MyDialog slot 名） | 默认 |
 | `defineLayer({ container: { slots: { title: () => h(...) } } })` | 命令式覆盖同名 slot 渲染（少见） | **高于** `LayerTemplate` |
 
-正常路径：**`LayerTemplate name` 与 container / content 的 slot 同名**。`defineLayer` 一般只写 `props`；需命令式覆盖时再写顶层 `slots`。
+正常路径：**`LayerTemplate :to` + `name` 与 container / content 的 slot 同名**。`defineLayer` 一般只写 `props`；需命令式覆盖时再写顶层 `slots`。
 
 ```ts
 // defineLayer 与 createLayer 同构：LayerConfigStatic
 // 顶层 props = container.props；slots = container.slots
-defineLayer({
+const layer = defineLayer({
   props: { title: '...' },
   slots: { footer: () => h(...) },
 })
 ```
 
-模板仅通过 `LayerTemplate name` self-register，不支持 `ref` 三连线。
+模板通过 `LayerTemplate :to="layer"` 注册，`:to` 必填，不支持 `ref` 三连线。
 
 ### `useX(Content?, config?)` & `open(config?)`
 
@@ -522,7 +531,7 @@ xxx.open({
 
 ### `LayerTemplate`
 
-见上文。调用方远程填充 content slot 时须显式 `:to="userDialog"`（`useDialog` 返回的实例）。
+`:to` **必填**。content 内 creator 传 `defineLayer()` 返回值；调用方远程填充时传 `LayerInstance`（`:to="userDialog"` 或 `:to container`）。
 
 ### Layer 实例
 
@@ -703,19 +712,18 @@ useDialog / useDrawer
         ├── defineLayer ─────────────────────────────┐
         ├── useDialog(UserForm, opts) ───────────────┤
         ├── open(payload) ───────────────────────────┤──► merge ──► resolve ──► adapt ──► render
-        ├── LayerTemplate（UserForm 内，creator tier）─┤
-        └── LayerTemplate :to / :to container ───────┘
-              （caller tier；mount 注册，merge 前物化）
+        ├── LayerTemplate :to="layer"（UserForm 内，define:template）─┤
+        └── LayerTemplate :to / :to container（caller）──────────────┘
 ```
 
 **渲染树（inLayer，slot render fn 投递后）：**
 
 ```text
 MyDialog（normalized.container）
-  ├─ #title ← slot fn ← UserForm 内 LayerTemplate name="title"
+  ├─ #title ← slot fn ← UserForm 内 LayerTemplate :to="layer" name="title"
   ├─ default → UserForm（normalized.content，direct layer content）
   │              └─ #form-end ← slot fn ← LayerTemplate :to
-  ├─ #footer ← slot fn ← merge tier（caller :to container 或 creator 内 LayerTemplate）
+  ├─ #footer ← slot fn ← merge tier（caller :to container 或 creator :to="layer"）
        └─ #action-end ← slot fn ← LayerTemplate :to
 ```
 
@@ -775,7 +783,7 @@ import { defineLayer, LayerTemplate } from 'vue-layerx'
 const props = defineProps<{ mode?: 'create' | 'edit' }>()
 const emit = defineEmits<{ success: []; cancel: [] }>()
 
-defineLayer({
+const layer = defineLayer({
   props: {
     title: props.mode === 'edit' ? '编辑用户' : '新建用户',
   },
@@ -789,10 +797,10 @@ function cancel() { emit('cancel') }
   <ElForm>...</ElForm>
   <slot name="form-end" />
 
-  <LayerTemplate name="title" />
+  <LayerTemplate :to="layer" name="title" />
 
   <!-- visible-outside：页内时在表单下展示 footer；弹层内仍通过 slot fn 投进 MyDialog #footer -->
-  <LayerTemplate name="footer" visible-outside>
+  <LayerTemplate :to="layer" name="footer" visible-outside>
     <template #default="{ inLayer, outsideLayer, slotProps }">
       <div :class="{ 'footer--inline': outsideLayer }">
         <ElButton type="primary" @click="submit">提交</ElButton>
@@ -832,7 +840,7 @@ const userDialog = useDialog(UserForm, { closeOn: ['success', 'cancel'] })
 ### 双容器
 
 ```ts
-defineLayer({
+const layer = defineLayer({
   props: { title: '筛选', width: '420px', direction: 'rtl' },
 })
 
@@ -869,11 +877,11 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 3. **merge → resolve → adapt → render**；每实例**单一** `adapt`；`open` 覆盖 merge 但不跳过 adapt；close 后再 open remount content。
 4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `LayerMerged.*.slots`；resolve 透传。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
-6. **`LayerTemplate`**：`name` 即 slot 名；`:to` → caller content；`:to container` → caller container；无 `to` → creator。
+6. **`LayerTemplate`**：`:to` 必填；`:to="layer"` → define:template.container；`:to="instance"` → use:template.content；`:to="instance" container` → use:template.container。
 7. **容器 slot 名差异**在工厂 **`adapt`** 调整 `normalized.container.slots`，不用 merge 名表。
 8. **无 `layerId` / `surface`**；多容器靠多工厂 + 各自 `adapt`。
 9. **细粒度扩展**用 Vue `<slot>`；`LayerTemplate :to` 在弹层下填充同名 content slot。
-10. **`to` 分流**：无 `to` → creator container；`:to` → caller content；`:to container` → caller container。
+10. **`to` 分流**：`:to="layer"`（LayerDefine）→ define:template.container；`:to="instance"` → use:template.content；`:to="instance" container` → use:template.container。
 11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；`createLayer(layer, config?)` 两参；不导出 `useLayer`。
 12. **`clone`**：`open > clone > use > define > create`；`closeOn` 与用户 `onXxx` 合并为 wrapper（用户先、`close()` 后）。
 13. **`model`**：container v-model prop 名，默认 `modelValue`；`bindContainerModel` 在 render 写入。
@@ -906,7 +914,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | slot render fn 投递 | container / content 模板跨树投送；与 Vue slot 语义同构 |
 | content remount | close 后再 open 时框架重建 content；已打开时 open 只更新 props |
 | 无 `useLayer` | 仍须选 layer，意义不大 |
-| 无 `LayerTemplate ref` 连线 | `name` self-register |
+| 无 `LayerTemplate ref` 连线 | `:to` 显式绑定 `LayerDefine` / `LayerInstance` |
 | 无独立 `transform` API | adapt 内聚在注册时 |
 | 同构 node | content / container 同一套 mental model |
 | `LayerTemplate :to` | 显式绑定实例；列表页走 content slot 链 |

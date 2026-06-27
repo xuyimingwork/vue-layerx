@@ -26,7 +26,7 @@ userLayer.open({ props: { mode: 'create', onSubmit: fn } })
   ]"
 />
 
-`mode !== 'view'` 时表单可编辑，`LayerTemplate name="footer"` 出现保存按钮；`closeOn: ['submit']` 提交后关层。
+`mode !== 'view'` 时表单可编辑，`:to="layer" name="footer"` 的 `LayerTemplate` 出现保存按钮；`closeOn: ['submit']` 提交后关层。
 
 ## 下一步
 
