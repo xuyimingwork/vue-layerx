@@ -15,7 +15,7 @@ import type {
 } from '@/types/store'
 import { renderLayerTree } from '@/view/render-layer-tree'
 import { LAYER_DEFINE_KEY } from '@/shared/contracts'
-import { asViewHost, type ViewHost } from '@/types/view-host'
+import type { ViewHost } from '@/types/view-host'
 
 export const LayerView = defineComponent({
   name: 'LayerView',
@@ -59,7 +59,7 @@ export const LayerView = defineComponent({
 
     const bridgeHost = props.host
     if (bridgeHost && !bridgeHost.isUnmounted) {
-      const instance = asViewHost(getCurrentInstance()!)
+      const instance = getCurrentInstance()! as ViewHost
       instance.appContext = bridgeHost.appContext
       instance.provides = Object.create(bridgeHost.provides)
     }

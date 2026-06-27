@@ -6,11 +6,11 @@ import {
   toFragmentFromStatic,
 } from '@/config/fragment'
 import {
-  createLayerInstanceStore,
-  createLayerViewStore,
   type LayerInstanceStoreWithTemplate,
   type LayerViewStoreWithTemplate,
-} from '@/runtime/layer-store'
+} from '@/shared/layer-store'
+import { createLayerInstanceStore } from '@/runtime/layer-instance'
+import { createLayerViewStore } from '@/runtime/layer-view'
 
 function slotMarker(_label: string) {
   return () => null as never

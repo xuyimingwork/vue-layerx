@@ -1,12 +1,8 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
 import type {
-  LayerInstanceStoreInit,
-  LayerInstanceStoreWithTemplate,
-  LayerViewStoreWithTemplate,
   TemplateSlotKey,
 } from '@/types/store'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
-import { createFragment } from '@/config/fragment'
 
 export type {
   TemplateSlotKey,
@@ -82,7 +78,7 @@ function trackFragmentBuckets(
   }
 }
 
-function createLayerStore<T extends Record<string, LayerConfigFragment>>(
+export function createLayerStore<T extends Record<string, LayerConfigFragment>>(
   init: T,
 ): UnwrapNestedRefs<T> & LayerStoreMethods {
   const bucketKeys = Object.keys(init)
@@ -111,22 +107,4 @@ function createLayerStore<T extends Record<string, LayerConfigFragment>>(
 
   return Object.assign(store, { template, track }) as UnwrapNestedRefs<T> &
     LayerStoreMethods
-}
-
-export function createLayerInstanceStore(
-  init: LayerInstanceStoreInit,
-): LayerInstanceStoreWithTemplate {
-  return createLayerStore({
-    create: createFragment(init.create),
-    use: createFragment(init.use),
-    open: createFragment(),
-    'use:template': createFragment(),
-  })
-}
-
-export function createLayerViewStore(): LayerViewStoreWithTemplate {
-  return createLayerStore({
-    define: createFragment(),
-    'define:template': createFragment(),
-  })
 }

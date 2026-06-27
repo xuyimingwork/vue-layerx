@@ -7,10 +7,12 @@ import {
 import type { LayerAdapter } from '@/types'
 import type {
   LayerInstanceStoreWithTemplate,
+  LayerViewStoreWithTemplate,
 } from '@/types/store'
-import { createLayerViewStore } from '@/runtime/layer-store'
-import { LayerView } from '@/view/layer-view-component'
+import { createLayerStore } from '@/shared/layer-store'
+import { LayerView } from '@/view/layer-view'
 import { type ViewHost } from '@/types/view-host'
+import { createFragment } from '@/config/fragment'
 
 export interface LayerViewState {
   visible: boolean
@@ -19,6 +21,13 @@ export interface LayerViewState {
 export interface LayerViewHandle {
   readonly mounted: boolean
   unmount: () => void
+}
+
+export function createLayerViewStore(): LayerViewStoreWithTemplate {
+  return createLayerStore({
+    define: createFragment(),
+    'define:template': createFragment(),
+  })
 }
 
 export function createLayerView(options: {

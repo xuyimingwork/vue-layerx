@@ -4,7 +4,3 @@ import type { ComponentInternalInstance } from 'vue'
 export type ViewHost = ComponentInternalInstance & {
   provides: Record<string | symbol, unknown>
 }
-
-export function asViewHost(instance: ComponentInternalInstance): ViewHost {
-  return instance as ViewHost
-}

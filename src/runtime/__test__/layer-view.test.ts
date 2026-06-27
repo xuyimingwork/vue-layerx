@@ -1,9 +1,9 @@
 import { defineComponent, h, reactive, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createLayerInstanceStore } from '@/runtime/layer-store'
-import { createLayerView } from '@/runtime/layer-view-portal'
-import { asViewHost } from '@/types/view-host'
+import { createLayerInstanceStore } from '@/runtime/layer-instance'
+import { createLayerView } from '@/runtime/layer-view'
+import { ViewHost } from '@/types/view-host'
 import { Container } from '@tests/fixtures/components'
 
 function createTestView() {
@@ -11,7 +11,7 @@ function createTestView() {
     create: { container: { component: Container } },
   })
   const state = reactive({ visible: false })
-  const host = shallowRef<ReturnType<typeof asViewHost> | null>(null)
+  const host = shallowRef<ViewHost | null>(null)
   const view = createLayerView({ store, state, host })
   return { state, host, view }
 }
@@ -66,7 +66,7 @@ describe('createLayerView', () => {
   it('bridges host when host is set before visible', () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
     const { state, host, view } = createTestView()
-    host.value = asViewHost(wrapper.vm.$)
+    host.value = wrapper.vm.$ as ViewHost
     state.visible = true
     expect(view.mounted).toBe(true)
     view.unmount()

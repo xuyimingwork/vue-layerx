@@ -4,12 +4,12 @@ import {
   reactive,
   shallowRef,
 } from 'vue'
-import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
-import { toFragmentFromInstance, mergeFragment } from '@/config/fragment'
+import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance, LayerInstanceStoreInit, LayerInstanceStoreWithTemplate } from '@/types'
+import { toFragmentFromInstance, mergeFragment, createFragment } from '@/config/fragment'
 import { attachLayerStore } from '@/runtime/layer-internal'
-import { createLayerInstanceStore } from '@/runtime/layer-store'
-import { createLayerView } from '@/runtime/layer-view-portal'
-import { asViewHost, type ViewHost } from '@/types/view-host'
+import { createLayerView } from '@/runtime/layer-view'
+import type { ViewHost } from '@/types/view-host'
+import { createLayerStore } from '@/shared/layer-store'
 
 export function createLayerInstance({
   create,
@@ -46,7 +46,7 @@ export function createLayerInstance({
   const bindHost = () => {
     const current = getCurrentInstance()
     if (!current || host.value) return
-    host.value = asViewHost(current)
+    host.value = current as ViewHost
     onUnmounted(() => {
       host.value = null
       dispose()
@@ -74,4 +74,15 @@ export function createLayerInstance({
 
   attachLayerStore(instance, store)
   return instance
+}
+
+export function createLayerInstanceStore(
+  init: LayerInstanceStoreInit,
+): LayerInstanceStoreWithTemplate {
+  return createLayerStore({
+    create: createFragment(init.create),
+    use: createFragment(init.use),
+    open: createFragment(),
+    'use:template': createFragment(),
+  })
 }
