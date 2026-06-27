@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bindContainerModel } from '../bind-container-model'
+import { bindContainerModel, DEFAULT_CONTAINER_MODEL } from '../container-model'
 
 describe('bindContainerModel', () => {
   it('binds model prop and update handler', () => {
@@ -35,5 +35,11 @@ describe('bindContainerModel', () => {
 
     result['onUpdate:open']?.(true)
     expect(close).not.toHaveBeenCalled()
+  })
+})
+
+describe('DEFAULT_CONTAINER_MODEL', () => {
+  it('defaults to modelValue', () => {
+    expect(DEFAULT_CONTAINER_MODEL).toBe('modelValue')
   })
 })

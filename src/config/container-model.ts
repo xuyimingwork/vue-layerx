@@ -1,5 +1,7 @@
 import type { LayerProps } from '@/types'
 
+export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const
+
 export function bindContainerModel(
   containerProps: LayerProps,
   visible: boolean,

@@ -71,5 +71,3 @@ export type LayerAdapter = (merged: LayerMerged) => LayerMerged
 export type LayerConfigCreate = LayerConfigStatic & {
   adapter?: LayerAdapter
 }
-
-export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const

@@ -58,6 +58,112 @@ UserDialog = MyDialog + UserForm
 
 ---
 
+## 源码模块结构
+
+`src/` 按数据流分为五层，对外入口仍为根目录 [`index.ts`](src/index.ts)（re-export `api/` + `types/`）。
+
+### 目录布局
+
+```text
+src/
+├── index.ts                 # 包入口 barrel
+├── api/                     # createLayer / defineLayer / LayerTemplate
+├── types/                   # 纯类型契约（config / instance / store）
+├── config/                  # fragment 构造、merge、bind
+├── runtime/                 # store、instance 生命周期、viewHost
+└── view/                    # LayerView、portal、VNode 渲染、运行时标记
+
+tests/
+└── integration/             # createLayer 端到端测试（与 src/ 分离）
+```
+
+| 层 | 职责 | 主要文件 |
+|----|------|----------|
+| **types/** | 配置 / 实例 / Store 接口；不含业务逻辑 | `config.ts`、`instance.ts`、`store.ts` |
+| **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts` |
+| **runtime/** | 响应式 store 桶、LayerInstance 生命周期、store 附着 | `layer-store.ts`、`layer-instance.ts`、`layer-internal.ts`、`view-host.ts` |
+| **view/** | Vue 组件、portal、`h()` 渲染、content 标记、inject key | `layer-view-component.ts`、`layer-view.ts`、`render-layer-tree.ts` |
+| **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
+
+各层 `__test__/` 与模块同目录；集成测试在 `tests/integration/`。
+
+### 模块依赖
+
+上层只能依赖下层；**`config` 与 `runtime` 互不依赖**。
+
+```mermaid
+flowchart TB
+  index[index.ts]
+  api[api]
+  view[view]
+  runtime[runtime]
+  config[config]
+  types[types]
+
+  index --> api
+  index --> types
+  api --> view
+  api --> runtime
+  api --> config
+  api --> types
+  view --> runtime
+  view --> config
+  view --> types
+  runtime --> config
+  runtime --> types
+  config --> types
+```
+
+| 层 | 允许 import | 禁止 import |
+|----|-------------|-------------|
+| **types/** | Vue 类型 only | 任何 `src/` 模块 |
+| **config/** | `types/` | `runtime`、`view`、`api` |
+| **runtime/** | `types/`、`config/` | `api` |
+| **view/** | `types/`、`config/`、`runtime/` | `api` |
+| **api/** | 以上所有层 | — |
+
+**依赖规则一句话**：上层只能依赖下层；`config` 和 `runtime` 互不依赖。
+
+#### 跨层依赖矩阵（生产代码）
+
+| Importer ↓ / Importee → | `types` | `config` | `runtime` | `view` |
+|---------------------------|:-------:|:--------:|:---------:|:------:|
+| **api** | ✓ | ✓ | ✓ | ✓ |
+| **view** | ✓ | ✓ | ✓ | internal |
+| **runtime** | ✓ | ✓ | internal | ✓* |
+| **config** | ✓ | internal | — | — |
+| **types** | — | — | — | — |
+
+\* **`runtime → view`**：`layer-instance` 通过 `createLayerView` 委托 portal 挂载，是 runtime 对 view 的唯一生产依赖。
+
+**api → view**（`define-layer`）：`inject(LAYER_DEFINE_KEY)` 与 `isLayerContent` 依赖 view 层运行时契约（`injection-keys.ts`、`layer-content.ts`）。
+
+**types/store.ts** 与 **view/injection-keys.ts** 分工：`LayerDefineRegistry` 类型在 types；`LAYER_DEFINE_KEY` 常量在 view（provide 侧在 `LayerView`）。
+
+### 与核心管线的对应
+
+```text
+createLayer / defineLayer / LayerTemplate          api/
+        │
+        ▼
+createLayerInstance + layer-store                  runtime/
+        │
+        ▼
+createLayerView → LayerView                        view/
+        │
+        ├── mergeFragment / toFragment*            config/fragment.ts
+        ├── mergeNodeConfig                        config/merge-node-config.ts
+        ├── adapter（可选）                          api/create-layer 注册
+        ├── bindLayerTree                            config/bind-layer-tree.ts
+        └── renderLayerTree                          view/render-layer-tree.ts
+```
+
+- **merge**：`config/fragment.ts`（`createFragment`、`toFragmentFrom*`、`mergeFragment`）+ `config/merge-node-config.ts`（node 级 merge 原语）。
+- **bind**：`config/bind-layer-tree.ts` 编排 `container-model`、`bind-close-on`。
+- **render**：`view/render-layer-tree.ts` 纯 `h()`；`layer-view-component.ts` 是唯一的 merge → adapter → bind → render 编排点。
+
+---
+
 ## 渲染与投递机制
 
 ### open() 与 content 重建

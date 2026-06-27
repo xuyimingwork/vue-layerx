@@ -16,8 +16,6 @@ export type {
   SlotRenderFn,
 } from './config'
 
-export { DEFAULT_CONTAINER_MODEL } from './config'
-
 export type { LayerInstance, LayerDefine, LayerTemplateScope } from './instance'
 
 export type {
