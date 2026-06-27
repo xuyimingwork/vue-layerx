@@ -1,9 +1,9 @@
 import type { Component } from 'vue'
 import type { LayerConfigCreate, LayerConfigInstance, LayerInstance } from '@/types'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
-import { mergeFragment } from '@/pipeline/merge-node-config'
-import { toFragmentFromInstance, toFragmentFromStatic } from '@/pipeline/to-fragment'
-import { createLayerInstance } from '@/instance/layer-instance'
+import { mergeFragment } from '@/config/merge-node-config'
+import { toFragmentFromInstance, toFragmentFromStatic } from '@/config/to-fragment'
+import { createLayerInstance } from '@/runtime/layer-instance'
 
 export function createLayer(
   Container: Component,

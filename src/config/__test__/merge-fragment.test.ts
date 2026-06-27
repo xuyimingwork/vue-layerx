@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
-import { mergeFragment } from '@/pipeline/merge-node-config'
+import { mergeFragment } from '@/config/merge-node-config'
 import { toFragmentFromInstance, toFragmentFromStatic } from '../to-fragment'
 import {
   createLayerInstanceStore,
   createLayerViewStore,
   type LayerInstanceStoreWithTemplate,
   type LayerViewStoreWithTemplate,
-} from '@/instance/layer-store'
+} from '@/runtime/layer-store'
 
 function slotMarker(_label: string) {
   return () => null as never

@@ -6,17 +6,17 @@ import {
   watch,
   type PropType,
 } from 'vue'
-import { mergeFragment } from '@/pipeline/merge-node-config'
-import { bindLayerTree } from '@/pipeline/bind-layer-tree'
+import { mergeFragment } from '@/config/merge-node-config'
+import { bindLayerTree } from '@/config/bind-layer-tree'
 import type { LayerAdapter, LayerConfigFragment } from '@/types'
-import { createLayerFragment } from '@/instance/layer-fragment'
+import { createLayerFragment } from '@/runtime/layer-fragment'
 import type {
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
-} from '@/instance/layer-store'
-import { renderLayerTree } from '@/render/render-layer-tree'
-import { LAYER_DEFINE_KEY } from '@/di/injection-keys'
-import { asViewHost, type ViewHost } from './view-host'
+} from '@/types/store'
+import { renderLayerTree } from '@/view/render-layer-tree'
+import { LAYER_DEFINE_KEY } from '@/view/injection-keys'
+import { asViewHost, type ViewHost } from '@/runtime/view-host'
 
 export const LayerView = defineComponent({
   name: 'LayerView',

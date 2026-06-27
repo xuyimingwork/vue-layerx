@@ -5,10 +5,10 @@ import {
   type ShallowRef,
 } from 'vue'
 import type { LayerAdapter } from '@/types'
-import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
-import { createLayerViewStore } from '@/instance/layer-store'
+import type { LayerInstanceStoreWithTemplate } from '@/types/store'
+import { createLayerViewStore } from '@/runtime/layer-store'
 import { LayerView } from './layer-view-component'
-import { type ViewHost } from './view-host'
+import { type ViewHost } from '@/runtime/view-host'
 
 export interface LayerViewState {
   visible: boolean

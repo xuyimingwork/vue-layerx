@@ -5,12 +5,12 @@ import {
   shallowRef,
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
-import { toFragmentFromInstance } from '@/pipeline/to-fragment'
-import { mergeFragment } from '@/pipeline/merge-node-config'
-import { attachLayerStore } from '@/instance/layer-internal'
-import { createLayerInstanceStore } from '@/instance/layer-store'
-import { createLayerView } from './layer-view'
-import { asViewHost, type ViewHost } from './view-host'
+import { toFragmentFromInstance } from '@/config/to-fragment'
+import { mergeFragment } from '@/config/merge-node-config'
+import { attachLayerStore } from '@/runtime/layer-internal'
+import { createLayerInstanceStore } from '@/runtime/layer-store'
+import { createLayerView } from '@/view/layer-view'
+import { asViewHost, type ViewHost } from '@/runtime/view-host'
 
 export function createLayerInstance({
   create,

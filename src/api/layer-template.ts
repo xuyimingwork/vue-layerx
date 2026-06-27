@@ -4,8 +4,8 @@ import {
   type VNode,
 } from 'vue'
 import type { LayerDefine, LayerInstance } from '@/types'
-import { isLayerDefine } from '@/define-layer'
-import { resolveLayerStore } from '@/instance/layer-internal'
+import { isLayerDefine } from './define-layer'
+import { resolveLayerStore } from '@/runtime/layer-internal'
 
 export type LayerTemplateTo = LayerInstance | LayerDefine
 

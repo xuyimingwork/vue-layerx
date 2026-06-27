@@ -1,7 +1,7 @@
 import type {
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
-} from '@/instance/layer-store'
+} from '@/types/store'
 
 export const LAYER_STORE = Symbol('vue-layerx:store')
 

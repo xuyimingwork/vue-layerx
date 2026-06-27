@@ -1,5 +1,5 @@
 import { h, type VNode } from 'vue'
-import { LAYER_CONTENT } from '@/content/layer-content'
+import { LAYER_CONTENT } from '@/view/layer-content'
 import type { LayerNormalized } from '@/types'
 
 export interface RenderLayerTreeOptions extends LayerNormalized {

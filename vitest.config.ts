@@ -8,11 +8,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(root, 'src'),
+      '@tests': path.resolve(root, 'tests'),
     },
   },
   test: {
     environment: 'jsdom',
-    include: ['src/**/__test__/**/*.test.ts'],
+    include: ['src/**/__test__/**/*.test.ts', 'tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
@@ -20,7 +21,7 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: [
         'src/**/__test__/**',
-        'src/__test__/**',
+        'tests/**',
         'src/**/types/**',
         'src/**/*.d.ts',
       ],

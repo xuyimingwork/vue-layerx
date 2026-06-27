@@ -1,28 +1,21 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
+import type {
+  LayerInstanceStoreInit,
+  LayerInstanceStoreWithTemplate,
+  LayerViewStoreWithTemplate,
+  TemplateSlotKey,
+} from '@/types/store'
 import type { LayerTemplateEntry } from '@/types/config'
-import { createLayerFragment, type LayerFragment } from '@/instance/layer-fragment'
+import { createLayerFragment, type LayerFragment } from '@/runtime/layer-fragment'
 
-export type TemplateSlotKey =
-  | 'use:template.container'
-  | 'use:template.content'
-  | 'define:template.container'
-
-export interface LayerInstanceStore {
-  create: LayerFragment
-  use: LayerFragment
-  open: LayerFragment
-  'use:template': LayerFragment
-}
-
-export interface LayerViewStore {
-  define: LayerFragment
-  'define:template': LayerFragment
-}
-
-export interface LayerInstanceStoreInit {
-  create: LayerFragment
-  use?: LayerFragment
-}
+export type {
+  TemplateSlotKey,
+  LayerInstanceStore,
+  LayerViewStore,
+  LayerInstanceStoreInit,
+  LayerInstanceStoreWithTemplate,
+  LayerViewStoreWithTemplate,
+} from '@/types/store'
 
 type LayerStoreMethods = {
   template: (opts: {
@@ -32,12 +25,6 @@ type LayerStoreMethods = {
   }) => void
   track: () => void
 }
-
-export type LayerInstanceStoreWithTemplate = UnwrapNestedRefs<LayerInstanceStore> &
-  LayerStoreMethods
-
-export type LayerViewStoreWithTemplate = UnwrapNestedRefs<LayerViewStore> &
-  LayerStoreMethods
 
 function warnDuplicate(name: string, scope: string) {
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return
