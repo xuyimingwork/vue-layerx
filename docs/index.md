@@ -22,5 +22,5 @@ features:
     details: useDetailLayer 覆盖详情、编辑、新建；adapt 窄屏换 Drawer。
   - icon: ✂️
     title: 比双 dialog 更短
-    details: 列表页一行 show({ mode })，无 v-model、无第二个工厂。
+    details: 列表页一行 open({ mode })，无 v-model、无第二个工厂。
 ---

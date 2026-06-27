@@ -7,58 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-06-27
+
+First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases may still include breaking changes.
+
 ### Added
 
-- **`LayerInstance.contentRef` / `containerRef`**：`computed`，仅 `visible=true` 时非 null；命令式访问 content / container 组件实例（`expose` 与模板 ref 同语义）
-- **`stripFragment(fragment, shouldStrip)`**：按点分 path 浅拷贝并剔除字段；`clone()` 折叠 `use` 前 strip 父 `use` 的 `*.props.ref`，避免多 instance 共享用户 Ref
-- **`LayerInstance.bindHost()`**：将 detached portal 绑定到当前 setup 的 Host，使 content 能 inherit `provide` / `appContext`（`useLayer` 在 setup 内自动调用；模块单例在 App setup 手动调用）
-- LayerView provides 桥接：从 live `viewHost` 读取 `provides` 与 `appContext`
-- `LayerTemplate` **`container`** prop: with `:to`, register into container slot chain (remote MyDialog slots)
+- **`LayerInstance.open` / `close` / `visible`** — lifecycle API (replaces 0.0.1 `show` / `hide`)
+- **`LayerInstance.contentRef` / `containerRef`** — `computed`; non-null only while `visible=true`; imperative access to content / container component instances
+- **`LayerInstance.bindHost()`** — bind portal inject context to current setup host (`useLayer` auto-calls in setup; module singletons call manually under App / ConfigProvider)
+- **`LayerInstance.clone(config?)`** — independent instance; folds parent `use` + config; does not inherit parent `use` `props.ref`
+- **`LayerTemplate`** — `:to` required (`LayerDefine` or `LayerInstance`); `container` prop for remote container slots; `visible-outside` for page-local rendering
+- **`defineLayer()`** — returns `LayerDefine` (`inLayer` / `outsideLayer`); registers only inside layer content
+- **`createLayer(Container, { adapter?, ... })`** — factory defaults + optional `LayerAdapter`
+- **`closeOn`** on content — bind merges user `onXxx` then `close()`
+- **`model`** on container — default `modelValue`; `bindContainerModel` merges user `onUpdate:${model}` then closes layer when false
+- **`props.ref`** — chained across merge tiers (except clone parent `use` strip); string ref unsupported
+- VitePress docs, playground, integration tests
 
-### Changed
+### Changed (breaking vs 0.0.1)
 
-- **Breaking:** `LayerAdapter` signature is `(fragment: LayerConfigFragment) => LayerConfigFragment`（移除 `LayerMerged` 类型）
-- **Breaking:** 管线增加 `mergeFragment(store.refs, adapted)`；`props.ref` 跨 tier **链式 compose**（`refs` 桶 internal ref 为第一源）；不支持 string ref
-- **Breaking:** `bindLayerTree` 入参 `merged` 改为 `fragment: LayerConfigFragment`
-- **Breaking:** 管线为 `merge → adapter → mergeFragment(refs, adapted) → bind → render`（`defaultResolve` replaced by `bindLayerTree`）
-- **Breaking:** `LayerTemplate` `:to` is required. Creator passes `defineLayer()` return value (`LayerDefine` with `inLayer` / `outsideLayer`); caller passes `LayerInstance`. Creator templates always register to `define:template.container`. Remove implicit creator path (`isInDirectLayerContent` / `CONTAINER_TEMPLATE_REGISTRY_KEY`).
-- **Breaking:** `defineLayer()` always returns `LayerDefine` (registers config only when `inLayer`); store attached via internal `LAYER_STORE` when in layer context.
-- **Breaking (internal):** Layer config store refactor: `layer-store.ts` with `createLayerStore` / `createLayerInstanceStore` / `createLayerViewStore`; `template({ key, name, entry })` replaces `registerContainerTemplate` / `registerContentTemplate`; `adapter` passed to `createLayerView` (not on store); merge via single `mergeFragment` in LayerView (remove `mergeLayerConfigStore`).
-- **Breaking (internal):** Unified merge priority: `open > use > use:template > define > define:template > create` (container/content same chain). `clone()` folds config into `use` at clone time (no `clone` store bucket).
-- **Breaking:** `open()` while already visible updates merge/props only; content remounts on **close then open** (not on every `open()`).
-- **Breaking (internal):** Merge `buildLayerView` + `createLayerRuntime` into `createLayerView({ store, state, host })`; remove `layer-runtime.ts` and `instance-registry.ts` (replaced by `LAYER_STORE` symbol on instance).
-- **Breaking (internal):** Rename `LayerConfigStore` / `createLayerConfigStore` → `LayerInstanceStore` / `createLayerInstanceStore` (`layer-instance-store.ts`).
-- **Breaking:** Instance lifecycle API: `show` / `hide` → `open` / `close`; readonly state getter `visible`.
-- **Breaking:** Container visibility: `visible: [prop, event]` tuple removed; use `model?: string` on container config (default `modelValue`, event `onUpdate:${model}`). Render via `bindContainerModel`.
-- **Breaking:** `hideOn` renamed to `closeOn`; lives on **content** node. `defineLayer` uses `content: { closeOn: [...] }`; `useX` / `open` keep top-level `closeOn`.
-- **Breaking:** Merge tier `show` renamed to `open` in `LayerConfigStore`.
-- **Breaking (internal):** Rename `LayerState` → `LayerConfigStore`, `mergeLayerState` → `mergeLayerConfigStore`, `createLayerState` → `createLayerConfigStore`; instance registry helpers `attachInternal` / `getInternal` → `attachConfigStore` / `getConfigStore`.
-- **Breaking:** Unify public config types: `LayerConfigStatic` (`createLayer` + `defineLayer`, top-level = container) and `LayerConfigInstance` (`useX` / `open` / `clone`, top-level = content). Remove legacy payload type names.
-- **Breaking:** `createLayer` second argument: container props at top-level (`props`) instead of `container: { props }`.
-- **Breaking:** `createLayer` third `adapter` argument removed; use `createLayer(Container, { adapter })`. `adapter` stored on `store.adapter` (not merged).
-- **Breaking (internal):** Remove `UseLayerContext`; config flows through `LayerConfigStore`. Container component written to `store.create.container.component`; content component written to `store.use` via `mergeFragment`.
-- **Breaking:** Merge tier rename: `partial` → `clone` in priority chains.
-- **Breaking:** LayerTemplate slot delivery now merges through **slot tiers** in `mergeLayerConfigStore`. Resolve no longer overlays templates after merge.
-- **Breaking:** Container slot priority: `open > clone > use > caller LayerTemplate (:to container) > define > creator LayerTemplate > create`
-- **Breaking:** Content slot priority: `open > clone > use > caller LayerTemplate (:to) > define > create`
-- **Breaking:** Remove `LayerBind`; use `LayerTemplate :to="instance"` to fill content slots from the caller side
-- **Breaking:** Rename config field `layer` → `container` on instance config, `LayerNormalized`, and `LayerMerged`
-- **Breaking:** Rename `layerTemplates` / `registerLayerTemplate` → `containerTemplates` / `registerContainerTemplate`; injection key `CONTAINER_TEMPLATE_REGISTRY_KEY`
+- Remove **`LayerBind`** — use `LayerTemplate :to="instance"`
+- Remove **`LayerMerged`** — `LayerAdapter` is `(fragment: LayerConfigFragment) => LayerConfigFragment`
+- **`show` / `hide`** → **`open` / `close`**
+- **`hideOn`** → **`closeOn`** (on content node)
+- Config field **`layer`** → **`container`**
+- **`createLayer`**: container props at top-level `props`; `adapter` in second-arg object (no third argument)
+- **`LayerTemplate`**: no implicit creator path; `:to` required
+- Merge pipeline: `merge → adapter → mergeFragment(refs, adapted) → bind → render`
+- **`open()`** while visible updates props only; **close then open** remounts content
+- **`clone()`** folds into child **`use`** tier (no separate clone store bucket)
+
+### Fixed
+
+- **`bindContainerModel`**: user-provided `onUpdate:${model}` is invoked before layer `close()` (same pattern as `closeOn`)
+
+### Notes
+
+- **SSR is not supported**
+- **0.0.1 was a placeholder** on npm; treat this as the first installable version
+- Migration: replace `show`/`hide` with `open`/`close`; replace `LayerBind` with `LayerTemplate :to`; move `adapter` into `createLayer` config object
 
 ## [0.0.1] - 2026-06-17
 
 ### Added
 
-- Initial public release
-- `createLayer` / `defineLayer` factory API
-- `LayerTemplate` / `LayerBind` components for declarative slot delivery
-- `show` / `hide` / `clone` instance API
-- `adapt` hook for container switching (e.g. Dialog → Drawer)
-- VitePress documentation and playground demos
+- Initial npm placeholder release
+- Early `createLayer` / `defineLayer` / `LayerTemplate` / `LayerBind` API (superseded by 0.1.0)
 
 ### Notes
 
-- Early release: API may change in subsequent 0.x versions
-- SSR is not supported
+- Placeholder only; use **0.1.0+** for real usage
 
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/xuyimingwork/vue-layerx/releases/tag/v0.0.1

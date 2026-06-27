@@ -25,7 +25,7 @@ src/
 
 每个 demo 目录：
 
-- `index.vue` — 使用侧（调用 show / 业务 UI / LayerTemplate :to）
+- `index.vue` — 使用侧（调用 open / close / 业务 UI / LayerTemplate :to）
 - `*Content.vue` — 定义侧（`defineLayer`、`LayerTemplate :to="layer"`）
 
 ## 运行

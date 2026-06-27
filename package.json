@@ -1,6 +1,6 @@
 {
   "name": "vue-layerx",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Vue3 命令式弹窗，一行唤起，零模板冗余",
   "type": "module",
   "main": "./dist/index.cjs",
