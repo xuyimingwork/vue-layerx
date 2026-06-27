@@ -3,20 +3,20 @@ import {
   getCurrentInstance,
   h,
   provide,
-  reactive,
   ref,
   render,
-  shallowRef,
   watch,
   type Component,
   type PropType,
   type ShallowRef,
 } from 'vue'
-import { mergeLayerConfigStore } from '@/pipeline/merge-config'
+import { mergeFragment } from '@/pipeline/merge-node-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerConfigFragment, LayerRenderPlan, LayerTemplateEntry } from '@/types'
+import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan, LayerTemplateEntry } from '@/types'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
-import type { LayerInstanceStoreWithRegistry } from '@/instance/layer-instance-store'
+import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
+import { createLayerFragment } from '@/instance/layer-fragment'
+import { createLayerViewStore } from '@/instance/layer-store'
 import { renderLayerTree } from '@/render/render-layer-tree'
 import {
   LAYER_DEFINE_KEY,
@@ -34,14 +34,14 @@ export interface LayerViewHandle {
 }
 
 export function createLayerView(options: {
-  store: LayerInstanceStoreWithRegistry
+  store: LayerInstanceStoreWithTemplate
   state: LayerViewState
   host: ShallowRef<ViewHost | null>
+  adapter?: LayerAdapter
 }): LayerViewHandle {
-  const { store, state, host } = options
+  const { store, state, host, adapter } = options
 
-  const defineFragment = shallowRef<LayerConfigFragment | null>(null)
-  const creatorContainer = reactive<LayerConfigFragment>({ container: { slots: {} } })
+  const viewStore = createLayerViewStore()
   const contentMountKey = ref(0)
   let container: HTMLElement | null = null
 
@@ -76,30 +76,47 @@ export function createLayerView(options: {
 
       provide(LAYER_DEFINE_KEY, {
         register(fragment: LayerConfigFragment) {
-          defineFragment.value = fragment
+          viewStore.define = fragment
         },
       })
 
       provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
-        registerContainerTemplate(name: string, entry: LayerTemplateEntry) {
-          if (!creatorContainer.container) creatorContainer.container = {}
-          if (!creatorContainer.container.slots) creatorContainer.container.slots = {}
-          creatorContainer.container.slots[name] = (slotProps) => entry.render(slotProps ?? {})
+        template({
+          name,
+          entry,
+        }: {
+          name: string
+          entry: LayerTemplateEntry
+        }) {
+          viewStore.template({
+            key: 'define:template.container',
+            name,
+            entry,
+          })
         },
       })
 
       return () => {
-        void defineFragment.value
-        void store.open
-        void creatorContainer.container?.slots
-        void store.callerContainer.container?.slots
-        void store.callerContent.content?.slots
+        store.track()
+        viewStore.track()
         void contentMountKey.value
 
-        const merged = mergeLayerConfigStore(store, defineFragment.value, creatorContainer)
+        const fragment = mergeFragment(
+          store.create,
+          viewStore['define:template'],
+          viewStore.define,
+          store['use:template'],
+          store.use,
+          store.open,
+        )
+
+        const merged = {
+          container: fragment.container ?? {},
+          content: fragment.content ?? {},
+        }
 
         const resolved = defaultResolve({ merged, close: props.onClose })
-        const normalized = store.adapter ? store.adapter(resolved) : resolved
+        const normalized = adapter ? adapter(resolved) : resolved
 
         const plan: LayerRenderPlan = {
           ...normalized,
@@ -145,8 +162,8 @@ export function createLayerView(options: {
     () => state.visible,
     (visible, prev) => {
       if (visible && !prev) {
-        defineFragment.value = null
-        if (creatorContainer.container) creatorContainer.container.slots = {}
+        viewStore.define = createLayerFragment()
+        viewStore['define:template'] = createLayerFragment()
         contentMountKey.value++
       }
       if (!container && !visible) return

@@ -564,31 +564,19 @@ wide.open({ props: { id: 1 } })
 
 ### 优先级
 
-**container.props / content.props / component**（常规实例）：
+**统一 merge 链**（container / content 同一顺序；`mergeFragment` 低 → 高传参）：
 
 ```text
-open > clone > use > define > create
-```
-
-**container.slots**（低 → 高，后者覆盖前者）：
-
-```text
-create > creator LayerTemplate > define > caller LayerTemplate (:to container) > use > clone > open
-```
-
-**content.slots**：
-
-```text
-create > caller LayerTemplate (:to) > use > clone > open
+open > use > use:template > define > define:template > create
 ```
 
 `LayerTemplate` 与命令式 `slots` **同构**：均为 `SlotRenderFn`，在 merge 阶段按 tier 合并。resolve 直接透传 `LayerMerged.*.slots`。
 
-`clone` 派生实例：`clone` tier 介于 `open` 与 `use` 之间（props 与 slots 均适用）。
+`clone()` 派生实例：**无独立 `clone` tier**；`clone(config)` 时用 `mergeFragment(parent.use, config)` 写入新实例的 `use`（等效 clone 默认高于原 `use`、低于 `open`）。
 
-### 内部 LayerInstanceStore
+### 内部 Layer store
 
-每个 layer 实例维护 **`LayerInstanceStore`**（`create` / `use` / `clone` / `open` / `callerContainer` / `callerContent`）；**`defineLayer` tier 与 creator `LayerTemplate` 由 LayerView 内部维护**，render 时 `mergeLayerConfigStore(store, defineFragment, creatorContainer)` 汇合并 resolve。`:to` 注册通过 instance 私有 `Symbol` 访问 store 的 `registerContainerTemplate` / `registerContentTemplate`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`create` / `use` / `open` / `use:template`）；**LayerView 内部 `createLayerViewStore`**（`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇合并 resolve。`:to` 注册通过 instance 私有 `Symbol` 访问 `store.template({ key: 'use:template.*', ... })`。
 
 ### merge 后字段来源示例
 
@@ -596,21 +584,24 @@ create > caller LayerTemplate (:to) > use > clone > open
 
 ```text
 create.props
+  → define:template.props
   → define.props
+  → use:template.container.props
   → use.container.props
-  → clone.container.props
   → open.container.props
 ```
 
 **content.props**（`use` / `open` 顶层 `props` = `content.props`）：
 
 ```text
-use.props
-  → clone.props
+create.content.props
+  → define.content.props
+  → use:template.content.props
+  → use.props
   → open.props
 ```
 
-`closeOn`：`define.content` → `use` → `clone` → `open`（后者覆盖）。`model` 在 container 链：`create` → `define` → `use.container` → `clone.container` → `open.container`。
+`closeOn`：`define.content` → `use:template.content` → `use` → `open`（后者覆盖）。`model` 在 container 链：`create` → `define:template` → `define` → `use:template.container` → `use.container` → `open.container`。
 
 ### `closeOn`（使用侧语法糖）
 

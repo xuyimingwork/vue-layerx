@@ -107,7 +107,7 @@ export const demoGroups: DemoGroup[] = [
         title: '配置合并',
         description:
           '四级优先级：createLayer(defaults) → defineLayer → useDialog → open()。对比默认与 open 覆盖的标题、宽度。',
-        tags: ['mergeLayerConfigStore', 'open > use > define > create'],
+        tags: ['mergeFragment', 'open > use > define > create'],
         component: ConfigMergeDemo,
       },
     ],

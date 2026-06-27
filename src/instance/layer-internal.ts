@@ -1,15 +1,15 @@
 import type { LayerInstance } from '@/types'
-import type { LayerInstanceStoreWithRegistry } from '@/instance/layer-instance-store'
+import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
 
 export const LAYER_STORE = Symbol('vue-layerx:store')
 
 export type LayerInstanceWithStore = LayerInstance & {
-  readonly [LAYER_STORE]?: LayerInstanceStoreWithRegistry
+  readonly [LAYER_STORE]?: LayerInstanceStoreWithTemplate
 }
 
 export function attachLayerStore(
   instance: object,
-  store: LayerInstanceStoreWithRegistry,
+  store: LayerInstanceStoreWithTemplate,
 ): void {
   Object.defineProperty(instance, LAYER_STORE, {
     value: store,
@@ -19,7 +19,7 @@ export function attachLayerStore(
   })
 }
 
-export function resolveLayerStore(instance: LayerInstance): LayerInstanceStoreWithRegistry {
+export function resolveLayerStore(instance: LayerInstance): LayerInstanceStoreWithTemplate {
   const store = (instance as LayerInstanceWithStore)[LAYER_STORE]
   if (!store) {
     throw new Error('[vue-layerx] LayerInstance config store not found')

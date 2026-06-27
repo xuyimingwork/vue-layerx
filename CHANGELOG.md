@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking (internal):** Layer config store refactor: `layer-store.ts` with `createLayerStore` / `createLayerInstanceStore` / `createLayerViewStore`; `template({ key, name, entry })` replaces `registerContainerTemplate` / `registerContentTemplate`; `adapter` passed to `createLayerView` (not on store); merge via single `mergeFragment` in LayerView (remove `mergeLayerConfigStore`).
+- **Breaking (internal):** Unified merge priority: `open > use > use:template > define > define:template > create` (container/content same chain). `clone()` folds config into `use` at clone time (no `clone` store bucket).
 - **Breaking:** `open()` while already visible updates merge/props only; content remounts on **close then open** (not on every `open()`).
 - **Breaking (internal):** Merge `buildLayerView` + `createLayerRuntime` into `createLayerView({ store, state, host })`; remove `layer-runtime.ts` and `instance-registry.ts` (replaced by `LAYER_STORE` symbol on instance).
 - **Breaking (internal):** Rename `LayerConfigStore` / `createLayerConfigStore` → `LayerInstanceStore` / `createLayerInstanceStore` (`layer-instance-store.ts`).

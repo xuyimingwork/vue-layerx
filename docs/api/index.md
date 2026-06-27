@@ -65,7 +65,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 - **caller content**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`。
 - **caller container**（`:to` + `container`）：投进 Dialog 等同名 slot；优先级高于 creator。
 
-**slot 优先级**（container 链）：`open > clone > useX > caller template > defineLayer > creator template > createLayer`。content 链：`open > clone > useX > caller template > define > create`。
+**slot 优先级**（统一链）：`open > use > use:template > define > define:template > create`。
 
 `:to` 为 `useX(Content)` 返回的 `LayerInstance`。
 

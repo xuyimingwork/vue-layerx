@@ -6,8 +6,9 @@ import {
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance } from '@/types'
 import { toFragmentFromInstance } from '@/pipeline/to-fragment'
+import { mergeFragment } from '@/pipeline/merge-node-config'
 import { attachLayerStore } from '@/instance/layer-internal'
-import { createLayerInstanceStore } from '@/instance/layer-instance-store'
+import { createLayerInstanceStore } from '@/instance/layer-store'
 import { createLayerView } from './layer-view'
 import { asViewHost, type ViewHost } from './view-host'
 
@@ -15,26 +16,19 @@ export function createLayerInstance({
   create,
   adapter,
   use,
-  clone,
 }: {
   create: LayerConfigFragment
   adapter?: LayerAdapter
   use: LayerConfigFragment
-  clone?: LayerConfigFragment
 }): LayerInstance {
-  const store = createLayerInstanceStore({
-    create,
-    adapter,
-    use,
-    clone,
-  })
+  const store = createLayerInstanceStore({ create, use })
 
   const state = reactive({
     visible: false,
   })
 
   const host = shallowRef<ViewHost | null>(null)
-  const view = createLayerView({ store, state, host })
+  const view = createLayerView({ store, state, host, adapter })
 
   const dispose = () => {
     state.visible = false
@@ -69,8 +63,7 @@ export function createLayerInstance({
       const cloned = createLayerInstance({
         create,
         adapter,
-        use,
-        clone: toFragmentFromInstance(config),
+        use: mergeFragment(use, toFragmentFromInstance(config)),
       })
       cloned.bindHost()
       return cloned

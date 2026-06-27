@@ -4,6 +4,7 @@ import type {
   LayerConfigStatic,
   LayerTemplateEntry,
 } from '@/types/config'
+import { createLayerFragment } from '@/instance/layer-fragment'
 import { mergeFragment } from './merge-node-config'
 import { materializeTemplates } from './materialize-templates'
 
@@ -34,4 +35,5 @@ export function toTemplateFragment(
     : { content: { slots } }
 }
 
-export const EMPTY_LAYER_FRAGMENT: LayerConfigFragment = Object.freeze({})
+/** @deprecated use createLayerFragment() */
+export const EMPTY_LAYER_FRAGMENT: LayerConfigFragment = createLayerFragment()
