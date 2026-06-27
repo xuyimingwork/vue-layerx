@@ -634,9 +634,9 @@ describe('createLayer (integration)', () => {
     })
   })
 
-  it('forwards content scoped slot props into LayerTemplate slotProps', async () => {
+  it('forwards content scoped slot props when to is set', async () => {
     const useLayer = createLayer(Container)
-    let captured: LayerTemplateScope | undefined
+    let captured: Record<string, unknown> | undefined
 
     const Content = defineComponent({
       name: 'ContentWithScopedSlot',
@@ -651,9 +651,9 @@ describe('createLayer (integration)', () => {
       setup() {
         dialog = useLayer(Content)
         return () =>
-          h(LayerTemplate, { to: dialog, name: 'extra' }, (templateScope: LayerTemplateScope) => {
-            captured = templateScope
-            return h('span', { class: 'scoped-extra' }, String(templateScope.slotProps.data))
+          h(LayerTemplate, { to: dialog, name: 'extra' }, (props: Record<string, unknown>) => {
+            captured = props
+            return h('span', { class: 'scoped-extra' }, String(props.data))
           })
       },
     })
@@ -664,11 +664,7 @@ describe('createLayer (integration)', () => {
     await new Promise((r) => setTimeout(r, 0))
 
     expect(document.body.querySelector('.scoped-extra')?.textContent).toBe('from-content')
-    expect(captured).toEqual({
-      inLayer: true,
-      outsideLayer: false,
-      slotProps: { data: 'from-content' },
-    })
+    expect(captured).toEqual({ data: 'from-content' })
   })
 
   it('forwards layer scoped slot props into LayerTemplate slotProps', async () => {

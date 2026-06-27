@@ -80,9 +80,9 @@ describe('LayerTemplate', () => {
     expect(document.body.querySelector('.scoped-extra')).toBeTruthy()
   })
 
-  it('forwards content slot props into slotProps when to is set', async () => {
+  it('forwards content slot props when to is set', async () => {
     const useLayer = createLayer(Container)
-    let captured: LayerTemplateScope | undefined
+    let captured: Record<string, unknown> | undefined
 
     const Content = defineComponent({
       name: 'ScopedContent',
@@ -98,9 +98,9 @@ describe('LayerTemplate', () => {
       setup() {
         dialog = useLayer(Content)
         return () =>
-          h(LayerTemplate, { to: dialog, name: 'extra' }, (templateScope: LayerTemplateScope) => {
-            captured = templateScope
-            return h('span', { class: 'scoped-extra' }, String(templateScope.slotProps.token))
+          h(LayerTemplate, { to: dialog, name: 'extra' } as any, (props: Record<string, unknown>) => {
+            captured = props
+            return h('span', { class: 'scoped-extra' }, String(props.token))
           })
       },
     })
@@ -111,11 +111,7 @@ describe('LayerTemplate', () => {
     await new Promise((r) => setTimeout(r, 0))
 
     expect(document.body.querySelector('.scoped-extra')?.textContent).toBe('abc')
-    expect(captured).toEqual({
-      inLayer: true,
-      outsideLayer: false,
-      slotProps: { token: 'abc' },
-    })
+    expect(captured).toEqual({ token: 'abc' })
   })
 
   it('fills container slot when to and container are set', async () => {

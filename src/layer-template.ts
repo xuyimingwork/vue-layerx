@@ -1,26 +1,27 @@
 import {
-  computed,
   defineComponent,
   getCurrentInstance,
   inject,
-  onMounted,
   type PropType,
   type VNode,
 } from 'vue'
-import type { LayerInstance, LayerTemplateScope } from '@/types'
+import type { LayerInstance } from '@/types'
 import { isInDirectLayerContent } from '@/context/in-layer-content'
-import { CONTAINER_TEMPLATE_REGISTRY_KEY } from '@/di/injection-keys'
+import {
+  CONTAINER_TEMPLATE_REGISTRY_KEY,
+  type ContainerTemplateRegistry,
+} from '@/di/injection-keys'
 import { resolveLayerStore } from '@/instance/layer-internal'
+import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
 
-function buildTemplateScope(
-  slotProps: Record<string, unknown>,
-  layer: Pick<LayerTemplateScope, 'inLayer' | 'outsideLayer'>,
-): LayerTemplateScope {
-  return {
-    slotProps,
-    inLayer: layer.inLayer,
-    outsideLayer: layer.outsideLayer,
-  }
+function useLayerInstanceStore(
+  instance: LayerInstance,
+): LayerInstanceStoreWithTemplate {
+  return resolveLayerStore(instance)
+}
+
+function useLayerViewStore(): ContainerTemplateRegistry | null {
+  return inject(CONTAINER_TEMPLATE_REGISTRY_KEY, null)
 }
 
 export const LayerTemplate = defineComponent({
@@ -45,49 +46,44 @@ export const LayerTemplate = defineComponent({
     },
   },
   setup(props, { slots }) {
-    const containerRegistry = inject(CONTAINER_TEMPLATE_REGISTRY_KEY, null)
     const instance = getCurrentInstance()
 
-    const inLayer = computed(
-      () => !props.to && containerRegistry !== null && isInDirectLayerContent(instance),
-    )
-    const boundToInstance = computed(() => props.to != null)
+    if (props.to) {
+      useLayerInstanceStore(props.to).template({
+        key: props.container ? 'use:template.container' : 'use:template.content',
+        name: props.name,
+        entry: {
+          render: (slotProps = {}) => slots.default?.(slotProps) ?? null,
+        },
+      })
+      return () => null
+    }
 
-    const renderSlot = (templateScope: LayerTemplateScope): VNode | VNode[] | null =>
-      slots.default?.(templateScope) ?? null
+    if (isInDirectLayerContent(instance)) {
+      useLayerViewStore()?.template({
+        key: 'define:template.container',
+        name: props.name,
+        entry: {
+          render: (slotProps = {}) =>
+            slots.default?.({
+              slotProps,
+              inLayer: true,
+              outsideLayer: false,
+            }) ?? null,
+        },
+      })
+      return () => null
+    }
 
-    onMounted(() => {
-      const renderWithScope =
-        (layer: Pick<LayerTemplateScope, 'inLayer' | 'outsideLayer'>) =>
-        (slotProps: Record<string, unknown> = {}) =>
-          renderSlot(buildTemplateScope(slotProps, layer))
-
-      if (props.to) {
-        const internal = resolveLayerStore(props.to)
-        const entry = {
-          render: renderWithScope({ inLayer: true, outsideLayer: false }),
-        }
-        internal.template({
-          key: props.container ? 'use:template.container' : 'use:template.content',
-          name: props.name,
-          entry,
-        })
-        return
-      }
-      if (inLayer.value && containerRegistry) {
-        containerRegistry.template({
-          name: props.name,
-          entry: {
-            render: renderWithScope({ inLayer: true, outsideLayer: false }),
-          },
-        })
-      }
-    })
-
-    return () => {
-      if (boundToInstance.value || inLayer.value) return null
+    return (): VNode | VNode[] | null => {
       if (!props.visibleOutside) return null
-      return renderSlot(buildTemplateScope({}, { inLayer: false, outsideLayer: true }))
+      return (
+        slots.default?.({
+          slotProps: {},
+          inLayer: false,
+          outsideLayer: true,
+        }) ?? null
+      )
     }
   },
 })

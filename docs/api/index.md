@@ -33,7 +33,7 @@ defineLayer({
 
 ## `LayerTemplate`
 
-`#default` 插槽参数为 `LayerTemplateScope`：
+**creator**（content 内，无 `to`）与 **visible-outside** 的 `#default` 插槽参数为 `LayerTemplateScope`：
 
 ```ts
 interface LayerTemplateScope<T = Record<string, unknown>> {
@@ -44,6 +44,8 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 }
 ```
 
+**caller**（`:to` / `:to container`）的 `#default` 与 Vue scoped slot 相同：目标 slot 的 props **flat 透传**（无 `inLayer` / `outsideLayer` / `slotProps` 包装）。
+
 ```vue
 <!-- content 内：投进 container 同名 slot -->
 <LayerTemplate name="footer" v-slot="{ inLayer, outsideLayer, slotProps }">
@@ -51,19 +53,19 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 </LayerTemplate>
 
 <!-- 调用方：远程投进 content 同名 slot -->
-<LayerTemplate :to="userLayer" name="form-end" v-slot="{ slotProps: { data } }">
+<LayerTemplate :to="userLayer" name="form-end" v-slot="{ data }">
   ...
 </LayerTemplate>
 
 <!-- 调用方：远程投进 Dialog 等同名 slot（覆盖 content 内 LayerTemplate） -->
-<LayerTemplate :to="userLayer" container name="footer">
+<LayerTemplate :to="userLayer" container name="footer" v-slot="{ confirmLoading }">
   ...
 </LayerTemplate>
 ```
 
 - **creator**（content 内，无 `to`）：投进 Dialog 等同名 slot；`slotProps` 来自容器 slot 的 scoped props。
-- **caller content**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`。
-- **caller container**（`:to` + `container`）：投进 Dialog 等同名 slot；优先级高于 creator。
+- **caller content**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`；`#default` 参数即 content slot 的 scoped props。
+- **caller container**（`:to` + `container`）：投进 Dialog 等同名 slot；优先级高于 creator；`#default` 参数即 container slot 的 scoped props。
 
 **slot 优先级**（统一链）：`open > use > use:template > define > define:template > create`。
 

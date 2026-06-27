@@ -19,7 +19,7 @@ export function attachLayerStore(
   })
 }
 
-export function resolveLayerStore(instance: LayerInstance): LayerInstanceStoreWithTemplate {
+export function  resolveLayerStore(instance: LayerInstance): LayerInstanceStoreWithTemplate {
   const store = (instance as LayerInstanceWithStore)[LAYER_STORE]
   if (!store) {
     throw new Error('[vue-layerx] LayerInstance config store not found')

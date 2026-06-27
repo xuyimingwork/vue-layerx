@@ -273,7 +273,8 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 | **inLayer**（direct layer content 内，弹层打开） | 不占 SFC 原位置 DOM；经 slot render fn 作为 `normalized.container.slots[name]` 投进 **MyDialog** 同名 slot |
 | **outsideLayer**（页内等非 direct layer content 上下文） | 默认不占 DOM、不投递；见 `visible-outside` |
 | `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**inLayer 时忽略此配置**，仍走 slot render fn 投进 layer slot |
-| `#default` 参数 | `inLayer` / `outsideLayer` 表示渲染上下文；`slotProps` 为同名 slot 的 scoped props 原样转发，默认 `{}`（container / content 链一致） |
+| `#default` 参数（creator / `visible-outside`） | `LayerTemplateScope`：`inLayer` / `outsideLayer` 表示渲染上下文；`slotProps` 为容器 slot 的 scoped props 原样转发，默认 `{}` |
+| `#default` 参数（`:to` / `:to container`） | 与 Vue scoped slot 相同：目标 slot 的 scoped props **flat 透传**（无 `inLayer` / `outsideLayer` / `slotProps` 包装） |
 | `:to` | 绑定 `LayerInstance`，注册进 **caller content** tier；远程填充 content 同名 `<slot>` |
 | `:to` + `container` | 注册进 **caller container** tier；远程填充 MyDialog 同名 slot |
 

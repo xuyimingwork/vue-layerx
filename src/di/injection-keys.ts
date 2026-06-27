@@ -1,5 +1,6 @@
 import type { InjectionKey } from 'vue'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
+import type { TemplateSlotKey } from '@/instance/layer-store'
 
 export type LayerDefineRegistry = {
   register: (fragment: LayerConfigFragment) => void
@@ -10,7 +11,11 @@ export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
   Symbol('vue-layerx-define') as InjectionKey<LayerDefineRegistry>
 
 export type ContainerTemplateRegistry = {
-  template: (opts: { name: string; entry: LayerTemplateEntry }) => void
+  template: (opts: {
+    key: TemplateSlotKey
+    name: string
+    entry: LayerTemplateEntry
+  }) => void
 }
 
 export const CONTAINER_TEMPLATE_REGISTRY_KEY: InjectionKey<ContainerTemplateRegistry> =

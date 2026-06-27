@@ -12,7 +12,7 @@ import {
 } from 'vue'
 import { mergeFragment } from '@/pipeline/merge-node-config'
 import { defaultResolve } from '@/pipeline/default-resolve'
-import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan, LayerTemplateEntry } from '@/types'
+import type { LayerAdapter, LayerConfigFragment, LayerRenderPlan } from '@/types'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
 import type { LayerInstanceStoreWithTemplate } from '@/instance/layer-store'
 import { createLayerFragment } from '@/instance/layer-fragment'
@@ -80,21 +80,7 @@ export function createLayerView(options: {
         },
       })
 
-      provide(CONTAINER_TEMPLATE_REGISTRY_KEY, {
-        template({
-          name,
-          entry,
-        }: {
-          name: string
-          entry: LayerTemplateEntry
-        }) {
-          viewStore.template({
-            key: 'define:template.container',
-            name,
-            entry,
-          })
-        },
-      })
+      provide(CONTAINER_TEMPLATE_REGISTRY_KEY, { template: viewStore.template })
 
       return () => {
         store.track()
@@ -145,16 +131,11 @@ export function createLayerView(options: {
     }
   }
 
-  function mountPortal() {
+  function patchPortal() {
     if (!container) {
       container = document.createElement('div')
       document.body.appendChild(container)
     }
-    render(h(LayerView, buildProps()), container)
-  }
-
-  function patchPortal() {
-    if (!container) return
     render(h(LayerView, buildProps()), container)
   }
 
@@ -167,8 +148,7 @@ export function createLayerView(options: {
         contentMountKey.value++
       }
       if (!container && !visible) return
-      if (!container) mountPortal()
-      else patchPortal()
+      patchPortal()
     },
     { flush: 'sync' },
   )
