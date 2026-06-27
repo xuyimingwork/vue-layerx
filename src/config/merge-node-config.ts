@@ -1,7 +1,7 @@
 import type {
-  LayerConfigNodeBase,
-  LayerConfigNodeContainer,
-  LayerConfigNodeContent,
+  LayerConfigNode,
+  LayerConfigContainer,
+  LayerConfigContent,
   LayerProps,
 } from '@/types/config'
 
@@ -15,9 +15,9 @@ export function mergeProps(...sources: (LayerProps | undefined)[]): LayerProps {
 }
 
 export function mergeNodeConfig(
-  ...sources: (LayerConfigNodeBase | undefined)[]
-): LayerConfigNodeBase {
-  const result: LayerConfigNodeBase = {}
+  ...sources: (LayerConfigNode | undefined)[]
+): LayerConfigNode {
+  const result: LayerConfigNode = {}
   for (const source of sources) {
     if (!source) continue
     if (source.component !== undefined) result.component = source.component
@@ -30,9 +30,9 @@ export function mergeNodeConfig(
 }
 
 export function mergeContainerNode(
-  ...sources: (LayerConfigNodeContainer | undefined)[]
-): LayerConfigNodeContainer {
-  const result: LayerConfigNodeContainer = mergeNodeConfig(...sources)
+  ...sources: (LayerConfigContainer | undefined)[]
+): LayerConfigContainer {
+  const result: LayerConfigContainer = mergeNodeConfig(...sources)
   for (const source of sources) {
     if (source?.model !== undefined) result.model = source.model
   }
@@ -40,9 +40,9 @@ export function mergeContainerNode(
 }
 
 export function mergeContentNode(
-  ...sources: (LayerConfigNodeContent | undefined)[]
-): LayerConfigNodeContent {
-  const result: LayerConfigNodeContent = mergeNodeConfig(...sources)
+  ...sources: (LayerConfigContent | undefined)[]
+): LayerConfigContent {
+  const result: LayerConfigContent = mergeNodeConfig(...sources)
   for (const source of sources) {
     if (source?.closeOn !== undefined) result.closeOn = source.closeOn
   }

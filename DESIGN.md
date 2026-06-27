@@ -47,7 +47,7 @@ UserDialog = MyDialog + UserForm
 ④ render     renderLayerTree(normalized)  →  h(...)
 ```
 
-- **merge**：各层贡献 **LayerConfigNodeBase 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
+- **merge**：各层贡献 **LayerConfigNode 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
 - **adapt**：在 **LayerMerged** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
 - **bind**：`bindLayerTree` 将 merge/adapt 结果归一化，并把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + `onUpdate:${model}`。
 - **render**：纯 `h()` 绑定 props / slots；**close 后再 open** 时 remount content；已打开时再次 `open()` 只更新 merge/props。
@@ -262,22 +262,22 @@ layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 p
 ```ts
 type SlotRenderFn = (props?: Record<string, unknown>) => VNode | VNode[] | null
 
-type LayerConfigNodeBase = {
+type LayerConfigNode = {
   component?: Component
   props?: Record<string, unknown>
   slots?: Record<string, SlotRenderFn>
 }
 
 /** container：model = v-model prop 名（事件 onUpdate:${model}） */
-type LayerConfigNodeContainer = LayerConfigNodeBase & { model?: string }
+type LayerConfigContainer = LayerConfigNode & { model?: string }
 
 /** content：closeOn = content emit → layer.close() */
-type LayerConfigNodeContent = LayerConfigNodeBase & { closeOn?: string[] }
+type LayerConfigContent = LayerConfigNode & { closeOn?: string[] }
 
 /** merge 完成后 */
 type LayerMerged = {
-  content: LayerConfigNodeContent
-  container: LayerConfigNodeContainer
+  content: LayerConfigContent
+  container: LayerConfigContainer
 }
 
 type LayerNodeNormalized = {
@@ -307,13 +307,13 @@ type LayerNormalized = {
 
 ```ts
 /** createLayer + defineLayer — 顶层 = container */
-type LayerConfigStatic = LayerConfigNodeContainer & {
-  content?: LayerConfigNodeContent
+type LayerConfigStatic = LayerConfigContainer & {
+  content?: LayerConfigContent
 }
 
 /** useX / open / clone — 顶层 = content */
-type LayerConfigInstance = LayerConfigNodeContent & {
-  container?: LayerConfigNodeContainer
+type LayerConfigInstance = LayerConfigContent & {
+  container?: LayerConfigContainer
 }
 
 const DEFAULT_CONTAINER_MODEL = 'modelValue'
@@ -593,8 +593,8 @@ const layer = defineLayer({
 `useX` 由 `createLayer` 返回。`config` 与 `open` **同构**，类型为 **`LayerConfigInstance`**（顶层 = content，嵌套 `container`）：
 
 ```ts
-type LayerConfigInstance = LayerConfigNodeContent & {
-  container?: LayerConfigNodeContainer
+type LayerConfigInstance = LayerConfigContent & {
+  container?: LayerConfigContainer
 }
 ```
 
@@ -978,7 +978,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 ## 推导小结
 
 1. **配置片段** merge：props/component 常规 `open > clone > use > define > create`；**slots** 含 LayerTemplate tier（见「配置 merge」）。
-2. **content / container 同构**（`LayerConfigNodeBase`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
+2. **content / container 同构**（`LayerConfigNode`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
 3. **merge → adapter → bind → render**；每实例**单一** `adapter`；`open` 覆盖 merge 但不跳过 adapter；close 后再 open remount content。
 4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `LayerMerged.*.slots`；adapter 可搬 slot key；bind 透传。
 5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
