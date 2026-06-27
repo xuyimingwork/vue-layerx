@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isLayerContent, LAYERX_LAYER_CONTENT } from '../layer-content'
+import { isLayerContent, LAYER_CONTENT } from '../layer-content'
 
 describe('isLayerContent', () => {
   it('returns false for null/undefined', () => {
@@ -8,11 +8,11 @@ describe('isLayerContent', () => {
   })
 
   it('detects marker on props', () => {
-    expect(isLayerContent({ props: { [LAYERX_LAYER_CONTENT]: true } } as never)).toBe(true)
+    expect(isLayerContent({ props: { [LAYER_CONTENT]: true } } as never)).toBe(true)
   })
 
   it('detects marker on attrs', () => {
-    expect(isLayerContent({ attrs: { [LAYERX_LAYER_CONTENT]: true } } as never)).toBe(true)
+    expect(isLayerContent({ attrs: { [LAYER_CONTENT]: true } } as never)).toBe(true)
   })
 
   it('detects marker on vnode.props', () => {
@@ -20,7 +20,7 @@ describe('isLayerContent', () => {
       isLayerContent({
         props: {},
         attrs: {},
-        vnode: { props: { [LAYERX_LAYER_CONTENT]: true } },
+        vnode: { props: { [LAYER_CONTENT]: true } },
       } as never),
     ).toBe(true)
   })

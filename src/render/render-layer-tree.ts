@@ -1,5 +1,5 @@
 import { h, type VNode } from 'vue'
-import { LAYERX_LAYER_CONTENT } from '@/content/layer-content'
+import { LAYER_CONTENT } from '@/content/layer-content'
 import type { LayerNormalized } from '@/types'
 
 export interface RenderLayerTreeOptions extends LayerNormalized {
@@ -18,7 +18,7 @@ export function renderLayerTree({
           {
             ...content.props,
             key: contentMountKey,
-            [LAYERX_LAYER_CONTENT]: true,
+            [LAYER_CONTENT]: true,
           },
           content.slots,
         )

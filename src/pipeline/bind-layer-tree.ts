@@ -1,6 +1,6 @@
 import type { LayerMerged, LayerNormalized } from '@/types/config'
 import { DEFAULT_CONTAINER_MODEL } from '@/types/config'
-import { bindContainerModel } from '@/render/bind-container-model'
+import { bindContainerModel } from './bind-container-model'
 import { bindCloseOn } from './bind-close-on'
 
 export interface BindLayerTreeContext {
