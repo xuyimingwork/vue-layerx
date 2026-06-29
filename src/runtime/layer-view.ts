@@ -43,48 +43,47 @@ export function createLayerView(options: {
   const { store, state, host, adapter } = options
   const viewStore = createLayerViewStore()
 
-  let container: HTMLElement | null = null
+  let el: HTMLElement | null = null
 
-  function buildProps() {
-    return {
-      visible: state.visible,
-      host: host.value,
-      'onUpdate:visible': (value: boolean) => {
-        state.visible = value
-      },
-      store,
-      viewStore,
-      adapter,
-    }
-  }
-
-  function patchPortal() {
+  function patch() {
     if (!canUseDom()) return
-    if (!container) {
-      container = document.createElement('div')
-      document.body.appendChild(container)
+    if (!el) {
+      el = document.createElement('div')
+      document.body.appendChild(el)
     }
-    render(h(LayerView, buildProps()), container)
+    render(
+      h(LayerView, {
+        visible: state.visible,
+        host: host.value,
+        'onUpdate:visible': (value: boolean) => {
+          state.visible = value
+        },
+        store,
+        viewStore,
+        adapter,
+      }),
+      el,
+    )
   }
 
   watch(
     [() => state.visible, () => host.value],
     () => {
-      if (!container && !state.visible) return
-      patchPortal()
+      if (!el && !state.visible) return
+      patch()
     },
     { flush: 'sync', immediate: true },
   )
 
   return {
     get mounted() {
-      return container !== null
+      return el !== null
     },
     unmount() {
-      if (!container) return
-      render(null, container)
-      container.remove()
-      container = null
+      if (!el) return
+      render(null, el)
+      el.remove()
+      el = null
     },
   }
 }

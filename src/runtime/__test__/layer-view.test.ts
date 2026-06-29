@@ -21,7 +21,7 @@ afterEach(() => {
 })
 
 describe('createLayerView', () => {
-  it('appends container to document.body on first visible', () => {
+  it('mounts to document.body on first visible', () => {
     const { state, view } = createTestView()
     state.visible = true
     expect(document.body.querySelector('div')).toBeTruthy()
@@ -37,7 +37,7 @@ describe('createLayerView', () => {
     expect(view.mounted).toBe(false)
   })
 
-  it('unmount removes container', () => {
+  it('unmount removes mount el from document.body', () => {
     const { state, view } = createTestView()
     state.visible = true
     expect(document.body.querySelector('div')).toBeTruthy()
@@ -51,7 +51,7 @@ describe('createLayerView', () => {
     expect(() => view.unmount()).not.toThrow()
   })
 
-  it('hides layer when visible becomes false without removing portal container', () => {
+  it('hides layer when visible becomes false without unmounting', () => {
     const { state, view } = createTestView()
     state.visible = true
     expect(document.body.querySelector('motion-dialog')).toBeTruthy()
@@ -130,7 +130,7 @@ describe('createLayerView (SSR)', () => {
     view.unmount()
   })
 
-  it('patches portal when host binds while visible without prior mount', () => {
+  it('patches when host binds while visible without prior mount', () => {
     const originalDocument = globalThis.document
     vi.stubGlobal('document', undefined)
     const { state, host, view } = createTestView()
