@@ -30,6 +30,10 @@ export function createLayerViewStore(): LayerViewStoreWithTemplate {
   })
 }
 
+function canUseDom(): boolean {
+  return typeof document !== 'undefined'
+}
+
 export function createLayerView(options: {
   store: LayerInstanceStoreWithTemplate
   state: LayerViewState
@@ -55,6 +59,7 @@ export function createLayerView(options: {
   }
 
   function patchPortal() {
+    if (!canUseDom()) return
     if (!container) {
       container = document.createElement('div')
       document.body.appendChild(container)
@@ -63,20 +68,12 @@ export function createLayerView(options: {
   }
 
   watch(
-    () => state.visible,
-    (visible) => {
-      if (!container && !visible) return
+    [() => state.visible, () => host.value],
+    () => {
+      if (!container && !state.visible) return
       patchPortal()
     },
-    { flush: 'sync' },
-  )
-
-  watch(
-    () => host.value,
-    () => {
-      if (container) patchPortal()
-    },
-    { flush: 'sync' },
+    { flush: 'sync', immediate: true },
   )
 
   return {

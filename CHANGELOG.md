@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **SSR compatibility** — safe to import and initialize in SSR apps; layer portals mount on the client (`open()` / `bindHost()` should run after mount or on user interaction)
+
 ## [0.1.0] - 2026-06-27
 
 First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases may still include breaking changes.

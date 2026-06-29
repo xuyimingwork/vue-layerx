@@ -250,7 +250,7 @@ const bindHost = () => {
 
 ### 挂载与 SSR
 
-layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 props 决定）。**暂不考虑 SSR**。
+layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 props 决定）。**SSR 兼容**：可在 SSR 应用中 import / 初始化；`createLayerView` 在无 DOM 时跳过 portal 挂载；`open()` / `bindHost()` 应在客户端（`onMounted` 或用户交互）调用，服务端不输出弹层 HTML。
 
 ---
 
@@ -971,7 +971,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | `open` 换 `container.component` | merge 后走**该实例工厂**的 `adapter`；容器差异由用户在 adapter 内处理 |
 | `close` 后再 `open()` | remount content，`setup`（含 `defineLayer`）重新执行 |
 | 已打开时再次 `open()` | 更新 merge/props，不 remount content |
-| SSR | **暂不支持** |
+| SSR | **兼容**（客户端 `open()`；无 DOM 时不挂 portal） |
 
 ---
 
@@ -991,7 +991,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 12. **`clone`**：`open > clone > use > define > create`；`closeOn` 与用户 `onXxx` 合并为 wrapper（用户先、`close()` 后）。
 13. **`model`**：container v-model prop 名，默认 `modelValue`；adapter 可改；`bindLayerTree` 在 bind 写入。
 14. 同名 `LayerTemplate` 重复注册：**warning + 后者覆盖**（各注册域内）。
-15. **`useX()` 可无 Content**；**暂不支持 SSR**。
+15. **`useX()` 可无 Content**；**SSR 兼容**（客户端 `open()`）。
 
 ---
 

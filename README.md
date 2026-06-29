@@ -50,9 +50,12 @@ dialog.close()
 - API 摘要：[docs/api/index.md](./docs/api/index.md)
 - 设计说明：[DESIGN.md](./DESIGN.md)
 
+## SSR
+
+可用于 SSR 应用（Nuxt、Vite SSR 等）。弹层为客户端 UI：`open()` 与模块单例的 `bindHost()` 请在 `onMounted` 或用户交互后调用；服务端不会输出弹层 HTML。
+
 ## 限制
 
-- 不支持 SSR
 - 模块级单例须在 App / ConfigProvider 子树内调用 `bindHost()`，否则 content 无法 `inject` 全局配置
 
 ## 从 0.0.1 迁移
