@@ -45,7 +45,7 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 |------|-----|--------------|
 | `create-layer.test.ts` | `createLayer` | `factory` / `create tier defaults` / `adapter` |
 | `use-layer.test.ts` | `useLayer` / `LayerInstance` | `open and close` / `closeOn` / `instance refs` |
-| `layer-config.test.ts` | config merge | `TIER` 固定标记 + `PROPS_MERGE_CASES` MECE 矩阵；clone；slot 子优先级 |
+| `layer-config.test.ts` | config merge | `PROPS_MERGE_CASES` + `CLONE_PROPS_CASES`；`CONTAINER/CONTENT_SLOT_MERGE_CASES`（缺 1 / 缺 open+1） |
 | `use-layer.host.test.ts` | `LayerInstance.bindHost` | `provide and inject` / `bindHost` |
 | `use-layer.clone.test.ts` | `LayerInstance.clone` | `parallel instances` / `independent defaults` / `cleanup` / `bindHost` / `instance refs` |
 
