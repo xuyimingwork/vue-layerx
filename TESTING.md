@@ -6,8 +6,8 @@ Tests follow a two-tier layout:
 
 | Tier | Location | Purpose |
 |------|----------|---------|
-| Unit | `src/**/__test__/*.test.ts` | Pure logic, co-located with source |
-| Integration | `tests/integration/*.test.ts` | End-to-end API behavior via `mount` |
+| Unit | `src/**/__test__/*.test.ts` | Test internal modules in isolation, co-located with source |
+| Integration | `tests/integration/*.test.ts` | Test public API from the **user's perspective** |
 
 Shared infrastructure lives under `tests/`:
 
@@ -16,20 +16,72 @@ tests/
   setup.ts              # global afterEach (DOM cleanup)
   helpers/dom.ts        # withoutDom, clearBody, flushPromises
   fixtures/components.ts # Container, makeContent, query helpers
-  integration/          # createLayer domain tests
+  integration/          # public API scenario tests (user-facing grouping)
 ```
+
+## Import Rules
+
+| Tier | Allowed imports |
+|------|-----------------|
+| `tests/integration/` | `@/index` (values + types), `@tests/*`, `vue`, `@vue/test-utils` |
+| `src/**/__test__/` | The module under test, its internal dependencies, `@tests/*`, `vue`, `@vue/test-utils` |
+
+Integration tests must not import from `@/runtime/*`, `@/config/*`, `@/types`, etc. If a scenario needs an internal API, it belongs in unit tests.
+
+## Integration Tests — User Perspective
+
+Integration files map to **public API exports**. Use nested `describe` blocks for usage perspectives within an API.
+
+| File | API | describe 划分 |
+|------|-----|--------------|
+| `use-layer.test.ts` | `createLayer` / `useLayer` / `LayerInstance` | `open and close`, `closeOn`, `instance refs` |
+| `define-layer-in-content.test.ts` | `defineLayer` | 平铺场景 |
+| `layer-template.test.ts` | `LayerTemplate` | `to defineLayer`（`in layer context` / `outside layer context`）/ `to LayerInstance` |
+| `config-at-call-sites.test.ts` | 各调用点 config | 平铺场景 |
+| `clone.test.ts` | `clone()` | `parallel instances`, `independent defaults`, … |
+| `host-context.test.ts` | `bindHost` + inject | `provide and inject`, `bindHost` |
+| `ssr.test.ts` | SSR 约束 | 平铺场景 |
+
+### Decision guide — where to add a new integration case
+
+```
+Which public API are you testing?
+│
+├─ useLayer / open / close / closeOn / refs  → use-layer.test.ts
+├─ defineLayer                               → define-layer-in-content.test.ts
+├─ LayerTemplate
+│   ├─ :to="layer"（defineLayer 返回值）
+│   │   ├─ in layer context              → layer-template.test.ts › to defineLayer › in layer context
+│   │   └─ outside layer context         → … › outside layer context（visible-outside 仅在此生效）
+│   └─ :to="dialog"（LayerInstance）      → layer-template.test.ts › to LayerInstance
+├─ config at create / use / open             → config-at-call-sites.test.ts
+├─ clone()                                   → clone.test.ts
+├─ provide / inject / bindHost               → host-context.test.ts
+└─ SSR                                       → ssr.test.ts
+```
+
+## Unit Tests — Module Perspective
+
+Unit tests stay co-located with source. Group by exported function or module name.
+
+| Scenario | Tier |
+|----------|------|
+| Config merge priority, fragment transforms | Unit (`config/`) |
+| `createLayerInstance` SSR guards | Unit (`runtime/layer-instance`) |
+| View mount/unmount, SSR guard in `createLayerView` | Unit (`runtime/layer-view`) |
+| `bindCloseOn`, `bindLayerTree`, container model | Unit (`config/`) |
+
+`mount` is not the divider — unit tests may use `mount` when the module under test renders to DOM (e.g. `layer-view`).
+
+The `api/` layer has no unit tests — it is thin glue; behavior is covered by integration (user view) and unit tests in `config/` / `runtime/` / `shared/` (maintainer view).
 
 ## Naming Conventions
 
-### File names
-
-- Unit: `<module>.test.ts` inside `__test__/` next to the module
-- Integration: `<domain>.test.ts` grouped by capability (lifecycle, clone, refs, …)
-
 ### describe blocks
 
-- Unit: match the exported function or module name, e.g. `bindCloseOn`, `mergeProps`
-- Integration: `createLayer / <domain>`, e.g. `createLayer / lifecycle`
+- Integration: one file per public API; top-level `describe` matches the export name, nested `describe` for usage perspectives (e.g. `LayerTemplate` › `to defineLayer` › `outside layer context` › `with visible-outside`)
+- Unit: match the exported function or module name, e.g. `bindCloseOn`, `mergeNodeConfig`
+- Use nested `describe` for sub-scenarios within a file
 
 ### it blocks
 
@@ -37,17 +89,8 @@ Use **should … when …** format:
 
 ```ts
 it('should close layer when use-tier closeOn event is emitted', () => { ... })
-it('should return false when value is null or undefined', () => { ... })
+it('should render with outsideLayer scope when visibleOutside is true', () => { ... })
 ```
-
-## What Goes Where
-
-| Scenario | Tier |
-|----------|------|
-| Config merge priority, fragment transforms | Unit (`config/`, `runtime/store-merge`) |
-| View mount/unmount, SSR guard in `createLayerView` | Unit (`runtime/layer-view`) |
-| `createLayer` open/close/clone/inject end-to-end | Integration |
-| `createLayer` + `createLayerInstance` SSR hydration path | Integration (`ssr.test.ts`) |
 
 ## Running Tests
 
@@ -59,7 +102,8 @@ pnpm test:coverage     # with coverage report
 
 ## Adding New Tests
 
-1. Prefer unit tests for isolated logic; add integration only when multiple layers interact.
+1. Decide user perspective (caller vs content author) for integration; use module boundary for unit.
 2. Reuse fixtures from `@tests/fixtures/components` instead of inline mock components.
 3. Use `@tests/helpers/dom` for DOM cleanup, SSR stubs, and async flushing.
 4. Name new cases with the **should … when …** pattern.
+5. Group related cases with nested `describe` blocks rather than long flat lists.

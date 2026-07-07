@@ -1,12 +1,11 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createLayer } from '@/index'
-import type { LayerInstance } from '@/types'
+import { createLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
 
-describe('createLayer / config merge', () => {
+describe('config at call sites', () => {
   it('should merge config across create, use, and open tiers end-to-end', async () => {
     const useLayer = createLayer(Container, {
       props: { title: 'Default', width: '400px' },
