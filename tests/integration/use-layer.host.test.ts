@@ -5,7 +5,7 @@ import { createLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
 
-describe('host context', () => {
+describe('LayerInstance.bindHost', () => {
   describe('provide and inject', () => {
     it('should inject value provided by host setup useLayer', async () => {
       const HOST_KEY = Symbol('host-key')

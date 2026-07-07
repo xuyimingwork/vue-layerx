@@ -10,7 +10,7 @@ import {
   queryBodyDialog,
 } from '@tests/fixtures/components'
 
-describe('clone', () => {
+describe('LayerInstance.clone', () => {
   describe('parallel instances', () => {
     it('should allow parallel open with independent DOM and visible state', async () => {
       const useLayer = createLayer(Container)
@@ -195,7 +195,7 @@ describe('clone', () => {
     })
   })
 
-  describe('host context', () => {
+  describe('bindHost', () => {
     it('should keep clone bindHost independent from parent bindHost', async () => {
       const OUTER_KEY = Symbol('outer')
       const INNER_KEY = Symbol('inner')

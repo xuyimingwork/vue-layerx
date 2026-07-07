@@ -8,15 +8,15 @@ import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/compone
 describe('useLayer', () => {
   describe('open and close', () => {
     it('should render shell container when opened without content', async () => {
-      const useLayer = createLayer(Container, {
-        props: { title: 'Shell', width: '400px' },
-      })
+      const useLayer = createLayer(Container)
       let dialog!: LayerInstance
 
       const Host = defineComponent({
         setup() {
           dialog = useLayer()
-          onMounted(() => dialog.open())
+          onMounted(() =>
+            dialog.open({ container: { props: { title: 'Shell', width: '400px' } } }),
+          )
           return () => h('motion-host')
         },
       })
@@ -27,12 +27,11 @@ describe('useLayer', () => {
       expect(queryBodyDialog()).toBeTruthy()
       expect(document.body.querySelector('.content')).toBeNull()
       expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Shell')
+      expect(queryBodyDialog()?.getAttribute('data-width')).toBe('400px')
     })
 
     it('should mount content to body when open is called with content', async () => {
-      const useLayer = createLayer(Container, {
-        props: { title: 'Create', width: '400px' },
-      })
+      const useLayer = createLayer(Container)
       const Content = makeContent()
       let dialog!: LayerInstance
 
@@ -49,8 +48,6 @@ describe('useLayer', () => {
 
       expect(queryBodyDialog()).toBeTruthy()
       expect(document.body.querySelector('.msg')?.textContent).toBe('hello')
-      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Create')
-      expect(queryBodyDialog()?.getAttribute('data-width')).toBe('400px')
     })
 
     it('should unmount dialog when close is called', async () => {

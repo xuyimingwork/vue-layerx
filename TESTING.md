@@ -32,14 +32,27 @@ Integration tests must not import from `@/runtime/*`, `@/config/*`, `@/types`, e
 
 Integration files map to **public API exports**. Use nested `describe` blocks for usage perspectives within an API.
 
+### Content author
+
 | File | API | describe 划分 |
 |------|-----|--------------|
-| `use-layer.test.ts` | `createLayer` / `useLayer` / `LayerInstance` | `open and close`, `closeOn`, `instance refs` |
 | `define-layer.test.ts` | `defineLayer` | `definition` / `in layer context` / `when config does not register` / `misuse` |
 | `layer-template.test.ts` | `LayerTemplate` | `to defineLayer` / `to LayerInstance` / `mixed usage` / `edge cases` |
-| `config-at-call-sites.test.ts` | 各调用点 config | 平铺场景 |
-| `clone.test.ts` | `clone()` | `parallel instances`, `independent defaults`, … |
-| `host-context.test.ts` | `bindHost` + inject | `provide and inject`, `bindHost` |
+
+### Caller (LayerInstance)
+
+| File | API | describe 划分 |
+|------|-----|--------------|
+| `create-layer.test.ts` | `createLayer` | `factory` / `create tier defaults` |
+| `use-layer.test.ts` | `useLayer` / `LayerInstance` | `open and close` / `closeOn` / `instance refs` |
+| `layer-config.test.ts` | config merge | `merge priority` / `open tier` |
+| `use-layer.host.test.ts` | `LayerInstance.bindHost` | `provide and inject` / `bindHost` |
+| `use-layer.clone.test.ts` | `LayerInstance.clone` | `parallel instances` / `independent defaults` / `cleanup` / `bindHost` / `instance refs` |
+
+### Environment
+
+| File | API | describe 划分 |
+|------|-----|--------------|
 | `ssr.test.ts` | SSR 约束 | 平铺场景 |
 
 ### Decision guide — where to add a new integration case
@@ -47,7 +60,11 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 ```
 Which public API are you testing?
 │
-├─ useLayer / open / close / closeOn / refs  → use-layer.test.ts
+├─ createLayer 工厂 / create tier 默认值     → create-layer.test.ts
+├─ useLayer / open / close / remount / refs  → use-layer.test.ts
+├─ config merge 优先级（open > use > define > create） → layer-config.test.ts
+├─ bindHost / inject 继承（普通 instance）   → use-layer.host.test.ts
+├─ clone()                                   → use-layer.clone.test.ts
 ├─ defineLayer                               → define-layer.test.ts
 ├─ LayerTemplate
 │   ├─ :to="layer"（defineLayer 返回值）
@@ -56,11 +73,8 @@ Which public API are you testing?
 │   ├─ :to="dialog"（LayerInstance）
 │   │   ├─ into content slot             → layer-template.test.ts › to LayerInstance › into content slot
 │   │   └─ into container slot           → … › into container slot（可覆盖 to defineLayer template）
-│   └─ 混合场景（跨 to 类型 / 多挂载点）  → layer-template.test.ts › mixed usage
+│   ├─ 混合场景（跨 to 类型 / 多挂载点）  → layer-template.test.ts › mixed usage
 │   └─ 边界情况                          → layer-template.test.ts › edge cases
-├─ config at create / use / open             → config-at-call-sites.test.ts
-├─ clone()                                   → clone.test.ts
-├─ provide / inject / bindHost               → host-context.test.ts
 └─ SSR                                       → ssr.test.ts
 ```
 
@@ -83,7 +97,7 @@ The `api/` layer has no unit tests — it is thin glue; behavior is covered by i
 
 ### describe blocks
 
-- Integration: one file per public API; top-level `describe` matches the export name, nested `describe` for usage perspectives (e.g. `LayerTemplate` › `to defineLayer` › `outside layer context` › `with visible-outside`)
+- Integration: one file per public API; top-level `describe` matches the export name, nested `describe` for usage perspectives (e.g. `LayerTemplate` › `to defineLayer` › `outside layer context`)
 - Unit: match the exported function or module name, e.g. `bindCloseOn`, `mergeNodeConfig`
 - Use nested `describe` for sub-scenarios within a file
 
