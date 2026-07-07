@@ -1,5 +1,6 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { defineLayer, LayerTemplate, createLayer } from '@/index'
+import { LAYER_CONTENT } from '@/shared/contracts'
 import type { LayerInstance } from '@/types'
 
 export const Container = defineComponent({
@@ -51,6 +52,22 @@ export function queryBodyDialog() {
 export function queryAllBodyDialogs() {
   return document.body.querySelectorAll('motion-dialog')
 }
+
+export const MinimalContainer = defineComponent({
+  name: 'MinimalContainer',
+  props: { modelValue: Boolean },
+  setup(_props, { slots }) {
+    return () => slots.default?.()
+  },
+})
+
+export const LayerContentMarker = defineComponent({
+  name: 'LayerContentMarker',
+  props: { [LAYER_CONTENT]: Boolean },
+  setup() {
+    return () => null
+  },
+})
 
 export function createMountedDialog(
   setup: (useLayer: ReturnType<typeof createLayer>) => {

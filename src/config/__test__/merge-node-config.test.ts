@@ -3,11 +3,11 @@ import { ref } from 'vue'
 import { mergeProps, mergeNodeConfig } from '../merge-node-config'
 
 describe('mergeProps', () => {
-  it('shallow merges later sources over earlier', () => {
+  it('should shallow merge later sources over earlier ones', () => {
     expect(mergeProps({ a: 1, b: 1 }, { b: 2, c: 3 })).toEqual({ a: 1, b: 2, c: 3 })
   })
 
-  it('chains ref callbacks in source order', () => {
+  it('should chain ref callbacks in source order', () => {
     const calls: string[] = []
     const a = vi.fn(() => calls.push('a'))
     const b = vi.fn(() => calls.push('b'))
@@ -24,7 +24,7 @@ describe('mergeProps', () => {
     expect(calls).toEqual(['a', 'b', 'c'])
   })
 
-  it('chains ref Ref objects', () => {
+  it('should chain ref Ref objects', () => {
     const userRef = ref(null)
     const internal = vi.fn()
     const merged = mergeProps({ ref: internal }, { ref: userRef })
@@ -35,7 +35,7 @@ describe('mergeProps', () => {
     expect(userRef.value).toStrictEqual(el)
   })
 
-  it('warns and ignores string ref', () => {
+  it('should warn and ignore string ref', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const fn = vi.fn()
     const merged = mergeProps({ ref: fn }, { ref: 'formRef' })
@@ -48,7 +48,7 @@ describe('mergeProps', () => {
 })
 
 describe('mergeNodeConfig', () => {
-  it('merges component, props, and slots with later winning', () => {
+  it('should merge component, props, and slots with later sources winning', () => {
     const slotA = () => null
     const slotB = () => null
 

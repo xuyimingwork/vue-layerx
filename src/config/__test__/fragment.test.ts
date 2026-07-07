@@ -8,18 +8,18 @@ import {
 } from '../fragment'
 
 describe('createFragment', () => {
-  it('returns empty fragment by default', () => {
+  it('should return empty fragment when init is omitted', () => {
     expect(createFragment()).toEqual({})
   })
 
-  it('returns init when provided', () => {
+  it('should return init when provided', () => {
     const init = { container: { props: { title: 'x' } } }
     expect(createFragment(init)).toBe(init)
   })
 })
 
 describe('toFragmentFromStatic', () => {
-  it('maps top-level fields to container fragment and nested content', () => {
+  it('should map top-level fields to container fragment and nested content', () => {
     expect(
       toFragmentFromStatic({
         props: { title: 'x', width: '400px' },
@@ -34,7 +34,7 @@ describe('toFragmentFromStatic', () => {
 })
 
 describe('toFragmentFromInstance', () => {
-  it('maps top-level fields to content fragment', () => {
+  it('should map top-level fields to content fragment', () => {
     expect(
       toFragmentFromInstance({
         props: { message: 'hi' },
@@ -47,13 +47,13 @@ describe('toFragmentFromInstance', () => {
     })
   })
 
-  it('returns empty fragment for empty config', () => {
+  it('should return empty fragment when config is empty', () => {
     expect(toFragmentFromInstance({})).toEqual({})
   })
 })
 
 describe('mergeFragment', () => {
-  it('merges container and content sides with later wins', () => {
+  it('should merge container and content sides with later sources winning', () => {
     const A = {} as never
     const B = {} as never
     expect(
@@ -67,13 +67,13 @@ describe('mergeFragment', () => {
     })
   })
 
-  it('returns empty fragment when all sources are empty', () => {
+  it('should return empty fragment when all sources are empty', () => {
     expect(mergeFragment({}, undefined, null)).toEqual({})
   })
 })
 
 describe('stripFragment', () => {
-  it('removes fields matching path predicate', () => {
+  it('should remove fields matching path predicate', () => {
     expect(
       stripFragment(
         {
@@ -88,7 +88,7 @@ describe('stripFragment', () => {
     })
   })
 
-  it('does not mutate input', () => {
+  it('should not mutate input', () => {
     const input = { content: { props: { ref: vi.fn(), a: 1 } } }
     stripFragment(input, (path) => path.endsWith('.props.ref'))
     expect(input.content?.props?.ref).toBeTypeOf('function')

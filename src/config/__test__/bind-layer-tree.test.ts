@@ -6,7 +6,7 @@ const Container = defineComponent({ name: 'Container', setup: () => () => null }
 const Content = defineComponent({ name: 'Content', setup: () => () => null })
 
 describe('bindLayerTree', () => {
-  it('omits content when no content component is merged', () => {
+  it('should omit content when no content component is merged', () => {
     const bound = bindLayerTree({
       fragment: {
         content: {},
@@ -25,7 +25,7 @@ describe('bindLayerTree', () => {
     })
   })
 
-  it('resolves content from merged use tier', () => {
+  it('should resolve content from merged use tier', () => {
     const bound = bindLayerTree({
       fragment: {
         content: { component: Content },
@@ -39,7 +39,7 @@ describe('bindLayerTree', () => {
     expect(bound.container.props.modelValue).toBe(false)
   })
 
-  it('binds closeOn into content props', () => {
+  it('should bind closeOn into content props', () => {
     const close = vi.fn()
     const bound = bindLayerTree({
       fragment: {
@@ -54,7 +54,7 @@ describe('bindLayerTree', () => {
     expect(close).toHaveBeenCalled()
   })
 
-  it('binds custom model prop on container', () => {
+  it('should bind custom model prop on container', () => {
     const close = vi.fn()
     const bound = bindLayerTree({
       fragment: {
@@ -71,7 +71,7 @@ describe('bindLayerTree', () => {
     expect(close).toHaveBeenCalled()
   })
 
-  it('binds closeOn and model together', () => {
+  it('should bind closeOn and model together', () => {
     const close = vi.fn()
     const bound = bindLayerTree({
       fragment: {

@@ -7,7 +7,7 @@ import {
 } from '../layer-store-host'
 
 describe('layer-store-host', () => {
-  it('attachLayerStore makes store readable via resolveLayerStore', () => {
+  it('should make store readable via resolveLayerStore after attachLayerStore', () => {
     const host = { id: 'host' }
     const store = createLayerViewStore()
 
@@ -17,13 +17,13 @@ describe('layer-store-host', () => {
     expect((host as Record<symbol, unknown>)[LAYER_STORE]).toBe(store)
   })
 
-  it('resolveLayerStore throws when store is missing', () => {
+  it('should throw when store is missing on target', () => {
     expect(() => resolveLayerStore({})).toThrow(
       '[vue-layerx] Layer store not found on target',
     )
   })
 
-  it('LAYER_STORE is non-enumerable on host', () => {
+  it('should attach LAYER_STORE as non-enumerable on host', () => {
     const host = { visible: true }
     attachLayerStore(host, createLayerViewStore())
 

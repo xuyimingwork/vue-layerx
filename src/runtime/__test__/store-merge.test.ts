@@ -55,7 +55,7 @@ function mergeLayerStores(
 }
 
 describe('layer store merge', () => {
-  it('merges container props with priority open > use > define > create', () => {
+  it('should merge container props with priority open > use > define > create', () => {
     const instanceStore = createTestInstanceStore({
       create: toFragmentFromStatic({ props: { title: 'Create', width: '400px' } }),
       use: toFragmentFromInstance({ container: { props: { width: '640px' } } }),
@@ -69,7 +69,7 @@ describe('layer store merge', () => {
     expect(merged.container.props).toEqual({ title: 'Open', width: '640px' })
   })
 
-  it('merges content props with priority open > use > create', () => {
+  it('should merge content props with priority open > use > create', () => {
     const instanceStore = createTestInstanceStore({
       create: toFragmentFromStatic({ content: { props: { message: 'create' } } }),
       use: toFragmentFromInstance({ props: { message: 'use' } }),
@@ -82,7 +82,7 @@ describe('layer store merge', () => {
     expect(merged.content.props).toEqual({ message: 'open' })
   })
 
-  it('folds clone defaults into use tier', () => {
+  it('should fold clone defaults into use tier', () => {
     const instanceStore = createTestInstanceStore({
       use: mergeFragment(
         toFragmentFromInstance({ closeOn: ['done'] }),
@@ -94,7 +94,7 @@ describe('layer store merge', () => {
     expect(mergeLayerStores(instanceStore, viewStore).content.closeOn).toEqual(['cancel'])
   })
 
-  it('falls back closeOn through use and define', () => {
+  it('should fall back closeOn through use and define tiers', () => {
     const viewStore = createLayerViewStore()
 
     expect(
@@ -127,7 +127,7 @@ describe('layer store merge', () => {
     ).toEqual(['cancel'])
   })
 
-  it('merges container model with priority open > use > define > create', () => {
+  it('should merge container model with priority open > use > define > create', () => {
     const instanceStore = createTestInstanceStore({
       create: toFragmentFromStatic({ model: 'open' }),
       use: toFragmentFromInstance({ container: { model: 'show' } }),
@@ -139,7 +139,7 @@ describe('layer store merge', () => {
     expect(mergeLayerStores(instanceStore, viewStore).container.model).toBe('modelValue')
   })
 
-  it('keeps content and container slots separate in merge', () => {
+  it('should keep content and container slots separate in merge', () => {
     const contentSlot = () => null
     const containerSlot = () => null
     const instanceStore = createTestInstanceStore({
@@ -154,7 +154,7 @@ describe('layer store merge', () => {
     expect(merged.container.slots).toEqual({ footer: containerSlot })
   })
 
-  it('merges container slots with unified template tier priority', () => {
+  it('should merge container slots with unified template tier priority', () => {
     const create = () => null
     const define = () => null
     const creator = () => null
@@ -179,7 +179,7 @@ describe('layer store merge', () => {
     expect(mergeLayerStores(instanceStore, viewStore).container.slots?.footer).toBe(open)
   })
 
-  it('use:template container wins over define and define:template', () => {
+  it('should let use:template container win over define and define:template', () => {
     const define = () => null
     const creator = () => null
 
@@ -202,7 +202,7 @@ describe('layer store merge', () => {
     expect(footer).not.toBe(creator)
   })
 
-  it('define container slot wins over define:template', () => {
+  it('should let define container slot win over define:template', () => {
     const define = () => null
     const creator = () => null
 
@@ -214,7 +214,7 @@ describe('layer store merge', () => {
     expect(mergeLayerStores(instanceStore, viewStore).container.slots?.footer).toBe(define)
   })
 
-  it('use:template content wins over create defaults but loses to use', () => {
+  it('should let use:template content win over create defaults but lose to use', () => {
     const useX = () => null
 
     const instanceStore = createTestInstanceStore({

@@ -1,10 +1,11 @@
 import { defineComponent, h, reactive, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerView } from '@/runtime/layer-view'
 import { ViewHost } from '@/types/view-host'
 import { Container } from '@tests/fixtures/components'
+import { withoutDom } from '@tests/helpers/dom'
 
 function createTestView() {
   const store = createLayerInstanceStore({
@@ -16,19 +17,15 @@ function createTestView() {
   return { state, host, view }
 }
 
-afterEach(() => {
-  document.body.innerHTML = ''
-})
-
 describe('createLayerView', () => {
-  it('mounts to document.body on first visible', () => {
+  it('should mount to document.body when visible becomes true', () => {
     const { state, view } = createTestView()
     state.visible = true
     expect(document.body.querySelector('div')).toBeTruthy()
     view.unmount()
   })
 
-  it('exposes mounted state', () => {
+  it('should expose mounted state matching visibility', () => {
     const { state, view } = createTestView()
     expect(view.mounted).toBe(false)
     state.visible = true
@@ -37,7 +34,7 @@ describe('createLayerView', () => {
     expect(view.mounted).toBe(false)
   })
 
-  it('unmount removes mount el from document.body', () => {
+  it('should remove mount element from document.body when unmount is called', () => {
     const { state, view } = createTestView()
     state.visible = true
     expect(document.body.querySelector('div')).toBeTruthy()
@@ -46,12 +43,12 @@ describe('createLayerView', () => {
     expect(document.body.querySelector('div')).toBeFalsy()
   })
 
-  it('unmount is safe when never mounted', () => {
+  it('should not throw when unmount is called before first mount', () => {
     const { view } = createTestView()
     expect(() => view.unmount()).not.toThrow()
   })
 
-  it('hides layer when visible becomes false without unmounting', () => {
+  it('should hide layer without unmounting when visible becomes false', () => {
     const { state, view } = createTestView()
     state.visible = true
     expect(document.body.querySelector('motion-dialog')).toBeTruthy()
@@ -63,7 +60,7 @@ describe('createLayerView', () => {
     view.unmount()
   })
 
-  it('bridges host when host is set before visible', () => {
+  it('should bridge host when host is set before visible becomes true', () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
     const { state, host, view } = createTestView()
     host.value = wrapper.vm.$ as ViewHost
@@ -73,18 +70,8 @@ describe('createLayerView', () => {
   })
 })
 
-describe('createLayerView (SSR)', () => {
-  function withoutDom<T>(run: () => T): T {
-    const originalDocument = globalThis.document
-    vi.stubGlobal('document', undefined)
-    try {
-      return run()
-    } finally {
-      vi.stubGlobal('document', originalDocument)
-    }
-  }
-
-  it('open without DOM does not throw and stays unmounted', () => {
+describe('createLayerView / SSR', () => {
+  it('should not throw and stay unmounted when visible becomes true without DOM', () => {
     withoutDom(() => {
       const { state, view } = createTestView()
       expect(() => {
@@ -95,7 +82,7 @@ describe('createLayerView (SSR)', () => {
     })
   })
 
-  it('unmount without DOM is safe when never mounted', () => {
+  it('should not throw when unmount is called without DOM and without prior mount', () => {
     withoutDom(() => {
       const { state, view } = createTestView()
       state.visible = true
@@ -104,7 +91,7 @@ describe('createLayerView (SSR)', () => {
     })
   })
 
-  it('mounts after DOM is available when visible toggles', () => {
+  it('should mount when DOM becomes available and visible toggles', () => {
     const originalDocument = globalThis.document
     vi.stubGlobal('document', undefined)
     const { state, view } = createTestView()
@@ -119,7 +106,7 @@ describe('createLayerView (SSR)', () => {
     view.unmount()
   })
 
-  it('mounts on create when visible and DOM are both available', () => {
+  it('should mount on create when visible and DOM are both available', () => {
     const store = createLayerInstanceStore({
       create: { container: { component: Container } },
     })
@@ -130,7 +117,7 @@ describe('createLayerView (SSR)', () => {
     view.unmount()
   })
 
-  it('patches when host binds while visible without prior mount', () => {
+  it('should patch host when host binds while visible without prior mount', () => {
     const originalDocument = globalThis.document
     vi.stubGlobal('document', undefined)
     const { state, host, view } = createTestView()

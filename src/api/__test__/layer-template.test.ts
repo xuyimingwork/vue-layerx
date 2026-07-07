@@ -1,17 +1,14 @@
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { LayerTemplateScope } from '@/types'
 import { createLayer, defineLayer, LayerTemplate } from '@/index'
 import { Container } from '@tests/fixtures/components'
+import { flushPromises } from '@tests/helpers/dom'
 import { LayerTemplate as LayerTemplateComponent } from '../layer-template'
 
 describe('LayerTemplate', () => {
-  afterEach(() => {
-    document.body.innerHTML = ''
-  })
-
-  it('renders nothing by default outside layer context', () => {
+  it('should render nothing when used outside layer context without visibleOutside', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
@@ -26,7 +23,7 @@ describe('LayerTemplate', () => {
     expect(wrapper.find('.footer-btn').exists()).toBe(false)
   })
 
-  it('renders with visibleOutside and passes outsideLayer scope', () => {
+  it('should render with outsideLayer scope when visibleOutside is true', () => {
     const wrapper = mount(
       defineComponent({
         setup() {
@@ -35,12 +32,14 @@ describe('LayerTemplate', () => {
             h(
               LayerTemplateComponent,
               { to: layer, name: 'footer', visibleOutside: true },
-              ({ outsideLayer, inLayer, slotProps }: LayerTemplateScope) => [
-                h('span', { class: 'scope-outside' }, String(outsideLayer)),
-                h('span', { class: 'scope-layer' }, String(inLayer)),
-                h('span', { class: 'slot-props-empty' }, String(Object.keys(slotProps).length === 0)),
-                h('button', { class: 'footer-btn' }, 'footer'),
-              ],
+              {
+                default: ({ outsideLayer, inLayer, slotProps }: LayerTemplateScope) => [
+                  h('span', { class: 'scope-outside' }, String(outsideLayer)),
+                  h('span', { class: 'scope-layer' }, String(inLayer)),
+                  h('span', { class: 'slot-props-empty' }, String(Object.keys(slotProps).length === 0)),
+                  h('button', { class: 'footer-btn' }, 'footer'),
+                ],
+              },
             )
         },
       }),
@@ -52,7 +51,7 @@ describe('LayerTemplate', () => {
     expect(wrapper.find('.slot-props-empty').text()).toBe('true')
   })
 
-  it('forwards content slot props into slotProps when to is set', async () => {
+  it('should render bound slot content when to is set and layer is open', async () => {
     const useLayer = createLayer(Container)
 
     const Content = defineComponent({
@@ -77,12 +76,12 @@ describe('LayerTemplate', () => {
     const wrapper = mount(Host)
     dialog.open()
     await wrapper.vm.$nextTick()
-    await new Promise((r) => setTimeout(r, 0))
+    await flushPromises()
 
     expect(document.body.querySelector('.scoped-extra')).toBeTruthy()
   })
 
-  it('forwards content slot props when to is set', async () => {
+  it('should forward content slot props when to is set', async () => {
     const useLayer = createLayer(Container)
     let captured: Record<string, unknown> | undefined
 
@@ -100,9 +99,11 @@ describe('LayerTemplate', () => {
       setup() {
         dialog = useLayer(Content)
         return () =>
-          h(LayerTemplate, { to: dialog, name: 'extra' } as any, (props: Record<string, unknown>) => {
-            captured = props
-            return h('span', { class: 'scoped-extra' }, String(props.token))
+          h(LayerTemplate, { to: dialog, name: 'extra' }, {
+            default: (props: Record<string, unknown>) => {
+              captured = props
+              return h('span', { class: 'scoped-extra' }, String(props.token))
+            },
           })
       },
     })
@@ -110,13 +111,13 @@ describe('LayerTemplate', () => {
     const wrapper = mount(Host)
     dialog.open()
     await wrapper.vm.$nextTick()
-    await new Promise((r) => setTimeout(r, 0))
+    await flushPromises()
 
     expect(document.body.querySelector('.scoped-extra')?.textContent).toBe('abc')
     expect(captured).toEqual({ token: 'abc' })
   })
 
-  it('fills container slot when to and container are set', async () => {
+  it('should prefer caller container slot over creator slot when container is set', async () => {
     const useLayer = createLayer(Container)
 
     const Content = defineComponent({
@@ -147,7 +148,7 @@ describe('LayerTemplate', () => {
     const wrapper = mount(Host)
     dialog.open()
     await wrapper.vm.$nextTick()
-    await new Promise((r) => setTimeout(r, 0))
+    await flushPromises()
 
     expect(document.body.querySelector('.caller-footer')).toBeTruthy()
     expect(document.body.querySelector('.creator-footer')).toBeFalsy()

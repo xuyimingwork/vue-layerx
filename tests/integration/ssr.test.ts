@@ -1,24 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createLayer } from '@/index'
 import { createLayerInstance } from '@/runtime/layer-instance'
-import { Container, makeContent } from '../fixtures/components'
+import { flushPromises, withoutDom } from '@tests/helpers/dom'
+import { Container, makeContent } from '@tests/fixtures/components'
 
-afterEach(() => {
-  document.body.innerHTML = ''
-})
-
-function withoutDom<T>(run: () => T): T {
-  const originalDocument = globalThis.document
-  vi.stubGlobal('document', undefined)
-  try {
-    return run()
-  } finally {
-    vi.stubGlobal('document', originalDocument)
-  }
-}
-
-describe('SSR compatibility', () => {
-  it('createLayerInstance.open without DOM does not throw', () => {
+describe('createLayer / SSR', () => {
+  it('should not throw when createLayerInstance.open is called without DOM', () => {
     withoutDom(() => {
       const instance = createLayerInstance({
         create: { container: { component: Container } },
@@ -30,7 +17,7 @@ describe('SSR compatibility', () => {
     })
   })
 
-  it('createLayer factory without DOM does not throw on open', () => {
+  it('should not throw when createLayer factory open is called without DOM', () => {
     withoutDom(() => {
       const useLayer = createLayer(Container)
       const instance = useLayer(makeContent())
@@ -40,7 +27,7 @@ describe('SSR compatibility', () => {
     })
   })
 
-  it('open without DOM then client mount via visible toggle', () => {
+  it('should mount on client when open is called without DOM then visible toggles after hydration', async () => {
     const originalDocument = globalThis.document
     vi.stubGlobal('document', undefined)
 
@@ -53,6 +40,8 @@ describe('SSR compatibility', () => {
     vi.stubGlobal('document', originalDocument)
     instance.close()
     instance.open({ props: { message: 'deferred' } })
+
+    await flushPromises()
 
     expect(document.body.querySelector('motion-dialog')).toBeTruthy()
     expect(document.body.querySelector('.msg')?.textContent).toBe('deferred')

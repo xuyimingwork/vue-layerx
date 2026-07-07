@@ -2,13 +2,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { bindCloseOn } from '../bind-close-on'
 
 describe('bindCloseOn', () => {
-  it('returns props unchanged when closeOn is empty or undefined', () => {
+  it('should return props unchanged when closeOn is empty or undefined', () => {
     const props = { message: 'x' }
     expect(bindCloseOn(props, undefined, vi.fn())).toBe(props)
     expect(bindCloseOn(props, [], vi.fn())).toBe(props)
   })
 
-  it('binds close handler to content emit listeners', () => {
+  it('should bind close handler to content emit listeners', () => {
     const hide = vi.fn()
     const props = { onDone: vi.fn() }
 
@@ -19,7 +19,7 @@ describe('bindCloseOn', () => {
     expect(hide).toHaveBeenCalled()
   })
 
-  it('creates listener when no prior handler exists', () => {
+  it('should create listener when no prior handler exists', () => {
     const hide = vi.fn()
     const bound = bindCloseOn({}, ['beforeClose'], hide)
 

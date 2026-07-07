@@ -1,34 +1,18 @@
-import { defineComponent } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { LAYER_CONTENT } from '@/shared/contracts'
+import { LayerContentMarker, MinimalContainer } from '@tests/fixtures/components'
 import { renderLayerTree } from '../render-layer-tree'
 
-const Container = defineComponent({
-  name: 'Container',
-  props: { modelValue: Boolean },
-  setup(_props, { slots }) {
-    return () => slots.default?.()
-  },
-})
-
-const Content = defineComponent({
-  name: 'Content',
-  props: { [LAYER_CONTENT]: Boolean },
-  setup() {
-    return () => null
-  },
-})
-
 describe('renderLayerTree', () => {
-  it('marks content root with LAYER_CONTENT', () => {
+  it('should mark content root with LAYER_CONTENT', () => {
     const tree = renderLayerTree({
       container: {
-        component: Container,
+        component: MinimalContainer,
         props: { modelValue: true },
         slots: {},
       },
       content: {
-        component: Content,
+        component: LayerContentMarker,
         props: { message: 'hello' },
         slots: {},
       },
@@ -43,10 +27,10 @@ describe('renderLayerTree', () => {
     expect(contentVNode?.props?.key).toBe(1)
   })
 
-  it('omits content branch when content is undefined', () => {
+  it('should omit content branch when content is undefined', () => {
     const tree = renderLayerTree({
       container: {
-        component: Container,
+        component: MinimalContainer,
         props: { modelValue: false },
         slots: {},
       },

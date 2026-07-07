@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { bindContainerModel, DEFAULT_CONTAINER_MODEL } from '../container-model'
 
 describe('bindContainerModel', () => {
-  it('binds model prop and update handler', () => {
+  it('should bind model prop and update handler', () => {
     const close = vi.fn()
     const result = bindContainerModel({ title: 'A' }, true, 'modelValue', close)
 
@@ -12,7 +12,7 @@ describe('bindContainerModel', () => {
     expect(close).toHaveBeenCalled()
   })
 
-  it('closes when update value is undefined', () => {
+  it('should close when update value is undefined', () => {
     const close = vi.fn()
     const result = bindContainerModel({}, true, 'modelValue', close)
 
@@ -20,7 +20,7 @@ describe('bindContainerModel', () => {
     expect(close).toHaveBeenCalled()
   })
 
-  it('supports custom model prop names', () => {
+  it('should support custom model prop names', () => {
     const close = vi.fn()
     const result = bindContainerModel({}, true, 'open', close)
 
@@ -29,7 +29,7 @@ describe('bindContainerModel', () => {
     expect(close).toHaveBeenCalled()
   })
 
-  it('does not close when model stays true', () => {
+  it('should not close when model stays true', () => {
     const close = vi.fn()
     const result = bindContainerModel({}, true, 'open', close)
 
@@ -37,7 +37,7 @@ describe('bindContainerModel', () => {
     expect(close).not.toHaveBeenCalled()
   })
 
-  it('calls user onUpdate handler before close', () => {
+  it('should call user onUpdate handler before close', () => {
     const close = vi.fn()
     const onUpdate = vi.fn()
     const result = bindContainerModel(
@@ -52,7 +52,7 @@ describe('bindContainerModel', () => {
     expect(close).toHaveBeenCalled()
   })
 
-  it('calls user custom model onUpdate without closing when value stays true', () => {
+  it('should call user custom model onUpdate without closing when value stays true', () => {
     const close = vi.fn()
     const onUpdate = vi.fn()
     const result = bindContainerModel(
@@ -69,7 +69,7 @@ describe('bindContainerModel', () => {
 })
 
 describe('DEFAULT_CONTAINER_MODEL', () => {
-  it('defaults to modelValue', () => {
+  it('should default to modelValue', () => {
     expect(DEFAULT_CONTAINER_MODEL).toBe('modelValue')
   })
 })

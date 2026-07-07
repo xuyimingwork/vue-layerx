@@ -1,9 +1,10 @@
 import {
   defineComponent,
   type PropType,
+  type SlotsType,
   type VNode,
 } from 'vue'
-import type { LayerDefine, LayerInstance } from '@/types'
+import type { LayerDefine, LayerInstance, LayerTemplateScope } from '@/types'
 import { isLayerDefine } from './define-layer'
 import { resolveLayerStore } from '@/shared/layer-store-host'
 
@@ -31,6 +32,11 @@ export const LayerTemplate = defineComponent({
       default: false,
     },
   },
+  slots: Object as SlotsType<{
+    default: (
+      props?: LayerTemplateScope | Record<string, unknown>,
+    ) => VNode | VNode[] | null
+  }>,
   setup(props, { slots }) {
     const to = props.to
 
