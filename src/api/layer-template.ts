@@ -66,7 +66,7 @@ export const LayerTemplate = defineComponent({
             outsideLayer: to.outsideLayer,
           }) ?? null
       : (slotProps: Record<string, unknown> = {}) =>
-          slots.default?.(slotProps ?? {}) ?? null
+          slots.default?.(slotProps) ?? null
 
     store.template({ key, name: props.name, entry: { render } })
     return () => null

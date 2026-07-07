@@ -36,7 +36,7 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 |------|-----|--------------|
 | `use-layer.test.ts` | `createLayer` / `useLayer` / `LayerInstance` | `open and close`, `closeOn`, `instance refs` |
 | `define-layer-in-content.test.ts` | `defineLayer` | 平铺场景 |
-| `layer-template.test.ts` | `LayerTemplate` | `to defineLayer`（`in layer context` / `outside layer context`）/ `to LayerInstance` |
+| `layer-template.test.ts` | `LayerTemplate` | `to defineLayer` / `to LayerInstance` / `mixed usage` / `edge cases` |
 | `config-at-call-sites.test.ts` | 各调用点 config | 平铺场景 |
 | `clone.test.ts` | `clone()` | `parallel instances`, `independent defaults`, … |
 | `host-context.test.ts` | `bindHost` + inject | `provide and inject`, `bindHost` |
@@ -53,7 +53,11 @@ Which public API are you testing?
 │   ├─ :to="layer"（defineLayer 返回值）
 │   │   ├─ in layer context              → layer-template.test.ts › to defineLayer › in layer context
 │   │   └─ outside layer context         → … › outside layer context（visible-outside 仅在此生效）
-│   └─ :to="dialog"（LayerInstance）      → layer-template.test.ts › to LayerInstance
+│   ├─ :to="dialog"（LayerInstance）
+│   │   ├─ into content slot             → layer-template.test.ts › to LayerInstance › into content slot
+│   │   └─ into container slot           → … › into container slot（可覆盖 to defineLayer template）
+│   └─ 混合场景（跨 to 类型 / 多挂载点）  → layer-template.test.ts › mixed usage
+│   └─ 边界情况                          → layer-template.test.ts › edge cases
 ├─ config at create / use / open             → config-at-call-sites.test.ts
 ├─ clone()                                   → clone.test.ts
 ├─ provide / inject / bindHost               → host-context.test.ts
