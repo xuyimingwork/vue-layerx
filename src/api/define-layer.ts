@@ -11,8 +11,14 @@ export function isLayerDefine(to: object): to is LayerDefine {
 }
 
 export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
-  const ctx = inject(LAYER_DEFINE_KEY, null)
   const instance = getCurrentInstance()
+  if (!instance || instance.isMounted) {
+    throw new Error(
+      '[vue-layerx] defineLayer() must be called synchronously inside setup().',
+    )
+  }
+
+  const ctx = inject(LAYER_DEFINE_KEY, null)
   const inLayer = !!(ctx && isLayerContent(instance))
   const outsideLayer = !inLayer
 

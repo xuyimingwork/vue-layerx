@@ -1,5 +1,6 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { defineLayer, LayerTemplate, createLayer } from '@/index'
+import type { LayerConfigStatic } from '@/index'
 import { LAYER_CONTENT } from '@/shared/contracts'
 import type { LayerInstance } from '@/types'
 
@@ -38,6 +39,23 @@ export function makeContent(withLayer = false) {
                 h('button', { class: 'footer-btn' }, 'footer'),
               )
             : null,
+          h('button', { class: 'done', onClick: () => emit('done') }, 'done'),
+          h('button', { class: 'cancel', onClick: () => emit('cancel') }, 'cancel'),
+        ])
+    },
+  })
+}
+
+export function makeContentWithDefineLayer(config: LayerConfigStatic = {}) {
+  return defineComponent({
+    name: 'ContentWithDefineLayer',
+    props: { message: String, mode: String },
+    emits: ['done', 'cancel'],
+    setup(props, { emit }) {
+      defineLayer(config)
+      return () =>
+        h('motion-div', { class: 'content' }, [
+          h('span', { class: 'msg' }, props.message),
           h('button', { class: 'done', onClick: () => emit('done') }, 'done'),
           h('button', { class: 'cancel', onClick: () => emit('cancel') }, 'cancel'),
         ])

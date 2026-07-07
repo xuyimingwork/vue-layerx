@@ -35,7 +35,7 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 | File | API | describe 划分 |
 |------|-----|--------------|
 | `use-layer.test.ts` | `createLayer` / `useLayer` / `LayerInstance` | `open and close`, `closeOn`, `instance refs` |
-| `define-layer-in-content.test.ts` | `defineLayer` | 平铺场景 |
+| `define-layer.test.ts` | `defineLayer` | `definition` / `in layer context` / `when config does not register` / `misuse` |
 | `layer-template.test.ts` | `LayerTemplate` | `to defineLayer` / `to LayerInstance` / `mixed usage` / `edge cases` |
 | `config-at-call-sites.test.ts` | 各调用点 config | 平铺场景 |
 | `clone.test.ts` | `clone()` | `parallel instances`, `independent defaults`, … |
@@ -48,7 +48,7 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 Which public API are you testing?
 │
 ├─ useLayer / open / close / closeOn / refs  → use-layer.test.ts
-├─ defineLayer                               → define-layer-in-content.test.ts
+├─ defineLayer                               → define-layer.test.ts
 ├─ LayerTemplate
 │   ├─ :to="layer"（defineLayer 返回值）
 │   │   ├─ in layer context              → layer-template.test.ts › to defineLayer › in layer context
