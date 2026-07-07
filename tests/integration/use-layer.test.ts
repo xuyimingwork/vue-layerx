@@ -1,6 +1,6 @@
 import { defineComponent, h, onMounted, ref } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
@@ -133,6 +133,40 @@ describe('useLayer', () => {
       expect(dialog.visible).toBe(true)
       expect(document.body.querySelector('.msg')?.textContent).toBe('second')
       expect(document.body.querySelectorAll('div')).toHaveLength(1)
+    })
+
+    it('should update content props without remounting when open is called while visible', async () => {
+      const useLayer = createLayer(Container)
+      let setupCount = 0
+
+      const Content = defineComponent({
+        name: 'RemountContent',
+        props: { message: String },
+        setup(props) {
+          setupCount++
+          return () => h('span', { class: 'msg' }, props.message)
+        },
+      })
+
+      let dialog!: LayerInstance
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content)
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      dialog.open({ props: { message: 'first' } })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+      expect(setupCount).toBe(1)
+
+      dialog.open({ props: { message: 'second' } })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+      expect(setupCount).toBe(1)
+      expect(document.body.querySelector('.msg')?.textContent).toBe('second')
     })
 
     it('should remount content when open is called after close', async () => {
@@ -347,6 +381,56 @@ describe('useLayer', () => {
 
       expect(userRef.value).toBe(dialog.contentRef.value)
       expect(dialog.contentRef.value?.marker).toBe('content')
+    })
+
+    it('should warn and ignore string ref on use tier', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const useLayer = createLayer(Container)
+      const Content = makeContent()
+      let dialog!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, { props: { ref: 'formRef' } })
+          onMounted(() => dialog.open({ props: { message: 'ref' } }))
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(queryBodyDialog()).toBeTruthy()
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('string ref on layer props is not supported'),
+      )
+      warn.mockRestore()
+    })
+
+    it('should warn and ignore invalid props.ref values on use tier', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const useLayer = createLayer(Container)
+      const Content = makeContent()
+      let dialog!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, {
+            props: { ref: { notARef: true } as never },
+          })
+          onMounted(() => dialog.open({ props: { message: 'ref' } }))
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(queryBodyDialog()).toBeTruthy()
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('invalid props.ref value'),
+      )
+      warn.mockRestore()
     })
   })
 })

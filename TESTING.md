@@ -43,9 +43,9 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 
 | File | API | describe 划分 |
 |------|-----|--------------|
-| `create-layer.test.ts` | `createLayer` | `factory` / `create tier defaults` |
+| `create-layer.test.ts` | `createLayer` | `factory` / `create tier defaults` / `adapter` |
 | `use-layer.test.ts` | `useLayer` / `LayerInstance` | `open and close` / `closeOn` / `instance refs` |
-| `layer-config.test.ts` | config merge | `merge priority` / `open tier` |
+| `layer-config.test.ts` | config merge | `TIER` 固定标记 + `PROPS_MERGE_CASES` MECE 矩阵；clone；slot 子优先级 |
 | `use-layer.host.test.ts` | `LayerInstance.bindHost` | `provide and inject` / `bindHost` |
 | `use-layer.clone.test.ts` | `LayerInstance.clone` | `parallel instances` / `independent defaults` / `cleanup` / `bindHost` / `instance refs` |
 
@@ -62,9 +62,9 @@ Which public API are you testing?
 │
 ├─ createLayer 工厂 / create tier 默认值     → create-layer.test.ts
 ├─ useLayer / open / close / remount / refs  → use-layer.test.ts
-├─ config merge 优先级（open > use > define > create） → layer-config.test.ts
+├─ config merge（open > use > define > create；use > use:template；define > define:template） → layer-config.test.ts
 ├─ bindHost / inject 继承（普通 instance）   → use-layer.host.test.ts
-├─ clone()                                   → use-layer.clone.test.ts
+├─ clone() 实例隔离 / 并行 / cleanup / bindHost / refs  → use-layer.clone.test.ts
 ├─ defineLayer                               → define-layer.test.ts
 ├─ LayerTemplate
 │   ├─ :to="layer"（defineLayer 返回值）

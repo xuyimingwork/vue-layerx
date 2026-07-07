@@ -1,9 +1,21 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
+
+const DrawerContainer = defineComponent({
+  name: 'DrawerContainer',
+  props: { modelValue: Boolean, size: String },
+  emits: ['update:modelValue'],
+  setup(props, { slots }) {
+    return () =>
+      props.modelValue
+        ? h('motion-drawer', { 'data-size': props.size }, slots.default?.())
+        : null
+  },
+})
 
 describe('createLayer', () => {
   describe('factory', () => {
@@ -91,6 +103,46 @@ describe('createLayer', () => {
       await flushPromises()
 
       expect(document.body.querySelector('.msg')?.textContent).toBe('default-msg')
+    })
+  })
+
+  describe('adapter', () => {
+    it('should transform merged fragment before layer is rendered', async () => {
+      const useLayer = createLayer(Container, {
+        props: { title: 'DialogTitle', width: '520px' },
+        adapter: (fragment) => ({
+          ...fragment,
+          container: {
+            ...fragment.container!,
+            component: DrawerContainer,
+            props: {
+              ...fragment.container?.props,
+              width: undefined,
+              size: '85vw',
+            },
+          },
+        }),
+      })
+      const Content = makeContent()
+      let dialog!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content)
+          onMounted(() => dialog.open({ props: { message: 'adapted' } }))
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-drawer')).toBeTruthy()
+      expect(document.body.querySelector('motion-dialog')).toBeNull()
+      expect(document.body.querySelector('motion-drawer')?.getAttribute('data-size')).toBe(
+        '85vw',
+      )
+      expect(document.body.querySelector('.msg')?.textContent).toBe('adapted')
     })
   })
 })
