@@ -9,12 +9,12 @@ import type {
   SlotRenderFn,
 } from '@/types/config'
 import { mergeContainerNode, mergeContentNode } from './merge-node-config'
-import { normalizeFragmentComponent } from './normalize-component'
+import { normalizeFragment } from './normalize-component'
 
 export function createFragment(
   init?: LayerConfigFragment,
 ): LayerConfigFragment {
-  return normalizeFragmentComponent(init ?? {})
+  return normalizeFragment(init ?? {})
 }
 
 export function toFragmentFromStatic(config: LayerConfigStatic = {}): LayerConfigFragment {
