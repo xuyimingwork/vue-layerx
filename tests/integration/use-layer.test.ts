@@ -232,6 +232,39 @@ describe('useLayer', () => {
     })
   })
 
+  describe('instance isolation', () => {
+    it('should allow parallel open with independent DOM and visible state', async () => {
+      const useLayer = createLayer(Container)
+      const Content = makeContent()
+      const first = useLayer(Content)
+      const second = useLayer(Content)
+
+      expect(first).not.toBe(second)
+
+      let dialogA!: LayerInstance
+      let dialogB!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialogA = first
+          dialogB = second
+          onMounted(() => {
+            dialogA.open({ props: { message: 'a' } })
+            dialogB.open({ props: { message: 'b' } })
+          })
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(dialogA.visible).toBe(true)
+      expect(dialogB.visible).toBe(true)
+      expect(document.body.querySelectorAll('.msg')).toHaveLength(2)
+    })
+  })
+
   describe('closeOn', () => {
     it('should close layer when use-tier closeOn event is emitted', async () => {
       const useLayer = createLayer(Container)
