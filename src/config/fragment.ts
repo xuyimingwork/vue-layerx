@@ -42,7 +42,7 @@ export function mergeFragment(
   const fragment: LayerConfigFragment = {}
   if (Object.keys(container).length > 0) fragment.container = container
   if (Object.keys(content).length > 0) fragment.content = content
-  return fragment
+  return normalizeFragmentComponent(fragment)
 }
 
 function stripNodeProps(
@@ -68,7 +68,7 @@ function stripNodeConfig(
 
   if (node.component !== undefined) {
     const path = `${prefix}.component`
-    if (!shouldStrip(path)) result.component = normalizeComponent(node.component)
+    if (!shouldStrip(path)) result.component = node.component
   }
 
   const props = stripNodeProps(node.props, prefix, shouldStrip)
