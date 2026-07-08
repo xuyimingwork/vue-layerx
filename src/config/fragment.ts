@@ -42,7 +42,7 @@ export function mergeFragment(
   const fragment: LayerConfigFragment = {}
   if (Object.keys(container).length > 0) fragment.container = container
   if (Object.keys(content).length > 0) fragment.content = content
-  return normalizeFragmentComponent(fragment)
+  return createFragment(fragment)
 }
 
 function stripNodeProps(
