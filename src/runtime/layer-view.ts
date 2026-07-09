@@ -1,6 +1,8 @@
 import {
+  App,
+  createApp,
+  defineComponent,
   h,
-  render,
   watch,
   type ShallowRef,
 } from 'vue'
@@ -44,45 +46,53 @@ export function createLayerView(options: {
   const viewStore = createLayerViewStore()
 
   let el: HTMLElement | null = null
+  let app: App | null = null
 
-  function patch() {
+  function setupElement() {
+    if (el) return
+    el = document.createElement('div')
+    document.body.appendChild(el)
+  }
+
+  function setupApp() {
     if (!canUseDom()) return
-    if (!el) {
-      el = document.createElement('div')
-      document.body.appendChild(el)
-    }
-    render(
-      h(LayerView, {
-        visible: state.visible,
-        host: host.value,
-        'onUpdate:visible': (value: boolean) => {
-          state.visible = value
-        },
-        store,
-        viewStore,
-        adapter,
-      }),
-      el,
-    )
+    if (app) return
+    setupElement()
+    app = createApp(defineComponent({
+      setup() {
+        return () => h(LayerView, {
+          visible: state.visible,
+          host: host.value,
+          store,
+          viewStore,
+          adapter,
+          'onUpdate:visible': (value: boolean) => {
+            state.visible = value
+          },
+        })
+      }
+    }))
+    app.mount(el)
   }
 
   watch(
-    [() => state.visible, () => host.value],
+    () => state.visible,
     () => {
-      if (!el && !state.visible) return
-      patch()
+      if (!state.visible) return
+      setupApp()
     },
-    { flush: 'sync', immediate: true },
+    { immediate: true },
   )
 
   return {
     get mounted() {
-      return el !== null
+      return app !== null
     },
     unmount() {
-      if (!el) return
-      render(null, el)
-      el.remove()
+      if (!app) return
+      app.unmount()
+      app = null
+      el?.remove()
       el = null
     },
   }
