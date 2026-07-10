@@ -83,9 +83,9 @@ tests/
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
 | **types/** | 配置 / 实例 / Store 接口；ViewHost 类型断言 | `config.ts`、`instance.ts`、`store.ts`、`view-host.ts` |
-| **shared/** | 跨层 Symbol 契约、store 附着、content 根检测 | `contracts.ts`、`layer-store-host.ts` |
+| **shared/** | 跨层 Symbol 契约、store 工厂、store 附着、content 根检测 | `contracts.ts`、`layer-store.ts`、`layer-store-host.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts`、`container-model.ts` |
-| **runtime/** | 响应式 store 工厂、instance 生命周期、portal 挂载 | `layer-store.ts`、`layer-instance.ts`、`layer-view.ts` |
+| **runtime/** | instance 生命周期、portal 挂载 | `layer-instance.ts`、`layer-app.ts` |
 | **view/** | `LayerView` 组件（merge → adapter → bind → render 编排）与纯 `h()` 渲染 | `layer-view.ts`、`render-layer-tree.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
@@ -145,7 +145,7 @@ flowchart TB
 | **config** | ✓ | — | internal | — | — |
 | **types** | — | — | — | — | — |
 
-**runtime → view**：`runtime/layer-view.ts`（`createLayerView`）挂载 `view/layer-view.ts`（`LayerView` 组件）并创建 per-portal 的 `viewStore`（define / define:template）；`layer-instance` 持有 instance store 并委托 portal。
+**runtime → view**：`runtime/layer-app.ts`（`createLayerApp`）挂载 `view/layer-view.ts`（`LayerView` 组件）；`layer-instance` 持有 instance store 并委托 portal。`LayerView` 内部通过 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store。
 
 **shared/contracts.ts**：`LAYER_DEFINE_KEY`（defineLayer inject / LayerView provide）、`LAYER_CONTENT` + `isLayerContent`（content 根检测）。类型 `LayerDefineRegistry` 在 `types/store.ts`。
 
@@ -157,7 +157,7 @@ flowchart TB
 createLayer / defineLayer / LayerTemplate          api/
         │
         ▼
-createLayerInstance + layer-store + createLayerView      runtime/
+createLayerInstance + createLayerApp      runtime/
         │
         ▼
 LayerView → renderLayerTree                            view/
@@ -185,7 +185,7 @@ UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而
 - **已打开时再次 `open(config?)`**：只更新 `store.open` tier 并下发新 props，**不** remount content。
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
-首次 `visible=true` 才挂载 portal（`createLayerView` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
+首次 `visible=true` 才挂载 portal（`createLayerApp` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。
 
 ### viewHost 与 bindHost（portal inject 上下文）
 
@@ -250,7 +250,7 @@ const bindHost = () => {
 
 ### 挂载与 SSR
 
-layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 props 决定）。**SSR 兼容**：可在 SSR 应用中 import / 初始化；`createLayerView` 在无 DOM 时跳过 portal 挂载；`open()` / `bindHost()` 应在客户端（`onMounted` 或用户交互）调用，服务端不输出弹层 HTML。
+layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 props 决定）。**SSR 兼容**：可在 SSR 应用中 import / 初始化；`createLayerApp` 在无 DOM 时跳过 portal 挂载；`open()` / `bindHost()` 应在客户端（`onMounted` 或用户交互）调用，服务端不输出弹层 HTML。
 
 ---
 
@@ -695,7 +695,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `runtime/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerViewStore`**（`runtime/layer-view.ts`；bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。`:to` 注册通过 `shared/layer-store-host` 的 `LAYER_STORE` 访问 `store.template({ key: 'use:template.*', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。`:to` 注册通过 `shared/layer-store-host` 的 `LAYER_STORE` 访问 `store.template({ key: 'use:template.*', ... })`。
 
 `mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 

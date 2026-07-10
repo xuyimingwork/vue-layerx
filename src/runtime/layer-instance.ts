@@ -9,9 +9,9 @@ import {
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance, LayerInstanceStoreInit, LayerInstanceStoreWithTemplate } from '@/types'
 import { toFragmentFromInstance, mergeFragment, createFragment, stripFragment } from '@/config/fragment'
 import { attachLayerStore } from '@/shared/layer-store-host'
-import { createLayerView } from '@/runtime/layer-view'
+import { createLayerStore } from '@/shared/layer-store'
+import { createLayerApp } from '@/runtime/layer-app'
 import type { ViewHost } from '@/types/view-host'
-import { createLayerStore } from '@/runtime/layer-store'
 
 export function createLayerInstance({
   create,
@@ -54,11 +54,11 @@ export function createLayerInstance({
   const containerRef = computed(() => (state.visible ? containerTarget.value : null))
 
   const host = shallowRef<ViewHost | null>(null)
-  const view = createLayerView({ store, state, host, adapter })
+  const layerApp = createLayerApp({ store, state, host, adapter })
 
   const dispose = () => {
     state.visible = false
-    view.unmount()
+    layerApp.unmount()
   }
 
   const open = (config?: LayerConfigInstance) => {

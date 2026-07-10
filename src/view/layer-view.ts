@@ -9,10 +9,8 @@ import {
 import { mergeFragment, createFragment } from '@/config/fragment'
 import { bindLayerTree } from '@/config/bind-layer-tree'
 import type { LayerAdapter, LayerConfigFragment } from '@/types'
-import type {
-  LayerInstanceStoreWithTemplate,
-  LayerViewStoreWithTemplate,
-} from '@/types/store'
+import type { LayerInstanceStoreWithTemplate } from '@/types/store'
+import { createLayerStore } from '@/shared/layer-store'
 import { renderLayerTree } from '@/view/render-layer-tree'
 import { LAYER_DEFINE_KEY } from '@/shared/contracts'
 import type { ViewHost } from '@/types/view-host'
@@ -32,10 +30,6 @@ export const LayerView = defineComponent({
       type: Object as PropType<LayerInstanceStoreWithTemplate>,
       required: true,
     },
-    viewStore: {
-      type: Object as PropType<LayerViewStoreWithTemplate>,
-      required: true,
-    },
     adapter: {
       type: Function as PropType<LayerAdapter>,
       default: undefined,
@@ -44,42 +38,52 @@ export const LayerView = defineComponent({
   emits: ['update:visible'],
   setup(props, { emit }) {
     const contentMountKey = ref(0)
+    const defineStore = createLayerStore({
+      define: createFragment(),
+      'define:template': createFragment(),
+    })
 
     watch(
       () => props.visible,
       (visible, prev) => {
         if (visible && !prev) {
-          props.viewStore.define = createFragment()
-          props.viewStore['define:template'] = createFragment()
+          defineStore.define = createFragment()
+          defineStore['define:template'] = createFragment()
           contentMountKey.value++
         }
       },
       { flush: 'sync' },
     )
 
-    const bridgeHost = props.host
-    if (bridgeHost && !bridgeHost.isUnmounted) {
-      const instance = getCurrentInstance()! as ViewHost
-      instance.appContext = bridgeHost.appContext
-      instance.provides = Object.create(bridgeHost.provides)
-    }
+    watch(
+      () => props.host,
+      (bridgeHost) => {
+        if (!bridgeHost || bridgeHost.isUnmounted) return
+        const instance = getCurrentInstance()
+        if (!instance) return
+        const viewHost = instance as ViewHost
+        viewHost.appContext = bridgeHost.appContext
+        viewHost.provides = Object.create(bridgeHost.provides)
+      },
+      { immediate: true, flush: 'post' },
+    )
 
     provide(LAYER_DEFINE_KEY, {
       register(fragment: LayerConfigFragment) {
-        props.viewStore.define = fragment
+        defineStore.define = fragment
       },
-      store: props.viewStore,
+      store: defineStore,
     })
 
     return () => {
       props.store.track()
-      props.viewStore.track()
+      defineStore.track()
       void contentMountKey.value
 
       const fragment = mergeFragment(
         props.store.create,
-        props.viewStore['define:template'],
-        props.viewStore.define,
+        defineStore['define:template'],
+        defineStore.define,
         props.store['use:template'],
         props.store.use,
         props.store.open,

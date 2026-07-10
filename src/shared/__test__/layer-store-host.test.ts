@@ -1,15 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { createLayerViewStore } from '@/runtime/layer-view'
+import { createFragment } from '@/config/fragment'
+import { createLayerStore } from '@/shared/layer-store'
 import {
   attachLayerStore,
   LAYER_STORE,
   resolveLayerStore,
 } from '../layer-store-host'
 
+function createDefineStore() {
+  return createLayerStore({
+    define: createFragment(),
+    'define:template': createFragment(),
+  })
+}
+
 describe('layer-store-host', () => {
   it('should make store readable via resolveLayerStore after attachLayerStore', () => {
     const host = { id: 'host' }
-    const store = createLayerViewStore()
+    const store = createDefineStore()
 
     attachLayerStore(host, store)
 
@@ -25,7 +33,7 @@ describe('layer-store-host', () => {
 
   it('should attach LAYER_STORE as non-enumerable on host', () => {
     const host = { visible: true }
-    attachLayerStore(host, createLayerViewStore())
+    attachLayerStore(host, createDefineStore())
 
     expect(Object.keys(host)).toEqual(['visible'])
     expect(LAYER_STORE in host).toBe(true)

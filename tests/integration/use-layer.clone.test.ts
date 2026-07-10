@@ -1,4 +1,4 @@
-import { defineComponent, h, inject, onMounted, provide, ref } from 'vue'
+import { defineComponent, h, inject, onMounted, provide, ref, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import { createLayer, type LayerInstance } from '@/index'
@@ -280,14 +280,14 @@ describe('LayerInstance.clone', () => {
   describe('instance refs', () => {
     it('should not inherit parent use props.ref on clone', async () => {
       const useLayer = createLayer(Container)
-      const parentRef = ref<unknown>(null)
+      const parentRef = shallowRef<unknown>(null)
       const Content = makeContent()
       let base!: LayerInstance
       let cloned!: LayerInstance
 
       const Host = defineComponent({
         setup() {
-          base = useLayer(Content, { props: { ref: parentRef } })
+          base = useLayer(Content, { props: { ref: (el: any) => parentRef.value = el } })
           cloned = base.clone()
           return () => h('motion-host')
         },
@@ -295,12 +295,14 @@ describe('LayerInstance.clone', () => {
 
       const wrapper = mount(Host)
       base.open({ props: { message: 'base' } })
+      console.log('base.open')
       cloned.open({ props: { message: 'cloned' } })
+      console.log('cloned.open')
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(parentRef.value).toBe(base.contentRef.value)
-      expect(cloned.contentRef.value).not.toBe(parentRef.value)
+      expect(parentRef.value === base.contentRef.value).toBe(true)
+      expect(parentRef.value === cloned.contentRef.value).toBe(false)
     })
 
     it('should accept clone-specific props.ref', async () => {
@@ -327,7 +329,9 @@ describe('LayerInstance.clone', () => {
 
       expect(parentRef.value).toBe(base.contentRef.value)
       expect(childRef.value).toBe(cloned.contentRef.value)
-      expect(childRef.value).not.toBe(parentRef.value)
+      // 会导致 [Vue warn]: Avoid app logic that relies on enumerating keys on a component instance.
+      // expect(childRef.value).not.toBe(parentRef.value)
+      expect(childRef.value === parentRef.value).toBe(false)
     })
   })
 })

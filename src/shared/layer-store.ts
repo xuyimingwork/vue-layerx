@@ -1,7 +1,5 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type {
-  TemplateSlotKey,
-} from '@/types/store'
+import type { TemplateSlotKey } from '@/types/store'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
 
 export type {

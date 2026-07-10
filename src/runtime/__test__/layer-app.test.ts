@@ -1,109 +1,116 @@
-import { defineComponent, h, reactive, shallowRef } from 'vue'
+import { defineComponent, h, nextTick, reactive, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
-import { createLayerView } from '@/runtime/layer-view'
+import { createLayerApp } from '@/runtime/layer-app'
 import { ViewHost } from '@/types/view-host'
 import { Container } from '@tests/fixtures/components'
 import { withoutDom } from '@tests/helpers/dom'
 
-function createTestView() {
+function createTestApp() {
   const store = createLayerInstanceStore({
     create: { container: { component: Container } },
   })
   const state = reactive({ visible: false })
   const host = shallowRef<ViewHost | null>(null)
-  const view = createLayerView({ store, state, host })
-  return { state, host, view }
+  const layerApp = createLayerApp({ store, state, host })
+  return { state, host, layerApp }
 }
 
-describe('createLayerView', () => {
-  it('should mount to document.body when visible becomes true', () => {
-    const { state, view } = createTestView()
+describe('createLayerApp', () => {
+  it('should mount to document.body when visible becomes true', async () => {
+    const { state, layerApp } = createTestApp()
     state.visible = true
+    await nextTick()
     expect(document.body.querySelector('div')).toBeTruthy()
-    view.unmount()
+    layerApp.unmount()
   })
 
-  it('should expose mounted state matching visibility', () => {
-    const { state, view } = createTestView()
-    expect(view.mounted).toBe(false)
+  it('should expose mounted state matching visibility', async () => {
+    const { state, layerApp } = createTestApp()
+    expect(layerApp.mounted).toBe(false)
     state.visible = true
-    expect(view.mounted).toBe(true)
-    view.unmount()
-    expect(view.mounted).toBe(false)
+    await nextTick()
+    expect(layerApp.mounted).toBe(true)
+    layerApp.unmount()
+    expect(layerApp.mounted).toBe(false)
   })
 
-  it('should remove mount element from document.body when unmount is called', () => {
-    const { state, view } = createTestView()
+  it('should remove mount element from document.body when unmount is called', async () => {
+    const { state, layerApp } = createTestApp()
     state.visible = true
+    await nextTick()
     expect(document.body.querySelector('div')).toBeTruthy()
 
-    view.unmount()
+    layerApp.unmount()
     expect(document.body.querySelector('div')).toBeFalsy()
   })
 
   it('should not throw when unmount is called before first mount', () => {
-    const { view } = createTestView()
-    expect(() => view.unmount()).not.toThrow()
+    const { layerApp } = createTestApp()
+    expect(() => layerApp.unmount()).not.toThrow()
   })
 
-  it('should hide layer without unmounting when visible becomes false', () => {
-    const { state, view } = createTestView()
+  it('should hide layer without unmounting when visible becomes false', async () => {
+    const { state, layerApp } = createTestApp()
     state.visible = true
+    await nextTick()
     expect(document.body.querySelector('motion-dialog')).toBeTruthy()
 
     state.visible = false
+    await nextTick()
     expect(document.body.querySelector('motion-dialog')).toBeFalsy()
     expect(document.body.querySelector('div')).toBeTruthy()
 
-    view.unmount()
+    layerApp.unmount()
   })
 
-  it('should bridge host when host is set before visible becomes true', () => {
+  it('should bridge host when host is set before visible becomes true', async () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
-    const { state, host, view } = createTestView()
+    const { state, host, layerApp } = createTestApp()
     host.value = wrapper.vm.$ as ViewHost
     state.visible = true
-    expect(view.mounted).toBe(true)
-    view.unmount()
+    await nextTick()
+    expect(layerApp.mounted).toBe(true)
+    layerApp.unmount()
   })
 })
 
-describe('createLayerView / SSR', () => {
+describe('createLayerApp / SSR', () => {
   it('should not throw and stay unmounted when visible becomes true without DOM', () => {
     withoutDom(() => {
-      const { state, view } = createTestView()
+      const { state, layerApp } = createTestApp()
       expect(() => {
         state.visible = true
       }).not.toThrow()
-      expect(view.mounted).toBe(false)
+      expect(layerApp.mounted).toBe(false)
       expect(document).toBeUndefined()
     })
   })
 
   it('should not throw when unmount is called without DOM and without prior mount', () => {
     withoutDom(() => {
-      const { state, view } = createTestView()
+      const { state, layerApp } = createTestApp()
       state.visible = true
-      expect(() => view.unmount()).not.toThrow()
-      expect(view.mounted).toBe(false)
+      expect(() => layerApp.unmount()).not.toThrow()
+      expect(layerApp.mounted).toBe(false)
     })
   })
 
-  it('should mount when DOM becomes available and visible toggles', () => {
+  it('should mount when DOM becomes available and visible toggles', async () => {
     const originalDocument = globalThis.document
     vi.stubGlobal('document', undefined)
-    const { state, view } = createTestView()
+    const { state, layerApp } = createTestApp()
     state.visible = true
-    expect(view.mounted).toBe(false)
+    expect(layerApp.mounted).toBe(false)
 
     vi.stubGlobal('document', originalDocument)
     state.visible = false
     state.visible = true
-    expect(view.mounted).toBe(true)
+    await nextTick()
+    expect(layerApp.mounted).toBe(true)
     expect(document.body.querySelector('div')).toBeTruthy()
-    view.unmount()
+    layerApp.unmount()
   })
 
   it('should mount on create when visible and DOM are both available', () => {
@@ -112,22 +119,25 @@ describe('createLayerView / SSR', () => {
     })
     const state = reactive({ visible: true })
     const host = shallowRef<ViewHost | null>(null)
-    const view = createLayerView({ store, state, host })
-    expect(view.mounted).toBe(true)
-    view.unmount()
+    const layerApp = createLayerApp({ store, state, host })
+    expect(layerApp.mounted).toBe(true)
+    layerApp.unmount()
   })
 
-  it('should patch host when host binds while visible without prior mount', () => {
+  it('should mount when visible toggles after DOM becomes available', async () => {
     const originalDocument = globalThis.document
     vi.stubGlobal('document', undefined)
-    const { state, host, view } = createTestView()
+    const { state, host, layerApp } = createTestApp()
     state.visible = true
-    expect(view.mounted).toBe(false)
+    expect(layerApp.mounted).toBe(false)
 
     vi.stubGlobal('document', originalDocument)
     const wrapper = mount(defineComponent({ template: '<div />' }))
     host.value = wrapper.vm.$ as ViewHost
-    expect(view.mounted).toBe(true)
-    view.unmount()
+    state.visible = false
+    state.visible = true
+    await nextTick()
+    expect(layerApp.mounted).toBe(true)
+    layerApp.unmount()
   })
 })

@@ -86,10 +86,10 @@ Unit tests stay co-located with source. Group by exported function or module nam
 |----------|------|
 | Config merge priority, fragment transforms | Unit (`config/`) |
 | `createLayerInstance` SSR guards | Unit (`runtime/layer-instance`) |
-| View mount/unmount, SSR guard in `createLayerView` | Unit (`runtime/layer-view`) |
+| View mount/unmount, SSR guard in `createLayerApp` | Unit (`runtime/layer-app`) |
 | `bindCloseOn`, `bindLayerTree`, container model | Unit (`config/`) |
 
-`mount` is not the divider — unit tests may use `mount` when the module under test renders to DOM (e.g. `layer-view`).
+`mount` is not the divider — unit tests may use `mount` when the module under test renders to DOM (e.g. `layer-app`).
 
 The `api/` layer has no unit tests — it is thin glue; behavior is covered by integration (user view) and unit tests in `config/` / `runtime/` / `shared/` (maintainer view).
 

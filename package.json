@@ -22,6 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:coverage:integration": "vitest run --coverage tests/integration",
     "playground": "pnpm build && pnpm --filter playground dev",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
