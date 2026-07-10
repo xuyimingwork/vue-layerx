@@ -2,13 +2,7 @@ import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
 import { toFragmentFromStatic } from '@/config/fragment'
 import { isLayerContent, LAYER_DEFINE_KEY } from '@/shared/contracts'
-import { attachLayerStore } from '@/shared/layer-store-host'
-
-const LAYER_DEFINE = Symbol('vue-layerx:define')
-
-export function isLayerDefine(to: object): to is LayerDefine {
-  return LAYER_DEFINE in to
-}
+import { setupLayerTemplateTo } from '@/shared/layer-template-to'
 
 export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
   const instance = getCurrentInstance()
@@ -25,12 +19,24 @@ export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
   if (inLayer) ctx!.register(toFragmentFromStatic(config))
 
   const layer: LayerDefine = { inLayer, outsideLayer }
-  Object.defineProperty(layer, LAYER_DEFINE, {
-    value: true,
-    enumerable: false,
-    writable: false,
-    configurable: false,
+  setupLayerTemplateTo(layer, {
+    template({ name, render }) {
+      if (outsideLayer) {
+        return {
+          render: () => render({ inLayer, outsideLayer, slotProps: {} }),
+        }
+      }
+
+      ctx!.store.template({
+        key: 'define:template.container',
+        name,
+        entry: {
+          render: (slotProps: Record<string, unknown> = {}) =>
+            render({ slotProps, inLayer, outsideLayer }),
+        },
+      })
+      return { render: () => null }
+    },
   })
-  if (inLayer && ctx) attachLayerStore(layer, ctx.store)
   return layer
 }

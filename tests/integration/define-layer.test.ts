@@ -1,7 +1,8 @@
 import { defineComponent, h, onMounted, type Component } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createLayer, defineLayer, type LayerDefine, type LayerInstance } from '@/index'
+import { getLayerTemplateTo } from '@/shared/layer-template-to'
 import { flushPromises } from '@tests/helpers/dom'
 import {
   Container,
@@ -69,6 +70,61 @@ describe('defineLayer', () => {
       expect(queryBodyDialog()).toBeNull()
       expect(layer.inLayer).toBe(false)
       expect(layer.outsideLayer).toBe(true)
+    })
+  })
+
+  describe('template handler', () => {
+    it('should return scoped local render for outsideLayer without registering', () => {
+      let layer!: LayerDefine
+
+      const Content = defineComponent({
+        name: 'OutsideLayerTemplateHandler',
+        setup() {
+          layer = defineLayer()
+          return () => h('span')
+        },
+      })
+
+      mount(Content)
+
+      const slotRender = vi.fn(() => 'vnode')
+      const content = getLayerTemplateTo(layer).template({
+        name: 'footer',
+        container: false,
+        render: slotRender,
+      })
+
+      expect(content.render()).toBe('vnode')
+      expect(slotRender).toHaveBeenCalledWith({
+        inLayer: false,
+        outsideLayer: true,
+        slotProps: {},
+      })
+    })
+
+    it('should register define:template.container for inLayer and return null local render', async () => {
+      let layer!: LayerDefine
+
+      const Content = defineComponent({
+        name: 'InLayerTemplateHandler',
+        props: { message: String },
+        setup(props) {
+          layer = defineLayer()
+          return () => h('span', { class: 'msg' }, props.message)
+        },
+      })
+
+      await openLayer(Content, { message: 'hello' })
+
+      const slotRender = vi.fn(() => 'vnode')
+      const content = getLayerTemplateTo(layer).template({
+        name: 'footer',
+        container: false,
+        render: slotRender,
+      })
+
+      expect(content.render()).toBeNull()
+      expect(slotRender).not.toHaveBeenCalled()
     })
   })
 

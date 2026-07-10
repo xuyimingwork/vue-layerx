@@ -8,7 +8,7 @@ import {
 } from 'vue'
 import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance, LayerInstanceStoreInit, LayerInstanceStoreWithTemplate } from '@/types'
 import { toFragmentFromInstance, mergeFragment, createFragment, stripFragment } from '@/config/fragment'
-import { attachLayerStore } from '@/shared/layer-store-host'
+import { setupLayerTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import { createLayerApp } from '@/runtime/layer-app'
 import type { ViewHost } from '@/types/view-host'
@@ -104,7 +104,18 @@ export function createLayerInstance({
     },
   }
 
-  attachLayerStore(instance, store)
+  setupLayerTemplateTo(instance, {
+    template({ name, container, render }) {
+      store.template({
+        key: container ? 'use:template.container' : 'use:template.content',
+        name,
+        entry: {
+          render: (slotProps: Record<string, unknown> = {}) => render(slotProps),
+        },
+      })
+      return { render: () => null }
+    },
+  })
   return instance
 }
 
