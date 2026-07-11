@@ -1,43 +1,55 @@
 import type { VNode } from 'vue'
+import type { LayerDefine, LayerInstance } from '@/types'
 
-export const LAYER_TEMPLATE_TO = Symbol('vue-layerx:template-to')
-
-export type LayerTemplateSlotRender = (
+export type TemplateToRender = (
   slotProps?: Record<string, unknown>,
 ) => VNode | VNode[] | null
 
-export type LayerTemplateContent = {
+export type TemplateToContent = {
   render: () => VNode | VNode[] | null
 }
 
-export type LayerTemplateToHandler = {
-  template: (opts: {
+export type LayerTemplateToCapabilities = {
+  template(opts: {
     name: string
     container: boolean
-    render: LayerTemplateSlotRender
-  }) => LayerTemplateContent
+    render: TemplateToRender
+  }): TemplateToContent
 }
 
-export type LayerTemplateToHost = {
-  readonly [LAYER_TEMPLATE_TO]?: LayerTemplateToHandler
-}
+export type LayerTemplateTo = LayerDefine | LayerInstance
 
-export function setupLayerTemplateTo(
-  host: object,
-  handler: LayerTemplateToHandler,
-): void {
-  Object.defineProperty(host, LAYER_TEMPLATE_TO, {
-    value: handler,
-    enumerable: false,
-    writable: false,
-    configurable: false,
-  })
-}
+export type LayerTemplateToResolved = LayerTemplateTo & LayerTemplateToCapabilities
 
-export function getLayerTemplateTo(host: object): LayerTemplateToHandler {
-  const handler = (host as LayerTemplateToHost)[LAYER_TEMPLATE_TO]
-  if (!handler) {
-    throw new Error('[vue-layerx] LayerTemplate :to is missing template handler')
+const TEMPLATE_TO_KEYS = {
+  template: Symbol('vue-layerx:template-to:template'),
+} as const satisfies Record<keyof LayerTemplateToCapabilities, symbol>
+
+export function withTemplateTo<T extends LayerTemplateTo>(
+  base: T,
+  capabilities: LayerTemplateToCapabilities,
+): T {
+  for (const key of Object.keys(capabilities) as (keyof LayerTemplateToCapabilities)[]) {
+    Object.defineProperty(base, TEMPLATE_TO_KEYS[key], {
+      value: capabilities[key],
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    })
   }
-  return handler
+  return base
+}
+
+export function resolveTemplateTo(to: LayerTemplateTo): LayerTemplateToResolved {
+  return new Proxy(to, {
+    get(target, prop, receiver) {
+      return Reflect.get(
+        target,
+        typeof prop === 'string' && prop in TEMPLATE_TO_KEYS
+          ? TEMPLATE_TO_KEYS[prop as keyof typeof TEMPLATE_TO_KEYS]
+          : prop,
+        receiver,
+      )
+    },
+  }) as LayerTemplateToResolved
 }

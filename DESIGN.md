@@ -132,7 +132,7 @@ flowchart TB
 | **runtime/** | `types/`、`config/`、`shared/`、`view/` | `api` |
 | **api/** | 以上所有层 | — |
 
-**依赖规则**：`types` / `shared` / `config` 为底层；`view` 负责渲染编排；`runtime` 管理 store + portal 并驱动 `LayerView`；`api` 在最外。`defineLayer` / `LayerTemplate` 通过 `shared/layer-template-to` 的 `LAYER_TEMPLATE_TO` 协议委托 `:to` 注册模板，**不** import `runtime/`。
+**依赖规则**：`types` / `shared` / `config` 为底层；`view` 负责渲染编排；`runtime` 管理 store + portal 并驱动 `LayerView`；`api` 在最外。`defineLayer` / `LayerTemplate` 通过 `shared/layer-template-to` 的 `withTemplateTo` / `resolveTemplateTo` 委托 `:to` 投递模板，**不** import `runtime/`。
 
 #### 跨层依赖矩阵（生产代码）
 
@@ -149,7 +149,7 @@ flowchart TB
 
 **shared/contracts.ts**：`LAYER_DEFINE_KEY`（defineLayer inject / LayerView provide）、`LAYER_CONTENT` + `isLayerContent`（content 根检测）。类型 `LayerDefineRegistry` 在 `types/store.ts`。
 
-**shared/layer-template-to.ts**：`LAYER_TEMPLATE_TO` + `attachLayerTemplateTo` / `getLayerTemplateTo`（`:to` 模板协议）；`defineLayer` / `createLayerInstance` 各自挂载 handler 并在闭包内注册 `store.template(...)`。
+**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo` 并在闭包内调用 `store.template(...)`。
 
 ### 与核心管线的对应
 
@@ -695,7 +695,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。`:to` 经 `LAYER_TEMPLATE_TO` handler 在创建时闭包 `store`，调用 `store.template({ key: 'use:template.*' | 'define:template.container', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。`:to` 经 `withTemplateTo` 在创建时闭包 `store`，`resolveTemplateTo(to).template(...)` 调用 `store.template({ key: 'use:template.*' | 'define:template.container', ... })`。
 
 `mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 

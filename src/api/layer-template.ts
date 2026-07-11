@@ -4,10 +4,13 @@ import {
   type SlotsType,
   type VNode,
 } from 'vue'
-import type { LayerDefine, LayerInstance, LayerTemplateScope } from '@/types'
-import { getLayerTemplateTo } from '@/shared/layer-template-to'
+import type { LayerTemplateScope } from '@/types'
+import {
+  resolveTemplateTo,
+  type LayerTemplateTo,
+} from '@/shared/layer-template-to'
 
-export type LayerTemplateTo = LayerInstance | LayerDefine
+export type { LayerTemplateTo }
 
 export const LayerTemplate = defineComponent({
   name: 'LayerTemplate',
@@ -40,7 +43,7 @@ export const LayerTemplate = defineComponent({
     const slotRender = (slotProps?: Record<string, unknown>) =>
       slots.default?.(slotProps) ?? null
 
-    const content = getLayerTemplateTo(props.to).template({
+    const content = resolveTemplateTo(props.to).template({
       name: props.name,
       container: props.container,
       render: slotRender,

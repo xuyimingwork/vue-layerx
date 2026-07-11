@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { flushPromises, withoutDom } from '@tests/helpers/dom'
 import { Container, makeContent } from '@tests/fixtures/components'
-import { getLayerTemplateTo } from '@/shared/layer-template-to'
+import { resolveTemplateTo } from '@/shared/layer-template-to'
 import { createLayerInstance } from '../layer-instance'
 
 describe('createLayerInstance', () => {
@@ -47,7 +47,7 @@ describe('createLayerInstance', () => {
         use: { content: { component: makeContent() } },
       })
 
-      const content = getLayerTemplateTo(instance).template({
+      const content = resolveTemplateTo(instance).template({
         name: 'extra',
         container: false,
         render: () => 'vnode',

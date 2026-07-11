@@ -2,7 +2,7 @@ import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
 import { toFragmentFromStatic } from '@/config/fragment'
 import { isLayerContent, LAYER_DEFINE_KEY } from '@/shared/contracts'
-import { setupLayerTemplateTo } from '@/shared/layer-template-to'
+import { withTemplateTo } from '@/shared/layer-template-to'
 
 export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
   const instance = getCurrentInstance()
@@ -18,8 +18,7 @@ export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
 
   if (inLayer) ctx!.register(toFragmentFromStatic(config))
 
-  const layer: LayerDefine = { inLayer, outsideLayer }
-  setupLayerTemplateTo(layer, {
+  return withTemplateTo({ inLayer, outsideLayer }, {
     template({ name, render }) {
       if (outsideLayer) {
         return {
@@ -38,5 +37,4 @@ export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
       return { render: () => null }
     },
   })
-  return layer
 }
