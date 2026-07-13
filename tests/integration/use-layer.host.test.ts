@@ -161,17 +161,14 @@ describe('LayerInstance.bindHost', () => {
     })
 
     it('should ignore second bindHost call', async () => {
-      const FIRST_KEY = Symbol('first')
-      const SECOND_KEY = Symbol('second')
+      const HOST_KEY = Symbol('host-key')
       const useLayer = createLayer(Container)
       let dialog!: LayerInstance
 
       const Content = defineComponent({
         name: 'BindOnceContent',
         setup() {
-          const first = inject<string>(FIRST_KEY)
-          const second = inject<string>(SECOND_KEY)
-          const value = first ?? second ?? 'none'
+          const value = inject<string>(HOST_KEY, 'none')
           return () => h('span', { class: 'bind-once' }, value)
         },
       })
@@ -180,7 +177,7 @@ describe('LayerInstance.bindHost', () => {
 
       const SecondHost = defineComponent({
         setup() {
-          provide(SECOND_KEY, 'second')
+          provide(HOST_KEY, 'second')
           dialog.bindHost()
           onMounted(() => dialog.open())
           return () => h('second-host')
@@ -189,7 +186,7 @@ describe('LayerInstance.bindHost', () => {
 
       const FirstHost = defineComponent({
         setup() {
-          provide(FIRST_KEY, 'first')
+          provide(HOST_KEY, 'first')
           dialog.bindHost()
           return () => h(SecondHost)
         },
