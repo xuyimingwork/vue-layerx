@@ -82,7 +82,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 |-------------|------|
 | `open(config?)` | 打开弹层；关闭后再打开会重建 content；已打开时 open 更新配置 |
 | `close()` | 关闭（不卸 DOM 挂载点） |
-| `unmount()` | 卸 portal DOM；**不**清 viewHost |
+| `unmount()` | 卸 portal DOM；**不**清 layerHost |
 | `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier（**不继承**父 `use` 的 `props.ref`）；setup 内自动 `bindHost()` |
 | `contentRef` | 只读 computed；打开时指向 content 组件实例，关闭后为 `null` |
 | `containerRef` | 只读 computed；打开时指向 container 组件实例，关闭后为 `null` |

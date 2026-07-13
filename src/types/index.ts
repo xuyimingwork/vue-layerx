@@ -17,7 +17,7 @@ export type {
 
 export type { LayerInstance, LayerDefine, LayerTemplateScope } from './instance'
 
-export type { ViewHost } from './view-host'
+export type { LayerHost } from './layer-host'
 
 export type {
   TemplateSlotKey,

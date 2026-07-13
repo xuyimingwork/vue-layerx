@@ -11,12 +11,12 @@ import {
 import type { LayerAdapter } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { LayerView } from '@/view/layer-view'
-import { type ViewHost } from '@/types/view-host'
+import { type LayerHost } from '@/types/layer-host'
 
 const HOST = Symbol('vue-layerx:host')
 
 type LayerAppInstance = VNode & {
-  [HOST]?: ViewHost | null
+  [HOST]?: LayerHost | null
 }
 
 export interface LayerAppState {
@@ -41,7 +41,7 @@ function getAppContext(instance: ComponentInternalInstance) {
 export function createLayerApp(options: {
   store: LayerInstanceStoreWithTemplate
   state: LayerAppState
-  host: ShallowRef<ViewHost | null>
+  host: ShallowRef<LayerHost | null>
   adapter?: LayerAdapter
 }): LayerAppHandle {
   const { store, state, host, adapter } = options

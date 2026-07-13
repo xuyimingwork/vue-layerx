@@ -15,7 +15,6 @@ import type { LayerAdapter, LayerConfigStatic, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/contracts'
-import type { ViewHost } from '@/types/view-host'
 
 /** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
 const LAYER_CONTENT = Symbol('vue-layerx:layer-content')

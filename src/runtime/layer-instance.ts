@@ -11,7 +11,7 @@ import { toFragmentFromInstance, mergeFragment, createFragment, stripFragment } 
 import { withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import { createLayerApp } from '@/runtime/layer-app'
-import type { ViewHost } from '@/types/view-host'
+import type { LayerHost } from '@/types/layer-host'
 
 export function createLayerInstance({
   create,
@@ -47,7 +47,7 @@ export function createLayerInstance({
   const state = reactive({
     visible: false,
   })
-  const host = shallowRef<ViewHost | null>(null)
+  const host = shallowRef<LayerHost | null>(null)
   
   const app = createLayerApp({ store, state, host, adapter })
 
@@ -72,7 +72,7 @@ export function createLayerInstance({
     // 只允许在 host setup 时绑定
     if (!current || current.isMounted) return
 
-    host.value = current as ViewHost
+    host.value = current as LayerHost
     onUnmounted(() => {
       host.value = null
       dispose()

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerApp } from '@/runtime/layer-app'
-import { ViewHost } from '@/types/view-host'
+import { LayerHost } from '@/types/layer-host'
 import { Container } from '@tests/fixtures/components'
 import { withoutDom } from '@tests/helpers/dom'
 
@@ -12,7 +12,7 @@ function createTestApp() {
     create: { container: { component: Container } },
   })
   const state = reactive({ visible: false })
-  const host = shallowRef<ViewHost | null>(null)
+  const host = shallowRef<LayerHost | null>(null)
   const layerApp = createLayerApp({ store, state, host })
   return { state, host, layerApp }
 }
@@ -68,7 +68,7 @@ describe('createLayerApp', () => {
   it('should bridge host when host is set before visible becomes true', async () => {
     const wrapper = mount(defineComponent({ template: '<div />' }))
     const { state, host, layerApp } = createTestApp()
-    host.value = wrapper.vm.$ as ViewHost
+    host.value = wrapper.vm.$ as LayerHost
     state.visible = true
     await nextTick()
     expect(layerApp.mounted).toBe(true)
@@ -118,7 +118,7 @@ describe('createLayerApp / SSR', () => {
       create: { container: { component: Container } },
     })
     const state = reactive({ visible: true })
-    const host = shallowRef<ViewHost | null>(null)
+    const host = shallowRef<LayerHost | null>(null)
     const layerApp = createLayerApp({ store, state, host })
     expect(layerApp.mounted).toBe(true)
     layerApp.unmount()
@@ -133,7 +133,7 @@ describe('createLayerApp / SSR', () => {
 
     vi.stubGlobal('document', originalDocument)
     const wrapper = mount(defineComponent({ template: '<div />' }))
-    host.value = wrapper.vm.$ as ViewHost
+    host.value = wrapper.vm.$ as LayerHost
     state.visible = false
     state.visible = true
     await nextTick()
