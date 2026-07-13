@@ -197,5 +197,44 @@ describe('LayerInstance.bindHost', () => {
 
       expect(document.body.querySelector('.bind-once')?.textContent).toBe('first')
     })
+
+    it('should remount with host inject after open then bindHost then close then open', async () => {
+      const HOST_KEY = Symbol('late-bind-key')
+      const useLayer = createLayer(Container)
+
+      const Content = defineComponent({
+        name: 'LateBindContent',
+        setup() {
+          const value = inject<string>(HOST_KEY, 'fallback')
+          return () => h('span', { class: 'late-bind' }, value)
+        },
+      })
+
+      // Detached instance: open before any bindHost
+      const dialog = useLayer(Content)
+
+      dialog.open()
+      await flushPromises()
+      expect(document.body.querySelector('.late-bind')?.textContent).toBe('fallback')
+
+      // bindHost while open — must not hot-swap inject on the current tree
+      const Host = defineComponent({
+        setup() {
+          provide(HOST_KEY, 'from-host')
+          dialog.bindHost()
+          return () => h('late-bind-host')
+        },
+      })
+      mount(Host)
+      await flushPromises()
+      expect(document.body.querySelector('.late-bind')?.textContent).toBe('fallback')
+
+      dialog.close()
+      await flushPromises()
+
+      dialog.open()
+      await flushPromises()
+      expect(document.body.querySelector('.late-bind')?.textContent).toBe('from-host')
+    })
   })
 })
