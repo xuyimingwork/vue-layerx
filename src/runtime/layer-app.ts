@@ -1,8 +1,10 @@
 import {
-  App,
-  createApp,
+  ComponentInternalInstance,
+  createVNode,
   defineComponent,
   h,
+  render,
+  VNode,
   watch,
   type ShallowRef,
 } from 'vue'
@@ -10,6 +12,12 @@ import type { LayerAdapter } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { LayerView } from '@/view/layer-view'
 import { type ViewHost } from '@/types/view-host'
+
+const HOST = Symbol('vue-layerx:host')
+
+type LayerAppInstance = VNode & {
+  [HOST]?: ViewHost | null
+}
 
 export interface LayerAppState {
   visible: boolean
@@ -20,34 +28,14 @@ export interface LayerAppHandle {
   unmount: () => void
 }
 
-interface LayerAppContext {
-  store: LayerInstanceStoreWithTemplate
-  state: LayerAppState
-  host: ShallowRef<ViewHost | null>
-  adapter?: LayerAdapter
-}
-
 function canUseDom(): boolean {
   return typeof document !== 'undefined'
 }
 
-function createLayerAppComponent(ctx: LayerAppContext) {
-  const { store, state, host, adapter } = ctx
-  return defineComponent({
-    name: 'LayerApp',
-    setup() {
-      return () =>
-        h(LayerView, {
-          visible: state.visible,
-          host: host.value,
-          store,
-          adapter,
-          'onUpdate:visible': (value: boolean) => {
-            state.visible = value
-          },
-        })
-    },
-  })
+function getAppContext(instance: ComponentInternalInstance) {
+  const appContext = Object.create(instance?.appContext ?? null)
+  appContext.provides = Object.create((instance as any)?.provides ?? null)
+  return appContext
 }
 
 export function createLayerApp(options: {
@@ -57,44 +45,65 @@ export function createLayerApp(options: {
   adapter?: LayerAdapter
 }): LayerAppHandle {
   const { store, state, host, adapter } = options
-  const ctx: LayerAppContext = { store, state, host, adapter }
 
   let el: HTMLElement | null = null
-  let layerApp: App | null = null
+  let app: LayerAppInstance | null = null
 
-  function setupElement() {
+  const LayerApp = defineComponent({
+    name: 'LayerApp',
+    setup() {
+      return () =>
+        h(LayerView, {
+          visible: state.visible,
+          store,
+          adapter,
+          'onUpdate:visible': (value: boolean) => {
+            state.visible = value
+          },
+        })
+    },
+  })
+
+  function prepare() {
     if (el) return
     el = document.createElement('div')
     document.body.appendChild(el)
   }
 
-  function mountLayerApp() {
+  function mount() {
+    // 支持 SSR
     if (!canUseDom()) return
-    if (layerApp) return
-    setupElement()
-    layerApp = createApp(createLayerAppComponent(ctx))
-    layerApp.mount(el!)
+    // host 变化场景下重新挂载
+    if (app && app[HOST] !== host.value) unmount()
+    if (app) return
+    prepare()
+    app = createVNode(LayerApp)
+    app[HOST] = host.value
+    if (host.value) app.appContext = getAppContext(host.value)
+    render(app, el!)
+  }
+
+  function unmount() {
+    if (!app) return
+    render(null, el!)
+    el!.remove()
+    el = null
+    app = null
   }
 
   watch(
     () => state.visible,
     () => {
       if (!state.visible) return
-      mountLayerApp()
+      mount()
     },
     { immediate: true },
   )
 
   return {
     get mounted() {
-      return layerApp !== null
+      return app !== null
     },
-    unmount() {
-      if (!layerApp) return
-      layerApp.unmount()
-      layerApp = null
-      el?.remove()
-      el = null
-    },
+    unmount
   }
 }

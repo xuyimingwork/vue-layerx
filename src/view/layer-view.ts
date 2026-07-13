@@ -66,10 +66,6 @@ export const LayerView = defineComponent({
       type: Boolean,
       required: true,
     },
-    host: {
-      type: Object as PropType<ViewHost | null>,
-      default: null,
-    },
     store: {
       type: Object as PropType<LayerInstanceStoreWithTemplate>,
       required: true,
@@ -97,19 +93,6 @@ export const LayerView = defineComponent({
         }
       },
       { flush: 'sync' },
-    )
-
-    watch(
-      () => props.host,
-      (bridgeHost) => {
-        if (!bridgeHost || bridgeHost.isUnmounted) return
-        const instance = getCurrentInstance()
-        if (!instance) return
-        const viewHost = instance as ViewHost
-        viewHost.appContext = bridgeHost.appContext
-        viewHost.provides = Object.create(bridgeHost.provides)
-      },
-      { immediate: true, flush: 'post' },
     )
 
     provide(LAYER_VIEW_KEY, {

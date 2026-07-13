@@ -22,9 +22,8 @@ export function createLayerInstance({
   adapter?: LayerAdapter
   use: LayerConfigFragment
 }): LayerInstance {
-  const containerTarget = shallowRef<ComponentPublicInstance | null>(null)
-  const contentTarget = shallowRef<ComponentPublicInstance | null>(null)
-
+  const containerRef = shallowRef<ComponentPublicInstance | null>(null)
+  const contentRef = shallowRef<ComponentPublicInstance | null>(null)
   const store = createLayerInstanceStore({
     create,
     use,
@@ -32,33 +31,29 @@ export function createLayerInstance({
       container: {
         props: {
           ref: (el: ComponentPublicInstance | null) => {
-            containerTarget.value = el
+            containerRef.value = el
           },
         },
       },
       content: {
         props: {
           ref: (el: ComponentPublicInstance | null) => {
-            contentTarget.value = el
+            contentRef.value = el
           },
         },
       },
     },
   })
-
   const state = reactive({
     visible: false,
   })
-
-  const contentRef = computed(() => (state.visible ? contentTarget.value : null))
-  const containerRef = computed(() => (state.visible ? containerTarget.value : null))
-
   const host = shallowRef<ViewHost | null>(null)
-  const layerApp = createLayerApp({ store, state, host, adapter })
+  
+  const app = createLayerApp({ store, state, host, adapter })
 
   const dispose = () => {
     state.visible = false
-    layerApp.unmount()
+    app.unmount()
   }
 
   const open = (config?: LayerConfigInstance) => {
@@ -71,8 +66,12 @@ export function createLayerInstance({
   }
 
   const bindHost = () => {
+    // 已绑定 host 状态下不允许再次绑定 host
+    if (host.value) return
     const current = getCurrentInstance()
-    if (!current || host.value) return
+    // 只允许在 host setup 时绑定
+    if (!current || current.isMounted) return
+
     host.value = current as ViewHost
     onUnmounted(() => {
       host.value = null
@@ -85,8 +84,8 @@ export function createLayerInstance({
     close,
     unmount: dispose,
     bindHost,
-    contentRef,
-    containerRef,
+    contentRef: computed(() => (state.visible ? contentRef.value : null)),
+    containerRef: computed(() => (state.visible ? containerRef.value : null)),
     clone(config?: LayerConfigInstance) {
       const cloned = createLayerInstance({
         create,
