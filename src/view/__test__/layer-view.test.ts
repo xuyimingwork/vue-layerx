@@ -1,34 +1,42 @@
 import { describe, expect, it } from 'vitest'
-import { LAYER_CONTENT } from '@/shared/contracts'
-import { LayerContentMarker, MinimalContainer } from '@tests/fixtures/components'
-import { renderLayerTree } from '../render-layer-tree'
+import { defineComponent } from 'vue'
+import { MinimalContainer } from '@tests/fixtures/components'
+import { createLayerViewVNode } from '../layer-view'
 
-describe('renderLayerTree', () => {
-  it('should mark content root with LAYER_CONTENT', () => {
-    const tree = renderLayerTree({
+const StubContent = defineComponent({
+  name: 'StubContent',
+  setup() {
+    return () => null
+  },
+})
+
+describe('createLayerViewVNode', () => {
+  it('should mark content root with an internal Symbol prop', () => {
+    const tree = createLayerViewVNode({
       container: {
         component: MinimalContainer,
         props: { modelValue: true },
         slots: {},
       },
       content: {
-        component: LayerContentMarker,
+        component: StubContent,
         props: { message: 'hello' },
         slots: {},
       },
-      contentMountKey: 1,
+      openId: 1,
     })
 
     const contentVNode = tree.children?.default?.() as {
       props?: Record<PropertyKey, unknown>
     }
-    expect(contentVNode?.props?.[LAYER_CONTENT]).toBe(true)
+    const symbolKeys = Object.getOwnPropertySymbols(contentVNode?.props ?? {})
+    expect(symbolKeys.some((key) => contentVNode?.props?.[key] === true)).toBe(true)
     expect(contentVNode?.props?.message).toBe('hello')
     expect(contentVNode?.props?.key).toBe(1)
   })
 
   it('should omit content branch when content is undefined', () => {
-    const tree = renderLayerTree({
+    const tree = createLayerViewVNode({
       container: {
         component: MinimalContainer,
         props: { modelValue: false },

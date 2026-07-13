@@ -1,7 +1,6 @@
 import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
-import { toFragmentFromStatic } from '@/config/fragment'
-import { isLayerContent, LAYER_DEFINE_KEY } from '@/shared/contracts'
+import { LAYER_VIEW_KEY } from '@/shared/contracts'
 import { withTemplateTo } from '@/shared/layer-template-to'
 
 export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
@@ -12,27 +11,24 @@ export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
     )
   }
 
-  const ctx = inject(LAYER_DEFINE_KEY, null)
-  const inLayer = !!(ctx && isLayerContent(instance))
+  const ctx = inject(LAYER_VIEW_KEY, null)?.getDefineContext() ?? null
+  const inLayer = !!ctx
   const outsideLayer = !inLayer
 
-  if (inLayer) ctx!.register(toFragmentFromStatic(config))
+  ctx?.config(config)
 
   return withTemplateTo({ inLayer, outsideLayer }, {
     template({ name, render }) {
-      if (outsideLayer) {
+      if (!ctx) {
         return {
           render: () => render({ inLayer, outsideLayer, slotProps: {} }),
         }
       }
 
-      ctx!.store.template({
-        key: 'define:template.container',
+      ctx.template({
         name,
-        entry: {
-          render: (slotProps: Record<string, unknown> = {}) =>
-            render({ slotProps, inLayer, outsideLayer }),
-        },
+        render: (slotProps: Record<string, unknown> = {}) =>
+          render({ slotProps, inLayer, outsideLayer }),
       })
       return { render: () => null }
     },

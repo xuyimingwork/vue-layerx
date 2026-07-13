@@ -1,19 +1,63 @@
 import {
   defineComponent,
   getCurrentInstance,
+  h,
   provide,
   ref,
   watch,
+  type ComponentInternalInstance,
   type PropType,
+  type VNode,
 } from 'vue'
-import { mergeFragment, createFragment } from '@/config/fragment'
+import { mergeFragment, createFragment, toFragmentFromStatic } from '@/config/fragment'
 import { bindLayerTree } from '@/config/bind-layer-tree'
-import type { LayerAdapter, LayerConfigFragment } from '@/types'
+import type { LayerAdapter, LayerConfigStatic, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
-import { renderLayerTree } from '@/view/render-layer-tree'
-import { LAYER_DEFINE_KEY } from '@/shared/contracts'
+import { LAYER_VIEW_KEY } from '@/shared/contracts'
 import type { ViewHost } from '@/types/view-host'
+
+/** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
+const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
+
+function isLayerContent(
+  instance: ComponentInternalInstance | null | undefined,
+): boolean {
+  const vnodeProps = instance?.vnode?.props as
+    | Record<PropertyKey, unknown>
+    | null
+    | undefined
+  return vnodeProps?.[LAYER_CONTENT] === true
+}
+
+export interface CreateLayerViewVNodeOptions extends LayerNormalized {
+  openId?: number
+}
+
+/** Build LayerView root VNode (container + optional content). Exported for unit tests. */
+export function createLayerViewVNode({
+  container,
+  content,
+  openId,
+}: CreateLayerViewVNodeOptions): VNode {
+  const defaultSlot = content
+    ? () =>
+        h(
+          content.component,
+          {
+            ...content.props,
+            key: openId,
+            [LAYER_CONTENT]: true,
+          },
+          content.slots,
+        )
+    : () => null
+
+  return h(container.component, container.props, {
+    default: defaultSlot,
+    ...container.slots,
+  })
+}
 
 export const LayerView = defineComponent({
   name: 'LayerView',
@@ -37,7 +81,7 @@ export const LayerView = defineComponent({
   },
   emits: ['update:visible'],
   setup(props, { emit }) {
-    const contentMountKey = ref(0)
+    const openId = ref(0)
     const defineStore = createLayerStore({
       define: createFragment(),
       'define:template': createFragment(),
@@ -49,7 +93,7 @@ export const LayerView = defineComponent({
         if (visible && !prev) {
           defineStore.define = createFragment()
           defineStore['define:template'] = createFragment()
-          contentMountKey.value++
+          openId.value++
         }
       },
       { flush: 'sync' },
@@ -68,17 +112,38 @@ export const LayerView = defineComponent({
       { immediate: true, flush: 'post' },
     )
 
-    provide(LAYER_DEFINE_KEY, {
-      register(fragment: LayerConfigFragment) {
-        defineStore.define = fragment
+    provide(LAYER_VIEW_KEY, {
+      getDefineContext() {
+        const instance = getCurrentInstance()
+        if (!isLayerContent(instance)) return null
+
+        return {
+          config(config: LayerConfigStatic) {
+            defineStore.define = toFragmentFromStatic(config)
+          },
+          template({
+            name,
+            render,
+          }: {
+            name: string
+            render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null
+          }) {
+            defineStore.template({
+              key: 'define:template.container',
+              name,
+              entry: {
+                render: (slotProps: Record<string, unknown> = {}) =>
+                  render(slotProps),
+              },
+            })
+          },
+        }
       },
-      store: defineStore,
     })
 
     return () => {
       props.store.track()
       defineStore.track()
-      void contentMountKey.value
 
       const fragment = mergeFragment(
         props.store.create,
@@ -95,10 +160,10 @@ export const LayerView = defineComponent({
       const withRefs = mergeFragment(props.store.refs, adapted)
       const bound = bindLayerTree({ fragment: withRefs, visible: props.visible, close })
 
-      return renderLayerTree({
+      return createLayerViewVNode({
         container: bound.container,
         content: bound.content,
-        contentMountKey: bound.content ? contentMountKey.value : undefined,
+        openId: bound.content ? openId.value : undefined,
       })
     }
   },

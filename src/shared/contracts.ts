@@ -1,22 +1,6 @@
-import type { ComponentInternalInstance, InjectionKey } from 'vue'
-import type { LayerDefineRegistry } from '@/types/store'
+import type { InjectionKey } from 'vue'
+import type { LayerViewBridge } from '@/types/store'
 
-/** global inject key; value provided per LayerView render context */
-export const LAYER_DEFINE_KEY: InjectionKey<LayerDefineRegistry> =
-  Symbol('vue-layerx-define') as InjectionKey<LayerDefineRegistry>
-
-/** Set by renderLayerTree on the content root vnode only. */
-export const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
-
-export function isLayerContent(
-  instance: ComponentInternalInstance | null | undefined,
-): boolean {
-  if (!instance) return false
-  if (instance.props?.[LAYER_CONTENT] === true) return true
-  if ((instance.attrs as Record<PropertyKey, unknown> | undefined)?.[LAYER_CONTENT] === true) {
-    return true
-  }
-  // Symbol prop keys from h() are readable on vnode.props in Vue runtime
-  const vnodeProps = instance.vnode?.props as Record<PropertyKey, unknown> | null | undefined
-  return vnodeProps?.[LAYER_CONTENT] === true
-}
+/** Inject key provided by LayerView; consumers request capabilities via the bridge. */
+export const LAYER_VIEW_KEY: InjectionKey<LayerViewBridge> =
+  Symbol('vue-layerx:layer-view') as InjectionKey<LayerViewBridge>

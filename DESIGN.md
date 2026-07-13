@@ -45,7 +45,7 @@ UserDialog = MyDialog + UserForm
 ② adapt      该实例工厂的 createLayer adapter（可选）(fragment) => fragment
 ③ refs       mergeFragment(store.refs, adapted)  // 框架 internal ref，refs 为第一源
 ④ bind       bindLayerTree(fragment, visible, close)  →  LayerNormalized
-⑤ render     renderLayerTree(normalized)  →  h(...)
+⑤ render     createLayerViewVNode(normalized)  →  h(...)
 ```
 
 - **merge**：各层贡献 **LayerConfigNode 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
@@ -83,10 +83,10 @@ tests/
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
 | **types/** | 配置 / 实例 / Store 接口；ViewHost 类型断言 | `config.ts`、`instance.ts`、`store.ts`、`view-host.ts` |
-| **shared/** | 跨层 Symbol 契约、store 工厂、template-to 协议、content 根检测 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
+| **shared/** | 跨层 inject 契约、store 工厂、template-to 协议 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts`、`container-model.ts` |
 | **runtime/** | instance 生命周期、portal 挂载 | `layer-instance.ts`、`layer-app.ts` |
-| **view/** | `LayerView` 组件（merge → adapter → bind → render 编排）与纯 `h()` 渲染 | `layer-view.ts`、`render-layer-tree.ts` |
+| **view/** | `LayerView` 组件（merge → adapter → bind → createLayerViewVNode） | `layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
 各层 `__test__/` 与模块同目录；集成测试在 `tests/integration/`。
@@ -147,9 +147,9 @@ flowchart TB
 
 **runtime → view**：`runtime/layer-app.ts`（`createLayerApp`）挂载 `view/layer-view.ts`（`LayerView` 组件）；`layer-instance` 持有 instance store 并委托 portal。`LayerView` 内部通过 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store。
 
-**shared/contracts.ts**：`LAYER_DEFINE_KEY`（defineLayer inject / LayerView provide）、`LAYER_CONTENT` + `isLayerContent`（content 根检测）。类型 `LayerDefineRegistry` 在 `types/store.ts`。
+**shared/contracts.ts**：`LAYER_VIEW_KEY`（LayerView provide；当前由 defineLayer inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`；`define:template.container` key 与 fragment 转换留在 LayerView 闭包。content 根标记为 `layer-view.ts` 模块私有 Symbol，由 `createLayerViewVNode` 写入 `vnode.props`，`getDefineContext` 读取。
 
-**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo` 并在闭包内调用 `store.template(...)`。
+**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：inLayer 时委托 `getDefineContext().template(...)`，caller 路径闭包 `store.template(...)`。
 
 ### 与核心管线的对应
 
@@ -160,18 +160,18 @@ createLayer / defineLayer / LayerTemplate          api/
 createLayerInstance + createLayerApp      runtime/
         │
         ▼
-LayerView → renderLayerTree                            view/
+LayerView → createLayerViewVNode                            view/
         │
         ├── mergeFragment / toFragment*            config/fragment.ts
         ├── mergeNodeConfig                        config/merge-node-config.ts
         ├── adapter（可选）                          api/create-layer 注册
         ├── bindLayerTree                            config/bind-layer-tree.ts
-        └── renderLayerTree                          view/render-layer-tree.ts
+        └── createLayerViewVNode                     view/layer-view.ts
 ```
 
 - **merge**：`config/fragment.ts`（`createFragment`、`toFragmentFrom*`、`mergeFragment`）+ `config/merge-node-config.ts`（node 级 merge 原语）。
 - **bind**：`config/bind-layer-tree.ts` 编排 `container-model`、`bind-close-on`。
-- **render**：`view/render-layer-tree.ts` 纯 `h()`；`view/layer-view.ts` 是唯一的 merge → adapter → bind → render 编排点。
+- **render**：`view/layer-view.ts` 的 `createLayerViewVNode` 纯 `h()`；`LayerView` 是唯一的 merge → adapter → bind → render 编排点。
 
 ---
 
@@ -181,7 +181,7 @@ LayerView → renderLayerTree                            view/
 
 UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而由 vue-layerx 在 `render` 阶段 `h(content, …)` 托管。
 
-- **`close()` 后再 `open()`**：强制重建 content 子树（内部 `contentMountKey` 递增），content `setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。
+- **`close()` 后再 `open()`**：强制重建 content 子树（内部 `openId` 递增作为 content `key`），content `setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。
 - **已打开时再次 `open(config?)`**：只更新 `store.open` tier 并下发新 props，**不** remount content。
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
@@ -246,7 +246,7 @@ const bindHost = () => {
 
 ### defineLayer 与 inject
 
-`defineLayer` 使用**全局单一 inject key**（不绑定 `useDialog` / `useDrawer` 等具体工厂）。仅在 **direct layer content** 上下文（框架托管 render 的 content 根）内 register 进 merge；页内单独渲染 UserForm 时为 no-op。
+`defineLayer` 使用**全局单一 inject key** `LAYER_VIEW_KEY`（LayerView provide，不绑定 `useDialog` / `useDrawer` 等具体工厂）。`inject(LAYER_VIEW_KEY)?.getDefineContext()` 仅在 **direct layer content**（框架托管 render 的 content 根）返回 `{ config, template }`；页内单独渲染或嵌套子组件得到 `null`（`outsideLayer`）。有 context 时 `config` / `template` 写入 LayerView 的 define store；无 context 时 config 为 no-op，`LayerTemplate` 走本地渲染。
 
 ### 挂载与 SSR
 
@@ -293,7 +293,7 @@ type LayerNormalized = {
   container: LayerNodeNormalized
 }
 
-/** bind 输出：props 已含 closeOn / model 绑定，renderLayerTree 直接 h() */
+/** bind 输出：props 已含 closeOn / model 绑定，createLayerViewVNode 直接 h() */
 ```
 
 | 术语 | 含义 |
@@ -695,7 +695,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。`:to` 经 `withTemplateTo` 在创建时闭包 `store`，`resolveTemplateTo(to).template(...)` 调用 `store.template({ key: 'use:template.*' | 'define:template.container', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。creator 路径：`defineLayer` → `getDefineContext().config` / `.template` 写入 define store（template key 固定为 `define:template.container`）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `store.template({ key: 'use:template.*', ... })`。
 
 `mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 
@@ -1015,7 +1015,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 |------|------|
 | merge 与 adapter 分离 | 优先级在框架 merge，项目在 adapter 整形配置 |
 | 两参 `createLayer` + `config.adapter` | defaults / adapter 职责清晰；adapter 存 store 顶层 |
-| bind 与 render 分离 | bind 写 runtime props；renderLayerTree 纯 h() |
+| bind 与 render 分离 | bind 写 runtime props；createLayerViewVNode 纯 h() |
 | `defineLayer` 全局 inject | 与 Vue `defineXxx` 拉齐；content 不感知容器 |
 | slot render fn 投递 | container / content 模板跨树投送；与 Vue slot 语义同构 |
 | content remount | close 后再 open 时框架重建 content；已打开时 open 只更新 props |

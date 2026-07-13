@@ -1,5 +1,9 @@
-import type { UnwrapNestedRefs } from 'vue'
-import type { LayerConfigFragment, LayerTemplateEntry } from './config'
+import type { UnwrapNestedRefs, VNode } from 'vue'
+import type {
+  LayerConfigFragment,
+  LayerConfigStatic,
+  LayerTemplateEntry,
+} from './config'
 
 export type TemplateSlotKey =
   | 'use:template.container'
@@ -40,7 +44,19 @@ export type LayerInstanceStoreWithTemplate = UnwrapNestedRefs<LayerInstanceStore
 export type LayerViewStoreWithTemplate = UnwrapNestedRefs<LayerViewStore> &
   LayerStoreMethods
 
-export type LayerDefineRegistry = {
-  register: (fragment: LayerConfigFragment) => void
-  store: LayerViewStoreWithTemplate
+/** Delivery channel for defineLayer when called on content root (setup-only). */
+export type LayerDefineContext = {
+  config: (config: LayerConfigStatic) => void
+  template: (opts: {
+    name: string
+    render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null
+  }) => void
+}
+
+/**
+ * Injected by LayerView. getDefineContext() is setup-only and returns a context
+ * only for the marked content root; otherwise null.
+ */
+export type LayerViewBridge = {
+  getDefineContext: () => LayerDefineContext | null
 }

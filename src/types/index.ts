@@ -26,5 +26,6 @@ export type {
   LayerInstanceStoreInit,
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
-  LayerDefineRegistry,
+  LayerViewBridge,
+  LayerDefineContext,
 } from './store'
