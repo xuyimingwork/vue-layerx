@@ -11,6 +11,7 @@ import { toFragmentFromInstance, mergeFragment, createFragment, stripFragment } 
 import { withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import { createLayerApp } from '@/runtime/layer-app'
+import { warn } from '@/shared/warn'
 import type { LayerHost } from '@/types/layer-host'
 
 export function createLayerInstance({
@@ -65,12 +66,22 @@ export function createLayerInstance({
     state.visible = false
   }
 
-  const bindHost = () => {
-    // 已绑定 host 状态下不允许再次绑定 host
-    if (host.value) return
+  const bindHost = ({ silent = false } = {}) => {
     const current = getCurrentInstance()
-    // 只允许在 host setup 时绑定
-    if (!current || current.isMounted) return
+
+    if (host.value) {
+      if (!silent && current && current !== host.value) {
+        warn('bindHost() ignored: already bound to another host')
+      }
+      return
+    }
+
+    if (!current || current.isMounted) {
+      if (!silent) {
+        warn('bindHost() must be called synchronously during setup')
+      }
+      return
+    }
 
     host.value = current as LayerHost
     onUnmounted(() => {
@@ -87,7 +98,7 @@ export function createLayerInstance({
     contentRef: computed(() => (state.visible ? contentRef.value : null)),
     containerRef: computed(() => (state.visible ? containerRef.value : null)),
     clone(config?: LayerConfigInstance) {
-      const cloned = createLayerInstance({
+      return createLayerInstance({
         create,
         adapter,
         use: mergeFragment(
@@ -95,13 +106,13 @@ export function createLayerInstance({
           toFragmentFromInstance(config),
         ),
       })
-      cloned.bindHost()
-      return cloned
     },
     get visible() {
       return state.visible
     },
   }
+
+  bindHost({ silent: true })
 
   return withTemplateTo(instance, {
     template({ name, container, render }) {

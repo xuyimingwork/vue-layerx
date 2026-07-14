@@ -226,7 +226,7 @@ describe('LayerInstance.clone', () => {
       const OuterHost = defineComponent({
         setup() {
           provide(OUTER_KEY, 'from-outer')
-          onMounted(() => base.bindHost())
+          base.bindHost()
           return () => h(InnerHost)
         },
       })

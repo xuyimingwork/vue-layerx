@@ -52,7 +52,7 @@ dialog.close()
 
 ## SSR
 
-可用于 SSR 应用（Nuxt、Vite SSR 等）。弹层为客户端 UI：`open()` 与模块单例的 `bindHost()` 请在 `onMounted` 或用户交互后调用；服务端不会输出弹层 HTML。
+可用于 SSR 应用（Nuxt、Vite SSR 等）。弹层为客户端 UI：模块单例请在客户端 setup 内调用 `bindHost()`，`open()` 可在 `onMounted` 或用户交互后调用；服务端不会输出弹层 HTML。
 
 ## 限制
 

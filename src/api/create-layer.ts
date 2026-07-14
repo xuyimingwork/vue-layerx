@@ -28,8 +28,6 @@ export function createLayer(
       toFragmentFromInstance(useConfig),
       Content ? { content: { component: Content } } : undefined,
     )
-    const instance = createLayerInstance({ create, adapter, use })
-    instance.bindHost()
-    return instance
+    return createLayerInstance({ create, adapter, use })
   }
 }

@@ -1,6 +1,6 @@
 import { defineComponent, h, inject, onMounted, provide } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
@@ -160,10 +160,11 @@ describe('LayerInstance.bindHost', () => {
       expect(document.body.querySelector('.bind-inject')?.textContent).toBe('from-app')
     })
 
-    it('should ignore second bindHost call', async () => {
+    it('should ignore second bindHost call and warn when host differs', async () => {
       const HOST_KEY = Symbol('host-key')
       const useLayer = createLayer(Container)
       let dialog!: LayerInstance
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       const Content = defineComponent({
         name: 'BindOnceContent',
@@ -196,6 +197,43 @@ describe('LayerInstance.bindHost', () => {
       await flushPromises()
 
       expect(document.body.querySelector('.bind-once')?.textContent).toBe('first')
+      expect(warn).toHaveBeenCalledWith(
+        '[vue-layerx] bindHost() ignored: already bound to another host',
+      )
+      warn.mockRestore()
+    })
+
+    it('should warn when bindHost is called outside setup', () => {
+      const useLayer = createLayer(Container)
+      const dialog = useLayer(makeContent())
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      dialog.bindHost()
+
+      expect(warn).toHaveBeenCalledWith(
+        '[vue-layerx] bindHost() must be called synchronously during setup',
+      )
+      warn.mockRestore()
+    })
+
+    it('should not warn when bindHost is called again on the same host', async () => {
+      const useLayer = createLayer(Container)
+      let dialog!: LayerInstance
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(makeContent())
+          dialog.bindHost()
+          return () => h('same-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
     })
 
     it('should remount with host inject after open then bindHost then close then open', async () => {

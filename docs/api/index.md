@@ -87,7 +87,7 @@ interface LayerTemplateScope<T = Record<string, unknown>> {
 | `contentRef` | 只读 computed；打开时指向 content 组件实例，关闭后为 `null` |
 | `containerRef` | 只读 computed；打开时指向 container 组件实例，关闭后为 `null` |
 | `visible` | 只读是否打开 |
-| `bindHost()` | 绑定**本 instance** 当前 setup Host 的 provide / appContext；重复调用 no-op；`useLayer` 在 setup 内自动调用 |
+| `bindHost()` | 绑定**本 instance** 当前 setup Host 的 provide / appContext；同一 host 再调 no-op；绑到其他 host 或非 setup 调用时 dev warn；`useLayer` / `clone` 创建时自动尝试绑定 |
 
 **全局单例**（模块 `export const messageBox = useLayer(...)`）须在 App 或 `ElConfigProvider` **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject ConfigProvider。
 

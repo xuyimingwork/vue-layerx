@@ -24,6 +24,10 @@ export interface LayerInstance {
   readonly visible: boolean
   readonly contentRef: ComputedRef<ComponentPublicInstance | null>
   readonly containerRef: ComputedRef<ComponentPublicInstance | null>
-  /** Bind portal inherit context to current setup host; no-op if already bound or outside setup */
+  /**
+   * Bind portal inherit context to current setup host.
+   * Same-host re-call is a silent no-op; binding a different host or calling outside setup warns in dev.
+   * `useLayer` / `clone` auto-bind during create (silent if no setup host).
+   */
   bindHost: () => void
 }
