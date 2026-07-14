@@ -18,7 +18,6 @@ type LayerStoreMethods = {
     name: string
     entry: LayerTemplateEntry
   }) => void
-  track: () => void
 }
 
 function parseTemplateKey(key: TemplateSlotKey): {
@@ -46,34 +45,9 @@ function ensureSlots(
   return bucket.content.slots
 }
 
-function trackFragmentBuckets(
-  store: Record<string, LayerConfigFragment>,
-  bucketKeys: string[],
-): void {
-  for (const key of bucketKeys) {
-    const fragment = store[key]
-    if (!fragment) continue
-    void fragment.content
-    void fragment.container
-    void fragment.content?.slots
-    void fragment.container?.slots
-    if (fragment.content?.slots) {
-      for (const slotName of Object.keys(fragment.content.slots)) {
-        void fragment.content.slots[slotName]
-      }
-    }
-    if (fragment.container?.slots) {
-      for (const slotName of Object.keys(fragment.container.slots)) {
-        void fragment.container.slots[slotName]
-      }
-    }
-  }
-}
-
-export function createLayerStore<T extends Record<string, LayerConfigFragment>>(
+export function createLayerStore<T extends Record<string, unknown>>(
   init: T,
 ): UnwrapNestedRefs<T> & LayerStoreMethods {
-  const bucketKeys = Object.keys(init)
   const store = reactive(init)
 
   const template = ({
@@ -97,10 +71,6 @@ export function createLayerStore<T extends Record<string, LayerConfigFragment>>(
     slots[name] = (slotProps) => entry.render(slotProps ?? {})
   }
 
-  const track = () => {
-    trackFragmentBuckets(store as Record<string, LayerConfigFragment>, bucketKeys)
-  }
-
-  return Object.assign(store, { template, track }) as UnwrapNestedRefs<T> &
+  return Object.assign(store, { template }) as UnwrapNestedRefs<T> &
     LayerStoreMethods
 }

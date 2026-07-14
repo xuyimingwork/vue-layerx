@@ -41,7 +41,7 @@ export function toFragmentFromInstance(config: LayerConfigInstance = {}): LayerC
   )
 }
 
-/** Merge fragments; later sources win per side. */
+/** Merge fragments; later sources win per side. Only content/container participate. */
 export function mergeFragment(
   ...sources: (LayerConfigFragment | null | undefined)[]
 ): LayerConfigFragment {

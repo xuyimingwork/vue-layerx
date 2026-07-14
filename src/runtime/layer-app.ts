@@ -8,7 +8,6 @@ import {
   watch,
   type ShallowRef,
 } from 'vue'
-import type { LayerAdapter } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { LayerView } from '@/runtime/layer-view'
 import { type LayerHost } from '@/types/layer-host'
@@ -42,9 +41,8 @@ export function createLayerApp(options: {
   store: LayerInstanceStoreWithTemplate
   state: LayerAppState
   host: ShallowRef<LayerHost | null>
-  adapter?: LayerAdapter
 }): LayerAppHandle {
-  const { store, state, host, adapter } = options
+  const { store, state, host } = options
 
   let el: HTMLElement | null = null
   let app: LayerAppInstance | null = null
@@ -56,7 +54,6 @@ export function createLayerApp(options: {
         h(LayerView, {
           visible: state.visible,
           store,
-          adapter,
           'onUpdate:visible': (value: boolean) => {
             state.visible = value
           },
@@ -103,6 +100,6 @@ export function createLayerApp(options: {
     get mounted() {
       return app !== null
     },
-    unmount
+    unmount,
   }
 }

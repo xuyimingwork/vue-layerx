@@ -1,3 +1,4 @@
+import { computed } from 'vue'
 import { describe, expect, it } from 'vitest'
 import type {
   LayerConfigFragment,
@@ -37,8 +38,8 @@ function createTestInstanceStore(overrides: {
   open?: LayerConfigFragment
 } = {}): LayerInstanceStoreWithTemplate {
   const store = createLayerInstanceStore({
-    create: overrides.create ?? {},
-    use: overrides.use,
+    create: computed(() => overrides.create ?? {}),
+    use: computed(() => overrides.use ?? {}),
   })
   if (overrides.open) store.open = overrides.open
   return store

@@ -2,6 +2,7 @@ export type {
   LayerAdapter,
   CloseOnConfig,
   LayerConfigFragment,
+  LayerCreateBucket,
   LayerConfigContainer,
   LayerConfigContent,
   LayerConfigNode,

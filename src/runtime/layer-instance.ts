@@ -5,9 +5,22 @@ import {
   reactive,
   shallowRef,
   type ComponentPublicInstance,
+  type ComputedRef,
 } from 'vue'
-import type { LayerAdapter, LayerConfigFragment, LayerInstance, LayerConfigInstance, LayerInstanceStoreInit, LayerInstanceStoreWithTemplate } from '@/types'
-import { toFragmentFromInstance, mergeFragment, createFragment, stripFragment } from '@/config/fragment'
+import type {
+  LayerConfigFragment,
+  LayerCreateBucket,
+  LayerInstance,
+  LayerConfigInstance,
+  LayerInstanceStoreInit,
+  LayerInstanceStoreWithTemplate,
+} from '@/types'
+import {
+  toFragmentFromInstance,
+  mergeFragment,
+  createFragment,
+  stripFragment,
+} from '@/config/fragment'
 import { withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import { createLayerApp } from '@/runtime/layer-app'
@@ -16,12 +29,10 @@ import type { LayerHost } from '@/types/layer-host'
 
 export function createLayerInstance({
   create,
-  adapter,
   use,
 }: {
-  create: LayerConfigFragment
-  adapter?: LayerAdapter
-  use: LayerConfigFragment
+  create: ComputedRef<LayerCreateBucket>
+  use: ComputedRef<LayerConfigFragment>
 }): LayerInstance {
   const containerRef = shallowRef<ComponentPublicInstance | null>(null)
   const contentRef = shallowRef<ComponentPublicInstance | null>(null)
@@ -49,8 +60,8 @@ export function createLayerInstance({
     visible: false,
   })
   const host = shallowRef<LayerHost | null>(null)
-  
-  const app = createLayerApp({ store, state, host, adapter })
+
+  const app = createLayerApp({ store, state, host })
 
   const dispose = () => {
     state.visible = false
@@ -100,10 +111,11 @@ export function createLayerInstance({
     clone(config?: LayerConfigInstance) {
       return createLayerInstance({
         create,
-        adapter,
-        use: mergeFragment(
-          stripFragment(use, (path) => path.endsWith('.props.ref')),
-          toFragmentFromInstance(config),
+        use: computed(() =>
+          mergeFragment(
+            stripFragment(use.value, (path) => path.endsWith('.props.ref')),
+            toFragmentFromInstance(config),
+          ),
         ),
       })
     },
@@ -132,8 +144,8 @@ export function createLayerInstanceStore(
   init: LayerInstanceStoreInit,
 ): LayerInstanceStoreWithTemplate {
   return createLayerStore({
-    create: createFragment(init.create),
-    use: createFragment(init.use),
+    create: init.create,
+    use: init.use,
     open: createFragment(),
     'use:template': createFragment(),
     refs: createFragment(init.refs),

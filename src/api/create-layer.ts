@@ -1,5 +1,10 @@
-import type { Component } from 'vue'
-import type { LayerConfigCreate, LayerConfigInstance, LayerInstance } from '@/types'
+import { computed, type Component } from 'vue'
+import type {
+  LayerConfigCreate,
+  LayerConfigInstance,
+  LayerCreateBucket,
+  LayerInstance,
+} from '@/types'
 import {
   mergeFragment,
   toFragmentFromInstance,
@@ -11,21 +16,27 @@ export function createLayer(
   Container: Component,
   config: LayerConfigCreate = {},
 ) {
-  const { adapter, ...staticConfig } = config
-
-  const create = mergeFragment(
-    toFragmentFromStatic(staticConfig),
-    { container: { component: Container } },
-  )
+  const create = computed((): LayerCreateBucket => {
+    const { adapter, ...staticConfig } = config
+    return {
+      ...mergeFragment(
+        toFragmentFromStatic(staticConfig),
+        { container: { component: Container } },
+      ),
+      ...(adapter !== undefined ? { adapter } : {}),
+    }
+  })
 
   return function useLayer(
     Content?: Component,
     useConfig: LayerConfigInstance = {},
   ): LayerInstance {
-    const use = mergeFragment(
-      toFragmentFromInstance(useConfig),
-      Content ? { content: { component: Content } } : undefined,
+    const use = computed(() =>
+      mergeFragment(
+        toFragmentFromInstance(useConfig),
+        Content ? { content: { component: Content } } : undefined,
+      ),
     )
-    return createLayerInstance({ create, adapter, use })
+    return createLayerInstance({ create, use })
   }
 }

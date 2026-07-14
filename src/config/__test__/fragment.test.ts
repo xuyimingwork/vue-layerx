@@ -70,6 +70,19 @@ describe('mergeFragment', () => {
   it('should return empty fragment when all sources are empty', () => {
     expect(mergeFragment({}, undefined, null)).toEqual({})
   })
+
+  it('should ignore adapter on create-shaped sources', () => {
+    const adapter = (f: { content?: unknown }) => f
+    const merged = mergeFragment(
+      {
+        container: { props: { title: 'a' } },
+        adapter,
+      } as Parameters<typeof mergeFragment>[0] & { adapter: typeof adapter },
+      { container: { props: { title: 'b' } } },
+    )
+    expect(merged).toEqual({ container: { props: { title: 'b' } } })
+    expect('adapter' in merged).toBe(false)
+  })
 })
 
 describe('stripFragment', () => {

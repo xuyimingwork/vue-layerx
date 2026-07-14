@@ -1,4 +1,5 @@
 import {
+  computed,
   defineComponent,
   getCurrentInstance,
   h,
@@ -11,7 +12,7 @@ import {
 } from 'vue'
 import { mergeFragment, createFragment, toFragmentFromStatic } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type { LayerAdapter, LayerConfigStatic, LayerNormalized } from '@/types'
+import type { LayerConfigStatic, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
@@ -69,10 +70,6 @@ export const LayerView = defineComponent({
       type: Object as PropType<LayerInstanceStoreWithTemplate>,
       required: true,
     },
-    adapter: {
-      type: Function as PropType<LayerAdapter>,
-      default: undefined,
-    },
   },
   emits: ['update:visible'],
   setup(props, { emit }) {
@@ -82,6 +79,36 @@ export const LayerView = defineComponent({
       'define:template': createFragment(),
     })
 
+    const close = () => emit('update:visible', false)
+
+    /** Raw store tiers → single merge fragment (config domain). */
+    const merged = computed(() =>
+      mergeFragment(
+        props.store.create,
+        defineStore['define:template'],
+        defineStore.define,
+        props.store['use:template'],
+        props.store.use,
+        props.store.open,
+      ),
+    )
+
+    /** Run factory adapter from create bucket. */
+    const adapted = computed(() => {
+      const adapter = props.store.create.adapter
+      const fragment = merged.value
+      return adapter ? adapter(fragment) : fragment
+    })
+
+    /** Adapt output + refs → bind-ready normalized tree. */
+    const bound = computed(() =>
+      bindLayer({
+        fragment: mergeFragment(props.store.refs, adapted.value),
+        visible: props.visible,
+        close,
+      }),
+    )
+
     watch(
       () => props.visible,
       (visible, prev) => {
@@ -89,7 +116,7 @@ export const LayerView = defineComponent({
         defineStore.define = createFragment()
         defineStore['define:template'] = createFragment()
         openId.value++
-      }
+      },
     )
 
     provide(LAYER_VIEW_KEY, {
@@ -121,30 +148,11 @@ export const LayerView = defineComponent({
       },
     })
 
-    return () => {
-      props.store.track()
-      defineStore.track()
-
-      const fragment = mergeFragment(
-        props.store.create,
-        defineStore['define:template'],
-        defineStore.define,
-        props.store['use:template'],
-        props.store.use,
-        props.store.open,
-      )
-
-      const close = () => emit('update:visible', false)
-
-      const adapted = props.adapter ? props.adapter(fragment) : fragment
-      const withRefs = mergeFragment(props.store.refs, adapted)
-      const bound = bindLayer({ fragment: withRefs, visible: props.visible, close })
-
-      return createLayerViewVNode({
-        container: bound.container,
-        content: bound.content,
-        openId: bound.content ? openId.value : undefined,
+    return () =>
+      createLayerViewVNode({
+        container: bound.value.container,
+        content: bound.value.content,
+        openId: bound.value.content ? openId.value : undefined,
       })
-    }
   },
 })

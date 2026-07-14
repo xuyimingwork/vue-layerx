@@ -705,7 +705,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。render 时 `store.track()` + 单次 `mergeFragment(...)` 汇总，再 adapter → **`mergeFragment(refs, adapted)`** → bind。creator 路径：`defineLayer` → `getDefineContext().config` / `.template` 写入 define store（template key 固定为 `define:template.container`）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `store.template({ key: 'use:template.*', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。LayerView setup 以 `computed` 派生 `merged → adapted → bound`（`mergeFragment` 汇总各桶，再 adapter → **`mergeFragment(refs, adapted)`** → bind）；render 只调用 `createLayerViewVNode`。creator 路径：`defineLayer` → `getDefineContext().config` / `.template` 写入 define store（template key 固定为 `define:template.container`）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `store.template({ key: 'use:template.*', ... })`。
 
 `mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 

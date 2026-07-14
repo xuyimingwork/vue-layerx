@@ -61,7 +61,19 @@ export interface LayerNormalized {
 
 export type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
 
-/** createLayer second argument only; adapter is not valid on defineLayer / use / open / clone */
+/**
+ * createLayer second argument only.
+ * `adapter` is not valid on defineLayer / use / open / clone.
+ */
 export type LayerConfigCreate = LayerConfigStatic & {
+  adapter?: LayerAdapter
+}
+
+/**
+ * Instance store `create` bucket: merge fragment + optional factory adapter.
+ * `adapter` is not merged by mergeFragment (only content/container); LayerView
+ * reads it from the create bucket after merge to run adapt.
+ */
+export type LayerCreateBucket = LayerConfigFragment & {
   adapter?: LayerAdapter
 }

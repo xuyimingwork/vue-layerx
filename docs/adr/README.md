@@ -6,3 +6,5 @@
 |-----|------|------|
 | [0001](./0001-legacy-monolith-progressive-adoption.md) | 存量单体弹窗（UserDialog）渐进式接入 | Accepted（API） |
 | [0002](./0002-open-use-override-container-component.md) | `useX` / `open` 覆盖 `container.component` | 讨论中 |
+| [0003](./0003-reactive-layer-config.md) | Layer 配置响应式（MaybeRefOrGetter + store computed） | Proposed |
+| [0004](./0004-merge-unknown-fields.md) | `mergeFragment` / 节点是否保留未知字段 | 讨论中 |

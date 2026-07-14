@@ -1,7 +1,8 @@
-import type { UnwrapNestedRefs, VNode } from 'vue'
+import type { ComputedRef, UnwrapNestedRefs, VNode } from 'vue'
 import type {
   LayerConfigFragment,
   LayerConfigStatic,
+  LayerCreateBucket,
   LayerTemplateEntry,
 } from './config'
 
@@ -10,22 +11,30 @@ export type TemplateSlotKey =
   | 'use:template.content'
   | 'define:template.container'
 
+/**
+ * Raw config sources held by a layer instance.
+ *
+ * - `create` / `use`: read-only derived buckets (ComputedRef); never assigned after init.
+ * - `open`: snapshot tier; assigned by open(plain).
+ * - `use:template` / `refs`: mutable plain fragments (template() / framework refs).
+ */
 export interface LayerInstanceStore {
-  create: LayerConfigFragment
-  use: LayerConfigFragment
+  create: ComputedRef<LayerCreateBucket>
+  use: ComputedRef<LayerConfigFragment>
   open: LayerConfigFragment
   'use:template': LayerConfigFragment
   refs: LayerConfigFragment
 }
 
+/** defineLayer / creator LayerTemplate sources owned by LayerView. */
 export interface LayerViewStore {
   define: LayerConfigFragment
   'define:template': LayerConfigFragment
 }
 
 export interface LayerInstanceStoreInit {
-  create: LayerConfigFragment
-  use?: LayerConfigFragment
+  create: ComputedRef<LayerCreateBucket>
+  use: ComputedRef<LayerConfigFragment>
   refs?: LayerConfigFragment
 }
 
@@ -35,7 +44,6 @@ type LayerStoreMethods = {
     name: string
     entry: LayerTemplateEntry
   }) => void
-  track: () => void
 }
 
 export type LayerInstanceStoreWithTemplate = UnwrapNestedRefs<LayerInstanceStore> &
