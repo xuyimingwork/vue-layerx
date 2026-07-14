@@ -132,8 +132,8 @@ C/D 的动机：adapter 需要 **跨 tier 合并后的信号**，又不想把信
 
 ```ts
 interface LayerConfigFragment {
-  content?: LayerConfigContent
-  container?: LayerConfigContainer
+  content?: LayerConfigNodeContent
+  container?: LayerConfigNodeContainer
   meta?: Record<string, unknown>  // 仅 adapter；merge 浅合并；bind 丢弃
 }
 ```
@@ -162,7 +162,7 @@ interface LayerConfigFragment {
 
 - 倾向 **浅合并、后写覆盖**（与 slots 类似）；需要深合并由 adapter 自理。
 
-### Q3：公共 API 是否在 `LayerConfigStatic` / `LayerConfigInstance` 暴露 `meta`？
+### Q3：公共 API 是否在 `LayerConfigContainer` / `LayerConfigContent` 暴露 `meta`？
 
 - 倾向暴露（create / define / use / open / clone 均可贡献 meta，按 tier 合并），与 props 一样由高优先级覆盖。
 

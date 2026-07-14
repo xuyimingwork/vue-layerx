@@ -89,7 +89,7 @@ userDialog.open({ props: { mode: 'edit' } })
 
 ```ts
 type LayerUnitedFragment = {
-  content: LayerConfigContent
+  content: LayerConfigNodeContent
   model?: string
 }
 

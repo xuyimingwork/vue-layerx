@@ -1,6 +1,6 @@
 import { defineComponent, h, onMounted, type Component } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { createLayer, type LayerConfigInstance, type LayerInstance } from '@/index'
+import { createLayer, type LayerConfigContent, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { makeContent } from '@tests/fixtures/components'
 
@@ -10,7 +10,7 @@ export async function mountOpenLayer(
   useLayer: UseLayer,
   options: {
     Content?: Component
-    useConfig?: LayerConfigInstance
+    useConfig?: LayerConfigContent
     open?: (dialog: LayerInstance) => void
   } = {},
 ): Promise<{ dialog: LayerInstance; wrapper: VueWrapper }> {

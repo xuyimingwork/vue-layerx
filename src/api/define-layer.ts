@@ -1,10 +1,10 @@
 import { getCurrentInstance, inject, type MaybeRefOrGetter } from 'vue'
-import type { LayerConfigStatic, LayerDefine } from '@/types'
+import type { LayerConfigContainer, LayerDefine } from '@/types'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import { withTemplateTo } from '@/shared/layer-template-to'
 
 export function defineLayer(
-  config: MaybeRefOrGetter<LayerConfigStatic> = {},
+  config: MaybeRefOrGetter<LayerConfigContainer> = {},
 ): LayerDefine {
   const instance = getCurrentInstance()
   if (!instance || instance.isMounted) {

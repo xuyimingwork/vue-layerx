@@ -2,18 +2,17 @@ export type {
   LayerAdapter,
   CloseOnConfig,
   LayerConfigFragment,
-  LayerCreateBucket,
-  LayerConfigContainer,
-  LayerConfigContent,
+  LayerConfigFragmentCreate,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
   LayerConfigNode,
   LayerNodeNormalized,
   LayerNormalized,
   LayerProps,
-  LayerConfigStatic,
+  LayerConfigContainer,
   LayerConfigCreate,
-  LayerConfigInstance,
+  LayerConfigContent,
   LayerTemplateEntry,
-  SlotRenderFn,
 } from './config'
 
 export type { LayerInstance, LayerDefine, LayerTemplateScope } from './instance'

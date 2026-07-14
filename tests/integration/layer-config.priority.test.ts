@@ -5,10 +5,9 @@ import {
   createLayer,
   defineLayer,
   LayerTemplate,
-  type LayerConfigInstance,
-  type LayerConfigStatic,
+  type LayerConfigContent,
+  type LayerConfigContainer,
   type LayerInstance,
-  type SlotRenderFn,
 } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import {
@@ -182,7 +181,7 @@ function buildSlotMergeCases<T extends string>(
   return cases
 }
 
-function slotMarker(tier: ContainerSlotTier | ContentSlotTier): SlotRenderFn {
+function slotMarker(tier: ContainerSlotTier | ContentSlotTier) {
   return () => h('span', { class: tier }, TIER[tier])
 }
 
@@ -220,7 +219,7 @@ async function mountPropsMerge(
 
   const Host = defineComponent({
     setup() {
-      const useConfig: LayerConfigInstance | undefined =
+      const useConfig: LayerConfigContent | undefined =
         hasProps(active, 'use') && useVia === 'use'
           ? side === 'container'
             ? { container: { props: { title: TIER.use } } }
@@ -230,7 +229,7 @@ async function mountPropsMerge(
       const base = useLayer(Content, useConfig)
 
       if (hasProps(active, 'use') && useVia === 'clone') {
-        const cloneConfig: LayerConfigInstance =
+        const cloneConfig: LayerConfigContent =
           side === 'container'
             ? { container: { props: { title: TIER.use } } }
             : { props: { message: TIER.use } }
@@ -241,7 +240,7 @@ async function mountPropsMerge(
 
       onMounted(() => {
         if (side === 'container') {
-          const openArgs: LayerConfigInstance = { props: { message: 'hi' } }
+          const openArgs: LayerConfigContent = { props: { message: 'hi' } }
           if (hasProps(active, 'open')) {
             openArgs.container = { props: { title: TIER.open } }
           }
@@ -271,7 +270,7 @@ async function mountSlotMerge(
   const slotName = side === 'container' ? 'footer' : 'extra'
   const shell = side === 'container' ? FooterContainer : Container
 
-  const createConfig: LayerConfigStatic | undefined = hasSlot(active, 'create')
+  const createConfig: LayerConfigContainer | undefined = hasSlot(active, 'create')
     ? side === 'container'
       ? { slots: { [slotName]: slotMarker('create') } }
       : { content: { slots: { [slotName]: slotMarker('create') } } }
@@ -283,7 +282,7 @@ async function mountSlotMerge(
 
   const Host = defineComponent({
     setup() {
-      const useConfig: LayerConfigInstance | undefined = hasSlot(active, 'use')
+      const useConfig: LayerConfigContent | undefined = hasSlot(active, 'use')
         ? side === 'container'
           ? { container: { slots: { [slotName]: slotMarker('use') } } }
           : { slots: { [slotName]: slotMarker('use') } }
@@ -292,7 +291,7 @@ async function mountSlotMerge(
       dialog = useLayer(Content, useConfig)
 
       onMounted(() => {
-        const openArgs: LayerConfigInstance = { props: { message: 'hi' } }
+        const openArgs: LayerConfigContent = { props: { message: 'hi' } }
         if (hasSlot(active, 'open')) {
           if (side === 'container') {
             openArgs.container = { slots: { [slotName]: slotMarker('open') } }
@@ -329,7 +328,7 @@ function buildSlotContent(
   if (side === 'content') {
     return defineComponent({
       setup(_props, { slots }) {
-        const defineConfig: LayerConfigStatic = hasSlot(active, 'define')
+        const defineConfig: LayerConfigContainer = hasSlot(active, 'define')
           ? { content: { slots: { [slotName]: slotMarker('define') } } }
           : {}
         if (hasSlot(active, 'define')) {
@@ -343,7 +342,7 @@ function buildSlotContent(
 
   return defineComponent({
     setup() {
-      const defineConfig: LayerConfigStatic = hasSlot(active, 'define')
+      const defineConfig: LayerConfigContainer = hasSlot(active, 'define')
         ? { slots: { [slotName]: slotMarker('define') } }
         : {}
       const layer = needsDefineLayer ? defineLayer(defineConfig) : null

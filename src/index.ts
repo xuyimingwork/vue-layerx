@@ -6,10 +6,10 @@ export type {
   LayerConfigFragment,
   LayerInstance,
   LayerDefine,
-  LayerConfigInstance,
-  LayerConfigContainer,
   LayerConfigContent,
-  LayerConfigStatic,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
+  LayerConfigContainer,
   LayerConfigCreate,
   LayerTemplateScope,
 } from './types'

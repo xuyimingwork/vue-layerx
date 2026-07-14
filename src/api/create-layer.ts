@@ -1,14 +1,14 @@
 import { computed, toValue, type Component, type MaybeRefOrGetter } from 'vue'
 import type {
   LayerConfigCreate,
-  LayerConfigInstance,
-  LayerCreateBucket,
+  LayerConfigContent,
+  LayerConfigFragmentCreate,
   LayerInstance,
 } from '@/types'
 import {
   mergeFragment,
-  toFragmentFromInstance,
-  toFragmentFromStatic,
+  toFragmentFromContent,
+  toFragmentFromContainer,
 } from '@/config/fragment'
 import { createLayerInstance } from '@/runtime/layer-instance'
 
@@ -16,11 +16,11 @@ export function createLayer(
   Container: Component,
   config: MaybeRefOrGetter<LayerConfigCreate> = {},
 ) {
-  const create = computed((): LayerCreateBucket => {
-    const { adapter, ...staticConfig } = toValue(config)
+  const create = computed((): LayerConfigFragmentCreate => {
+    const { adapter, ...containerConfig } = toValue(config)
     return {
       ...mergeFragment(
-        toFragmentFromStatic(staticConfig),
+        toFragmentFromContainer(containerConfig),
         { container: { component: Container } },
       ),
       ...(adapter !== undefined ? { adapter } : {}),
@@ -29,11 +29,11 @@ export function createLayer(
 
   return function useLayer(
     Content?: Component,
-    useConfig: MaybeRefOrGetter<LayerConfigInstance> = {},
+    useConfig: MaybeRefOrGetter<LayerConfigContent> = {},
   ): LayerInstance {
     const use = computed(() =>
       mergeFragment(
-        toFragmentFromInstance(toValue(useConfig)),
+        toFragmentFromContent(toValue(useConfig)),
         Content ? { content: { component: Content } } : undefined,
       ),
     )

@@ -32,10 +32,10 @@
 | API | 配置源 | 语义 |
 |-----|--------|------|
 | `createLayer(Container, config?)` | `MaybeRefOrGetter<LayerConfigCreate>`（含可选 `adapter`） | `create` tier live；见 §5 |
-| `defineLayer(config?)` | `MaybeRefOrGetter<LayerConfigStatic>` | `define` tier live |
-| `useLayer(Content?, config?)` | `MaybeRefOrGetter<LayerConfigInstance>` | `use` tier live；`Content` 第一参保持静态 `Component` |
-| `clone(config?)` | `MaybeRefOrGetter<LayerConfigInstance>` | 见 §3 |
-| `open(config?)` | **仅 plain** `LayerConfigInstance` | 当次快照写入 `open` tier；**不**接受 getter/ref |
+| `defineLayer(config?)` | `MaybeRefOrGetter<LayerConfigContainer>` | `define` tier live |
+| `useLayer(Content?, config?)` | `MaybeRefOrGetter<LayerConfigContent>` | `use` tier live；`Content` 第一参保持静态 `Component` |
+| `clone(config?)` | `MaybeRefOrGetter<LayerConfigContent>` | 见 §3 |
+| `open(config?)` | **仅 plain** `LayerConfigContent` | 当次快照写入 `open` tier；**不**接受 getter/ref |
 
 plain object = 常量源（computed 无依赖或依赖不变），行为与今日兼容。
 
@@ -58,7 +58,7 @@ MaybeRefOrGetter
 
 | 桶 | 形态 | 原因 |
 |----|------|------|
-| `create` | `ComputedRef<LayerConfigFragment & { adapter?: LayerAdapter }>` | 与其它 create 字段同一源；`adapter` 仅此桶携带 |
+| `create` | `ComputedRef<LayerConfigFragmentCreate>` | 与其它 create 字段同一源；`adapter` 仅此桶携带 |
 | `use` / `define` | `ComputedRef<LayerConfigFragment>` | 绑定 MaybeRefOrGetter |
 | `open` | plain，赋值替换 | 快照 API |
 | `refs` | plain | 框架 internal |
@@ -67,11 +67,11 @@ MaybeRefOrGetter
 ### 3. `clone`：父 `use` live fold + clone source
 
 ```ts
-clone(config: MaybeRefOrGetter<LayerConfigInstance> = {}) {
+clone(config: MaybeRefOrGetter<LayerConfigContent> = {}) {
   use: computed(() =>
     mergeFragment(
       stripFragment(toValue(parentStore.use), (p) => p.endsWith('.props.ref')),
-      toFragmentFromInstance(toValue(config)),
+      toFragmentFromContent(toValue(config)),
     ),
   )
 }
@@ -111,7 +111,7 @@ store.create = computed(() => {
   const { adapter, ...rest } = toValue(configSource)
   return {
     ...mergeFragment(
-      toFragmentFromStatic(rest),
+      toFragmentFromContainer(rest),
       { container: { component: Container } },
     ),
     adapter,

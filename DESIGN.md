@@ -281,15 +281,15 @@ type LayerConfigNode = {
 }
 
 /** container：model = v-model prop 名（事件 onUpdate:${model}） */
-type LayerConfigContainer = LayerConfigNode & { model?: string }
+type LayerConfigNodeContainer = LayerConfigNode & { model?: string }
 
 /** content：closeOn = content emit → layer.close() */
-type LayerConfigContent = LayerConfigNode & { closeOn?: string[] }
+type LayerConfigNodeContent = LayerConfigNode & { closeOn?: string[] }
 
 /** merge tier：两侧可选 */
 type LayerConfigFragment = {
-  content?: LayerConfigContent
-  container?: LayerConfigContainer
+  content?: LayerConfigNodeContent
+  container?: LayerConfigNodeContainer
 }
 
 type LayerNodeNormalized = {
@@ -319,13 +319,13 @@ type LayerNormalized = {
 
 ```ts
 /** createLayer + defineLayer — 顶层 = container */
-type LayerConfigStatic = LayerConfigContainer & {
-  content?: LayerConfigContent
+type LayerConfigContainer = LayerConfigNodeContainer & {
+  content?: LayerConfigNodeContent
 }
 
 /** useX / open / clone — 顶层 = content */
-type LayerConfigInstance = LayerConfigContent & {
-  container?: LayerConfigContainer
+type LayerConfigContent = LayerConfigNodeContent & {
+  container?: LayerConfigNodeContainer
 }
 
 const DEFAULT_CONTAINER_MODEL = 'modelValue'
@@ -520,12 +520,12 @@ const layer = defineLayer({
 ```ts
 type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
 
-type LayerConfigCreate = LayerConfigStatic & { adapter?: LayerAdapter }
+type LayerConfigCreate = LayerConfigContainer & { adapter?: LayerAdapter }
 
 function createLayer(
   layer: Component,
   config?: LayerConfigCreate,
-): (Content?: Component, config?: LayerConfigInstance) => LayerInstance
+): (Content?: Component, config?: LayerConfigContent) => LayerInstance
 ```
 
 **第 1 参** `layer`：写入 `store.create.container.component`（merge 最高优先级）。
@@ -563,7 +563,7 @@ export const useDialog = createLayer(MyDialog, {
 
 ### `defineLayer(config?)`（content.setup）
 
-**content 侧声明被 layer 包裹时的默认配置**，与 Vue 的 `defineProps` / `defineEmits` 同级——全局 `defineXxx`，通过**全局 inject key** 注册，不挂具体容器工厂（见「渲染与投递机制」）。与 `createLayer` 共用 **`LayerConfigStatic`**。
+**content 侧声明被 layer 包裹时的默认配置**，与 Vue 的 `defineProps` / `defineEmits` 同级——全局 `defineXxx`，通过**全局 inject key** 注册，不挂具体容器工厂（见「渲染与投递机制」）。与 `createLayer` 共用 **`LayerConfigContainer`**。
 
 ```ts
 const props = defineProps<{ mode?: 'create' | 'edit' }>()
@@ -590,7 +590,7 @@ const layer = defineLayer({
 正常路径：**`LayerTemplate :to` + `name` 与 container / content 的 slot 同名**。`defineLayer` 一般只写 `props`；需命令式覆盖时再写顶层 `slots`。
 
 ```ts
-// defineLayer 与 createLayer 同构：LayerConfigStatic
+// defineLayer 与 createLayer 同构：LayerConfigContainer
 // 顶层 props = container.props；slots = container.slots
 const layer = defineLayer({
   props: { title: '...' },
@@ -602,11 +602,11 @@ const layer = defineLayer({
 
 ### `useX(Content?, config?)` & `open(config?)`
 
-`useX` 由 `createLayer` 返回。`config` 与 `open` **同构**，类型为 **`LayerConfigInstance`**（顶层 = content，嵌套 `container`）：
+`useX` 由 `createLayer` 返回。`config` 与 `open` **同构**，类型为 **`LayerConfigContent`**（顶层 = content，嵌套 `container`）：
 
 ```ts
-type LayerConfigInstance = LayerConfigContent & {
-  container?: LayerConfigContainer
+type LayerConfigContent = LayerConfigNodeContent & {
+  container?: LayerConfigNodeContainer
 }
 ```
 
@@ -660,9 +660,9 @@ xxx.open({
 
 ```ts
 interface LayerInstance {
-  open(config?: LayerConfigInstance): void
+  open(config?: LayerConfigContent): void
   close(): void
-  clone(config?: LayerConfigInstance): LayerInstance
+  clone(config?: LayerConfigContent): LayerInstance
   readonly visible: boolean
   readonly contentRef: ComputedRef<ComponentPublicInstance | null>
   readonly containerRef: ComputedRef<ComponentPublicInstance | null>
@@ -679,7 +679,7 @@ interface LayerInstance {
 ```ts
 use: mergeFragment(
   stripFragment(parent.use, (path) => path.endsWith('.props.ref')),
-  toFragmentFromInstance(config),
+  toFragmentFromContent(config),
 )
 ```
 

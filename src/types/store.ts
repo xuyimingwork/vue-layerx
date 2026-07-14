@@ -1,8 +1,8 @@
 import type { ComputedRef, MaybeRefOrGetter, UnwrapNestedRefs, VNode } from 'vue'
 import type {
   LayerConfigFragment,
-  LayerConfigStatic,
-  LayerCreateBucket,
+  LayerConfigContainer,
+  LayerConfigFragmentCreate,
   LayerTemplateEntry,
 } from './config'
 
@@ -19,7 +19,7 @@ export type TemplateSlotKey =
  * - `use:template` / `refs`: mutable plain fragments (template() / framework refs).
  */
 export interface LayerInstanceStore {
-  create: ComputedRef<LayerCreateBucket>
+  create: ComputedRef<LayerConfigFragmentCreate>
   use: ComputedRef<LayerConfigFragment>
   open: LayerConfigFragment
   'use:template': LayerConfigFragment
@@ -36,7 +36,7 @@ export interface LayerViewStore {
 }
 
 export interface LayerInstanceStoreInit {
-  create: ComputedRef<LayerCreateBucket>
+  create: ComputedRef<LayerConfigFragmentCreate>
   use: ComputedRef<LayerConfigFragment>
   refs?: LayerConfigFragment
 }
@@ -57,7 +57,7 @@ export type LayerViewStoreWithTemplate = UnwrapNestedRefs<LayerViewStore> &
 
 /** Delivery channel for defineLayer when called on content root (setup-only). */
 export type LayerDefineContext = {
-  config: (source: MaybeRefOrGetter<LayerConfigStatic>) => void
+  config: (source: MaybeRefOrGetter<LayerConfigContainer>) => void
   template: (opts: {
     name: string
     render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null

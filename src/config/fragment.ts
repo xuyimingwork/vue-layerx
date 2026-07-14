@@ -1,7 +1,7 @@
 import type {
   LayerConfigFragment,
-  LayerConfigInstance,
-  LayerConfigStatic,
+  LayerConfigContent,
+  LayerConfigContainer,
 } from '@/types/config'
 import {
   mergeContainerNode,
@@ -25,20 +25,29 @@ export function createFragment(
   return normalizeFragment(init ?? {})
 }
 
-export function toFragmentFromStatic(config: LayerConfigStatic = {}): LayerConfigFragment {
-  const { content, ...container } = config
+/** Peel flat public config into a fragment; `from` = which side owns top-level fields. */
+function toFragment(
+  config: LayerConfigContainer | LayerConfigContent,
+  from: 'container' | 'content',
+): LayerConfigFragment {
+  const nested = from === 'container' ? 'content' : 'container'
+  const { [nested]: node, ...primary } = config as Record<string, unknown>
   return mergeFragment(
-    Object.keys(container).length > 0 ? { container } : undefined,
-    content ? { content } : undefined,
+    Object.keys(primary).length > 0 ? { [from]: primary } : undefined,
+    node ? { [nested]: node } : undefined,
   )
 }
 
-export function toFragmentFromInstance(config: LayerConfigInstance = {}): LayerConfigFragment {
-  const { container, ...content } = config
-  return mergeFragment(
-    Object.keys(content).length > 0 ? { content } : undefined,
-    container ? { container } : undefined,
-  )
+export function toFragmentFromContainer(
+  config: LayerConfigContainer = {},
+): LayerConfigFragment {
+  return toFragment(config, 'container')
+}
+
+export function toFragmentFromContent(
+  config: LayerConfigContent = {},
+): LayerConfigFragment {
+  return toFragment(config, 'content')
 }
 
 /** Merge fragments; later sources win per side. Only content/container participate. */

@@ -11,8 +11,8 @@ import type {
 import {
   createFragment,
   mergeFragment,
-  toFragmentFromInstance,
-  toFragmentFromStatic,
+  toFragmentFromContent,
+  toFragmentFromContainer,
 } from '@/config/fragment'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerStore } from '@/shared/layer-store'
@@ -66,12 +66,12 @@ function mergeLayerStores(
 describe('layer store merge', () => {
   it('should merge container props with priority open > use > define > create', () => {
     const instanceStore = createTestInstanceStore({
-      create: toFragmentFromStatic({ props: { title: 'Create', width: '400px' } }),
-      use: toFragmentFromInstance({ container: { props: { width: '640px' } } }),
-      open: toFragmentFromInstance({ container: { props: { title: 'Open' } } }),
+      create: toFragmentFromContainer({ props: { title: 'Create', width: '400px' } }),
+      use: toFragmentFromContent({ container: { props: { width: '640px' } } }),
+      open: toFragmentFromContent({ container: { props: { title: 'Open' } } }),
     })
     const viewStore = createDefineStore()
-    viewStore.define = toFragmentFromStatic({ props: { title: 'Defined' } })
+    viewStore.define = toFragmentFromContainer({ props: { title: 'Defined' } })
 
     const merged = mergeLayerStores(instanceStore, viewStore)
 
@@ -80,9 +80,9 @@ describe('layer store merge', () => {
 
   it('should merge content props with priority open > use > create', () => {
     const instanceStore = createTestInstanceStore({
-      create: toFragmentFromStatic({ content: { props: { message: 'create' } } }),
-      use: toFragmentFromInstance({ props: { message: 'use' } }),
-      open: toFragmentFromInstance({ props: { message: 'open' } }),
+      create: toFragmentFromContainer({ content: { props: { message: 'create' } } }),
+      use: toFragmentFromContent({ props: { message: 'use' } }),
+      open: toFragmentFromContent({ props: { message: 'open' } }),
     })
     const viewStore = createDefineStore()
 
@@ -94,8 +94,8 @@ describe('layer store merge', () => {
   it('should fold clone defaults into use tier', () => {
     const instanceStore = createTestInstanceStore({
       use: mergeFragment(
-        toFragmentFromInstance({ closeOn: ['done'] }),
-        toFragmentFromInstance({ closeOn: ['cancel'] }),
+        toFragmentFromContent({ closeOn: ['done'] }),
+        toFragmentFromContent({ closeOn: ['cancel'] }),
       ),
     })
     const viewStore = createDefineStore()
@@ -109,17 +109,17 @@ describe('layer store merge', () => {
     expect(
       mergeLayerStores(
         createTestInstanceStore({
-          use: toFragmentFromInstance({ closeOn: ['done'] }),
+          use: toFragmentFromContent({ closeOn: ['done'] }),
         }),
         viewStore,
       ).content.closeOn,
     ).toEqual(['done'])
 
-    viewStore.define = toFragmentFromStatic({ content: { closeOn: ['submit'] } })
+    viewStore.define = toFragmentFromContainer({ content: { closeOn: ['submit'] } })
     expect(
       mergeLayerStores(
         createTestInstanceStore({
-          use: toFragmentFromInstance({ closeOn: ['done'] }),
+          use: toFragmentFromContent({ closeOn: ['done'] }),
         }),
         viewStore,
       ).content.closeOn,
@@ -128,8 +128,8 @@ describe('layer store merge', () => {
     expect(
       mergeLayerStores(
         createTestInstanceStore({
-          use: toFragmentFromInstance({ closeOn: ['done'] }),
-          open: toFragmentFromInstance({ closeOn: ['cancel'] }),
+          use: toFragmentFromContent({ closeOn: ['done'] }),
+          open: toFragmentFromContent({ closeOn: ['cancel'] }),
         }),
         viewStore,
       ).content.closeOn,
@@ -138,12 +138,12 @@ describe('layer store merge', () => {
 
   it('should merge container model with priority open > use > define > create', () => {
     const instanceStore = createTestInstanceStore({
-      create: toFragmentFromStatic({ model: 'open' }),
-      use: toFragmentFromInstance({ container: { model: 'show' } }),
-      open: toFragmentFromInstance({ container: { model: 'modelValue' } }),
+      create: toFragmentFromContainer({ model: 'open' }),
+      use: toFragmentFromContent({ container: { model: 'show' } }),
+      open: toFragmentFromContent({ container: { model: 'modelValue' } }),
     })
     const viewStore = createDefineStore()
-    viewStore.define = toFragmentFromStatic({ model: 'visible' })
+    viewStore.define = toFragmentFromContainer({ model: 'visible' })
 
     expect(mergeLayerStores(instanceStore, viewStore).container.model).toBe('modelValue')
   })
@@ -152,7 +152,7 @@ describe('layer store merge', () => {
     const contentSlot = () => null
     const containerSlot = () => null
     const instanceStore = createTestInstanceStore({
-      use: toFragmentFromInstance({ slots: { header: contentSlot } }),
+      use: toFragmentFromContent({ slots: { header: contentSlot } }),
     })
     const viewStore = createDefineStore()
     viewStore.define = { container: { slots: { footer: containerSlot } } }
@@ -172,8 +172,8 @@ describe('layer store merge', () => {
 
     const instanceStore = createTestInstanceStore({
       create: { container: { slots: { footer: create } } },
-      use: toFragmentFromInstance({ container: { slots: { footer: useX } } }),
-      open: toFragmentFromInstance({ container: { slots: { footer: open } } }),
+      use: toFragmentFromContent({ container: { slots: { footer: useX } } }),
+      open: toFragmentFromContent({ container: { slots: { footer: open } } }),
     })
     instanceStore.template({
       key: 'use:template.container',
@@ -228,7 +228,7 @@ describe('layer store merge', () => {
 
     const instanceStore = createTestInstanceStore({
       create: { content: { slots: { extra: () => null } } },
-      use: toFragmentFromInstance({ slots: { extra: useX } }),
+      use: toFragmentFromContent({ slots: { extra: useX } }),
     })
     instanceStore.template({
       key: 'use:template.content',

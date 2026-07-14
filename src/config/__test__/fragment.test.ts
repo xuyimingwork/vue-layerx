@@ -3,8 +3,8 @@ import {
   createFragment,
   mergeFragment,
   stripFragment,
-  toFragmentFromInstance,
-  toFragmentFromStatic,
+  toFragmentFromContent,
+  toFragmentFromContainer,
 } from '../fragment'
 
 describe('createFragment', () => {
@@ -18,10 +18,10 @@ describe('createFragment', () => {
   })
 })
 
-describe('toFragmentFromStatic', () => {
+describe('toFragmentFromContainer', () => {
   it('should map top-level fields to container fragment and nested content', () => {
     expect(
-      toFragmentFromStatic({
+      toFragmentFromContainer({
         props: { title: 'x', width: '400px' },
         content: { props: { tone: 'info' }, closeOn: ['done'] },
         model: 'open',
@@ -33,10 +33,10 @@ describe('toFragmentFromStatic', () => {
   })
 })
 
-describe('toFragmentFromInstance', () => {
+describe('toFragmentFromContent', () => {
   it('should map top-level fields to content fragment', () => {
     expect(
-      toFragmentFromInstance({
+      toFragmentFromContent({
         props: { message: 'hi' },
         container: { props: { title: 'x' } },
         closeOn: ['done'],
@@ -48,7 +48,7 @@ describe('toFragmentFromInstance', () => {
   })
 
   it('should return empty fragment when config is empty', () => {
-    expect(toFragmentFromInstance({})).toEqual({})
+    expect(toFragmentFromContent({})).toEqual({})
   })
 })
 

@@ -11,14 +11,14 @@ import {
 } from 'vue'
 import type {
   LayerConfigFragment,
-  LayerCreateBucket,
+  LayerConfigFragmentCreate,
   LayerInstance,
-  LayerConfigInstance,
+  LayerConfigContent,
   LayerInstanceStoreInit,
   LayerInstanceStoreWithTemplate,
 } from '@/types'
 import {
-  toFragmentFromInstance,
+  toFragmentFromContent,
   mergeFragment,
   createFragment,
   stripFragment,
@@ -33,7 +33,7 @@ export function createLayerInstance({
   create,
   use,
 }: {
-  create: ComputedRef<LayerCreateBucket>
+  create: ComputedRef<LayerConfigFragmentCreate>
   use: ComputedRef<LayerConfigFragment>
 }): LayerInstance {
   const containerRef = shallowRef<ComponentPublicInstance | null>(null)
@@ -70,8 +70,8 @@ export function createLayerInstance({
     app.unmount()
   }
 
-  const open = (config?: LayerConfigInstance) => {
-    store.open = toFragmentFromInstance(config)
+  const open = (config?: LayerConfigContent) => {
+    store.open = toFragmentFromContent(config)
     state.visible = true
   }
 
@@ -110,13 +110,13 @@ export function createLayerInstance({
     bindHost,
     contentRef: computed(() => (state.visible ? contentRef.value : null)),
     containerRef: computed(() => (state.visible ? containerRef.value : null)),
-    clone(config: MaybeRefOrGetter<LayerConfigInstance> = {}) {
+    clone(config: MaybeRefOrGetter<LayerConfigContent> = {}) {
       return createLayerInstance({
         create,
         use: computed(() =>
           mergeFragment(
             stripFragment(use.value, (path) => path.endsWith('.props.ref')),
-            toFragmentFromInstance(toValue(config)),
+            toFragmentFromContent(toValue(config)),
           ),
         ),
       })

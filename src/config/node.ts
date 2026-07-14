@@ -7,8 +7,8 @@ import {
 } from 'vue'
 import type {
   LayerConfigNode,
-  LayerConfigContainer,
-  LayerConfigContent,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
   LayerProps,
   SlotRenderFn,
 } from '@/types/config'
@@ -40,7 +40,7 @@ export function normalizePropRef(value: unknown): RefCallback | undefined {
 
 /** markRaw(component) + normalize props.ref in place. */
 export function normalizeNode(
-  node?: LayerConfigContainer | LayerConfigContent,
+  node?: LayerConfigNodeContainer | LayerConfigNodeContent,
 ): void {
   if (node?.component !== undefined) {
     node.component = markRaw(node.component) as Component
@@ -92,9 +92,9 @@ export function mergeNode(
 }
 
 export function mergeContainerNode(
-  ...sources: (LayerConfigContainer | undefined)[]
-): LayerConfigContainer {
-  const result: LayerConfigContainer = mergeNode(...sources)
+  ...sources: (LayerConfigNodeContainer | undefined)[]
+): LayerConfigNodeContainer {
+  const result: LayerConfigNodeContainer = mergeNode(...sources)
   for (const source of sources) {
     if (source?.model !== undefined) result.model = source.model
   }
@@ -102,9 +102,9 @@ export function mergeContainerNode(
 }
 
 export function mergeContentNode(
-  ...sources: (LayerConfigContent | undefined)[]
-): LayerConfigContent {
-  const result: LayerConfigContent = mergeNode(...sources)
+  ...sources: (LayerConfigNodeContent | undefined)[]
+): LayerConfigNodeContent {
+  const result: LayerConfigNodeContent = mergeNode(...sources)
   for (const source of sources) {
     if (source?.closeOn !== undefined) result.closeOn = source.closeOn
   }
@@ -153,11 +153,11 @@ function stripNode(
 }
 
 export function stripContainerNode(
-  node: LayerConfigContainer,
+  node: LayerConfigNodeContainer,
   shouldStrip: (path: string) => boolean,
   prefix = 'container',
-): LayerConfigContainer {
-  const result = stripNode(node, prefix, shouldStrip) as LayerConfigContainer
+): LayerConfigNodeContainer {
+  const result = stripNode(node, prefix, shouldStrip) as LayerConfigNodeContainer
   if (node.model !== undefined) {
     const path = `${prefix}.model`
     if (!shouldStrip(path)) result.model = node.model
@@ -166,11 +166,11 @@ export function stripContainerNode(
 }
 
 export function stripContentNode(
-  node: LayerConfigContent,
+  node: LayerConfigNodeContent,
   shouldStrip: (path: string) => boolean,
   prefix = 'content',
-): LayerConfigContent {
-  const result = stripNode(node, prefix, shouldStrip) as LayerConfigContent
+): LayerConfigNodeContent {
+  const result = stripNode(node, prefix, shouldStrip) as LayerConfigNodeContent
   if (node.closeOn !== undefined) {
     const path = `${prefix}.closeOn`
     if (!shouldStrip(path)) result.closeOn = node.closeOn

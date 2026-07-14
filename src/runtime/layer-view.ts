@@ -12,9 +12,9 @@ import {
   type PropType,
   type VNode,
 } from 'vue'
-import { mergeFragment, createFragment, toFragmentFromStatic } from '@/config/fragment'
+import { mergeFragment, createFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type { LayerConfigStatic, LayerNormalized } from '@/types'
+import type { LayerConfigContainer, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
@@ -127,9 +127,9 @@ export const LayerView = defineComponent({
         if (!isLayerContent(instance)) return null
 
         return {
-          config(source: MaybeRefOrGetter<LayerConfigStatic>) {
+          config(source: MaybeRefOrGetter<LayerConfigContainer>) {
             defineStore.define = computed(() =>
-              toFragmentFromStatic(toValue(source)),
+              toFragmentFromContainer(toValue(source)),
             )
           },
           template({

@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **`adapter` lives on instance store `create` bucket** (`LayerCreateBucket`); LayerView reads it after merge (no longer passed via `createLayerApp` / `LayerView` props)
+- **Config type rename** — node: `LayerConfigNodeContainer` / `LayerConfigNodeContent`; public flat: `LayerConfigContainer` (was `LayerConfigStatic`) / `LayerConfigContent` (was `LayerConfigInstance`); store create tier: `LayerConfigFragmentCreate` (was `LayerCreateBucket`); helpers `toFragmentFromContainer` / `toFragmentFromContent`
+- **`adapter` lives on instance store `create` bucket** (`LayerConfigFragmentCreate`); LayerView reads it after merge (no longer passed via `createLayerApp` / `LayerView` props)
 - **`LayerView`**: setup-time `computed` pipeline `merged → adapted → bound`; render only calls `createLayerViewVNode`
 - **`store.create` / `store.use` are `ComputedRef`** (read-only user/factory config); assignments remain on `open` / `use:template` / `refs` only
 - **`open(config?)` stays plain snapshot** (not MaybeRefOrGetter); empty `open()` uses live `use` / lower tiers

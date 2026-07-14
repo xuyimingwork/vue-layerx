@@ -40,7 +40,7 @@ mergeFragment(create, define:template, define, use:template, use, open)
 
 ### Q4：类型
 
-- split 的 `LayerConfigInstance` 保留 `container?: { component?: Component }`。
+- split 的 `LayerConfigContent` 保留 `container?: { component?: Component }`。
 - united 使用 **`LayerConfigUnitedInstance`**（无 `container`）——见 ADR 0001。
 
 ---

@@ -1,6 +1,6 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { defineLayer, LayerTemplate, createLayer } from '@/index'
-import type { LayerConfigStatic } from '@/index'
+import type { LayerConfigContainer } from '@/index'
 import type { LayerInstance } from '@/types'
 
 export const Container = defineComponent({
@@ -45,7 +45,7 @@ export function makeContent(withLayer = false) {
   })
 }
 
-export function makeContentWithDefineLayer(config: LayerConfigStatic = {}) {
+export function makeContentWithDefineLayer(config: LayerConfigContainer = {}) {
   return defineComponent({
     name: 'ContentWithDefineLayer',
     props: { message: String, mode: String },

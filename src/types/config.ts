@@ -18,12 +18,12 @@ export interface LayerConfigNode {
 }
 
 /** Container node — model = v-model prop name (event: onUpdate:${model}) */
-export type LayerConfigContainer = LayerConfigNode & {
+export type LayerConfigNodeContainer = LayerConfigNode & {
   model?: string
 }
 
 /** Content node — closeOn = content emit → layer.close() */
-export type LayerConfigContent = LayerConfigNode & {
+export type LayerConfigNodeContent = LayerConfigNode & {
   closeOn?: CloseOnConfig
 }
 
@@ -33,18 +33,18 @@ export interface LayerTemplateEntry {
 
 /** single merge tier: content + container fragments */
 export interface LayerConfigFragment {
-  content?: LayerConfigContent
-  container?: LayerConfigContainer
+  content?: LayerConfigNodeContent
+  container?: LayerConfigNodeContainer
 }
 
 /** createLayer + defineLayer — top-level fields = container */
-export type LayerConfigStatic = LayerConfigContainer & {
-  content?: LayerConfigContent
+export type LayerConfigContainer = LayerConfigNodeContainer & {
+  content?: LayerConfigNodeContent
 }
 
 /** useX / open / clone — top-level fields = content */
-export type LayerConfigInstance = LayerConfigContent & {
-  container?: LayerConfigContainer
+export type LayerConfigContent = LayerConfigNodeContent & {
+  container?: LayerConfigNodeContainer
 }
 
 /** bind output — props include closeOn / model bindings, ready for h() */
@@ -65,15 +65,15 @@ export type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragmen
  * createLayer second argument only.
  * `adapter` is not valid on defineLayer / use / open / clone.
  */
-export type LayerConfigCreate = LayerConfigStatic & {
+export type LayerConfigCreate = LayerConfigContainer & {
   adapter?: LayerAdapter
 }
 
 /**
- * Instance store `create` bucket: merge fragment + optional factory adapter.
+ * Instance store `create` tier: merge fragment + optional factory adapter.
  * `adapter` is not merged by mergeFragment (only content/container); LayerView
- * reads it from the create bucket after merge to run adapt.
+ * reads it from the create tier after merge to run adapt.
  */
-export type LayerCreateBucket = LayerConfigFragment & {
+export type LayerConfigFragmentCreate = LayerConfigFragment & {
   adapter?: LayerAdapter
 }
