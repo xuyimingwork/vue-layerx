@@ -4,8 +4,8 @@ import type {
   LayerConfigContainer,
 } from '@/types/config'
 import {
-  mergeContainerNode,
-  mergeContentNode,
+  mergeNodeContainer,
+  mergeNodeContent,
   normalizeNode,
   stripContainerNode,
   stripContentNode,
@@ -54,8 +54,8 @@ export function toFragmentFromContent(
 export function mergeFragment(
   ...sources: (LayerConfigFragment | null | undefined)[]
 ): LayerConfigFragment {
-  const container = mergeContainerNode(...sources.map((s) => s?.container))
-  const content = mergeContentNode(...sources.map((s) => s?.content))
+  const container = mergeNodeContainer(...sources.map((s) => s?.container))
+  const content = mergeNodeContent(...sources.map((s) => s?.content))
   const fragment: LayerConfigFragment = {}
   if (Object.keys(container).length > 0) fragment.container = container
   if (Object.keys(content).length > 0) fragment.content = content

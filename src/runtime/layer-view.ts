@@ -130,7 +130,7 @@ export const LayerView = defineComponent({
           config(source: MaybeRefOrGetter<LayerConfigContainer>) {
             defineStore.define = computed(() =>
               toFragmentFromContainer(toValue(source)),
-            )
+            ) as any
           },
           template({
             name,

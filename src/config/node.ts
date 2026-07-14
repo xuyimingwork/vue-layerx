@@ -91,7 +91,7 @@ export function mergeNode(
   return result
 }
 
-export function mergeContainerNode(
+export function mergeNodeContainer(
   ...sources: (LayerConfigNodeContainer | undefined)[]
 ): LayerConfigNodeContainer {
   const result: LayerConfigNodeContainer = mergeNode(...sources)
@@ -101,7 +101,7 @@ export function mergeContainerNode(
   return result
 }
 
-export function mergeContentNode(
+export function mergeNodeContent(
   ...sources: (LayerConfigNodeContent | undefined)[]
 ): LayerConfigNodeContent {
   const result: LayerConfigNodeContent = mergeNode(...sources)
