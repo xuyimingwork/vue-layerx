@@ -7,15 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Reactive config sources** (`MaybeRefOrGetter`) on `createLayer`, `defineLayer`, `useLayer`, and `clone` — getters / refs / computed stay live; plain objects remain snapshots
+- **SSR compatibility** — safe to import and initialize in SSR apps; layer portals mount on the client (`open()` / `bindHost()` should run after mount or on user interaction)
+
 ### Changed
 
 - **`adapter` lives on instance store `create` bucket** (`LayerCreateBucket`); LayerView reads it after merge (no longer passed via `createLayerApp` / `LayerView` props)
 - **`LayerView`**: setup-time `computed` pipeline `merged → adapted → bound`; render only calls `createLayerViewVNode`
 - **`store.create` / `store.use` are `ComputedRef`** (read-only user/factory config); assignments remain on `open` / `use:template` / `refs` only
-
-### Added
-
-- **SSR compatibility** — safe to import and initialize in SSR apps; layer portals mount on the client (`open()` / `bindHost()` should run after mount or on user interaction)
+- **`open(config?)` stays plain snapshot** (not MaybeRefOrGetter); empty `open()` uses live `use` / lower tiers
+- **`clone`**: parent `use` stays live-folded; clone config may be a live source; still strips parent `use` `props.ref`
 
 ## [0.1.0] - 2026-06-27
 

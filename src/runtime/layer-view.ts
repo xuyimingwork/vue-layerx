@@ -5,8 +5,10 @@ import {
   h,
   provide,
   ref,
+  toValue,
   watch,
   type ComponentInternalInstance,
+  type MaybeRefOrGetter,
   type PropType,
   type VNode,
 } from 'vue'
@@ -125,8 +127,10 @@ export const LayerView = defineComponent({
         if (!isLayerContent(instance)) return null
 
         return {
-          config(config: LayerConfigStatic) {
-            defineStore.define = toFragmentFromStatic(config)
+          config(source: MaybeRefOrGetter<LayerConfigStatic>) {
+            defineStore.define = computed(() =>
+              toFragmentFromStatic(toValue(source)),
+            )
           },
           template({
             name,

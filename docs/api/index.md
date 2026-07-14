@@ -16,7 +16,10 @@ userLayer.open({ props: { mode: 'view' | 'edit' | 'create', ... } })
 ```ts
 createLayer(BaseDialog)                              // 配置可在 BaseDialog 内
 createLayer(BaseDialog, { adapter: adaptFn })        // useDetailLayer
+createLayer(BaseDialog, () => ({ props: { title: t('x') } }))  // live create tier
 ```
+
+第二参为 `MaybeRefOrGetter<LayerConfigCreate>`（plain / ref / getter / computed）。
 
 ### `adapt`
 
@@ -30,8 +33,23 @@ const layer = defineLayer({
   content: { closeOn: ['submit'] },  // view 模式通常无 submit
 })
 // layer: LayerDefine — layer.inLayer / layer.outsideLayer — 弹层内为 true/false，页内为 false/true
+
+// live（如倒计时 title，不 remount content）
+defineLayer(() => ({ props: { title: `请确认（${left.value}s）` } }))
 ```
 
+## `useLayer` / `clone`
+
+```ts
+const id = ref('1')
+const userLayer = useDetailLayer(UserForm, () => ({ props: { recordId: id.value } }))
+userLayer.open() // 空参：吃当前 use tier
+
+const child = userLayer.clone(() => ({ props: { mode: 'edit' } }))
+// 父 use 未覆盖字段继续 live；clone 自身 source 也可 live
+```
+
+`open(config?)` **仅 plain 快照**（非 getter）。
 ## `LayerTemplate`
 
 **`:to` 必填。** creator 传 `defineLayer()` 返回值；caller 传 `LayerInstance`。

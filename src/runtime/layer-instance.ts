@@ -4,8 +4,10 @@ import {
   onUnmounted,
   reactive,
   shallowRef,
+  toValue,
   type ComponentPublicInstance,
   type ComputedRef,
+  type MaybeRefOrGetter,
 } from 'vue'
 import type {
   LayerConfigFragment,
@@ -108,13 +110,13 @@ export function createLayerInstance({
     bindHost,
     contentRef: computed(() => (state.visible ? contentRef.value : null)),
     containerRef: computed(() => (state.visible ? containerRef.value : null)),
-    clone(config?: LayerConfigInstance) {
+    clone(config: MaybeRefOrGetter<LayerConfigInstance> = {}) {
       return createLayerInstance({
         create,
         use: computed(() =>
           mergeFragment(
             stripFragment(use.value, (path) => path.endsWith('.props.ref')),
-            toFragmentFromInstance(config),
+            toFragmentFromInstance(toValue(config)),
           ),
         ),
       })

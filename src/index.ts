@@ -10,5 +10,6 @@ export type {
   LayerConfigContainer,
   LayerConfigContent,
   LayerConfigStatic,
+  LayerConfigCreate,
   LayerTemplateScope,
 } from './types'

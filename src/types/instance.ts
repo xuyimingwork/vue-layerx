@@ -1,4 +1,4 @@
-import type { ComputedRef, ComponentPublicInstance } from 'vue'
+import type { ComputedRef, ComponentPublicInstance, MaybeRefOrGetter } from 'vue'
 import type { LayerConfigInstance } from './config'
 
 export interface LayerTemplateScope<
@@ -17,10 +17,11 @@ export interface LayerDefine {
 }
 
 export interface LayerInstance {
+  /** Snapshot tier only — plain config, not MaybeRefOrGetter. */
   open: (config?: LayerConfigInstance) => void
   close: () => void
   unmount: () => void
-  clone: (config?: LayerConfigInstance) => LayerInstance
+  clone: (config?: MaybeRefOrGetter<LayerConfigInstance>) => LayerInstance
   readonly visible: boolean
   readonly contentRef: ComputedRef<ComponentPublicInstance | null>
   readonly containerRef: ComputedRef<ComponentPublicInstance | null>
