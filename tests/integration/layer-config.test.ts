@@ -155,6 +155,18 @@ describe('layer config', () => {
       expect(dialog.visible).toBe(false)
     })
 
+    it('should close when model update is emitted without a value', async () => {
+      const { dialog, wrapper } = await mountOpenLayer(createLayer(ModelContainer), {
+        open: (dialog) => dialog.open({ props: { message: 'hi' } }),
+      })
+
+      expect(queryBodyDialog()).toBeTruthy()
+      await clickBodyButton('close-via-model-empty', wrapper)
+
+      expect(queryBodyDialog()).toBeFalsy()
+      expect(dialog.visible).toBe(false)
+    })
+
     it('should let open-tier model win over use and define tiers', async () => {
       const { dialog, wrapper } = await mountOpenLayer(createLayer(FlexibleModelContainer), {
         Content: makeContentWithDefineLayer({ model: 'panelOpen' }),

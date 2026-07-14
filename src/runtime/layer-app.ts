@@ -65,7 +65,6 @@ export function createLayerApp(options: {
   })
 
   function prepare() {
-    if (el) return
     el = document.createElement('div')
     document.body.appendChild(el)
   }

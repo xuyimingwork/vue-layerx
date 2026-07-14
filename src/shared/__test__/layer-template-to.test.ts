@@ -37,4 +37,15 @@ describe('layer-template-to', () => {
       }),
     ).toThrow(TypeError)
   })
+
+  it('should forward non-capability properties through the proxy', () => {
+    const base = withTemplateTo(
+      { inLayer: true, outsideLayer: false },
+      { template: () => ({ render: () => null }) },
+    )
+    const resolved = resolveTemplateTo(base)
+
+    expect(resolved.inLayer).toBe(true)
+    expect(resolved.outsideLayer).toBe(false)
+  })
 })

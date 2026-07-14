@@ -9,8 +9,98 @@ import {
   queryAllBodyDialogs,
   queryBodyDialog,
 } from '@tests/fixtures/components'
+import {
+  FlexibleModelContainer,
+  HeaderFooterContainer,
+  SlotContent,
+  SubmitContent,
+  slotSpan,
+} from '@tests/fixtures/layer-config'
 
 describe('LayerInstance.clone', () => {
+  describe('use-tier inheritance', () => {
+    it('should keep use-tier closeOn after clone', async () => {
+      const useLayer = createLayer(Container)
+      let base!: LayerInstance
+      let cloned!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          base = useLayer(SubmitContent, { closeOn: ['done'] })
+          cloned = base.clone({ container: { props: { title: 'Cloned' } } })
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      cloned.open({ props: { message: 'cloned' } })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Cloned')
+      document.body.querySelector<HTMLButtonElement>('.done')?.click()
+      await wrapper.vm.$nextTick()
+
+      expect(cloned.visible).toBe(false)
+      expect(queryBodyDialog()).toBeFalsy()
+    })
+
+    it('should keep use-tier container.model after clone', async () => {
+      const useLayer = createLayer(FlexibleModelContainer)
+      let base!: LayerInstance
+      let cloned!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          base = useLayer(makeContent(), { container: { model: 'open' } })
+          cloned = base.clone()
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      cloned.open({ props: { message: 'cloned' } })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(queryBodyDialog()?.getAttribute('data-model')).toBe('open')
+      document.body.querySelector<HTMLButtonElement>('.close-via-model')?.click()
+      await wrapper.vm.$nextTick()
+
+      expect(cloned.visible).toBe(false)
+      expect(queryBodyDialog()).toBeFalsy()
+    })
+
+    it('should keep use-tier content and container slots after clone', async () => {
+      const useLayer = createLayer(HeaderFooterContainer, {
+        slots: { header: slotSpan('create-header', 'create header') },
+      })
+      let base!: LayerInstance
+      let cloned!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          base = useLayer(SlotContent, {
+            slots: { extra: slotSpan('use-extra', 'use extra') },
+            container: { slots: { footer: slotSpan('use-footer', 'use footer') } },
+          })
+          cloned = base.clone()
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      cloned.open({ props: { message: 'cloned' } })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('.create-header')?.textContent).toBe('create header')
+      expect(document.body.querySelector('.use-footer')?.textContent).toBe('use footer')
+      expect(document.body.querySelector('.use-extra')?.textContent).toBe('use extra')
+      expect(document.body.querySelector('.msg')?.textContent).toBe('cloned')
+    })
+  })
+
   describe('parallel instances', () => {
     it('should allow parallel open with independent DOM and visible state', async () => {
       const useLayer = createLayer(Container)

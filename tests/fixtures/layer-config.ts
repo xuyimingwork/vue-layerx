@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-import { defineLayer, type SlotRenderFn } from '@/index'
+import { defineLayer } from '@/index'
 
 export const DrawerContainer = defineComponent({
   name: 'DrawerContainer',
@@ -29,6 +29,14 @@ export const ModelContainer = defineComponent({
                 'button',
                 { class: 'close-via-model', onClick: () => emit('update:modelValue', false) },
                 'close',
+              ),
+              h(
+                'button',
+                {
+                  class: 'close-via-model-empty',
+                  onClick: () => emit('update:modelValue'),
+                },
+                'close-empty',
               ),
             ],
           )
@@ -204,7 +212,7 @@ export const CloneMergeContent = defineComponent({
   },
 })
 
-export function slotSpan(className: string, text: string): SlotRenderFn {
+export function slotSpan(className: string, text: string) {
   return () => h('span', { class: className }, text)
 }
 

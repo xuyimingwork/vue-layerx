@@ -86,4 +86,31 @@ describe('bindLayerTree', () => {
     bound.content?.props.onSave?.()
     expect(close).toHaveBeenCalled()
   })
+
+  it('should default missing container and content fragments', () => {
+    const bound = bindLayer({
+      fragment: {},
+      visible: true,
+      close: vi.fn(),
+    })
+
+    expect(bound.content).toBeUndefined()
+    expect(bound.container.component).toBeUndefined()
+    expect(bound.container.props.modelValue).toBe(true)
+    expect(bound.container.slots).toEqual({})
+  })
+
+  it('should default missing props on container and content', () => {
+    const bound = bindLayer({
+      fragment: {
+        container: { component: Container },
+        content: { component: Content },
+      },
+      visible: false,
+      close: vi.fn(),
+    })
+
+    expect(bound.container.props.modelValue).toBe(false)
+    expect(bound.content?.props).toEqual({})
+  })
 })

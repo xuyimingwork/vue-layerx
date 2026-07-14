@@ -94,4 +94,19 @@ describe('stripFragment', () => {
     expect(input.content?.props?.ref).toBeTypeOf('function')
     expect(input.content?.props?.a).toBe(1)
   })
+
+  it('should preserve model and closeOn when node has no props', () => {
+    expect(
+      stripFragment(
+        {
+          container: { model: 'open' },
+          content: { closeOn: ['done'] },
+        },
+        (path) => path.endsWith('.props.ref'),
+      ),
+    ).toEqual({
+      container: { model: 'open' },
+      content: { closeOn: ['done'] },
+    })
+  })
 })
