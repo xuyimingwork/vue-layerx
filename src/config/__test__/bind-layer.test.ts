@@ -1,13 +1,13 @@
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import { bindLayerTree } from '../bind-layer-tree'
+import { bindLayer } from '../bind-layer'
 
 const Container = defineComponent({ name: 'Container', setup: () => () => null })
 const Content = defineComponent({ name: 'Content', setup: () => () => null })
 
 describe('bindLayerTree', () => {
   it('should omit content when no content component is merged', () => {
-    const bound = bindLayerTree({
+    const bound = bindLayer({
       fragment: {
         content: {},
         container: { component: Container, props: { title: 'Shell' } },
@@ -26,7 +26,7 @@ describe('bindLayerTree', () => {
   })
 
   it('should resolve content from merged use tier', () => {
-    const bound = bindLayerTree({
+    const bound = bindLayer({
       fragment: {
         content: { component: Content },
         container: { component: Container },
@@ -41,7 +41,7 @@ describe('bindLayerTree', () => {
 
   it('should bind closeOn into content props', () => {
     const close = vi.fn()
-    const bound = bindLayerTree({
+    const bound = bindLayer({
       fragment: {
         content: { component: Content, closeOn: ['done'] },
         container: { component: Container },
@@ -56,7 +56,7 @@ describe('bindLayerTree', () => {
 
   it('should bind custom model prop on container', () => {
     const close = vi.fn()
-    const bound = bindLayerTree({
+    const bound = bindLayer({
       fragment: {
         content: {},
         container: { component: Container, model: 'open' },
@@ -73,7 +73,7 @@ describe('bindLayerTree', () => {
 
   it('should bind closeOn and model together', () => {
     const close = vi.fn()
-    const bound = bindLayerTree({
+    const bound = bindLayer({
       fragment: {
         content: { component: Content, closeOn: ['save'] },
         container: { component: Container, model: 'visible' },

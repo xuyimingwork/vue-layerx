@@ -2,13 +2,11 @@ import type { LayerConfigFragment, LayerNormalized } from '@/types/config'
 import { DEFAULT_CONTAINER_MODEL, bindContainerModel } from './bind-container-model'
 import { bindCloseOn } from './bind-close-on'
 
-export interface BindLayerTreeContext {
+export function bindLayer(ctx: {
   fragment: LayerConfigFragment
   visible: boolean
   close: () => void
-}
-
-export function bindLayerTree(ctx: BindLayerTreeContext): LayerNormalized {
+}): LayerNormalized {
   const { fragment, visible, close } = ctx
   const container = fragment.container ?? {}
   const content = fragment.content ?? {}

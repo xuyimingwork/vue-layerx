@@ -8,8 +8,8 @@ import type {
   LayerProps,
   SlotRenderFn,
 } from '@/types/config'
-import { mergeContainerNode, mergeContentNode } from './merge-node-config'
-import { normalizeFragment } from './normalize-component'
+import { mergeContainerNode, mergeContentNode } from './merge-node'
+import { normalizeFragment } from './normalize'
 
 export function createFragment(
   init?: LayerConfigFragment,

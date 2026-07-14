@@ -10,7 +10,7 @@ import {
   type VNode,
 } from 'vue'
 import { mergeFragment, createFragment, toFragmentFromStatic } from '@/config/fragment'
-import { bindLayerTree } from '@/config/bind-layer-tree'
+import { bindLayer } from '@/config/bind-layer'
 import type { LayerAdapter, LayerConfigStatic, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
@@ -140,7 +140,7 @@ export const LayerView = defineComponent({
 
       const adapted = props.adapter ? props.adapter(fragment) : fragment
       const withRefs = mergeFragment(props.store.refs, adapted)
-      const bound = bindLayerTree({ fragment: withRefs, visible: props.visible, close })
+      const bound = bindLayer({ fragment: withRefs, visible: props.visible, close })
 
       return createLayerViewVNode({
         container: bound.container,

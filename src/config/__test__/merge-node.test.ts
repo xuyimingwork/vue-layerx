@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { mergeProps, mergeNodeConfig } from '../merge-node-config'
+import { mergeProps, mergeNodeConfig } from '../merge-node'
 
 describe('mergeProps', () => {
   it('should shallow merge later sources over earlier ones', () => {
