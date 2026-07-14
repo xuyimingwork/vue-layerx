@@ -1,6 +1,7 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
 import type { TemplateSlotKey } from '@/types/store'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
+import { warn } from '@/shared/warn'
 
 export type {
   TemplateSlotKey,
@@ -18,13 +19,6 @@ type LayerStoreMethods = {
     entry: LayerTemplateEntry
   }) => void
   track: () => void
-}
-
-function warnDuplicate(name: string, scope: string) {
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return
-  console.warn(
-    `[vue-layerx] Duplicate LayerTemplate name="${name}" in ${scope}; latter wins`,
-  )
 }
 
 function parseTemplateKey(key: TemplateSlotKey): {
@@ -95,7 +89,11 @@ export function createLayerStore<T extends Record<string, LayerConfigFragment>>(
     const fragment = (store as Record<string, LayerConfigFragment>)[bucket]
     if (!fragment) return
     const slots = ensureSlots(fragment, side)
-    if (slots[name]) warnDuplicate(name, key)
+    if (slots[name]) {
+      warn(
+        `Duplicate LayerTemplate name="${name}" in ${key}; latter wins`,
+      )
+    }
     slots[name] = (slotProps) => entry.render(slotProps ?? {})
   }
 

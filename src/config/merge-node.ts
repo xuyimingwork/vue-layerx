@@ -9,15 +9,12 @@ import type {
   LayerConfigContent,
   LayerProps,
 } from '@/types/config'
+import { warn } from '@/shared/warn'
 
 type RefCallback = (el: ComponentPublicInstance | null) => void
 
-function warnRef(message: string) {
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return
-  console.warn(`[vue-layerx] ${message}`)
-}
-
-function normalizeRef(value: unknown): RefCallback | undefined {
+/** Normalize props.ref to a callback; unsupported values warn and become undefined. */
+export function normalizePropRef(value: unknown): RefCallback | undefined {
   if (typeof value === 'function') {
     return value as RefCallback
   }
@@ -28,19 +25,19 @@ function normalizeRef(value: unknown): RefCallback | undefined {
     }
   }
   if (typeof value === 'string') {
-    warnRef('string ref on layer props is not supported; ignored')
+    warn('string ref on layer props is not supported; ignored')
     return undefined
   }
   if (value != null) {
-    warnRef('invalid props.ref value; ignored')
+    warn('invalid props.ref value; ignored')
     return undefined
   }
   return undefined
 }
 
 function composePropRef(prev: unknown, next: unknown): unknown {
-  const prevFn = normalizeRef(prev)
-  const nextFn = normalizeRef(next)
+  const prevFn = normalizePropRef(prev)
+  const nextFn = normalizePropRef(next)
   if (!prevFn) return nextFn ?? next
   if (!nextFn) return prevFn
   return (el: ComponentPublicInstance | null) => {

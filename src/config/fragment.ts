@@ -1,3 +1,4 @@
+import { markRaw, type Component } from 'vue'
 import type {
   LayerConfigFragment,
   LayerConfigInstance,
@@ -8,8 +9,30 @@ import type {
   LayerProps,
   SlotRenderFn,
 } from '@/types/config'
-import { mergeContainerNode, mergeContentNode } from './merge-node'
-import { normalizeFragment } from './normalize'
+import {
+  mergeContainerNode,
+  mergeContentNode,
+  normalizePropRef,
+} from './merge-node'
+
+function normalizeComponent(component: Component): Component {
+  return markRaw(component)
+}
+
+function normalizeFragmentNode(node?: LayerConfigContainer | LayerConfigContent) {
+  if (node?.component !== undefined) node.component = normalizeComponent(node.component)
+  if (node?.props?.ref !== undefined) {
+    node.props.ref = normalizePropRef(node.props.ref)
+  }
+}
+
+function normalizeFragment(
+  fragment: LayerConfigFragment,
+): LayerConfigFragment {
+  normalizeFragmentNode(fragment.container)
+  normalizeFragmentNode(fragment.content)
+  return fragment
+}
 
 export function createFragment(
   init?: LayerConfigFragment,

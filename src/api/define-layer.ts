@@ -1,6 +1,6 @@
 import { getCurrentInstance, inject } from 'vue'
 import type { LayerConfigStatic, LayerDefine } from '@/types'
-import { LAYER_VIEW_KEY } from '@/shared/contracts'
+import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import { withTemplateTo } from '@/shared/layer-template-to'
 
 export function defineLayer(config: LayerConfigStatic = {}): LayerDefine {
