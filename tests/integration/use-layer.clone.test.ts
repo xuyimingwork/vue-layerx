@@ -295,9 +295,7 @@ describe('LayerInstance.clone', () => {
 
       const wrapper = mount(Host)
       base.open({ props: { message: 'base' } })
-      console.log('base.open')
       cloned.open({ props: { message: 'cloned' } })
-      console.log('cloned.open')
       await wrapper.vm.$nextTick()
       await flushPromises()
 

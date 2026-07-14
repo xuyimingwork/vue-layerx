@@ -85,13 +85,11 @@ export const LayerView = defineComponent({
     watch(
       () => props.visible,
       (visible, prev) => {
-        if (visible && !prev) {
-          defineStore.define = createFragment()
-          defineStore['define:template'] = createFragment()
-          openId.value++
-        }
-      },
-      { flush: 'sync' },
+        if (!visible || prev) return
+        defineStore.define = createFragment()
+        defineStore['define:template'] = createFragment()
+        openId.value++
+      }
     )
 
     provide(LAYER_VIEW_KEY, {
