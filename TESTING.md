@@ -98,7 +98,7 @@ The `api/` layer has no unit tests — it is thin glue; behavior is covered by i
 ### describe blocks
 
 - Integration: one file per public API; top-level `describe` matches the export name, nested `describe` for usage perspectives (e.g. `LayerTemplate` › `to defineLayer` › `outside layer context`)
-- Unit: match the exported function or module name, e.g. `bindCloseOn`, `mergeNodeConfig`
+- Unit: match the exported function or module name, e.g. `bindCloseOn`, `mergeNode`
 - Use nested `describe` for sub-scenarios within a file
 
 ### it blocks

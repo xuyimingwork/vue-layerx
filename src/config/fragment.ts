@@ -1,36 +1,21 @@
-import { markRaw, type Component } from 'vue'
 import type {
   LayerConfigFragment,
   LayerConfigInstance,
   LayerConfigStatic,
-  LayerConfigNode,
-  LayerConfigContainer,
-  LayerConfigContent,
-  LayerProps,
-  SlotRenderFn,
 } from '@/types/config'
 import {
   mergeContainerNode,
   mergeContentNode,
-  normalizePropRef,
-} from './merge-node'
-
-function normalizeComponent(component: Component): Component {
-  return markRaw(component)
-}
-
-function normalizeFragmentNode(node?: LayerConfigContainer | LayerConfigContent) {
-  if (node?.component !== undefined) node.component = normalizeComponent(node.component)
-  if (node?.props?.ref !== undefined) {
-    node.props.ref = normalizePropRef(node.props.ref)
-  }
-}
+  normalizeNode,
+  stripContainerNode,
+  stripContentNode,
+} from './node'
 
 function normalizeFragment(
   fragment: LayerConfigFragment,
 ): LayerConfigFragment {
-  normalizeFragmentNode(fragment.container)
-  normalizeFragmentNode(fragment.content)
+  normalizeNode(fragment.container)
+  normalizeNode(fragment.content)
   return fragment
 }
 
@@ -66,73 +51,6 @@ export function mergeFragment(
   if (Object.keys(container).length > 0) fragment.container = container
   if (Object.keys(content).length > 0) fragment.content = content
   return createFragment(fragment)
-}
-
-function stripNodeProps(
-  props: LayerProps | undefined,
-  prefix: string,
-  shouldStrip: (path: string) => boolean,
-): LayerProps | undefined {
-  if (!props) return undefined
-  const result: LayerProps = {}
-  for (const [key, value] of Object.entries(props)) {
-    const path = `${prefix}.props.${key}`
-    if (!shouldStrip(path)) result[key] = value
-  }
-  return Object.keys(result).length > 0 ? result : undefined
-}
-
-function stripNodeConfig(
-  node: LayerConfigNode,
-  prefix: string,
-  shouldStrip: (path: string) => boolean,
-): LayerConfigNode {
-  const result: LayerConfigNode = {}
-
-  if (node.component !== undefined) {
-    const path = `${prefix}.component`
-    if (!shouldStrip(path)) result.component = node.component
-  }
-
-  const props = stripNodeProps(node.props, prefix, shouldStrip)
-  if (props) result.props = props
-
-  if (node.slots) {
-    const slots: Record<string, SlotRenderFn> = {}
-    for (const [name, fn] of Object.entries(node.slots)) {
-      const path = `${prefix}.slots.${name}`
-      if (!shouldStrip(path)) slots[name] = fn
-    }
-    if (Object.keys(slots).length > 0) result.slots = slots
-  }
-
-  return result
-}
-
-function stripContainerNode(
-  node: LayerConfigContainer,
-  shouldStrip: (path: string) => boolean,
-  prefix = 'container',
-): LayerConfigContainer {
-  const result = stripNodeConfig(node, prefix, shouldStrip) as LayerConfigContainer
-  if (node.model !== undefined) {
-    const path = `${prefix}.model`
-    if (!shouldStrip(path)) result.model = node.model
-  }
-  return result
-}
-
-function stripContentNode(
-  node: LayerConfigContent,
-  shouldStrip: (path: string) => boolean,
-  prefix = 'content',
-): LayerConfigContent {
-  const result = stripNodeConfig(node, prefix, shouldStrip) as LayerConfigContent
-  if (node.closeOn !== undefined) {
-    const path = `${prefix}.closeOn`
-    if (!shouldStrip(path)) result.closeOn = node.closeOn
-  }
-  return result
 }
 
 /**

@@ -84,7 +84,7 @@ tests/
 |----|------|----------|
 | **types/** | 配置 / 实例 / Store 接口；LayerHost 类型断言 | `config.ts`、`instance.ts`、`store.ts`、`layer-host.ts` |
 | **shared/** | 跨层 inject 契约、store 工厂、template-to 协议 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
-| **config/** | 配置片段 → merge → bind | `fragment.ts`、`merge-node-config.ts`、`bind-*.ts`、`container-model.ts` |
+| **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts` |
 | **runtime/** | instance 生命周期、portal 挂载 | `layer-instance.ts`、`layer-app.ts` |
 | **view/** | `LayerView` 组件（merge → adapter → bind → createLayerViewVNode） | `layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
@@ -163,15 +163,15 @@ createLayerInstance + createLayerApp      runtime/
 LayerView → createLayerViewVNode                            view/
         │
         ├── mergeFragment / toFragment*            config/fragment.ts
-        ├── mergeNodeConfig                        config/merge-node-config.ts
+        ├── mergeNode / strip*Node                 config/node.ts
         ├── adapter（可选）                          api/create-layer 注册
-        ├── bindLayerTree                            config/bind-layer-tree.ts
-        └── createLayerViewVNode                     view/layer-view.ts
+        ├── bindLayer                              config/bind-layer.ts
+        └── createLayerViewVNode                     runtime/layer-view.ts
 ```
 
-- **merge**：`config/fragment.ts`（`createFragment`、`toFragmentFrom*`、`mergeFragment`）+ `config/merge-node-config.ts`（node 级 merge 原语）。
-- **bind**：`config/bind-layer-tree.ts` 编排 `container-model`、`bind-close-on`。
-- **render**：`view/layer-view.ts` 的 `createLayerViewVNode` 纯 `h()`；`LayerView` 是唯一的 merge → adapter → bind → render 编排点。
+- **merge**：`config/fragment.ts`（`createFragment`、`toFragmentFrom*`、`mergeFragment`、`stripFragment`）+ `config/node.ts`（node 级 merge / strip 原语）。
+- **bind**：`config/bind-layer.ts` 编排 `bind-container-model`、`bind-close-on`。
+- **render**：`runtime/layer-view.ts` 的 `createLayerViewVNode` 纯 `h()`；`LayerView` 是唯一的 merge → adapter → bind → render 编排点。
 
 ---
 

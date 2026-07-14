@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { mergeProps, mergeNodeConfig } from '../merge-node'
+import { mergeProps, mergeNode } from '../node'
 
 describe('mergeProps', () => {
   it('should shallow merge later sources over earlier ones', () => {
@@ -47,13 +47,13 @@ describe('mergeProps', () => {
   })
 })
 
-describe('mergeNodeConfig', () => {
+describe('mergeNode', () => {
   it('should merge component, props, and slots with later sources winning', () => {
     const slotA = () => null
     const slotB = () => null
 
     expect(
-      mergeNodeConfig(
+      mergeNode(
         { component: 'A' as never, props: { w: '1' }, slots: { footer: slotA } },
         { component: 'B' as never, props: { w: '2', t: 'x' }, slots: { title: slotB } },
       ),
