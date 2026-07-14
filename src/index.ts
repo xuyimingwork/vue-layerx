@@ -15,4 +15,4 @@ export type {
   LayerTemplateScope,
   SlotRenderFn,
 } from './types'
-export { DEFAULT_CONTAINER_MODEL } from './config/container-model'
+export { DEFAULT_CONTAINER_MODEL } from './config/bind-container-model'

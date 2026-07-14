@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bindContainerModel, DEFAULT_CONTAINER_MODEL } from '../container-model'
+import { bindContainerModel, DEFAULT_CONTAINER_MODEL } from '../bind-container-model'
 
 describe('bindContainerModel', () => {
   it('should bind model prop and update handler', () => {

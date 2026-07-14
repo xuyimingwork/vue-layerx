@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
 import type { LayerConfigCreate, LayerConfigInstance, LayerInstance } from '@/types'
-import { DEFAULT_CONTAINER_MODEL } from '@/config/container-model'
+import { DEFAULT_CONTAINER_MODEL } from '@/config/bind-container-model'
 import {
   mergeFragment,
   toFragmentFromInstance,

@@ -10,7 +10,7 @@ import {
 } from 'vue'
 import type { LayerAdapter } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
-import { LayerView } from '@/view/layer-view'
+import { LayerView } from '@/runtime/layer-view'
 import { type LayerHost } from '@/types/layer-host'
 
 const HOST = Symbol('vue-layerx:host')

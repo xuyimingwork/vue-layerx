@@ -1,5 +1,5 @@
 import type { LayerConfigFragment, LayerNormalized } from '@/types/config'
-import { DEFAULT_CONTAINER_MODEL, bindContainerModel } from './container-model'
+import { DEFAULT_CONTAINER_MODEL, bindContainerModel } from './bind-container-model'
 import { bindCloseOn } from './bind-close-on'
 
 export interface BindLayerTreeContext {
