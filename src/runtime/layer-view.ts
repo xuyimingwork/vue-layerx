@@ -18,6 +18,8 @@ import type { LayerConfigContainer, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
+import { LayerNoContainer } from '@/runtime/layer-no-container'
+import { warn } from '@/shared/warn'
 
 /** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
 const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
@@ -41,23 +43,40 @@ export function createLayerViewVNode({
   container,
   content,
   openId,
-}: CreateLayerViewVNodeOptions): VNode {
-  const defaultSlot = content
-    ? () =>
-        h(
-          content.component,
-          {
-            ...content.props,
-            key: openId,
-            [LAYER_CONTENT]: true,
-          },
-          content.slots,
-        )
-    : () => null
+}: CreateLayerViewVNodeOptions): VNode | null {
+  if (container.component === LayerNoContainer) {
+    if (!content) {
+      warn('LayerNoContainer render skipped: content component is missing')
+      return null
+    }
+    // Content props override container (incl. create defaults); bind model lives on container until overridden.
+    // Not LAYER_CONTENT: no real shell for defineLayer / define:template.container.
+    return h(
+      content.component,
+      {
+        ...container.props,
+        ...content.props,
+        key: openId,
+        [LAYER_CONTENT]: false,
+      },
+      content.slots,
+    )
+  }
 
   return h(container.component, container.props, {
-    default: defaultSlot,
     ...container.slots,
+    default: content
+      ? () =>
+          h(
+            content.component,
+            {
+              ...content.props,
+              key: openId,
+              [LAYER_CONTENT]: true,
+            },
+            content.slots,
+          )
+      : () => null,
   })
 }
 

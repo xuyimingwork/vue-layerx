@@ -297,6 +297,31 @@ describe('layer config', () => {
   })
 
   describe('slots', () => {
+    it('should keep content in container default when container.slots.default is set', async () => {
+      await mountOpenLayer(
+        createLayer(Container, {
+          slots: {
+            default: slotSpan('hijack-default', 'hijacked'),
+            footer: slotSpan('slot-footer', 'create footer'),
+          },
+        }),
+        {
+          open: (dialog) =>
+            dialog.open({
+              props: { message: 'hi' },
+              container: {
+                slots: { default: slotSpan('open-hijack-default', 'open hijacked') },
+              },
+            }),
+        },
+      )
+
+      expect(document.body.querySelector('.msg')?.textContent).toBe('hi')
+      expect(document.body.querySelector('.hijack-default')).toBeNull()
+      expect(document.body.querySelector('.open-hijack-default')).toBeNull()
+      expect(document.body.querySelector('.slot-footer')?.textContent).toBe('create footer')
+    })
+
     it('should render different container slot names from multiple tiers', async () => {
       await mountOpenLayer(
         createLayer(HeaderFooterContainer, {

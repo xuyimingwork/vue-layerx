@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { MinimalContainer } from '@tests/fixtures/components'
+import { LayerNoContainer } from '../layer-no-container'
 import { createLayerViewVNode } from '../layer-view'
 
 const StubContent = defineComponent({
@@ -46,5 +47,41 @@ describe('createLayerViewVNode', () => {
 
     const defaultSlot = tree.children?.default?.()
     expect(defaultSlot).toBeNull()
+  })
+
+  it('should flatten LayerNoContainer with content props overriding container', () => {
+    const contentRef = vi.fn()
+    const onUpdate = vi.fn()
+    const tree = createLayerViewVNode({
+      container: {
+        component: LayerNoContainer,
+        props: {
+          modelValue: true,
+          'onUpdate:modelValue': onUpdate,
+          width: '480px',
+          title: 'from-container',
+        },
+        slots: {},
+      },
+      content: {
+        component: StubContent,
+        props: {
+          message: 'hello',
+          width: '720px',
+          ref: contentRef,
+        },
+        slots: {},
+      },
+      openId: 2,
+    })
+
+    expect(tree!.type).toBe(StubContent)
+    expect(tree!.props?.message).toBe('hello')
+    expect(tree!.props?.modelValue).toBe(true)
+    expect(tree!.props?.['onUpdate:modelValue']).toBe(onUpdate)
+    expect(tree!.props?.width).toBe('720px')
+    expect(tree!.props?.title).toBe('from-container')
+    expect(tree!.props?.ref).toBe(contentRef)
+    expect(tree!.props?.key).toBe(2)
   })
 })

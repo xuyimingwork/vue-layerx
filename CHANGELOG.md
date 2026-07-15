@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`LayerNoContainer`** — public marker container; `createLayerViewVNode` flattens to `h(content)` with content props overriding container props (monolith / shared `useLayer` via adapter; see ADR 0001)
 - **Reactive config sources** (`MaybeRefOrGetter`) on `createLayer`, `defineLayer`, `useLayer`, and `clone` — getters / refs / computed stay live; plain objects remain snapshots
 - **SSR compatibility** — safe to import and initialize in SSR apps; layer portals mount on the client (`open()` / `bindHost()` should run after mount or on user interaction)
 

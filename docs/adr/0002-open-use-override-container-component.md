@@ -1,16 +1,16 @@
-# ADR 0002：`useX` / `open` 覆盖 `container.component`（仅 split 工厂）
+# ADR 0002：`useX` / `open` 覆盖 `container.component`
 
 - **状态**：讨论中（Proposed）
 - **日期**：2026-06-29
-- **关联**：[ADR 0001](./0001-legacy-monolith-progressive-adoption.md) — **`createLayerUnited` 实例不适用本文**（禁止 container 块与换壳）
+- **关联**：[ADR 0001](./0001-legacy-monolith-progressive-adoption.md)（可用 `LayerNoContainer` 作为覆盖目标）
 
 ---
 
 ## 背景
 
-[`DESIGN.md`](../../DESIGN.md) 已约定 **split 工厂**下 **`open` 可覆盖 `container.component`**（merge 最高 tier，仍走该实例工厂的 `adapter`），并标注为 **进阶能力**。
+[`DESIGN.md`](../../DESIGN.md) 已约定 **`open` 可覆盖 `container.component`**（merge 最高 tier，仍走该实例工厂的 `adapter`），并标注为 **进阶能力**。
 
-[ADR 0001 第七轮](./0001-legacy-monolith-progressive-adoption.md) 定稿：**united 工厂不允许** `use`/`open` 的 `container` 配置，也不允许运行时换 container；迁移只能 **换 `useDialog` 工厂**。本文 **仅讨论 split**（`createLayer(BaseDialog)` 等）。
+[ADR 0001](./0001-legacy-monolith-progressive-adoption.md) 定稿：存量单体通过把 `container.component` 换成 **`LayerNoContainer`** 拍平（常见于项目 **adapter** 按 content 组件切换）；也允许在 `use` / `open` 显式传入。
 
 ---
 
@@ -24,7 +24,7 @@ mergeFragment(create, define:template, define, use:template, use, open)
 
 ---
 
-## 待决问题（split only）
+## 待决问题
 
 ### Q1：`useX` 是否允许 `container.component`？
 
@@ -32,16 +32,15 @@ mergeFragment(create, define:template, define, use:template, use, open)
 
 ### Q2：`open` 覆盖 `container.component`
 
-**倾向**：**允许**（advanced）；adapter 负责 slot/model 差异；文档 marked advanced。
+**倾向**：**允许**（advanced）；adapter 负责 slot/model 差异；文档 marked advanced。覆盖为 `LayerNoContainer` 时走 ADR 0001 拍平。
 
 ### Q3：adapter 与运行时覆盖
 
-**倾向**：split **保持现状**——adapter 在 merge 之后，可改回 `open` 写入的 component。
+**倾向**：**保持现状**——adapter 在 merge 之后，可改回或再次改写 `open` 写入的 component（含换成 `LayerNoContainer`）。
 
 ### Q4：类型
 
-- split 的 `LayerConfigContent` 保留 `container?: { component?: Component }`。
-- united 使用 **`LayerConfigUnitedInstance`**（无 `container`）——见 ADR 0001。
+- `LayerConfigContent` 保留 `container?: { component?: Component }`（含 `LayerNoContainer`）。
 
 ---
 
@@ -49,8 +48,8 @@ mergeFragment(create, define:template, define, use:template, use, open)
 
 | 主题 | ADR |
 |------|-----|
-| united pipeline、fold、禁止 container / define | **0001** |
-| split 下 **`container.component` 运行时覆盖** | **0002（本文）** |
+| `LayerNoContainer` 拍平语义、共用 `useLayer` | **0001** |
+| **`container.component` 在 use/open 的覆盖策略与 warn** | **0002（本文）** |
 
 ---
 
@@ -58,14 +57,14 @@ mergeFragment(create, define:template, define, use:template, use, open)
 
 | 项 | 结论 | 置信度 |
 |----|------|--------|
-| united 实例适用本文 | **否**（已定稿于 0001） | 高 |
-| split：`useX` 换 component | 允许 + dev warn | 中 |
-| split：`open` 换 component | 允许（advanced） | 中 |
-| adapter 改回 open 的 component | split 保持现状 | 中 |
+| `useX` 换 component | 允许 + dev warn | 中 |
+| `open` 换 component | 允许（advanced） | 中 |
+| 可换成 `LayerNoContainer` | 是（ADR 0001） | 高 |
+| adapter 改回 / 再改 open 的 component | 保持现状 | 中 |
 
 ---
 
 ## 参考
 
-- [DESIGN.md § open 换 container.component](../../DESIGN.md)
-- [ADR 0001 § 第七轮](./0001-legacy-monolith-progressive-adoption.md)
+- [DESIGN.md](../../DESIGN.md)
+- [ADR 0001](./0001-legacy-monolith-progressive-adoption.md)

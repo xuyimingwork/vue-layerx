@@ -510,7 +510,7 @@ const layer = defineLayer({
 
 ## 公共 API
 
-框架导出：`createLayer`、`defineLayer`、`LayerTemplate`。  
+框架导出：`createLayer`、`defineLayer`、`LayerTemplate`、`LayerNoContainer`。  
 应用层别名 `useDialog` / `useDrawer` 由项目 `createLayer` 注册，非框架内置。
 
 ### `createLayer(layer, config?)`
@@ -560,6 +560,35 @@ export const useDialog = createLayer(MyDialog, {
 无 `adapter` 时：直接 `bindLayerTree({ merged, visible, close })`。
 
 **API 形态**：两参 `(layer, config?)`；`adapter` 在 `config` 内，仅 `createLayer` 可配置。
+
+### `LayerNoContainer`（存量单体 / 无外层壳）
+
+标记组件：作 `createLayer` 的 container，或在 **adapter / use / open** 里把 `container.component` 换成它。详见 [ADR 0001](docs/adr/0001-legacy-monolith-progressive-adoption.md)。
+
+`createLayerViewVNode` 遇 `LayerNoContainer` 时拍平：
+
+```ts
+h(content, { ...container.props, ...content.props, key }, content.slots)
+```
+
+content 覆盖 container（create 默认与 open 在拍平相遇；bind 的 `modelValue` 在 container 上，正常勿在 content.props 再传）。
+
+**推荐：同一 `useLayer` 混用单体与拆分 content**（项目维护 `withDialog`）：
+
+```ts
+export const useLayer = createLayer(BaseDialog, {
+  props: { width: '480px' },
+  adapter: (f) =>
+    withDialog(f.content?.component)
+      ? { ...f, container: { ...f.container, component: LayerNoContainer } }
+      : f,
+})
+
+useLayer(UserDialog) // 内嵌 el-dialog → 拍平
+useLayer(UserForm)   // 仍包 BaseDialog
+```
+
+也可 `createLayer(LayerNoContainer, { props })(UserDialog)`。不提供 `createLayerUnited`。
 
 ### `defineLayer(config?)`（content.setup）
 

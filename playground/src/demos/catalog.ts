@@ -10,6 +10,7 @@ import BeforeCloseDemo from './06-before-close/index.vue'
 import ConfigMergeDemo from './07-config-merge/index.vue'
 import LifecycleDemo from './08-lifecycle/index.vue'
 import ProvideInjectDemo from './09-provide-inject/index.vue'
+import LayerNoContainerDemo from './10-layer-no-container/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -34,6 +35,15 @@ export const demoGroups: DemoGroup[] = [
           '典型业务：open({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerTemplate :to 注入 content #header。',
         tags: ['open(props)', 'closeOn', 'LayerTemplate :to', 'onSuccess'],
         component: CrudDemo,
+      },
+      {
+        id: 'layer-no-container',
+        level: 2,
+        title: 'LayerNoContainer 存量单体',
+        description:
+          '同一 useLayer：adapter 对内嵌 Dialog 的 content 换成 LayerNoContainer 拍平；UserForm 仍走 ElDialog。也可 createLayer(LayerNoContainer)。',
+        tags: ['LayerNoContainer', 'adapter', '渐进接入'],
+        component: LayerNoContainerDemo,
       },
     ],
   },
