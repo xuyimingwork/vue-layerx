@@ -11,6 +11,7 @@ import ConfigMergeDemo from './07-config-merge/index.vue'
 import LifecycleDemo from './08-lifecycle/index.vue'
 import ProvideInjectDemo from './09-provide-inject/index.vue'
 import LayerNoContainerDemo from './10-layer-no-container/index.vue'
+import OpenSwapContainerDemo from './11-open-swap-container/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -66,7 +67,7 @@ export const demoGroups: DemoGroup[] = [
   {
     id: 'layer-advanced',
     title: '换层与多实例',
-    subtitle: '双容器 / clone',
+    subtitle: '双容器 / 响应式换壳 / clone',
     items: [
       {
         id: 'dual-layer',
@@ -76,6 +77,15 @@ export const demoGroups: DemoGroup[] = [
           '同一 FilterContent 用 defineLayer 写跨容器 props，LayerTemplate name 共用 footer；调用方 useDialog / useDrawer 分工厂打开，各自 adapt 滤 props、对齐 slot。',
         tags: ['useDialog + useDrawer', 'defineLayer', 'adapt', 'closeOn'],
         component: DualLayerDemo,
+      },
+      {
+        id: 'open-swap-container',
+        level: 4,
+        title: '内容内全屏换壳',
+        description:
+          'content 内 defineLayer(() => ({ component: expanded ? ElDrawer : ElDialog })) 换壳；草稿与 expanded 都在 content 本地。工厂 adapter 只按最终 component 滤 props / 对齐 slot。',
+        tags: ['defineLayer', 'component', 'adapter', '全屏', 'Teleport'],
+        component: OpenSwapContainerDemo,
       },
       {
         id: 'clone',

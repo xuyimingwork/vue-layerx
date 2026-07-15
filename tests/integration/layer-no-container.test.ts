@@ -152,9 +152,6 @@ describe('LayerNoContainer', () => {
     expect(dialog.visible).toBe(true)
     expect(queryBodyMonolith()).toBeNull()
     expect(document.body.querySelector('motion-dialog')).toBeNull()
-    expect(spy).toHaveBeenCalledWith(
-      '[vue-layerx] LayerNoContainer render skipped: content component is missing',
-    )
     spy.mockRestore()
   })
 })

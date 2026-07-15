@@ -158,7 +158,7 @@ describe('LayerInstance.clone', () => {
       expect(base.visible).toBe(true)
       expect(queryAllBodyDialogs()).toHaveLength(1)
       expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Base')
-      expect(document.body.querySelector('.msg')?.textContent).toBe('base')
+      expect(queryBodyDialog()?.querySelector('.msg')?.textContent).toBe('base')
     })
 
     it('should not tear down sibling DOM when clone close is called without show', async () => {
@@ -186,7 +186,7 @@ describe('LayerInstance.clone', () => {
       expect(base.visible).toBe(true)
       expect(cloned.visible).toBe(false)
       expect(queryAllBodyDialogs()).toHaveLength(1)
-      expect(document.body.querySelector('.msg')?.textContent).toBe('base')
+      expect(queryBodyDialog()?.querySelector('.msg')?.textContent).toBe('base')
     })
   })
 
@@ -220,7 +220,7 @@ describe('LayerInstance.clone', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
       expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Cloned')
-      expect(document.body.querySelector('.msg')?.textContent).toBe('cloned')
+      expect(queryBodyDialog()?.querySelector('.msg')?.textContent).toBe('cloned')
     })
   })
 

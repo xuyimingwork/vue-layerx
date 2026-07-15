@@ -4,7 +4,9 @@ import {
   getCurrentInstance,
   h,
   provide,
+  Ref,
   ref,
+  Teleport,
   toValue,
   watch,
   type ComponentInternalInstance,
@@ -14,12 +16,11 @@ import {
 } from 'vue'
 import { mergeFragment, createFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type { LayerConfigContainer, LayerNormalized } from '@/types'
+import type { LayerConfigContainer, LayerConfigFragment, LayerNodeNormalized, LayerNormalized } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import { LayerNoContainer } from '@/runtime/layer-no-container'
-import { warn } from '@/shared/warn'
 
 /** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
 const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
@@ -36,6 +37,7 @@ function isLayerContent(
 
 export interface CreateLayerViewVNodeOptions extends LayerNormalized {
   openId?: number
+  refContentTo: Ref<HTMLUnknownElement | null>
 }
 
 /** Build LayerView root VNode (container + optional content). Exported for unit tests. */
@@ -43,41 +45,56 @@ export function createLayerViewVNode({
   container,
   content,
   openId,
-}: CreateLayerViewVNodeOptions): VNode | null {
+  refContentTo
+}: CreateLayerViewVNodeOptions): VNode | (VNode | null)[] | null {
   if (container.component === LayerNoContainer) {
-    if (!content) {
-      warn('LayerNoContainer render skipped: content component is missing')
-      return null
-    }
-    // Content props override container (incl. create defaults); bind model lives on container until overridden.
-    // Not LAYER_CONTENT: no real shell for defineLayer / define:template.container.
-    return h(
-      content.component,
-      {
-        ...container.props,
-        ...content.props,
-        key: openId,
-        [LAYER_CONTENT]: false,
-      },
-      content.slots,
-    )
+    return createLayerViewContentVNode({ 
+      key: openId, 
+      content: content ? {
+        ...content,
+        props: {
+          ...container.props,
+          ...content.props
+        },
+      } : content
+    })
   }
 
-  return h(container.component, container.props, {
-    ...container.slots,
-    default: content
-      ? () =>
-          h(
-            content.component,
-            {
-              ...content.props,
-              key: openId,
-              [LAYER_CONTENT]: true,
-            },
-            content.slots,
-          )
-      : () => null,
-  })
+  return [
+    h(container.component, container.props, {
+      ...container.slots,
+      default: () => h('layer-content-to', { 
+        ref: (el) => refContentTo.value = el as HTMLUnknownElement,
+        style: {
+          display: 'contents'
+        }
+      }),  // 落点，不是 content
+    }),
+    h(Teleport, { 
+      to: refContentTo.value,
+      defer: true,
+      disabled: !refContentTo.value
+    }, [
+      createLayerViewContentVNode({ key: openId, content, marked: true })
+    ])
+  ]
+}
+
+function createLayerViewContentVNode({ key, content, marked }: {
+  key: number | undefined
+  content: LayerNodeNormalized | undefined
+  marked?: boolean
+}) {
+  if (!content) return null
+  return h(
+    content.component,
+    {
+      ...content.props,
+      key,
+      [LAYER_CONTENT]: !!marked,
+    },
+    content.slots,
+  )
 }
 
 export const LayerView = defineComponent({
@@ -95,6 +112,7 @@ export const LayerView = defineComponent({
   emits: ['update:visible'],
   setup(props, { emit }) {
     const openId = ref(0)
+    const refContentTo = ref<HTMLUnknownElement | null>(null)
     const defineStore = createLayerStore({
       define: createFragment(),
       'define:template': createFragment(),
@@ -134,8 +152,8 @@ export const LayerView = defineComponent({
       () => props.visible,
       (visible, prev) => {
         if (!visible || prev) return
-        defineStore.define = createFragment()
-        defineStore['define:template'] = createFragment()
+        defineStore.define = computed(() => createFragment()) as LayerConfigFragment
+        defineStore['define:template'] = computed(() => createFragment()) as LayerConfigFragment
         openId.value++
       },
     )
@@ -176,6 +194,7 @@ export const LayerView = defineComponent({
         container: bound.value.container,
         content: bound.value.content,
         openId: bound.value.content ? openId.value : undefined,
+        refContentTo
       })
   },
 })

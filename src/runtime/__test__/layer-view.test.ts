@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, ref, Teleport, type VNode } from 'vue'
 import { MinimalContainer } from '@tests/fixtures/components'
 import { LayerNoContainer } from '../layer-no-container'
 import { createLayerViewVNode } from '../layer-view'
@@ -11,42 +11,98 @@ const StubContent = defineComponent({
   },
 })
 
-describe('createLayerViewVNode', () => {
-  it('should mark content root with an internal Symbol prop', () => {
-    const tree = createLayerViewVNode({
-      container: {
-        component: MinimalContainer,
-        props: { modelValue: true },
-        slots: {},
-      },
-      content: {
-        component: StubContent,
-        props: { message: 'hello' },
-        slots: {},
-      },
-      openId: 1,
-    })
+function asArrayTree(
+  tree: ReturnType<typeof createLayerViewVNode>,
+): [VNode, VNode] {
+  expect(Array.isArray(tree)).toBe(true)
+  return tree as [VNode, VNode]
+}
 
-    const contentVNode = tree.children?.default?.() as {
-      props?: Record<PropertyKey, unknown>
-    }
-    const symbolKeys = Object.getOwnPropertySymbols(contentVNode?.props ?? {})
-    expect(symbolKeys.some((key) => contentVNode?.props?.[key] === true)).toBe(true)
-    expect(contentVNode?.props?.message).toBe('hello')
-    expect(contentVNode?.props?.key).toBe(1)
+describe('createLayerViewVNode', () => {
+  it('should place a layer-content-to anchor and teleport marked content', () => {
+    const target = document.createElement('div')
+    const refContentTo = ref<HTMLUnknownElement | null>(target)
+    const [containerVNode, teleportVNode] = asArrayTree(
+      createLayerViewVNode({
+        container: {
+          component: MinimalContainer,
+          props: { modelValue: true },
+          slots: {},
+        },
+        content: {
+          component: StubContent,
+          props: { message: 'hello' },
+          slots: {},
+        },
+        openId: 1,
+        refContentTo,
+      }),
+    )
+
+    expect(containerVNode.type).toBe(MinimalContainer)
+    const anchor = (
+      containerVNode.children as { default?: () => VNode }
+    ).default?.()
+    expect(anchor?.type).toBe('layer-content-to')
+    expect(anchor?.props?.style).toEqual({ display: 'contents' })
+
+    expect(teleportVNode.type).toBe(Teleport)
+    expect(teleportVNode.props?.to).toBe(target)
+    expect(teleportVNode.props?.defer).toBe(true)
+    expect(teleportVNode.props?.disabled).toBe(false)
+
+    const contentVNode = (teleportVNode.children as VNode[])?.[0]
+    const contentProps = contentVNode?.props as
+      | Record<PropertyKey, unknown>
+      | undefined
+    const symbolKeys = Object.getOwnPropertySymbols(contentProps ?? {})
+    expect(symbolKeys.some((key) => contentProps?.[key] === true)).toBe(true)
+    expect(contentProps?.message).toBe('hello')
+    expect(contentProps?.key).toBe(1)
+  })
+
+  it('should keep teleport disabled until refContentTo is set', () => {
+    const refContentTo = ref<HTMLUnknownElement | null>(null)
+    const [, teleportVNode] = asArrayTree(
+      createLayerViewVNode({
+        container: {
+          component: MinimalContainer,
+          props: { modelValue: true },
+          slots: {},
+        },
+        content: {
+          component: StubContent,
+          props: { message: 'hello' },
+          slots: {},
+        },
+        openId: 1,
+        refContentTo,
+      }),
+    )
+
+    expect(teleportVNode.type).toBe(Teleport)
+    expect(teleportVNode.props?.to).toBeNull()
+    expect(teleportVNode.props?.defer).toBe(true)
+    expect(teleportVNode.props?.disabled).toBe(true)
+    expect((teleportVNode.children as VNode[])?.[0]?.type).toBe(StubContent)
   })
 
   it('should omit content branch when content is undefined', () => {
-    const tree = createLayerViewVNode({
-      container: {
-        component: MinimalContainer,
-        props: { modelValue: false },
-        slots: {},
-      },
-    })
+    const target = document.createElement('div')
+    const refContentTo = ref<HTMLUnknownElement | null>(target)
+    const [, teleportVNode] = asArrayTree(
+      createLayerViewVNode({
+        container: {
+          component: MinimalContainer,
+          props: { modelValue: false },
+          slots: {},
+        },
+        refContentTo,
+      }),
+    )
 
-    const defaultSlot = tree.children?.default?.()
-    expect(defaultSlot).toBeNull()
+    expect(teleportVNode.type).toBe(Teleport)
+    expect((teleportVNode.children as VNode[])?.[0]).toBeNull()
   })
 
   it('should flatten LayerNoContainer with content props overriding container', () => {
@@ -73,15 +129,21 @@ describe('createLayerViewVNode', () => {
         slots: {},
       },
       openId: 2,
-    })
+      refContentTo: ref(null),
+    }) as VNode
 
-    expect(tree!.type).toBe(StubContent)
-    expect(tree!.props?.message).toBe('hello')
-    expect(tree!.props?.modelValue).toBe(true)
-    expect(tree!.props?.['onUpdate:modelValue']).toBe(onUpdate)
-    expect(tree!.props?.width).toBe('720px')
-    expect(tree!.props?.title).toBe('from-container')
-    expect(tree!.props?.ref).toBe(contentRef)
-    expect(tree!.props?.key).toBe(2)
+    const props = tree.props as Record<PropertyKey, unknown>
+    expect(tree.type).toBe(StubContent)
+    expect(props.message).toBe('hello')
+    expect(props.modelValue).toBe(true)
+    expect(props['onUpdate:modelValue']).toBe(onUpdate)
+    expect(props.width).toBe('720px')
+    expect(props.title).toBe('from-container')
+    expect(props.ref).toBe(contentRef)
+    expect(props.key).toBe(2)
+
+    const symbolKeys = Object.getOwnPropertySymbols(props)
+    expect(symbolKeys.some((key) => props[key] === true)).toBe(false)
   })
 })
+

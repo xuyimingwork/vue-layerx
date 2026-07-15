@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
+import { DrawerContainer } from '@tests/fixtures/layer-config'
 
 describe('reactive layer config', () => {
   describe('useLayer', () => {
@@ -138,6 +139,75 @@ describe('reactive layer config', () => {
       const msgsAfter = [...document.body.querySelectorAll('.msg')].map((el) => el.textContent)
       expect(msgsAfter).toContain('id-1-en')
       expect(msgsAfter).toContain('id-2-en')
+    })
+  })
+
+  describe('container.component swap while visible', () => {
+    it('should preserve content local state when container.component changes', async () => {
+      const useLayer = createLayer(Container)
+      const asDrawer = ref(false)
+      let setupCount = 0
+      let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'StatefulContent',
+        setup() {
+          setupCount++
+          const note = ref('initial')
+          return () =>
+            h('motion-div', { class: 'content' }, [
+              h('span', { class: 'note' }, note.value),
+              h(
+                'button',
+                {
+                  class: 'edit-note',
+                  onClick: () => {
+                    note.value = 'edited'
+                  },
+                },
+                'edit',
+              ),
+            ])
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, () => ({
+            container: {
+              component: asDrawer.value ? DrawerContainer : Container,
+              props: asDrawer.value ? { size: '80%' } : {},
+            },
+          }))
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeTruthy()
+      expect(document.body.querySelector('motion-drawer')).toBeNull()
+      expect(document.body.querySelector('.note')?.textContent).toBe('initial')
+      expect(setupCount).toBe(1)
+
+      document.body.querySelector('.edit-note')?.dispatchEvent(new MouseEvent('click'))
+      await nextTick()
+      expect(document.body.querySelector('.note')?.textContent).toBe('edited')
+      expect(setupCount).toBe(1)
+
+      asDrawer.value = true
+      await nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-drawer')).toBeTruthy()
+      expect(document.body.querySelector('motion-dialog')).toBeNull()
+      expect(document.body.querySelector('motion-drawer')?.getAttribute('data-size')).toBe(
+        '80%',
+      )
+      expect(document.body.querySelector('.note')?.textContent).toBe('edited')
+      expect(setupCount).toBe(1)
     })
   })
 })
