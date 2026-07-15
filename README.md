@@ -2,15 +2,17 @@
 
 Vue 3 命令式弹层工具库：`createLayer` 工厂 + `open()`，content 内 `defineLayer` / `LayerTemplate`，列表页远程投 slot。
 
-> **Pre-1.0 (`0.1.0`)** — 首个可用版本。API 在 1.0 前仍可能调整；详见 [CHANGELOG](./CHANGELOG.md)。
+> **`1.0.0-beta.1`** — 公开 API 已锁定（1.0 线）；beta → stable 以 soak / 文档 / 修 bug 为主。详见 [CHANGELOG](./CHANGELOG.md)。
 
 ## 安装
 
 ```bash
-pnpm add vue-layerx
+pnpm add vue-layerx@beta
 # or
-npm install vue-layerx
+npm install vue-layerx@beta
 ```
+
+稳定版发布后可改回 `pnpm add vue-layerx`。
 
 Peer dependency: **Vue ^3.5.0**
 
@@ -58,9 +60,10 @@ dialog.close()
 
 - 模块级单例须在 App / ConfigProvider 子树内调用 `bindHost()`，否则 content 无法 `inject` 全局配置
 
-## 从 0.0.1 迁移
+## 从 0.x 迁移
 
-npm 上的 `0.0.1` 为占名占位版。若曾安装过，请升级到 **0.1.0** 并参照 [CHANGELOG](./CHANGELOG.md#010---2026-06-27)（`show/hide` → `open/close`，移除 `LayerBind`，`adapter` 移入 `createLayer` 第二参数等）。
+- **0.0.1** 为占名占位；请升级并参照 [CHANGELOG 0.1.0](./CHANGELOG.md#010---2026-06-27)（`show/hide` → `open/close`，移除 `LayerBind` 等）。
+- **0.1.0 → 1.0 beta**：类型重命名等见 [CHANGELOG 1.0.0-beta.1](./CHANGELOG.md#100-beta1---2026-07-15)。
 
 ## License
 

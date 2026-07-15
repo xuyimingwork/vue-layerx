@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.1] - 2026-07-15
+
+First **1.0 beta**. Public API is **locked** for the 1.0 line; remaining beta → stable work is soak / docs / bugfix. Breaking changes after this tag require a new major.
+
 ### Added
 
 - **`LayerNoContainer`** — public marker container; `createLayerViewVNode` flattens to `h(content)` with content props overriding container props (monolith / shared `useLayer` via adapter; see ADR 0001)
 - **Reactive config sources** (`MaybeRefOrGetter`) on `createLayer`, `defineLayer`, `useLayer`, and `clone` — getters / refs / computed stay live; plain objects remain snapshots
 - **SSR compatibility** — safe to import and initialize in SSR apps; layer portals mount on the client (`open()` / `bindHost()` should run after mount or on user interaction)
+- **Visible container swap** — while open, changing `container.component` (via `use` / `open` / adapter) keeps content instance state (see ADR 0002)
 
 ### Changed
 
@@ -21,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`store.create` / `store.use` are `ComputedRef`** (read-only user/factory config); assignments remain on `open` / `use:template` / `refs` only
 - **`open(config?)` stays plain snapshot** (not MaybeRefOrGetter); empty `open()` uses live `use` / lower tiers
 - **`clone`**: parent `use` stays live-folded; clone config may be a live source; still strips parent `use` `props.ref`
+
+### Notes
+
+- **API freeze** — treat exported APIs / types as 1.0-stable; unknown config keys remain non-contract (ADR 0004: whitelist only; extension channel TBD)
+- Install beta: `pnpm add vue-layerx@beta` or `vue-layerx@1.0.0-beta.1`
+- Breaking vs **0.1.0**: type renames above; prefer migrating types before locking dependents on beta
 
 ## [0.1.0] - 2026-06-27
 
@@ -59,7 +70,7 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 ### Notes
 
-- **SSR is not supported**
+- **SSR is not supported** (added in 1.0.0-beta.1)
 - **0.0.1 was a placeholder** on npm; treat this as the first installable version
 - Migration: replace `show`/`hide` with `open`/`close`; replace `LayerBind` with `LayerTemplate :to`; move `adapter` into `createLayer` config object
 
@@ -74,6 +85,7 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/xuyimingwork/vue-layerx/compare/v0.1.0...v1.0.0-beta.1
 [0.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/xuyimingwork/vue-layerx/releases/tag/v0.0.1

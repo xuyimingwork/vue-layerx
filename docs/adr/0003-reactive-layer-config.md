@@ -2,7 +2,7 @@
 
 - **状态**：Accepted（已实现）
 - **日期**：2026-07-14
-- **关联**：[DESIGN.md](../../DESIGN.md) merge / store 管线；[ADR 0004](./0004-merge-unknown-fields.md)（未知字段 / `meta` 与 adapter 入参）
+- **关联**：[DESIGN.md](../../DESIGN.md) merge / store 管线；[ADR 0004](./0004-merge-unknown-fields.md)（未知字段白名单与 adapter 入参）
 
 ---
 

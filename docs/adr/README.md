@@ -7,4 +7,4 @@
 | [0001](./0001-legacy-monolith-progressive-adoption.md) | 存量单体弹窗（UserDialog）渐进式接入 | Accepted（`LayerNoContainer`） |
 | [0002](./0002-open-use-override-container-component.md) | `useX` / `open` 覆盖 `container.component` | Accepted（允许，无 warn） |
 | [0003](./0003-reactive-layer-config.md) | Layer 配置响应式（MaybeRefOrGetter + store computed） | Accepted |
-| [0004](./0004-merge-unknown-fields.md) | `mergeFragment` / 节点是否保留未知字段 | 讨论中 |
+| [0004](./0004-merge-unknown-fields.md) | `mergeFragment` / 节点是否保留未知字段 | Accepted（白名单；扩展待定） |
