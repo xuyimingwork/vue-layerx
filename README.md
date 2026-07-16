@@ -31,7 +31,7 @@ npm install vue-layerx
 
 ### 获取组合式函数
 
-任意基础弹层组件都可以通过 `createLayer` 生成对应的组合式函数。以 Dialog 为例：
+任意弹层 **容器组件** 都可以通过 `createLayer` 生成对应的组合式函数。以 Dialog 为例：
 
 ```ts
 // dialog.ts
@@ -45,7 +45,7 @@ export const useDialog = createLayer(ElDialog)
 
 ### 获取弹层实例
 
-有了 `useDialog` 后，传入内容组件即可得到弹层实例：
+有了 `useDialog` 后，传入 **内容组件** 即可得到弹层实例：
 
 ```vue
 <!-- HelloWorld.vue -->
@@ -81,11 +81,11 @@ const dialog = useDialog(HelloWorld)
 </template>
 ```
 
-## 基础
+## 用法
 
-### 弹层容器
+### createLayer 配置容器组件
 
-`createLayer(Container, config?)` 把 Dialog / Drawer 等适配成工厂，返回 `useLayer`。
+`createLayer` 可以基于某个容器组件创建组合式函数，还能给容器写上默认配置：
 
 ```ts
 const useDialog = createLayer(ElDialog, {
@@ -93,13 +93,29 @@ const useDialog = createLayer(ElDialog, {
 })
 ```
 
-- 第一参是容器组件；第二参是工厂默认配置（最低优先级）。
-- 顶层字段（`props` / `slots` / `model`）属于 **container**；`content` 可写工厂级 content 默认。
-- 可选 `adapter`：工厂级切面，见 [adapter](#adapter)。
+所谓容器，就是靠 v-model 控制显示隐藏、通常有 default slot 的组件，比如 `ElDialog`、`ElDrawer` 等。
 
-同一 content 可挂在多个工厂上（如 `useDialog` / `useDrawer`），不必为每种壳子复制业务组件。
+框架默认会把内部的显示状态绑到 modelValue（也就是普通的 v-model）。如果你自己的容器用的不是这个名字，用 model 告诉框架即可：
 
-### 弹层内容
+```ts
+const useDialog = createLayer(BaseDialog, {
+  model: 'visible', // 对应 v-model:visible
+  props: { width: '480px' },
+})
+```
+
+### defineLayer 在内容组件中配置
+
+内容组件本身是普通 Vue 组件。但弹层场景下，它常常还要回答两件事：
+
+- 在弹层里打开时，外面弹层容器的标题、宽度等应该是什么？
+- 用户点了组件内的按钮，比如「保存 / 取消」等，要不要关掉弹层？
+
+这些东西只有内容组件的作者自身最清楚，如果使用方配置，每次 `open` 时都要传一遍，很麻烦又需要使用方深入内容组件。
+所以在内容组件里，需要有个工具来配置外层容器，它就是 `defineLayer`。
+
+
+
 
 Content 是普通 Vue 组件，可同时用于页内与弹层。在 content 的 `setup` 里调用 `defineLayer`，为当次打开注册 container 默认与 `closeOn`：
 
@@ -114,7 +130,7 @@ const layer = defineLayer({
 - `defineLayer` 返回 `LayerDefine`（含 `inLayer` / `outsideLayer`），供 `LayerTemplate :to` 使用。
 - 仅在弹层 content 树内生效；页内直接渲染该组件时不会注册弹层配置。
 
-### 弹层实例
+### useLayer 与实例使用
 
 ```ts
 const dialog = useDialog(UserForm, {
@@ -135,7 +151,7 @@ dialog.close()
 
 `createLayer` / `defineLayer` / `useLayer` / `clone` 的配置可以是 getter 或 ref（live）；**`open(config)` 只接受普通对象**（当次快照）。需要长期跟状态时，写在 `use` / `define`，再空参 `open()`。详见 [响应式配置](#响应式配置)。
 
-### 弹层模板
+### LayerTemplate 向插槽传递内容
 
 `LayerTemplate` 把插槽内容投到 container 或 content 的同名 slot。**`:to` 必填。**
 
@@ -189,9 +205,6 @@ dialog.open({
 
 ---
 
-## 深入
-
-### 配置合并规则
 
 每次 `open` / 配置变更走：
 
@@ -267,7 +280,7 @@ const useDrawer = createLayer(ElDrawer, {
 
 适合：窄屏换壳、滤无效 props、对齐 slot / `model`。`open` 可改 `container.component`，但仍走该工厂的 adapter；容器差异由 adapter 处理。
 
-### 生命周期
+### bindHost 与生命周期
 
 设计上，弹层实例应**归属于某个组件**（Host），便于随页面卸载一起清理。
 
@@ -289,8 +302,6 @@ messageBox.bindHost()
 ```
 
 `clone()` 走完整实例创建，在调用点的 setup 内自动 `bindHost`；与父实例的 host 无关。
-
-### host 机制
 
 弹层 portal 挂在 `document.body`，与 Host 组件树 DOM 分离。为让 content 仍能 `inject` 祖先 provide（如 `ElConfigProvider` 的 locale / size），每个实例维护自己的 `host`：
 
