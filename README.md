@@ -22,16 +22,64 @@ dialog.open()
 ## 安装
 
 ```bash
-pnpm add vue-layerx@beta
+pnpm add vue-layerx
 # or
-npm install vue-layerx@beta
+npm install vue-layerx
 ```
-
-> 稳定版发布后可改回 `pnpm add vue-layerx`。
 
 ## 首个命令式弹层
 
+### 获取组合式函数
 
+任意基础弹层组件都可以通过 `createLayer` 生成对应的组合式函数。以 Dialog 为例：
+
+```ts
+// dialog.ts
+import { createLayer } from 'vue-layerx'
+import { ElDialog } from 'element-plus'
+
+export const useDialog = createLayer(ElDialog)
+```
+
+> 弹层：Dialog、Drawer、Popup 等弹出式交互形态的统称。
+
+### 获取弹层实例
+
+有了 `useDialog` 后，传入内容组件即可得到弹层实例：
+
+```vue
+<!-- HelloWorld.vue -->
+<template>
+  <p>Hello World</p>
+</template>
+```
+
+```vue
+<!-- App.vue -->
+<script setup lang="ts">
+import HelloWorld from './HelloWorld.vue'
+import { useDialog } from './dialog'
+
+const dialog = useDialog(HelloWorld)
+</script>
+```
+
+### 使用弹层实例
+
+调用 `open()` 打开弹层：
+
+```vue
+<!-- App.vue -->
+<script setup lang="ts">
+  /* ... */
+</script>
+
+<template>
+  <button @click="dialog.open()">
+    打开弹层
+  </button>
+</template>
+```
 
 ## 基础
 
