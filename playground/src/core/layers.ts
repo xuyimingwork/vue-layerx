@@ -27,7 +27,8 @@ export const useDrawer = createLayer(ElDrawer, {
   },
   adapter: (fragment) => {
     const container = fragment.container ?? {}
-    const { title, footer, ...rest } = container.slots ?? {}
+    const slots = container.slots ?? {}
+    const { title, footer, ...rest } = slots
     return {
       ...fragment,
       container: {
@@ -37,8 +38,8 @@ export const useDrawer = createLayer(ElDrawer, {
         ),
         slots: {
           ...rest,
-          ...(title ? { header: title } : {}),
-          ...(footer ? { footer } : {}),
+          ...('title' in slots ? { header: title } : {}),
+          ...('footer' in slots ? { footer } : {}),
         },
       },
     }

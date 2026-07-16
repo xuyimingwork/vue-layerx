@@ -25,15 +25,17 @@
     "test:coverage:integration": "vitest run --coverage tests/integration",
     "prepublishOnly": "pnpm test && pnpm build",
     "playground": "pnpm build && pnpm --filter playground dev",
+    "playground:build": "pnpm build && pnpm --filter playground build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "site:build": "pnpm docs:build && pnpm playground:build && rm -rf docs/.vitepress/dist/playground && cp -R playground/dist docs/.vitepress/dist/playground"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xuyimingwork/vue-layerx.git"
   },
-  "homepage": "https://github.com/xuyimingwork/vue-layerx#readme",
+  "homepage": "https://xuyimingwork.github.io/vue-layerx/",
   "bugs": {
     "url": "https://github.com/xuyimingwork/vue-layerx/issues"
   },

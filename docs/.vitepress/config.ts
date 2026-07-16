@@ -1,16 +1,26 @@
 import { defineConfig } from 'vitepress'
 import { resolve } from 'node:path'
 
+// GitHub Pages 项目站：https://xuyimingwork.github.io/vue-layerx/
+// 本地 dev/preview 用 '/'；CI 通过 DOCS_BASE 注入
+const base = process.env.DOCS_BASE || '/'
+const playgroundLink = process.env.DOCS_BASE
+  ? '/playground/'
+  : 'http://localhost:5173'
+
 export default defineConfig({
   title: 'vue-layerx',
   description: 'UserDetail 随处组合 · useDetailLayer 响应式换壳',
   lang: 'zh-CN',
+  base,
   cleanUrls: true,
+  // ADR 链到仓库根 DESIGN.md，不在 docs 站内
+  ignoreDeadLinks: [/DESIGN$/],
   themeConfig: {
     nav: [
       { text: '教程', link: '/guide/introduction' },
       { text: 'API', link: '/api/' },
-      { text: 'Playground', link: 'http://localhost:5173', target: '_blank' },
+      { text: 'Playground', link: playgroundLink, target: '_blank' },
     ],
     sidebar: [
       {

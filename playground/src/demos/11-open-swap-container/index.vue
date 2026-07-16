@@ -32,7 +32,8 @@ const useLayer = createLayer(ElDialog, {
       }
     }
 
-    const { title, footer, ...rest } = container.slots ?? {}
+    const slots = container.slots ?? {}
+    const { title, footer, ...rest } = slots
     return {
       ...fragment,
       container: {
@@ -40,8 +41,8 @@ const useLayer = createLayer(ElDialog, {
         props: stripProps(container.props, 'width'),
         slots: {
           ...rest,
-          ...(title ? { header: title } : {}),
-          ...(footer ? { footer } : {}),
+          ...('title' in slots ? { header: title } : {}),
+          ...('footer' in slots ? { footer } : {}),
         },
       },
     }

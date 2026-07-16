@@ -24,7 +24,9 @@ function openCreate() {
     props: {
       mode: 'create',
       onSuccess: (name: string) => {
-        const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1
+        const id = users.value.length
+          ? Math.max(...users.value.map((u) => u.id)) + 1
+          : 1
         users.value.push({ id, name })
       },
     },
