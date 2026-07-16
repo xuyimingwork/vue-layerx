@@ -210,4 +210,44 @@ describe('reactive layer config', () => {
       expect(setupCount).toBe(1)
     })
   })
+
+  describe('close without content leak', () => {
+    it('should park content in hidden parking when container destroys slot on close', async () => {
+      const useLayer = createLayer(Container)
+      const Content = makeContent()
+      let dialog!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, { props: { message: 'secret-note' } })
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeTruthy()
+      expect(document.body.querySelector('.msg')?.textContent).toBe('secret-note')
+
+      dialog.close()
+      await nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeNull()
+
+      const leaked = Array.from(document.body.querySelectorAll('.msg')).filter(
+        (el) => !el.closest('layer-content-parking'),
+      )
+      expect(leaked).toHaveLength(0)
+
+      const parked = document.body.querySelector('layer-content-parking .msg')
+      if (parked) {
+        expect(
+          (parked.closest('layer-content-parking') as HTMLElement).style.display,
+        ).toBe('none')
+      }
+    })
+  })
 })

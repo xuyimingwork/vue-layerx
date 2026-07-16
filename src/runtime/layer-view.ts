@@ -3,6 +3,7 @@ import {
   defineComponent,
   getCurrentInstance,
   h,
+  onBeforeUnmount,
   provide,
   Ref,
   ref,
@@ -13,6 +14,7 @@ import {
   type MaybeRefOrGetter,
   type PropType,
   type VNode,
+  type WritableComputedRef,
 } from 'vue'
 import { mergeFragment, createFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
@@ -24,6 +26,27 @@ import { LayerNoContainer } from '@/runtime/layer-no-container'
 
 /** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
 const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
+
+function createParkingEl(): HTMLUnknownElement {
+  const el = document.createElement('layer-content-parking')
+  el.style.display = 'none'
+  return el
+}
+
+/** Anchor when present; otherwise hidden parking so Teleport never uses disabled/in-place. */
+function useRefContentTo(): WritableComputedRef<HTMLUnknownElement> {
+  const anchorEl = ref<HTMLUnknownElement | null>(null)
+  const parkingEl = createParkingEl()
+  document.body.appendChild(parkingEl)
+  onBeforeUnmount(() => parkingEl.remove())
+
+  return computed({
+    get: () => anchorEl.value ?? parkingEl,
+    set: (el) => {
+      anchorEl.value = el as HTMLUnknownElement | null
+    },
+  })
+}
 
 function isLayerContent(
   instance: ComponentInternalInstance | null | undefined,
@@ -37,7 +60,7 @@ function isLayerContent(
 
 export interface CreateLayerViewVNodeOptions extends LayerNormalized {
   openId?: number
-  refContentTo: Ref<HTMLUnknownElement | null>
+  refContentTo: Ref<HTMLUnknownElement>
 }
 
 /** Build LayerView root VNode (container + optional content). Exported for unit tests. */
@@ -70,10 +93,9 @@ export function createLayerViewVNode({
         }
       }),  // 落点，不是 content
     }),
-    h(Teleport, { 
+    h(Teleport, {
       to: refContentTo.value,
       defer: true,
-      disabled: !refContentTo.value
     }, [
       createLayerViewContentVNode({ key: openId, content, marked: true })
     ])
@@ -112,7 +134,7 @@ export const LayerView = defineComponent({
   emits: ['update:visible'],
   setup(props, { emit }) {
     const openId = ref(0)
-    const refContentTo = ref<HTMLUnknownElement | null>(null)
+    const refContentTo = useRefContentTo()
     const defineStore = createLayerStore({
       define: createFragment(),
       'define:template': createFragment(),

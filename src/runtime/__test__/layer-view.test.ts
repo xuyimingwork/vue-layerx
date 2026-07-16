@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, ref, Teleport, type VNode } from 'vue'
+import { computed, defineComponent, ref, Teleport, type VNode } from 'vue'
 import { MinimalContainer } from '@tests/fixtures/components'
 import { LayerNoContainer } from '../layer-no-container'
 import { createLayerViewVNode } from '../layer-view'
@@ -16,6 +16,16 @@ function asArrayTree(
 ): [VNode, VNode] {
   expect(Array.isArray(tree)).toBe(true)
   return tree as [VNode, VNode]
+}
+
+function parkingBackedRef(parking: HTMLUnknownElement) {
+  const anchor = ref<HTMLUnknownElement | null>(null)
+  return computed({
+    get: () => anchor.value ?? parking,
+    set: (el) => {
+      anchor.value = el as HTMLUnknownElement | null
+    },
+  })
 }
 
 describe('createLayerViewVNode', () => {
@@ -49,7 +59,7 @@ describe('createLayerViewVNode', () => {
     expect(teleportVNode.type).toBe(Teleport)
     expect(teleportVNode.props?.to).toBe(target)
     expect(teleportVNode.props?.defer).toBe(true)
-    expect(teleportVNode.props?.disabled).toBe(false)
+    expect(teleportVNode.props?.disabled).toBeUndefined()
 
     const contentVNode = (teleportVNode.children as VNode[])?.[0]
     const contentProps = contentVNode?.props as
@@ -61,8 +71,10 @@ describe('createLayerViewVNode', () => {
     expect(contentProps?.key).toBe(1)
   })
 
-  it('should keep teleport disabled until refContentTo is set', () => {
-    const refContentTo = ref<HTMLUnknownElement | null>(null)
+  it('should teleport to parking fallback when anchor is unset', () => {
+    const parking = document.createElement('layer-content-parking')
+    parking.style.display = 'none'
+    const refContentTo = parkingBackedRef(parking)
     const [, teleportVNode] = asArrayTree(
       createLayerViewVNode({
         container: {
@@ -81,9 +93,9 @@ describe('createLayerViewVNode', () => {
     )
 
     expect(teleportVNode.type).toBe(Teleport)
-    expect(teleportVNode.props?.to).toBeNull()
+    expect(teleportVNode.props?.to).toBe(parking)
     expect(teleportVNode.props?.defer).toBe(true)
-    expect(teleportVNode.props?.disabled).toBe(true)
+    expect(teleportVNode.props?.disabled).toBeUndefined()
     expect((teleportVNode.children as VNode[])?.[0]?.type).toBe(StubContent)
   })
 
@@ -146,4 +158,3 @@ describe('createLayerViewVNode', () => {
     expect(symbolKeys.some((key) => props[key] === true)).toBe(false)
   })
 })
-
