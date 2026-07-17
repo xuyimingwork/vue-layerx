@@ -9,5 +9,4 @@ export type {
   LayerConfigNodeContent,
   LayerConfigContainer,
   LayerConfigCreate,
-  LayerTemplateScope,
 } from './types'

@@ -15,7 +15,7 @@ export type {
   LayerTemplateEntry,
 } from './config'
 
-export type { LayerInstance, LayerDefine, LayerTemplateScope } from './instance'
+export type { LayerInstance, LayerDefine } from './instance'
 
 export type { LayerHost } from './layer-host'
 

@@ -55,22 +55,20 @@ function cancel() {
   </ElForm>
 
   <LayerTemplate :to="layer" name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer }">
-      <div :class="['form-footer', { 'form-footer--inline': outsideLayer }]">
-        <ElTag v-if="outsideLayer" size="small" type="info" effect="plain">
-          页内 footer · outsideLayer
-        </ElTag>
-        <ElTag v-else-if="inLayer" size="small" type="success" effect="plain">
-          弹层 footer · inLayer
-        </ElTag>
-        <div class="form-footer__actions">
-          <ElButton type="primary" @click="submit">
-            {{ mode === 'edit' ? '保存' : '创建' }}
-          </ElButton>
-          <ElButton @click="cancel">取消</ElButton>
-        </div>
+    <div :class="['form-footer', { 'form-footer--inline': !layer.exists }]">
+      <ElTag v-if="!layer.exists" size="small" type="info" effect="plain">
+        页内 footer · !layer.exists
+      </ElTag>
+      <ElTag v-else size="small" type="success" effect="plain">
+        弹层 footer · layer.exists
+      </ElTag>
+      <div class="form-footer__actions">
+        <ElButton type="primary" @click="submit">
+          {{ mode === 'edit' ? '保存' : '创建' }}
+        </ElButton>
+        <ElButton @click="cancel">取消</ElButton>
       </div>
-    </template>
+    </div>
   </LayerTemplate>
 </template>
 

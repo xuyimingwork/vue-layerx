@@ -58,8 +58,8 @@ export const demoGroups: DemoGroup[] = [
         level: 3,
         title: '页内复用',
         description:
-          'LayerTemplate visible-outside + scope（inLayer / outsideLayer）：页内 footer 落表单下，弹层时通过 slot render fn 挂到 Dialog.footer。',
-        tags: ['visible-outside', 'LayerTemplateScope', 'content 复用'],
+          'LayerTemplate visible-outside + layer.exists：页内 footer 落表单下，弹层时通过 slot render fn 挂到 Dialog.footer。',
+        tags: ['visible-outside', 'layer.exists', 'content 复用'],
         component: InlineReuseDemo,
       },
     ],

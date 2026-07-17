@@ -14,7 +14,7 @@
 
 写在 content 文件里，只是为了与业务默认值 / `LayerTemplate` **co-locate**；语义上仍是对 content 的外部配置，与 `defineProps` / `defineEmits` 同级声明，不是 layer 运行时注入。
 
-因此返回 **`LayerDefine`**（`inLayer` / `outsideLayer` + `LayerTemplate :to`），与使用侧的 **`LayerInstance`**（`open` / `close` / …）分工明确。
+因此返回 **`LayerDefine`**（`exists` + `LayerTemplate :to`），与使用侧的 **`LayerInstance`**（`open` / `close` / …）分工明确。
 
 自然问题：content 业务完成后如何关层？`defineLayer` 要不要直接给出 `close`？
 
@@ -28,7 +28,7 @@
 |--|------------------------------|-------------------------------|
 | content 完成时 | 调 `layer.close()` | `emit('success')` 等 |
 | 关层发生在 | content 内部 | vue-layerx（或任意父级）收到事件后 |
-| content 与宿主 | **调用**环境（写生命周期） | 可 **感知**环境（`inLayer` 等），不调用 |
+| content 与宿主 | **调用**环境（写生命周期） | 可 **感知**环境（`exists` 等），不调用 |
 
 需钉死取 B 还是 A，以及 `closeOn` 与 `defineLayer` 的关系。
 
@@ -68,19 +68,19 @@ vue-layerx 要引导的是相反方向：**content 实现为通用组件**，弹
 | `defineLayer` → `LayerDefine` | 定义侧：默认配置、模板 `:to` | **无** |
 | `useX` → `LayerInstance` | 使用侧：命令式生命周期 | **有** |
 
-### 5. 辨析：`inLayer` / `outsideLayer` vs `close`
+### 5. 辨析：`exists` vs `close`
 
-`LayerDefine` 仍暴露 `inLayer` / `outsideLayer`，与「不给 `close`」看似矛盾，实则边界不同：
+`LayerDefine` 仍暴露 `exists`，与「不给 `close`」看似矛盾，实则边界不同：
 
-| | `inLayer` / `outsideLayer` | `close` |
-|--|---------------------------|---------|
+| | `exists` | `close` |
+|--|----------|---------|
 | 方向 | **感知环境**（只读） | **调用环境**（写入生命周期） |
-| 归类 | 勉强算宿主写入的外部上下文（类似 props：外 → 内） | content 操作弹层（内 → 外） |
+| 归类 | 询问「这份 define 所对应的层上下文是否存在」（类似 props：外 → 内） | content 操作弹层（内 → 外） |
 | 用途 | 双宿主模板呈现适配（投进 slot vs `visible-outside` 就地） | 不经外部交互关层 |
 
 原则：**感知环境，不调用环境。**
 
-允许读宿主以适配 co-locate 的 `LayerTemplate`；禁止据此改业务完成路径或关层模型（完成仍只 `emit`，关层仍经 `closeOn` / `LayerInstance`）。
+允许读 `layer.exists` 以适配 co-locate 的 `LayerTemplate`；禁止据此改业务完成路径或关层模型（完成仍只 `emit`，关层仍经 `closeOn` / `LayerInstance`）。
 
 ---
 
@@ -98,8 +98,8 @@ vue-layerx 要引导的是相反方向：**content 实现为通用组件**，弹
 ## 不变量
 
 1. content 业务完成路径在页内与弹层内一致：只 `emit`。
-2. `LayerDefine` 永不增加 `close` / `open` 或其它**可调用宿主**的属性；`inLayer` / `outsideLayer`（**感知宿主**）除外。
-3. `inLayer` / `outsideLayer` 用于呈现适配，不用于分支关层或改写完成语义。
+2. `LayerDefine` 永不增加 `close` / `open` 或其它**可调用宿主**的属性；`exists`（**感知宿主**）除外。
+3. `exists` 用于呈现适配，不用于分支关层或改写完成语义。
 4. `LAYER_VIEW_KEY` 只服务 `defineLayer` / 模板注册，不向 content 暴露关闭句柄。
 5. 校验失败 → 不 emit → 不触发 `closeOn`。
 
@@ -120,6 +120,6 @@ vue-layerx 要引导的是相反方向：**content 实现为通用组件**，弹
 | `defineLayer` 定位 | content 外侧配置注册（co-locate 于 content 文件） |
 | 关层模型 | content `emit` → `closeOn` → 框架 / 使用侧 `close` |
 | `LayerDefine` 是否提供 `close` | **否**（避免弹层优先引导） |
-| `inLayer` / `outsideLayer` | **允许**（感知环境）；与 `close`（调用环境）分立 |
+| `exists` | **允许**（感知环境）；与 `close`（调用环境）分立 |
 | `defineLayer` 与 `closeOn` | 可声明默认接线；仍非 content 持有 `close` |
 | 命令式 `close()` | 仅 `LayerInstance` |

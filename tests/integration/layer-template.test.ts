@@ -5,8 +5,8 @@ import {
   createLayer,
   defineLayer,
   LayerTemplate,
+  type LayerDefine,
   type LayerInstance,
-  type LayerTemplateScope,
 } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
 import { Container, makeContent } from '@tests/fixtures/components'
@@ -50,15 +50,16 @@ describe('LayerTemplate', () => {
         expect(document.querySelector('.content .footer-btn')).toBeFalsy()
       })
 
-      it('should pass inLayer scope with empty slotProps when layer is open', async () => {
+      it('should pass empty flat slot props when layer is open', async () => {
         const useLayer = createLayer(Container)
-        let captured: LayerTemplateScope | undefined
+        let captured: Record<string, unknown> | undefined
+        let layer!: LayerDefine
 
         const Content = defineComponent({
           name: 'ContentWithScopeCapture',
           props: { message: String },
           setup(props) {
-            const layer = defineLayer()
+            layer = defineLayer()
             return () =>
               h('motion-div', { class: 'content' }, [
                 h('span', { class: 'msg' }, props.message),
@@ -66,8 +67,8 @@ describe('LayerTemplate', () => {
                   LayerTemplate,
                   { to: layer, name: 'footer' },
                   {
-                    default: (templateScope: LayerTemplateScope) => {
-                      captured = templateScope
+                    default: (slotProps: Record<string, unknown> = {}) => {
+                      captured = slotProps
                       return h('button', { class: 'footer-btn' }, 'footer')
                     },
                   },
@@ -89,14 +90,13 @@ describe('LayerTemplate', () => {
         await flushPromises()
 
         expect(document.body.querySelector('.footer-btn')).toBeTruthy()
-        expect(captured).toEqual({
-          inLayer: true,
-          outsideLayer: false,
-          slotProps: {},
-        })
+        expect(layer.exists).toBe(true)
+        expect(captured).toEqual({})
+        expect(captured).not.toHaveProperty('exists')
+        expect(captured).not.toHaveProperty('slotProps')
       })
 
-      it('should forward container scoped slot props via slotProps when layer is open', async () => {
+      it('should forward container scoped slot props flat when layer is open', async () => {
         const ScopedFooterLayer = defineComponent({
           name: 'ScopedFooterLayer',
           props: { modelValue: Boolean },
@@ -113,23 +113,24 @@ describe('LayerTemplate', () => {
         })
 
         const useLayer = createLayer(ScopedFooterLayer)
-        let captured: LayerTemplateScope | undefined
+        let captured: Record<string, unknown> | undefined
+        let layer!: LayerDefine
 
         const Content = defineComponent({
           name: 'ContentWithLayerScopedFooter',
           setup() {
-            const layer = defineLayer()
+            layer = defineLayer()
             return () =>
               h(
                 LayerTemplate,
                 { to: layer, name: 'footer' },
                 {
-                  default: (templateScope: LayerTemplateScope) => {
-                    captured = templateScope
+                  default: (slotProps: Record<string, unknown> = {}) => {
+                    captured = slotProps
                     return h(
                       'button',
                       { class: 'footer-btn' },
-                      String(templateScope.slotProps.confirmLoading),
+                      String(slotProps.confirmLoading),
                     )
                   },
                 },
@@ -150,11 +151,9 @@ describe('LayerTemplate', () => {
         await flushPromises()
 
         expect(document.body.querySelector('.footer-btn')?.textContent).toBe('true')
-        expect(captured).toEqual({
-          inLayer: true,
-          outsideLayer: false,
-          slotProps: { confirmLoading: true },
-        })
+        expect(layer.exists).toBe(true)
+        expect(captured).toEqual({ confirmLoading: true })
+        expect(captured).not.toHaveProperty('slotProps')
       })
 
       it('should render multiple container slots by name when layer is open', async () => {
@@ -227,19 +226,20 @@ describe('LayerTemplate', () => {
 
       it('should ignore visible-outside when Content runs in layer context', async () => {
         const useLayer = createLayer(Container)
-        let captured: LayerTemplateScope | undefined
+        let captured: Record<string, unknown> | undefined
+        let layer!: LayerDefine
 
         const Content = defineComponent({
           name: 'VisibleOutsideInLayerContent',
           setup() {
-            const layer = defineLayer()
+            layer = defineLayer()
             return () =>
               h(
                 LayerTemplate,
                 { to: layer, name: 'footer', visibleOutside: true },
                 {
-                  default: (templateScope: LayerTemplateScope) => {
-                    captured = templateScope
+                  default: (slotProps: Record<string, unknown> = {}) => {
+                    captured = slotProps
                     return h('button', { class: 'footer-btn' }, 'footer')
                   },
                 },
@@ -261,11 +261,8 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.footer-btn')).toBeTruthy()
         expect(document.querySelector('.content .footer-btn')).toBeFalsy()
-        expect(captured).toEqual({
-          inLayer: true,
-          outsideLayer: false,
-          slotProps: {},
-        })
+        expect(layer.exists).toBe(true)
+        expect(captured).toEqual({})
       })
 
       it('should ignore container prop and still render into container slot when to is defineLayer', async () => {
@@ -363,20 +360,21 @@ describe('LayerTemplate', () => {
         expect(document.body.querySelector('.inner-footer')).toBeFalsy()
       })
 
-      it('should pass outsideLayer scope with empty slotProps when Content is mounted on page', () => {
-        let captured: LayerTemplateScope | undefined
+      it('should pass empty flat slot props when Content is mounted on page with visible-outside', () => {
+        let captured: Record<string, unknown> | undefined
+        let layer!: LayerDefine
 
         mount(
           defineComponent({
             setup() {
-              const layer = defineLayer()
+              layer = defineLayer()
               return () =>
                 h(
                   LayerTemplate,
                   { to: layer, name: 'footer', visibleOutside: true },
                   {
-                    default: (templateScope: LayerTemplateScope) => {
-                      captured = templateScope
+                    default: (slotProps: Record<string, unknown> = {}) => {
+                      captured = slotProps
                       return h('button', { class: 'footer-btn' }, 'footer')
                     },
                   },
@@ -385,11 +383,10 @@ describe('LayerTemplate', () => {
           }),
         )
 
-        expect(captured).toEqual({
-          inLayer: false,
-          outsideLayer: true,
-          slotProps: {},
-        })
+        expect(layer.exists).toBe(false)
+        expect(captured).toEqual({})
+        expect(captured).not.toHaveProperty('exists')
+        expect(captured).not.toHaveProperty('slotProps')
       })
 
       it('should render on page when visible-outside is set', () => {
@@ -456,21 +453,22 @@ describe('LayerTemplate', () => {
         expect(document.body.querySelector('.inner .inner-footer')).toBeTruthy()
       })
 
-      it('should pass outsideLayer scope with empty slotProps when Content is nested inside another Content', async () => {
-        let captured: LayerTemplateScope | undefined
+      it('should pass empty flat slot props when Content is nested inside another Content', async () => {
+        let captured: Record<string, unknown> | undefined
+        let layer!: LayerDefine
 
         const InnerContent = defineComponent({
           name: 'InnerContent',
           setup() {
-            const layer = defineLayer()
+            layer = defineLayer()
             return () =>
               h('div', { class: 'inner' }, [
                 h(
                   LayerTemplate,
                   { to: layer, name: 'footer', visibleOutside: true },
                   {
-                    default: (templateScope: LayerTemplateScope) => {
-                      captured = templateScope
+                    default: (slotProps: Record<string, unknown> = {}) => {
+                      captured = slotProps
                       return h('button', { class: 'inner-footer' }, 'inner')
                     },
                   },
@@ -487,11 +485,10 @@ describe('LayerTemplate', () => {
           }),
         )
 
-        expect(captured).toEqual({
-          inLayer: false,
-          outsideLayer: true,
-          slotProps: {},
-        })
+        expect(layer.exists).toBe(false)
+        expect(captured).toEqual({})
+        expect(captured).not.toHaveProperty('exists')
+        expect(captured).not.toHaveProperty('slotProps')
       })
     })
   })
@@ -561,8 +558,7 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.scoped-extra')?.textContent).toBe('from-content')
         expect(captured).toEqual({ data: 'from-content' })
-        expect(captured).not.toHaveProperty('inLayer')
-        expect(captured).not.toHaveProperty('outsideLayer')
+        expect(captured).not.toHaveProperty('exists')
         expect(captured).not.toHaveProperty('slotProps')
       })
 

@@ -1,19 +1,10 @@
 import type { ComputedRef, ComponentPublicInstance, MaybeRefOrGetter } from 'vue'
 import type { LayerConfigContent } from './config'
 
-export interface LayerTemplateScope<
-  T extends Record<string, unknown> = Record<string, unknown>,
-> {
-  inLayer: boolean
-  outsideLayer: boolean
-  /** content / container 侧 scoped slot 原样转发的 props；无参数时为 {} */
-  slotProps: T
-}
-
 /** Returned by defineLayer(); pass as LayerTemplate :to */
 export interface LayerDefine {
-  readonly inLayer: boolean
-  readonly outsideLayer: boolean
+  /** Whether this define is backed by a live LayerView context (direct layer content). */
+  readonly exists: boolean
 }
 
 export interface LayerInstance {

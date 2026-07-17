@@ -149,7 +149,7 @@ flowchart TB
 
 **shared/contracts.ts**：`LAYER_VIEW_KEY`（LayerView provide；当前由 defineLayer inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`；`define:template.container` key 与 fragment 转换留在 LayerView 闭包。content 根标记为 `layer-view.ts` 模块私有 Symbol，由 `createLayerViewVNode` 写入 `vnode.props`，`getDefineContext` 读取。
 
-**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：inLayer 时委托 `getDefineContext().template(...)`，caller 路径闭包 `store.template(...)`。
+**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：`exists` 时委托 `getDefineContext().template(...)`，caller 路径闭包 `store.template(...)`。
 
 ### 与核心管线的对应
 
@@ -256,7 +256,7 @@ const bindHost = ({ silent = false } = {}) => {
 
 ### defineLayer 与 inject
 
-`defineLayer` 使用**全局单一 inject key** `LAYER_VIEW_KEY`（LayerView provide，不绑定 `useDialog` / `useDrawer` 等具体工厂）。`inject(LAYER_VIEW_KEY)?.getDefineContext()` 仅在 **direct layer content**（框架托管 render 的 content 根）返回 `{ config, template }`；页内单独渲染或嵌套子组件得到 `null`（`outsideLayer`）。有 context 时 `config` / `template` 写入 LayerView 的 define store；无 context 时 config 为 no-op，`LayerTemplate` 走本地渲染。
+`defineLayer` 使用**全局单一 inject key** `LAYER_VIEW_KEY`（LayerView provide，不绑定 `useDialog` / `useDrawer` 等具体工厂）。`inject(LAYER_VIEW_KEY)?.getDefineContext()` 仅在 **direct layer content**（框架托管 render 的 content 根）返回 `{ config, template }`；页内单独渲染或嵌套子组件得到 `null`（`exists === false`）。有 context 时 `config` / `template` 写入 LayerView 的 define store；无 context 时 config 为 no-op，`LayerTemplate` 走本地渲染。
 
 ### 挂载与 SSR
 
@@ -390,7 +390,12 @@ const layer = defineLayer({ props: { title: '...' } })
   <LayerTemplate :to="layer" name="title" />
   <!-- ... -->
   <LayerTemplate :to="layer" name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer, slotProps }">
+    <div v-if="!layer.exists">
+      <ElButton type="primary" @click="submit">提交</ElButton>
+      <slot name="action-end" />
+      <ElButton @click="cancel">取消</ElButton>
+    </div>
+    <template v-else>
       <ElButton type="primary" @click="submit">提交</ElButton>
       <slot name="action-end" />
       <ElButton @click="cancel">取消</ElButton>
@@ -401,11 +406,10 @@ const layer = defineLayer({ props: { title: '...' } })
 
 | 行为 | 说明 |
 |------|------|
-| **inLayer**（direct layer content 内，弹层打开） | 不占 SFC 原位置 DOM；经 slot render fn 作为 `merged.container.slots[name]` 投进 **MyDialog** 同名 slot |
-| **outsideLayer**（页内等非 direct layer content 上下文） | 默认不占 DOM、不投递；见 `visible-outside` |
-| `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**inLayer 时忽略此配置**，仍走 slot render fn 投进 layer slot |
-| `#default` 参数（creator / `visible-outside`） | `LayerTemplateScope`：`inLayer` / `outsideLayer` 表示渲染上下文；`slotProps` 为容器 slot 的 scoped props 原样转发，默认 `{}` |
-| `#default` 参数（caller `:to` / `:to container`） | 与 Vue scoped slot 相同：目标 slot 的 scoped props **flat 透传**（无 `inLayer` / `outsideLayer` / `slotProps` 包装） |
+| **`layer.exists === true`**（direct layer content 内，弹层打开） | 不占 SFC 原位置 DOM；经 slot render fn 作为 `merged.container.slots[name]` 投进 **MyDialog** 同名 slot |
+| **`layer.exists === false`**（页内等非 direct layer content 上下文） | 默认不占 DOM、不投递；见 `visible-outside` |
+| `visible-outside` | **仅在非 direct layer content 上下文生效**：在原 SFC 声明位置就地渲染，供页内复用。**`exists` 时忽略此配置**，仍走 slot render fn 投进 layer slot |
+| `#default` 参数（creator / caller） | 与 Vue scoped slot 相同：目标 slot 的 scoped props **flat 透传**；宿主态读 `layer.exists`，不经 slot scope |
 | `:to="layer"`（`defineLayer()` 返回值） | 注册进 **define:template.container** tier（creator）；投进 MyDialog 同名 slot；`container` prop 无效 |
 | `:to="instance"` | 绑定 `LayerInstance`，注册进 **use:template.content** tier；远程填充 content 同名 `<slot>` |
 | `:to="instance"` + `container` | 注册进 **use:template.container** tier；远程填充 MyDialog 同名 slot；高于 creator |
@@ -594,7 +598,7 @@ useLayer(UserForm)   // 仍包 BaseDialog
 
 **content 侧声明被 layer 包裹时的默认配置**，与 Vue 的 `defineProps` / `defineEmits` 同级——全局 `defineXxx`，通过**全局 inject key** 注册，不挂具体容器工厂（见「渲染与投递机制」）。与 `createLayer` 共用 **`LayerConfigContainer`**。
 
-返回 **`LayerDefine`**（`inLayer` / `outsideLayer` + `LayerTemplate :to`），**不**提供 `open` / `close`。写在 content 内仍是「向外注册配置」，不是把 layer 控制面注入 content；关层经 content `emit` + `closeOn`（见 [ADR 0005](docs/adr/0005-content-self-contained-close-on.md)）。
+返回 **`LayerDefine`**（`exists` + `LayerTemplate :to`），**不**提供 `open` / `close`。写在 content 内仍是「向外注册配置」，不是把 layer 控制面注入 content；关层经 content `emit` + `closeOn`（见 [ADR 0005](docs/adr/0005-content-self-contained-close-on.md)）。
 
 ```ts
 const props = defineProps<{ mode?: 'create' | 'edit' }>()
@@ -871,7 +875,7 @@ useDialog / useDrawer
         └── LayerTemplate :to / :to container（caller）──────────────┘
 ```
 
-**渲染树（inLayer，slot render fn 投递后）：**
+**渲染树（`layer.exists`，slot render fn 投递后）：**
 
 ```text
 MyDialog（bound.container）
@@ -882,7 +886,7 @@ MyDialog（bound.container）
        └─ #action-end ← slot fn ← LayerTemplate :to
 ```
 
-**页内复用（outsideLayer）：** 带 `visible-outside` 的 `LayerTemplate` 在 UserForm SFC 原位置渲染；无 `visible-outside` 的不占 DOM。inLayer 时 `visible-outside` 无效，footer 等仍通过 slot render fn 投进 MyDialog slot。
+**页内复用（`!layer.exists`）：** 带 `visible-outside` 的 `LayerTemplate` 在 UserForm SFC 原位置渲染；无 `visible-outside` 的不占 DOM。`exists` 时 `visible-outside` 无效，footer 等仍通过 slot render fn 投进 MyDialog slot。
 
 ---
 
@@ -950,13 +954,11 @@ function cancel() { emit('cancel') }
 
   <!-- visible-outside：页内时在表单下展示 footer；弹层内仍通过 slot fn 投进 MyDialog #footer -->
   <LayerTemplate :to="layer" name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer, slotProps }">
-      <div :class="{ 'footer--inline': outsideLayer }">
-        <ElButton type="primary" @click="submit">提交</ElButton>
-        <slot name="action-end" />
-        <ElButton @click="cancel">取消</ElButton>
-      </div>
-    </template>
+    <div :class="{ 'footer--inline': !layer.exists }">
+      <ElButton type="primary" @click="submit">提交</ElButton>
+      <slot name="action-end" />
+      <ElButton @click="cancel">取消</ElButton>
+    </div>
   </LayerTemplate>
 </template>
 ```
@@ -1004,7 +1006,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | 场景 | 行为 |
 |------|------|
 | content 页内使用 | `defineLayer` 无效；无 `visible-outside` 的 `LayerTemplate` 不占 DOM、不投递 |
-| `visible-outside` | **仅 outsideLayer 生效**：在 SFC 原位置渲染；**inLayer 时忽略**，仍通过 slot render fn 投进 layer slot |
+| `visible-outside` | **仅 `!layer.exists` 生效**：在 SFC 原位置渲染；**`exists` 时忽略**，仍通过 slot render fn 投进 layer slot |
 | `useX()` 无 Content | 实例正常；未 `open({ component })` 时 layer 无 content |
 | 嵌套 content | 仅 **direct layer content**（`useX` / `open` 绑定的根组件）内的 `LayerTemplate` 进外层 MyDialog；内嵌子组件上的模板**不**挂外层 |
 | 嵌套示例 | `OrderForm` 内嵌 `UserForm`；`useDialog(OrderForm)` 打开时，`UserForm` **不是**弹层 direct content，其 `LayerTemplate` **不**投递到 MyDialog |
@@ -1025,7 +1027,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 2. **content / container 同构**（`LayerConfigNode`）：`component` / `props` / `slots`；`LayerTemplate` 物化后与命令式 slots 同权 merge。
 3. **merge → adapter → bind → render**；每实例**单一** `adapter`；`open` 覆盖 merge 但不跳过 adapter；close 后再 open remount content。
 4. **slot 投递**：creator / caller LayerTemplate 与命令式 slots 均在 merge 产出 `fragment.*.slots`；adapter 可搬 slot key；bind 透传。
-5. **`visible-outside`** 仅 outsideLayer 生效；`inLayer` / `outsideLayer` / `slotProps` 为 `#default` 插槽参数。
+5. **`visible-outside`** 仅 `!layer.exists` 生效；宿主态读 `layer.exists`；`#default` 为目标 slot scoped props flat 透传。
 6. **`LayerTemplate`**：`:to` 必填；`:to="layer"` → define:template.container；`:to="instance"` → use:template.content；`:to="instance" container` → use:template.container。
 7. **容器 slot 名差异**在工厂 **`adapter`** 调整 `merged.container.slots`，不用 merge 名表。
 8. **无 `layerId` / `surface`**；多容器靠多工厂 + 各自 `adapter`。

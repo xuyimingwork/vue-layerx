@@ -52,19 +52,17 @@ async function handleSubmit() {
 
   <!-- 弹层：主操作挂 AppDialog #footer；页内：visible-outside 落在表单下 -->
   <LayerTemplate :to="layer" name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer }">
-      <div v-if="outsideLayer" class="inline-actions">
-        <ElButton type="primary" :loading="submitting" @click="handleSubmit">保存</ElButton>
-      </div>
-      <ElButton
-        v-else-if="inLayer"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ mode === 'edit' ? '保存' : '创建' }}
-      </ElButton>
-    </template>
+    <div v-if="!layer.exists" class="inline-actions">
+      <ElButton type="primary" :loading="submitting" @click="handleSubmit">保存</ElButton>
+    </div>
+    <ElButton
+      v-else
+      type="primary"
+      :loading="submitting"
+      @click="handleSubmit"
+    >
+      {{ mode === 'edit' ? '保存' : '创建' }}
+    </ElButton>
   </LayerTemplate>
 </template>
 

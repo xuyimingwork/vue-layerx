@@ -47,8 +47,7 @@ describe('defineLayer', () => {
 
       expect(queryBodyDialog()).toBeTruthy()
       expect(document.body.querySelector('.msg')?.textContent).toBe('hello')
-      expect(layer.inLayer).toBe(true)
-      expect(layer.outsideLayer).toBe(false)
+      expect(layer.exists).toBe(true)
     })
 
     it('should accept empty config when config does not register', () => {
@@ -67,8 +66,7 @@ describe('defineLayer', () => {
 
       expect(wrapper.find('.msg').text()).toBe('page')
       expect(queryBodyDialog()).toBeNull()
-      expect(layer.inLayer).toBe(false)
-      expect(layer.outsideLayer).toBe(true)
+      expect(layer.exists).toBe(false)
     })
   })
 
@@ -175,8 +173,7 @@ describe('defineLayer', () => {
 
       expect(queryBodyDialog()?.getAttribute('data-title')).toBe('OuterTitle')
       expect(queryBodyDialog()?.getAttribute('data-width')).toBe('640px')
-      expect(innerLayer.inLayer).toBe(false)
-      expect(innerLayer.outsideLayer).toBe(true)
+      expect(innerLayer.exists).toBe(false)
     })
   })
 

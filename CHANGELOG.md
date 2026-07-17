@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`LayerDefine.exists`** — replaces `inLayer` / `outsideLayer`; content asks whether the define's layer context exists (`true` = direct layer content)
+- **`LayerTemplate` `#default`** — creator path now flat-forwards target slot scoped props (same as caller); removed `LayerTemplateScope` (`inLayer` / `outsideLayer` / `slotProps` wrapper); host branching uses `layer.exists`
+
 ## [1.0.0-beta.1] - 2026-07-15
 
 First **1.0 beta**. Public API is **locked** for the 1.0 line; remaining beta → stable work is soak / docs / bugfix. Breaking changes after this tag require a new major.
@@ -44,7 +49,7 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 - **`LayerInstance.bindHost()`** — bind portal inject context to current setup host (`useLayer` auto-calls in setup; module singletons call manually under App / ConfigProvider)
 - **`LayerInstance.clone(config?)`** — independent instance; folds parent `use` + config; does not inherit parent `use` `props.ref`
 - **`LayerTemplate`** — `:to` required (`LayerDefine` or `LayerInstance`); `container` prop for remote container slots; `visible-outside` for page-local rendering
-- **`defineLayer()`** — returns `LayerDefine` (`inLayer` / `outsideLayer`); registers only inside layer content
+- **`defineLayer()`** — returns `LayerDefine` (`exists`); registers only inside layer content
 - **`createLayer(Container, { adapter?, ... })`** — factory defaults + optional `LayerAdapter`
 - **`closeOn`** on content — bind merges user `onXxx` then `close()`
 - **`model`** on container — default `modelValue`; `bindContainerModel` merges user `onUpdate:${model}` then closes layer when false

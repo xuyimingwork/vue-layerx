@@ -14,23 +14,21 @@ export function defineLayer(
   }
 
   const ctx = inject(LAYER_VIEW_KEY, null)?.getDefineContext() ?? null
-  const inLayer = !!ctx
-  const outsideLayer = !inLayer
+  const exists = !!ctx
 
   ctx?.config(config)
 
-  return withTemplateTo({ inLayer, outsideLayer }, {
+  return withTemplateTo({ exists }, {
     template({ name, render }) {
       if (!ctx) {
         return {
-          render: () => render({ inLayer, outsideLayer, slotProps: {} }),
+          render: () => render({}),
         }
       }
 
       ctx.template({
         name,
-        render: (slotProps: Record<string, unknown> = {}) =>
-          render({ slotProps, inLayer, outsideLayer }),
+        render: (slotProps: Record<string, unknown> = {}) => render(slotProps),
       })
       return { render: () => null }
     },

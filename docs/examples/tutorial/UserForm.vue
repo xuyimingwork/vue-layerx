@@ -87,21 +87,19 @@ async function handleSubmit() {
 
   <!-- §4 引入 visible-outside；view 模式无 footer -->
   <LayerTemplate :to="layer" v-if="mode !== 'view'" name="footer" visible-outside>
-    <template #default="{ inLayer, outsideLayer }">
-      <div v-if="outsideLayer" class="inline-actions">
-        <ElButton type="primary" :loading="submitting" @click="handleSubmit">
-          {{ mode === 'edit' ? '保存' : '创建' }}
-        </ElButton>
-      </div>
-      <ElButton
-        v-else-if="inLayer"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
+    <div v-if="!layer.exists" class="inline-actions">
+      <ElButton type="primary" :loading="submitting" @click="handleSubmit">
         {{ mode === 'edit' ? '保存' : '创建' }}
       </ElButton>
-    </template>
+    </div>
+    <ElButton
+      v-else
+      type="primary"
+      :loading="submitting"
+      @click="handleSubmit"
+    >
+      {{ mode === 'edit' ? '保存' : '创建' }}
+    </ElButton>
   </LayerTemplate>
 </template>
 

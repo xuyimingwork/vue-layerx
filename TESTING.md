@@ -107,7 +107,7 @@ Use **should … when …** format:
 
 ```ts
 it('should close layer when use-tier closeOn event is emitted', () => { ... })
-it('should render with outsideLayer scope when visibleOutside is true', () => { ... })
+it('should pass empty flat slot props when Content is mounted on page with visible-outside', () => { ... })
 ```
 
 ## Running Tests

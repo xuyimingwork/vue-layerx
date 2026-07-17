@@ -70,7 +70,7 @@ async function handleSubmit() {
     <ElFormItem v-if="role" label="角色"><ElInput :model-value="role" disabled /></ElFormItem>
   </ElForm>
 
-  <!-- 无 visible-outside：footer 只在弹层 inLayer 时出现 -->
+  <!-- 无 visible-outside：footer 只在弹层 layer.exists 时出现 -->
   <LayerTemplate :to="layer" v-if="mode !== 'view'" name="footer">
     <ElButton type="primary" :loading="submitting" @click="handleSubmit">
       {{ mode === 'edit' ? '保存' : '创建' }}

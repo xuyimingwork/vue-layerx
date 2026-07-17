@@ -127,7 +127,7 @@ const layer = defineLayer({
 ```
 
 - `closeOn`：content 的 emit 名；触发时自动 `close()`。
-- `defineLayer` 返回 `LayerDefine`（含 `inLayer` / `outsideLayer`），供 `LayerTemplate :to` 使用。
+- `defineLayer` 返回 `LayerDefine`（含 `exists`），供 `LayerTemplate :to` 使用。
 - 仅在弹层 content 树内生效；页内直接渲染该组件时不会注册弹层配置。
 
 ### useLayer 与实例使用
@@ -172,7 +172,7 @@ dialog.close()
 </LayerTemplate>
 ```
 
-- **creator**（`:to` 为 `defineLayer()` 返回值）：固定投 container；`#default` 得到 `LayerTemplateScope`（`inLayer` / `outsideLayer` / `slotProps`）。
+- **creator**（`:to` 为 `defineLayer()` 返回值）：固定投 container；`#default` 为目标 slot scoped props flat 透传；宿主态读 `layer.exists`。
 - **caller**（`:to` 为 `LayerInstance`）：投 content slot；加 `container` 则投 container slot；`#default` 参数与目标 scoped slot 一致。
 - **`visible-outside`**：页内渲染同一 content 时也显示该模板（如页内编辑也要保存按钮）。
 
@@ -336,7 +336,7 @@ function defineLayer(
 ```
 
 - 在 content `setup` 内调用；注册 `define` tier。
-- 返回值：`{ inLayer, outsideLayer }`，作 `LayerTemplate` 的 `:to`。
+- 返回值：`{ exists }`，作 `LayerTemplate` 的 `:to`。`exists` 表示这份 define 是否有 live LayerView 上下文（direct layer content）。
 
 ### `useLayer`
 
@@ -375,7 +375,7 @@ function useLayer(
 </LayerTemplate>
 ```
 
-Creator 的 `#default` 作用域为 `LayerTemplateScope`；caller 与目标 scoped slot 一致。
+Creator / caller 的 `#default` 均为目标 slot scoped props flat 透传；宿主态用 `layer.exists`。
 
 ### `LayerNoContainer`
 
@@ -389,8 +389,7 @@ Creator 的 `#default` 作用域为 `LayerTemplateScope`；caller 与目标 scop
 | `LayerConfigContainer` | `defineLayer` 配置（顶层 = container） |
 | `LayerConfigContent` | `use` / `open` / `clone`（顶层 = content） |
 | `LayerAdapter` | `(fragment) => fragment` |
-| `LayerDefine` | `defineLayer` 返回值 |
-| `LayerTemplateScope` | creator / `visible-outside` 的 slot 参数 |
+| `LayerDefine` | `defineLayer` 返回值（含 `exists`） |
 
 ---
 
