@@ -19,7 +19,7 @@ UserDialog = MyDialog + UserForm
 
 | 角色 | 目标 |
 |------|------|
-| **content（UserForm）** | 可复用于页内与弹层；只依赖 `vue-layerx`，不依赖 `useDialog` |
+| **content（UserForm）** | 可复用于页内与弹层；只依赖 `vue-layerx`，不依赖 `useDialog`；完成路径为 `emit`，不调 `close`（见 [ADR 0005](docs/adr/0005-content-self-contained-close-on.md)） |
 | **layer（MyDialog）** | 通过 `createLayer` 适配，项目内类型有限 |
 | **定义侧** | co-locate 默认 layer 配置与操作区模板 |
 | **使用侧** | 不写 layer template、不声明 `model`，`open()` / `close()` 即可 |
@@ -594,6 +594,8 @@ useLayer(UserForm)   // 仍包 BaseDialog
 
 **content 侧声明被 layer 包裹时的默认配置**，与 Vue 的 `defineProps` / `defineEmits` 同级——全局 `defineXxx`，通过**全局 inject key** 注册，不挂具体容器工厂（见「渲染与投递机制」）。与 `createLayer` 共用 **`LayerConfigContainer`**。
 
+返回 **`LayerDefine`**（`inLayer` / `outsideLayer` + `LayerTemplate :to`），**不**提供 `open` / `close`。写在 content 内仍是「向外注册配置」，不是把 layer 控制面注入 content；关层经 content `emit` + `closeOn`（见 [ADR 0005](docs/adr/0005-content-self-contained-close-on.md)）。
+
 ```ts
 const props = defineProps<{ mode?: 'create' | 'edit' }>()
 
@@ -763,9 +765,9 @@ create.content.props
 
 `closeOn`：`define.content` → `use:template.content` → `use` → `open`（后者覆盖）。`model` 在 container 链：`create` → `define:template` → `define` → `use:template.container` → `use.container` → `open.container`。
 
-### `closeOn`（使用侧语法糖）
+### `closeOn`（emit → close 接线）
 
-`closeOn` 只出现在 **`useX` / `open` payload**，不是 content 组件的 prop。框架在 **bind** 阶段把它**改写**进 `bound.content.props` 的事件监听（Vue 3 的 `onXxx`）。
+`closeOn` 不是 content 组件的 prop。可在 **`defineLayer` 的 `content.closeOn`**、**`useX` / `open`** 等 content 配置上声明（merge 见上）；框架在 **bind** 阶段把它**改写**进 `bound.content.props` 的事件监听（Vue 3 的 `onXxx`）。
 
 ```ts
 useDialog(UserForm, { closeOn: ['success', 'cancel'] })
@@ -795,7 +797,7 @@ onSuccess: (...args) => {
 
 用户未传同名 `onXxx` 时，等价于 `onSuccess: () => close()`。
 
-`closeOn` 与 `defineLayer`、 `LayerTemplate` 无关；校验失败时不 emit 对应事件，故不会触发 `closeOn`。
+校验失败时不 emit 对应事件，故不会触发 `closeOn`。`LayerDefine` / `LayerTemplate` **不**提供 `close`；理念见 [ADR 0005](docs/adr/0005-content-self-contained-close-on.md)。
 
 ### adapter 与 open
 
@@ -842,10 +844,13 @@ userDialog.open({
 
 ## 关闭行为
 
+content **自包含**：业务完成只 `emit`；vue-layerx 与普通父组件一样监听事件，经 `closeOn` 接线后调用 `LayerInstance.close()`。`defineLayer` **不**暴露 `close`（[ADR 0005](docs/adr/0005-content-self-contained-close-on.md)）。
+
 | 触发方式 | 行为 |
 |----------|------|
-| `closeOn`（语法糖） | bind 写入 `content.props.onXxx`（用户 handler 在前，`close()` 在后）；允许 async emit，框架不 await |
-| layer 自带关闭 | 内部 `close()` |
+| `closeOn`（语法糖） | bind 写入 `content.props.onXxx`（用户 handler 在前，`close()` 在后）；允许 async emit，框架不 await；define / use / open 可声明 |
+| `LayerInstance.close()` | 使用侧命令式关闭 |
+| layer 自带关闭 | 容器 UI 触发内部 `close()` |
 | `beforeClose` | 写在 `container.props`，经 merge/adapter **透传给底层 layer 组件**；属于容器自身行为，**框架不介入**，与 `closeOn` 无关 |
 | 校验失败 | 不 emit 对应事件，不触发 `closeOn` |
 
@@ -1056,6 +1061,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | 两参 `createLayer` + `config.adapter` | defaults / adapter 职责清晰；adapter 存 store 顶层 |
 | bind 与 render 分离 | bind 写 runtime props；createLayerViewVNode 纯 h() |
 | `defineLayer` 全局 inject | 与 Vue `defineXxx` 拉齐；content 不感知容器 |
+| `defineLayer` 无 `close`；关层经 emit / `closeOn` | content 自包含，页内与弹层用法一致（[ADR 0005](docs/adr/0005-content-self-contained-close-on.md)） |
 | slot render fn 投递 | container / content 模板跨树投送；与 Vue slot 语义同构 |
 | content remount | close 后再 open 时框架重建 content；已打开时 open 只更新 props |
 | 无 `useLayer` | 仍须选 layer，意义不大 |

@@ -8,3 +8,4 @@
 | [0002](./0002-open-use-override-container-component.md) | `useX` / `open` 覆盖 `container.component` | Accepted（允许，无 warn） |
 | [0003](./0003-reactive-layer-config.md) | Layer 配置响应式（MaybeRefOrGetter + store computed） | Accepted |
 | [0004](./0004-merge-unknown-fields.md) | `mergeFragment` / 节点是否保留未知字段 | Accepted（白名单；扩展待定） |
+| [0005](./0005-content-self-contained-close-on.md) | `defineLayer` 不暴露 `close`：关层经 content emit + `closeOn` | Accepted |
