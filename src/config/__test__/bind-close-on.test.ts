@@ -14,7 +14,7 @@ describe('bindCloseOn', () => {
 
     const bound = bindCloseOn(props, ['done'], hide)
 
-    bound.onDone?.()
+    ;(bound.onDone as (() => void) | undefined)?.()
     expect(props.onDone).toHaveBeenCalled()
     expect(hide).toHaveBeenCalled()
   })
@@ -23,7 +23,7 @@ describe('bindCloseOn', () => {
     const hide = vi.fn()
     const bound = bindCloseOn({}, ['beforeClose'], hide)
 
-    bound.onBeforeClose?.()
+    ;(bound.onBeforeClose as (() => void) | undefined)?.()
     expect(hide).toHaveBeenCalled()
   })
 })

@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { bindContainerModel, DEFAULT_CONTAINER_MODEL } from '../bind-container-model'
 
+type UpdateFn = (value: unknown) => void
+
 describe('bindContainerModel', () => {
   it('should bind model prop and update handler', () => {
     const close = vi.fn()
@@ -8,7 +10,7 @@ describe('bindContainerModel', () => {
 
     expect(result.title).toBe('A')
     expect(result.modelValue).toBe(true)
-    result['onUpdate:modelValue']?.(false)
+    ;(result['onUpdate:modelValue'] as UpdateFn | undefined)?.(false)
     expect(close).toHaveBeenCalled()
   })
 
@@ -16,7 +18,7 @@ describe('bindContainerModel', () => {
     const close = vi.fn()
     const result = bindContainerModel({}, true, 'modelValue', close)
 
-    result['onUpdate:modelValue']?.(undefined)
+    ;(result['onUpdate:modelValue'] as UpdateFn | undefined)?.(undefined)
     expect(close).toHaveBeenCalled()
   })
 
@@ -25,7 +27,7 @@ describe('bindContainerModel', () => {
     const result = bindContainerModel({}, true, 'open', close)
 
     expect(result.open).toBe(true)
-    result['onUpdate:open']?.(false)
+    ;(result['onUpdate:open'] as UpdateFn | undefined)?.(false)
     expect(close).toHaveBeenCalled()
   })
 
@@ -33,7 +35,7 @@ describe('bindContainerModel', () => {
     const close = vi.fn()
     const result = bindContainerModel({}, true, 'open', close)
 
-    result['onUpdate:open']?.(true)
+    ;(result['onUpdate:open'] as UpdateFn | undefined)?.(true)
     expect(close).not.toHaveBeenCalled()
   })
 
@@ -47,7 +49,7 @@ describe('bindContainerModel', () => {
       close,
     )
 
-    result['onUpdate:modelValue']?.(false)
+    ;(result['onUpdate:modelValue'] as UpdateFn | undefined)?.(false)
     expect(onUpdate).toHaveBeenCalledWith(false)
     expect(close).toHaveBeenCalled()
   })
@@ -62,7 +64,7 @@ describe('bindContainerModel', () => {
       close,
     )
 
-    result['onUpdate:open']?.(true)
+    ;(result['onUpdate:open'] as UpdateFn | undefined)?.(true)
     expect(onUpdate).toHaveBeenCalledWith(true)
     expect(close).not.toHaveBeenCalled()
   })

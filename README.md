@@ -385,11 +385,15 @@ Creator / caller 的 `#default` 均为目标 slot scoped props flat 透传；宿
 
 | 类型 | 说明 |
 |------|------|
-| `LayerConfigCreate` | `createLayer` 第二参 |
+| `LayerConfigCreate` | `createLayer` 第二参（Raw flat） |
 | `LayerConfigContainer` | `defineLayer` 配置（顶层 = container） |
 | `LayerConfigContent` | `use` / `open` / `clone`（顶层 = content） |
+| `LayerConfigFragment` | Canonical 双侧分栏；adapter / store |
+| `LayerBound` | bind 输出，可 `h()` |
 | `LayerAdapter` | `(fragment) => fragment` |
 | `LayerDefine` | `defineLayer` 返回值（含 `exists`） |
+
+配置域命名见 [docs/config-naming.md](./docs/config-naming.md)。
 
 ---
 

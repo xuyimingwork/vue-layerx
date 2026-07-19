@@ -16,9 +16,9 @@ import {
   type VNode,
   type WritableComputedRef,
 } from 'vue'
-import { mergeFragment, createFragment, toFragmentFromContainer } from '@/config/fragment'
+import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type { LayerConfigContainer, LayerConfigFragment, LayerNodeNormalized, LayerNormalized } from '@/types'
+import type { LayerBound, LayerBoundNode, LayerConfigContainer } from '@/types'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
@@ -58,7 +58,7 @@ function isLayerContent(
   return vnodeProps?.[LAYER_CONTENT] === true
 }
 
-export interface CreateLayerViewVNodeOptions extends LayerNormalized {
+export interface CreateLayerViewVNodeOptions extends LayerBound {
   openId?: number
   refContentTo: Ref<HTMLUnknownElement>
 }
@@ -104,7 +104,7 @@ export function createLayerViewVNode({
 
 function createLayerViewContentVNode({ key, content, marked }: {
   key: number | undefined
-  content: LayerNodeNormalized | undefined
+  content: LayerBoundNode | undefined
   marked?: boolean
 }) {
   if (!content) return null
@@ -136,8 +136,8 @@ export const LayerView = defineComponent({
     const openId = ref(0)
     const refContentTo = useRefContentTo()
     const defineStore = createLayerStore({
-      define: createFragment(),
-      'define:template': createFragment(),
+      define: {},
+      'define:template': {},
     })
 
     const close = () => emit('update:visible', false)
@@ -174,8 +174,8 @@ export const LayerView = defineComponent({
       () => props.visible,
       (visible, prev) => {
         if (!visible || prev) return
-        defineStore.define = computed(() => createFragment()) as LayerConfigFragment
-        defineStore['define:template'] = computed(() => createFragment()) as LayerConfigFragment
+        defineStore.define = computed(() => {})
+        defineStore['define:template'] = computed(() => {})
         openId.value++
       },
     )

@@ -1,6 +1,30 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { mergeProps, mergeNode } from '../node'
+import {
+  mergeProps,
+  mergeNode,
+  normalizeNode,
+  normalizeNodeContent,
+} from '../node'
+
+describe('normalizeNode', () => {
+  it('should not mutate input props.ref', () => {
+    const userRef = ref(null)
+    const node = { props: { a: 1, ref: userRef } }
+    const normalized = normalizeNode(node)
+
+    expect(node.props.ref).toBe(userRef)
+    expect(typeof normalized?.props?.ref).toBe('function')
+    expect(normalized?.props?.a).toBe(1)
+  })
+
+  it('should copy closeOn array on content nodes', () => {
+    const closeOn = ['done']
+    const normalized = normalizeNodeContent({ closeOn })
+    expect(normalized?.closeOn).toEqual(['done'])
+    expect(normalized?.closeOn).not.toBe(closeOn)
+  })
+})
 
 describe('mergeProps', () => {
   it('should shallow merge later sources over earlier ones', () => {
@@ -38,7 +62,7 @@ describe('mergeProps', () => {
   it('should warn and ignore string ref', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const fn = vi.fn()
-    const merged = mergeProps({ ref: fn }, { ref: 'formRef' })
+    const merged = mergeProps({ ref: fn }, { ref: 'formRef' as never })
 
     ;(merged.ref as (el: null) => void)(null)
     expect(fn).toHaveBeenCalled()

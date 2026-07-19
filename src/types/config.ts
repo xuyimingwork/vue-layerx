@@ -1,73 +1,51 @@
-import type { Component, VNode } from 'vue'
+import type { Component, ComponentPublicInstance, VNode } from 'vue'
 
-export type LayerProps = Record<string, unknown>
-
-export type SlotRenderFn = (
+export type LayerSlotRender = (
   props?: Record<string, unknown>,
 ) => VNode | VNode[] | null
 
-/** Content emit names that trigger layer.close(); extended forms allow conditional close */
-export type CloseOnConfig = string[]
+export type LayerRefCallback = (
+  el: ComponentPublicInstance | null,
+) => void
 
-/** merge / config fragment building blocks */
+/** Canonical closeOn; same shape as CloseOnRaw this round */
+export type CloseOn = string[]
+
+/** Canonical props — ref is callback only (after normalizePropRef) */
+export interface LayerProps {
+  ref?: LayerRefCallback
+  [key: string]: unknown
+}
+
+export interface LayerTemplateEntry {
+  render: LayerSlotRender
+}
+
+/** Canonical merge / store building block */
 export interface LayerConfigNode {
   component?: Component
   props?: LayerProps
   /** slot content: imperative or LayerTemplate materialized at merge */
-  slots?: Record<string, SlotRenderFn>
+  slots?: Record<string, LayerSlotRender>
 }
 
 /** Container node — model = v-model prop name (event: onUpdate:${model}) */
-export type LayerConfigNodeContainer = LayerConfigNode & {
+export interface LayerConfigNodeContainer extends LayerConfigNode {
   model?: string
 }
 
 /** Content node — closeOn = content emit → layer.close() */
-export type LayerConfigNodeContent = LayerConfigNode & {
-  closeOn?: CloseOnConfig
+export interface LayerConfigNodeContent extends LayerConfigNode {
+  closeOn?: CloseOn
 }
 
-export interface LayerTemplateEntry {
-  render: SlotRenderFn
-}
-
-/** single merge tier: content + container fragments */
+/** single merge tier: content + container (Canonical only) */
 export interface LayerConfigFragment {
   content?: LayerConfigNodeContent
   container?: LayerConfigNodeContainer
 }
 
-/** createLayer + defineLayer — top-level fields = container */
-export type LayerConfigContainer = LayerConfigNodeContainer & {
-  content?: LayerConfigNodeContent
-}
-
-/** useX / open / clone — top-level fields = content */
-export type LayerConfigContent = LayerConfigNodeContent & {
-  container?: LayerConfigNodeContainer
-}
-
-/** bind output — props include closeOn / model bindings, ready for h() */
-export interface LayerNodeNormalized {
-  component: Component
-  props: LayerProps
-  slots: Record<string, SlotRenderFn>
-}
-
-export interface LayerNormalized {
-  content?: LayerNodeNormalized
-  container: LayerNodeNormalized
-}
-
 export type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
-
-/**
- * createLayer second argument only.
- * `adapter` is not valid on defineLayer / use / open / clone.
- */
-export type LayerConfigCreate = LayerConfigContainer & {
-  adapter?: LayerAdapter
-}
 
 /**
  * Instance store `create` tier: merge fragment + optional factory adapter.

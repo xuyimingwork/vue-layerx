@@ -1,7 +1,7 @@
 # ADR 0001：存量单体弹窗（UserDialog）渐进式接入
 
 - **状态**：Accepted（已实现：公开 `LayerNoContainer`）
-- **日期**：2026-06-29
+- **日期**：2026-06-29（叙事边界澄清：2026-07-19）
 - **关联**：[ADR 0002](./0002-open-use-override-container-component.md)（`use` / `open` 覆盖 `container.component`，可与 `LayerNoContainer` 组合）
 
 ---
@@ -90,14 +90,31 @@ h(content.component, {
 - L3：拆成 `UserForm` 后从 `withDialog` 表去掉即可，**不必换工厂**；`open({ props })` 可不动。
 - 可选：L3 再上 `defineLayer` / container `LayerTemplate`。
 
-### 4. 曾考虑后否决
+### 4. 叙事边界（与「无 content」拆开）
+
+域上 **content 可空、container 不可空**：二者不是对称概念。下面两套叙事**不得混用**。
+
+| 叙事 | 含义 | 推荐写法 |
+|------|------|----------|
+| **壳-only** | `useX()` 未绑 Content；层合法，只是没有业务体 | 配壳用 `open` / `use` 的 **`container:`**（content 取向 flat 顶层进 content 列；无 `content.component` 时该列配置丢弃） |
+| **单体接入** | 内嵌 dialog 的存量组件 | **`LayerNoContainer` + 单体做 content**（或 `createLayer(BaseDialog)` + adapter 换成 NoContainer） |
+
+因此：
+
+- **无 content ≠ 单体场景。** 壳-only 是 split 下的兼容用法，不是「把单体放进 container、视 content 不存在」。
+- **单体不要当 `createLayer` 第一参。** 那样仍走 split（空 Teleport 等），与拍平路径语义不同；亦与 L3「单体角色 = content」相反。
+- **拍平合并不是对称先例。** `LayerNoContainer` 将 `container.props`（含 create 默认与 bind 的 `model`）摊到 content，是为了混用工厂与可见性协议在无壳时仍成立；**不**据此要求「无 content 时把 content 列配置摊到 container」。
+- **不做 `LayerNoContent`。** 不为「content 列配置落到 container vnode」提供反向标记或反向拍平；壳-only 显式写 `container:` 即可。
+
+### 5. 曾考虑后否决
 
 | 方案 | 结论 |
 |------|------|
 | **`createLayerUnited` 双工厂** | 否决——薄封装无实质收益，且引入 United 词汇 |
 | 独立 united merge/bind 管线 | 否决——复用 split 管线即可 |
 | 不公开标记、仅内部哨兵 | 否决——项目 adapter 无法换壳，无法共用 `useLayer` |
-| 单体作 container | 否决——L3 角色反了 |
+| 单体作 container | 否决——L3 角色反了；亦非壳-only 的正确建模 |
+| **`LayerNoContent` / 反向拍平** | 否决——与壳-only / 单体两套叙事混淆；壳配置已有 `container:`；无「管线写在 content 却必须喂壳」的对等负担 |
 
 ---
 
@@ -108,6 +125,7 @@ h(content.component, {
 - 与 split 相同的 `open` / `close` / `closeOn` / portal / `bindHost` / `LayerAdapter`
 - 同一 `useLayer` 混用单体 content 与拆分 content（项目 `withDialog` + adapter）
 - content 侧 `LayerTemplate :to="instance"`（注册到 content slots）
+- 壳-only（无 Content）：实例可 open/close；壳 props / slots 经 **`container:`** 写入
 
 ### 弱化 / 无效（用错自负）
 
@@ -116,6 +134,8 @@ h(content.component, {
 | `defineLayer` 改 container | 拍平后无外壳可挂；页内/误用时行为与 split 一致（无有效壳） |
 | `LayerTemplate` `container` | 拍平不渲染 container slots |
 | `content.props.modelValue` | 会覆盖 bind 投影 |
+| 壳-only 时顶层 `open({ props })` | 进 content 列；无 `content.component` 时丢弃——应改 `container: { props }` |
+| `createLayer(单体Dialog)` 当「无 content 单体」 | 非本 ADR 路径；应改 NoContainer + 单体 content |
 
 ---
 
@@ -141,6 +161,8 @@ merge → adapt（可把 container.component 换成 LayerNoContainer）
 
 - `withDialog`（或等价标记）由**项目**维护。
 - 拍平路径下 container 侧模板 / define 壳配置无意义。
+- 壳-only 与单体接入是两套叙事；无 `LayerNoContent`，不为 content→container 做对称拍平。
+- 壳-only 与单体接入是两套叙事；无 `LayerNoContent`，不为 content→container 做对称拍平。
 
 ---
 

@@ -20,7 +20,6 @@ import type {
 import {
   toFragmentFromContent,
   mergeFragment,
-  createFragment,
   stripFragment,
 } from '@/config/fragment'
 import { withTemplateTo } from '@/shared/layer-template-to'
@@ -56,7 +55,7 @@ export function createLayerInstance({
           },
         },
       },
-    },
+    } as LayerConfigFragment,
   })
   const state = reactive({
     visible: false,
@@ -148,8 +147,8 @@ export function createLayerInstanceStore(
   return createLayerStore({
     create: init.create,
     use: init.use,
-    open: createFragment(),
-    'use:template': createFragment(),
-    refs: createFragment(init.refs),
+    'use:template': {},
+    open: {},
+    refs: init.refs,
   })
 }

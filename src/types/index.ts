@@ -1,19 +1,29 @@
 export type {
+  CloseOn,
   LayerAdapter,
-  CloseOnConfig,
   LayerConfigFragment,
   LayerConfigFragmentCreate,
+  LayerConfigNode,
   LayerConfigNodeContainer,
   LayerConfigNodeContent,
-  LayerConfigNode,
-  LayerNodeNormalized,
-  LayerNormalized,
   LayerProps,
-  LayerConfigContainer,
-  LayerConfigCreate,
-  LayerConfigContent,
+  LayerRefCallback,
+  LayerSlotRender,
   LayerTemplateEntry,
 } from './config'
+
+export type {
+  CloseOnRaw,
+  LayerConfigContent,
+  LayerConfigContainer,
+  LayerConfigCreate,
+  LayerConfigNodeContainerRaw,
+  LayerConfigNodeContentRaw,
+  LayerConfigNodeRaw,
+  LayerPropsRaw,
+} from './config-raw'
+
+export type { LayerBound, LayerBoundNode } from './bound'
 
 export type { LayerInstance, LayerDefine } from './instance'
 

@@ -49,7 +49,7 @@ mergeFragment(...sources) {
 
 ### bind（[`bind-layer.ts`](../../src/config/bind-layer.ts)）
 
-只消费 `component` / `props` / `slots` / `model` / `closeOn`，产出 `LayerNormalized`（可 `h()`）。节点上若残留未知键，**当前不会**传到 vnode（因 bind 重建对象）；但若将来 merge 保留未知键却忘记在 bind 剥离，有泄漏风险。
+只消费 `component` / `props` / `slots` / `model` / `closeOn`，产出 `LayerBound`（可 `h()`）。节点上若残留未知键，**当前不会**传到 vnode（因 bind 重建对象）；但若将来 merge 保留未知键却忘记在 bind 剥离，有泄漏风险。
 
 ### adapter 时机
 

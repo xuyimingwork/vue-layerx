@@ -1,22 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
+import { isRef, ref } from 'vue'
 import {
-  createFragment,
   mergeFragment,
   stripFragment,
   toFragmentFromContent,
   toFragmentFromContainer,
 } from '../fragment'
-
-describe('createFragment', () => {
-  it('should return empty fragment when init is omitted', () => {
-    expect(createFragment()).toEqual({})
-  })
-
-  it('should return init when provided', () => {
-    const init = { container: { props: { title: 'x' } } }
-    expect(createFragment(init)).toBe(init)
-  })
-})
 
 describe('toFragmentFromContainer', () => {
   it('should map top-level fields to container fragment and nested content', () => {
@@ -49,6 +38,23 @@ describe('toFragmentFromContent', () => {
 
   it('should return empty fragment when config is empty', () => {
     expect(toFragmentFromContent({})).toEqual({})
+  })
+
+  it('should not mutate input when normalizing props.ref', () => {
+    const userRef = ref(null)
+    const contentConfig = {
+      props: { message: 'hi', ref: userRef },
+      container: { props: { title: 'x', ref: userRef } },
+      closeOn: ['done'] as string[],
+    }
+    const fragment = toFragmentFromContent(contentConfig)
+
+    expect(contentConfig.props.ref).toBe(userRef)
+    expect(isRef(contentConfig.props.ref)).toBe(true)
+    expect(contentConfig.container.props.ref).toBe(userRef)
+    expect(typeof fragment.content?.props?.ref).toBe('function')
+    expect(typeof fragment.container?.props?.ref).toBe('function')
+    expect(fragment.content?.props?.ref).not.toBe(userRef)
   })
 })
 

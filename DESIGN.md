@@ -41,20 +41,24 @@ UserDialog = MyDialog + UserForm
 每次 `open()`：**重建 content 子树**（setup 再跑，`defineLayer` / `LayerTemplate` 在当次上下文中重新注册），再执行：
 
 ```text
-① merge      open > use > define > create  →  LayerConfigFragment
-② adapt      该实例工厂的 createLayer adapter（可选）(fragment) => fragment
-③ refs       mergeFragment(store.refs, adapted)  // 框架 internal ref，refs 为第一源
-④ bind       bindLayerTree(fragment, visible, close)  →  LayerNormalized
-⑤ render     createLayerViewVNode(normalized)  →  h(...)
+① peel+normalize  flat Raw（toFragment*）→ LayerConfigFragment（Canonical）
+② merge           open > use > define > create  →  LayerConfigFragment
+③ adapt           该实例工厂的 createLayer adapter（可选）(fragment) → fragment
+④ refs            mergeFragment(store.refs, adapted)  // 框架 internal ref，refs 为第一源
+⑤ bind            bindLayer(fragment, visible, close)  →  LayerBound
+⑥ render          createLayerViewVNode(bound)  →  h(...)
 ```
 
-- **merge**：各层贡献 **LayerConfigNode 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
+类型域与命名见 [`docs/config-naming.md`](docs/config-naming.md)。
+
+- **peel+normalize**：公开 flat（`LayerConfigContent` / `Container`）拆成双侧分栏，并做糖展开（`props.ref` Ref→callback、`markRaw(component)`）；写入 store 的已是 Canonical。
+- **merge**：各层贡献 **Canonical LayerConfigNode 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
 - **adapt**：在 **LayerConfigFragment** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
 - **refs**：`store.refs` 桶在 adapter 之后合并；`props.ref` 链式 compose，internal 先于各 tier 用户 ref。
-- **bind**：`bindLayerTree` 将 merge/adapt/refs 结果归一化，并把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + `onUpdate:${model}`。
+- **bind**：把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + `onUpdate:${model}`；产出 `LayerBound`。
 - **render**：纯 `h()` 绑定 props / slots；**close 后再 open** 时 remount content；已打开时再次 `open()` 只更新 merge/props。
 
-使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域 fragment**；**bind 产出 LayerNormalized**（可直接 `h()`）。
+使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域 fragment**；**bind 产出 LayerBound**（可直接 `h()`）。
 
 `open` 可覆盖 merge 输入（含 `component`、`container.component`），但**不跳过 adapter**——仍走 merge → adapter → refs → bind → render；adapter 可改回或替换 `container.component`。
 
@@ -70,7 +74,7 @@ UserDialog = MyDialog + UserForm
 src/
 ├── index.ts                 # 包入口 barrel
 ├── api/                     # createLayer / defineLayer / LayerTemplate
-├── types/                   # 纯类型契约（config / instance / store / layer-host）
+├── types/                   # 纯类型契约（config-raw / config / bound / instance / store / layer-host）
 ├── shared/                  # 跨层运行时契约（Symbol、inject key、检测函数）
 ├── config/                  # fragment 构造、merge、bind
 ├── runtime/                 # store、instance 生命周期、portal 挂载
@@ -82,7 +86,7 @@ tests/
 
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
-| **types/** | 配置 / 实例 / Store 接口；LayerHost 类型断言 | `config.ts`、`instance.ts`、`store.ts`、`layer-host.ts` |
+| **types/** | 配置 Raw / Canonical / Bound；实例 / Store；LayerHost | `config-raw.ts`、`config.ts`、`bound.ts`、`instance.ts`、`store.ts`、`layer-host.ts` |
 | **shared/** | 跨层 inject 契约、store 工厂、template-to 协议 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts` |
 | **runtime/** | instance 生命周期、portal 挂载 | `layer-instance.ts`、`layer-app.ts` |
@@ -169,7 +173,7 @@ LayerView → createLayerViewVNode                            view/
         └── createLayerViewVNode                     runtime/layer-view.ts
 ```
 
-- **merge**：`config/fragment.ts`（`createFragment`、`toFragmentFrom*`、`mergeFragment`、`stripFragment`）+ `config/node.ts`（node 级 merge / strip 原语）。
+- **merge**：`config/fragment.ts`（`toFragmentFrom*`、`mergeFragment`、`stripFragment`）+ `config/node.ts`（node 级 normalize / merge / strip 原语）。
 - **bind**：`config/bind-layer.ts` 编排 `bind-container-model`、`bind-close-on`。
 - **render**：`runtime/layer-view.ts` 的 `createLayerViewVNode` 纯 `h()`；`LayerView` 是唯一的 merge → adapter → bind → render 编排点。
 
@@ -238,7 +242,7 @@ const bindHost = ({ silent = false } = {}) => {
 
 ```text
 ① merge / adapt   合并配置（含 LayerTemplate slot tier）
-② bind            bindLayerTree → LayerNormalized
+② bind            bindLayer → LayerBound
 ③ render layer    h(MyDialog, …) 挂载（通常 appendToBody 至 body）
 ④ render content  UserForm 作为 layer default slot（close 后再 open 时 remount）
 ⑤ slot fn 调用    LayerTemplate.render() 产出 VNode
@@ -272,39 +276,38 @@ layer 默认挂载至 `document.body`（或由 layer 组件 `appendToBody` 等 p
 配置期与渲染期类型不同：
 
 ```ts
-type SlotRenderFn = (props?: Record<string, unknown>) => VNode | VNode[] | null
+type LayerSlotRender = (props?: Record<string, unknown>) => VNode | VNode[] | null
 
+/** Canonical node */
 type LayerConfigNode = {
   component?: Component
-  props?: Record<string, unknown>
-  slots?: Record<string, SlotRenderFn>
+  props?: LayerProps  // ref?: LayerRefCallback
+  slots?: Record<string, LayerSlotRender>
 }
 
-/** container：model = v-model prop 名（事件 onUpdate:${model}） */
 type LayerConfigNodeContainer = LayerConfigNode & { model?: string }
+type LayerConfigNodeContent = LayerConfigNode & { closeOn?: CloseOn }
 
-/** content：closeOn = content emit → layer.close() */
-type LayerConfigNodeContent = LayerConfigNode & { closeOn?: string[] }
-
-/** merge tier：两侧可选 */
 type LayerConfigFragment = {
   content?: LayerConfigNodeContent
   container?: LayerConfigNodeContainer
 }
 
-type LayerNodeNormalized = {
+type LayerBoundNode = {
   component: Component
-  props: Record<string, unknown>
-  slots: Record<string, SlotRenderFn>
+  props: LayerProps
+  slots: Record<string, LayerSlotRender>
 }
 
-type LayerNormalized = {
-  content?: LayerNodeNormalized
-  container: LayerNodeNormalized
+type LayerBound = {
+  content?: LayerBoundNode
+  container: LayerBoundNode
 }
 
 /** bind 输出：props 已含 closeOn / model 绑定，createLayerViewVNode 直接 h() */
 ```
+
+公开 flat（Raw）见 `LayerConfigContent` / `Container`（`*Node*Raw`，`props.ref` 可为 `Ref`）。完整三域见 [`docs/config-naming.md`](docs/config-naming.md)。
 
 | 术语 | 含义 |
 |------|------|
@@ -318,14 +321,14 @@ type LayerNormalized = {
 ### 工厂默认配置
 
 ```ts
-/** createLayer + defineLayer — 顶层 = container */
-type LayerConfigContainer = LayerConfigNodeContainer & {
-  content?: LayerConfigNodeContent
+/** createLayer + defineLayer — 顶层 = container（Raw flat） */
+type LayerConfigContainer = LayerConfigNodeContainerRaw & {
+  content?: LayerConfigNodeContentRaw
 }
 
-/** useX / open / clone — 顶层 = content */
-type LayerConfigContent = LayerConfigNodeContent & {
-  container?: LayerConfigNodeContainer
+/** useX / open / clone — 顶层 = content（Raw flat） */
+type LayerConfigContent = LayerConfigNodeContentRaw & {
+  container?: LayerConfigNodeContainerRaw
 }
 
 const DEFAULT_CONTAINER_MODEL = 'modelValue'
@@ -478,7 +481,7 @@ const layer = defineLayer({ props: { title: '...' } })
 | **defineLayer** | ✅ | `define` tier；顶层 `props` / `slots` = container | 选 `component`、适配容器 |
 | **useX(Content, config?)** | ✅ | `use` tier；使用侧片段、`closeOn`、可绑 Content | 适配 MyDialog |
 | **open(payload?)** | ✅ 最高 | 可覆盖 merge 一切，含 `component`、`container.component` | 仍走 adapter |
-| **bindLayerTree** | — | `LayerConfigFragment` + runtime → `LayerNormalized` | 不参与优先级 |
+| **bindLayer** | — | `LayerConfigFragment` + runtime → `LayerBound` | 不参与优先级 |
 | **createLayer adapter** | — | `LayerConfigFragment` → `LayerConfigFragment` | 不实现 merge |
 | **LayerTemplate** `:to="layer"` | ✅ define:template | content 内声明 container slot | — |
 | **LayerTemplate** `:to="instance"` | ✅ use:template.content | 远程 content slot | — |
@@ -805,7 +808,7 @@ onSuccess: (...args) => {
 
 ### adapter 与 open
 
-`open` 写入的 `container.component`、`container.props` 等 **先 merge → adapter → bind**（始终为该实例所属工厂的**唯一** `adapter`）。容器 slot 名差异、换 `container.component`、改 `model` 等均在 **adapter** 内处理；bind 产出最终 `LayerNormalized`。
+`open` 写入的 `container.component`、`container.props` 等 **先 merge → adapter → bind**（始终为该实例所属工厂的**唯一** `adapter`）。容器 slot 名差异、换 `container.component`、改 `model` 等均在 **adapter** 内处理；bind 产出最终 `LayerBound`。
 
 ---
 

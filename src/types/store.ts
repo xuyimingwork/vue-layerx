@@ -1,10 +1,10 @@
 import type { ComputedRef, MaybeRefOrGetter, UnwrapNestedRefs, VNode } from 'vue'
 import type {
   LayerConfigFragment,
-  LayerConfigContainer,
   LayerConfigFragmentCreate,
   LayerTemplateEntry,
 } from './config'
+import type { LayerConfigContainer } from './config-raw'
 
 export type TemplateSlotKey =
   | 'use:template.container'
@@ -38,7 +38,7 @@ export interface LayerViewStore {
 export interface LayerInstanceStoreInit {
   create: ComputedRef<LayerConfigFragmentCreate>
   use: ComputedRef<LayerConfigFragment>
-  refs?: LayerConfigFragment
+  refs: LayerConfigFragment
 }
 
 type LayerStoreMethods = {

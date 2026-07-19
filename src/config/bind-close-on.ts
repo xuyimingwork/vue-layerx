@@ -1,8 +1,8 @@
-import type { CloseOnConfig, LayerProps } from '@/types/config'
+import type { CloseOn, LayerProps } from '@/types/config'
 
 export function bindCloseOn(
   contentProps: LayerProps,
-  closeOn: CloseOnConfig | undefined,
+  closeOn: CloseOn | undefined,
   close: () => void,
 ): LayerProps {
   if (!closeOn?.length) return contentProps

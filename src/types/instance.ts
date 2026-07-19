@@ -1,5 +1,5 @@
 import type { ComputedRef, ComponentPublicInstance, MaybeRefOrGetter } from 'vue'
-import type { LayerConfigContent } from './config'
+import type { LayerConfigContent } from './config-raw'
 
 /** Returned by defineLayer(); pass as LayerTemplate :to */
 export interface LayerDefine {

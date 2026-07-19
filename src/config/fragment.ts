@@ -1,41 +1,59 @@
+import type { LayerConfigFragment } from '@/types/config'
 import type {
-  LayerConfigFragment,
   LayerConfigContent,
   LayerConfigContainer,
-} from '@/types/config'
+  LayerConfigNodeContainerRaw,
+  LayerConfigNodeContentRaw,
+} from '@/types/config-raw'
 import {
   mergeNodeContainer,
   mergeNodeContent,
-  normalizeNode,
+  normalizeNodeContainer,
+  normalizeNodeContent,
   stripContainerNode,
   stripContentNode,
 } from './node'
 
-function normalizeFragment(
-  fragment: LayerConfigFragment,
-): LayerConfigFragment {
-  normalizeNode(fragment.container)
-  normalizeNode(fragment.content)
-  return fragment
-}
-
-export function createFragment(
-  init?: LayerConfigFragment,
-): LayerConfigFragment {
-  return normalizeFragment(init ?? {})
-}
-
-/** Peel flat public config into a fragment; `from` = which side owns top-level fields. */
+/**
+ * Peel flat public config into a Canonical fragment.
+ * `from` = which side owns top-level fields; then normalize (copy, no mutate).
+ */
 function toFragment(
   config: LayerConfigContainer | LayerConfigContent,
   from: 'container' | 'content',
 ): LayerConfigFragment {
   const nested = from === 'container' ? 'content' : 'container'
-  const { [nested]: node, ...primary } = config as Record<string, unknown>
-  return mergeFragment(
-    Object.keys(primary).length > 0 ? { [from]: primary } : undefined,
-    node ? { [nested]: node } : undefined,
-  )
+  const { [nested]: nestedNode, ...primary } = config as Record<string, unknown>
+
+  let containerRaw: LayerConfigNodeContainerRaw | undefined
+  let contentRaw: LayerConfigNodeContentRaw | undefined
+
+  if (Object.keys(primary).length > 0) {
+    if (from === 'container') {
+      containerRaw = primary as LayerConfigNodeContainerRaw
+    } else {
+      contentRaw = primary as LayerConfigNodeContentRaw
+    }
+  }
+  if (nestedNode) {
+    if (nested === 'content') {
+      contentRaw = nestedNode as LayerConfigNodeContentRaw
+    } else {
+      containerRaw = nestedNode as LayerConfigNodeContainerRaw
+    }
+  }
+
+  const container = normalizeNodeContainer(containerRaw)
+  const content = normalizeNodeContent(contentRaw)
+
+  const fragment: LayerConfigFragment = {}
+  if (container && Object.keys(container).length > 0) {
+    fragment.container = container
+  }
+  if (content && Object.keys(content).length > 0) {
+    fragment.content = content
+  }
+  return fragment
 }
 
 export function toFragmentFromContainer(
@@ -59,7 +77,7 @@ export function mergeFragment(
   const fragment: LayerConfigFragment = {}
   if (Object.keys(container).length > 0) fragment.container = container
   if (Object.keys(content).length > 0) fragment.content = content
-  return createFragment(fragment)
+  return fragment
 }
 
 /**

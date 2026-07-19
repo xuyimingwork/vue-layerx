@@ -50,7 +50,7 @@ describe('bindLayerTree', () => {
       close,
     })
 
-    bound.content?.props.onDone?.()
+    ;(bound.content?.props.onDone as (() => void) | undefined)?.()
     expect(close).toHaveBeenCalled()
   })
 
@@ -67,7 +67,7 @@ describe('bindLayerTree', () => {
 
     expect(bound.container.props.open).toBe(true)
     expect(bound.container.props['onUpdate:open']).toBeTypeOf('function')
-    bound.container.props['onUpdate:open']?.(false)
+    ;(bound.container.props['onUpdate:open'] as ((v: unknown) => void) | undefined)?.(false)
     expect(close).toHaveBeenCalled()
   })
 
@@ -83,7 +83,7 @@ describe('bindLayerTree', () => {
     })
 
     expect(bound.container.props.visible).toBe(true)
-    bound.content?.props.onSave?.()
+    ;(bound.content?.props.onSave as (() => void) | undefined)?.()
     expect(close).toHaveBeenCalled()
   })
 

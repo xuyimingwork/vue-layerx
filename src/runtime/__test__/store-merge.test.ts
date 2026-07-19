@@ -9,7 +9,6 @@ import type {
   LayerViewStoreWithTemplate,
 } from '@/types/store'
 import {
-  createFragment,
   mergeFragment,
   toFragmentFromContent,
   toFragmentFromContainer,
@@ -27,8 +26,8 @@ function entry(label: string): LayerTemplateEntry {
 
 function createDefineStore(): LayerViewStoreWithTemplate {
   return createLayerStore({
-    define: createFragment(),
-    'define:template': createFragment(),
+    define: {},
+    'define:template': {},
   })
 }
 
@@ -40,6 +39,7 @@ function createTestInstanceStore(overrides: {
   const store = createLayerInstanceStore({
     create: computed(() => overrides.create ?? {}),
     use: computed(() => overrides.use ?? {}),
+    refs: {}
   })
   if (overrides.open) store.open = overrides.open
   return store

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Config domain types (Raw / Canonical / Bound)** — split into `types/config-raw.ts`, `types/config.ts`, `types/bound.ts`; see [docs/config-naming.md](./docs/config-naming.md)
+- **`CloseOnConfig` → `CloseOnRaw` / `CloseOn`**; **`LayerNormalized` / `LayerNodeNormalized` → `LayerBound` / `LayerBoundNode`**
+- **`LayerPropsRaw`** accepts `props.ref` as `Ref` or callback; Canonical `LayerProps.ref` is callback-only after `toFragment*` / `normalizeNode*`
+- **`normalizeNode*`** copies Raw → Canonical (no in-place mutation of user config)
 - **`LayerDefine.exists`** — replaces `inLayer` / `outsideLayer`; content asks whether the define's layer context exists (`true` = direct layer content)
 - **`LayerTemplate` `#default`** — creator path now flat-forwards target slot scoped props (same as caller); removed `LayerTemplateScope` (`inLayer` / `outsideLayer` / `slotProps` wrapper); host branching uses `layer.exists`
 
