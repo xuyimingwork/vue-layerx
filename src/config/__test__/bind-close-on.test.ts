@@ -97,9 +97,27 @@ describe('bindCloseOn', () => {
 
     const bound = bindCloseOn(props, { done: always() }, hide)
 
+    ;(bound.onDone as ((...args: unknown[]) => void) | undefined)?.('payload')
+    expect(props.onDone).toHaveBeenCalledWith('payload')
+    expect(hide).toHaveBeenCalledWith({
+      confirmed: false,
+      source: 'content',
+      event: 'done',
+      args: ['payload'],
+    })
+  })
+
+  it('should pass confirmed true from closeOn entry', () => {
+    const hide = vi.fn()
+    const bound = bindCloseOn({}, { done: always(true) }, hide)
+
     ;(bound.onDone as (() => void) | undefined)?.()
-    expect(props.onDone).toHaveBeenCalled()
-    expect(hide).toHaveBeenCalled()
+    expect(hide).toHaveBeenCalledWith({
+      confirmed: true,
+      source: 'content',
+      event: 'done',
+      args: [],
+    })
   })
 
   it('should create listener when no prior handler exists', () => {

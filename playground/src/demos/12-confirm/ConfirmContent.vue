@@ -3,13 +3,17 @@ import { ElButton } from 'element-plus'
 import { defineLayer, LayerTemplate } from 'vue-layerx'
 
 const emit = defineEmits<{
-  confirm: []
+  confirm: [payload: { action: string }]
+  cancel: []
 }>()
 
 const layer = defineLayer({
   props: { title: '删除确认', width: '400px' },
   content: {
-    closeOn: { confirm: { when: 'always', confirmed: true } },
+    closeOn: {
+      confirm: { when: 'always', confirmed: true },
+      cancel: { when: 'always', confirmed: false },
+    },
   },
 })
 </script>
@@ -18,7 +22,10 @@ const layer = defineLayer({
   <p class="body">确定删除这条记录吗？此操作不可撤销。</p>
 
   <LayerTemplate :to="layer" name="footer">
-    <ElButton type="danger" @click="emit('confirm')">删除</ElButton>
+    <ElButton @click="emit('cancel')">取消</ElButton>
+    <ElButton type="danger" @click="emit('confirm', { action: 'delete' })">
+      删除
+    </ElButton>
   </LayerTemplate>
 </template>
 

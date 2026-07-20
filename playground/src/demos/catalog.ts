@@ -12,6 +12,7 @@ import LifecycleDemo from './08-lifecycle/index.vue'
 import ProvideInjectDemo from './09-provide-inject/index.vue'
 import LayerNoContainerDemo from './10-layer-no-container/index.vue'
 import OpenSwapContainerDemo from './11-open-swap-container/index.vue'
+import ConfirmDemo from './12-confirm/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -110,8 +111,17 @@ export const demoGroups: DemoGroup[] = [
   {
     id: 'close-config',
     title: '关闭与配置',
-    subtitle: '拦截 / 合并优先级',
+    subtitle: 'confirm / 拦截 / 合并优先级',
     items: [
+      {
+        id: 'confirm-api',
+        level: 6,
+        title: 'confirm() Promise',
+        description:
+          'await dialog.confirm()；closeOn.confirmed 决定 resolve/reject；LayerConfirmError.code 为 close | busy；可用 close({ confirmed: true }) 主动结算。',
+        tags: ['confirm()', 'closeOn.confirmed', 'LayerConfirmError', 'close(options)'],
+        component: ConfirmDemo,
+      },
       {
         id: 'before-close',
         level: 6,

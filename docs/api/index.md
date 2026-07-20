@@ -93,9 +93,10 @@ const child = userLayer.clone(() => ({ props: { mode: 'edit' } }))
 
 | 方法 / 属性 | 说明 |
 |-------------|------|
-| `open(config?)` | 打开弹层；关闭后再打开会重建 content；已打开时 open 更新配置 |
-| `close()` | 关闭（不卸 DOM 挂载点） |
-| `unmount()` | 卸 portal DOM；**不**清 layerHost |
+| `open(config?)` | 打开弹层；关闭后再打开会重建 content；已打开时 open 更新配置；confirming 中忽略并 warn |
+| `confirm(config?)` | 打开并返回 `Promise<LayerConfirmResult>`；`closeOn.confirmed: true` 或 `close({ confirmed: true })` 时 resolve，否则 reject `LayerConfirmError`（`code: 'close'`）；已打开/confirming 再调 → `code: 'busy'` |
+| `close(options?)` | 关闭（不卸 DOM 挂载点）；confirming 时可传 `{ confirmed?, args? }` |
+| `unmount()` | 卸 portal DOM；confirming 时 reject `source: 'unmount'`；**不**清 layerHost |
 | `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier（**不继承**父 `use` 的 `props.ref`）；setup 内自动 `bindHost()` |
 | `contentRef` | 只读 computed；打开时指向 content 组件实例，关闭后为 `null` |
 | `containerRef` | 只读 computed；打开时指向 container 组件实例，关闭后为 `null` |

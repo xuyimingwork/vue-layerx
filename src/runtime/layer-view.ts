@@ -19,6 +19,7 @@ import {
 import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
 import type { LayerBound, LayerBoundNode, LayerConfigContainer } from '@/types'
+import type { LayerClosePayload } from '@/types/confirm'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
@@ -131,7 +132,9 @@ export const LayerView = defineComponent({
       required: true,
     },
   },
-  emits: ['update:visible'],
+  emits: {
+    'update:visible': (_visible: boolean, _payload?: LayerClosePayload) => true,
+  },
   setup(props, { emit }) {
     const openId = ref(0)
     const refContentTo = useRefContentTo()
@@ -140,7 +143,8 @@ export const LayerView = defineComponent({
       'define:template': {},
     })
 
-    const close = () => emit('update:visible', false)
+    const close = (payload?: LayerClosePayload) =>
+      emit('update:visible', false, payload)
 
     /** Raw store tiers → single merge fragment (config domain). */
     const merged = computed(() =>

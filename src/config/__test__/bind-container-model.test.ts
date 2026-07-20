@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { bindContainerModel, DEFAULT_CONTAINER_MODEL } from '../bind-container-model'
 
-type UpdateFn = (value: unknown) => void
+type UpdateFn = (...args: unknown[]) => void
 
 describe('bindContainerModel', () => {
   it('should bind model prop and update handler', () => {
@@ -11,7 +11,11 @@ describe('bindContainerModel', () => {
     expect(result.title).toBe('A')
     expect(result.modelValue).toBe(true)
     ;(result['onUpdate:modelValue'] as UpdateFn | undefined)?.(false)
-    expect(close).toHaveBeenCalled()
+    expect(close).toHaveBeenCalledWith({
+      source: 'container',
+      event: 'update:modelValue',
+      args: [false],
+    })
   })
 
   it('should close when update value is undefined', () => {
@@ -19,7 +23,11 @@ describe('bindContainerModel', () => {
     const result = bindContainerModel({}, true, 'modelValue', close)
 
     ;(result['onUpdate:modelValue'] as UpdateFn | undefined)?.(undefined)
-    expect(close).toHaveBeenCalled()
+    expect(close).toHaveBeenCalledWith({
+      source: 'container',
+      event: 'update:modelValue',
+      args: [undefined],
+    })
   })
 
   it('should support custom model prop names', () => {
@@ -28,7 +36,11 @@ describe('bindContainerModel', () => {
 
     expect(result.open).toBe(true)
     ;(result['onUpdate:open'] as UpdateFn | undefined)?.(false)
-    expect(close).toHaveBeenCalled()
+    expect(close).toHaveBeenCalledWith({
+      source: 'container',
+      event: 'update:open',
+      args: [false],
+    })
   })
 
   it('should not close when model stays true', () => {
@@ -67,6 +79,25 @@ describe('bindContainerModel', () => {
     ;(result['onUpdate:open'] as UpdateFn | undefined)?.(true)
     expect(onUpdate).toHaveBeenCalledWith(true)
     expect(close).not.toHaveBeenCalled()
+  })
+
+  it('should forward all update args to prev and close payload', () => {
+    const close = vi.fn()
+    const onUpdate = vi.fn()
+    const result = bindContainerModel(
+      { 'onUpdate:modelValue': onUpdate },
+      true,
+      'modelValue',
+      close,
+    )
+
+    ;(result['onUpdate:modelValue'] as UpdateFn | undefined)?.(false, 'extra')
+    expect(onUpdate).toHaveBeenCalledWith(false, 'extra')
+    expect(close).toHaveBeenCalledWith({
+      source: 'container',
+      event: 'update:modelValue',
+      args: [false, 'extra'],
+    })
   })
 })
 

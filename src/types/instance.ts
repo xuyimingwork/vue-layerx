@@ -1,5 +1,6 @@
 import type { ComputedRef, ComponentPublicInstance, MaybeRefOrGetter } from 'vue'
 import type { LayerConfigContent } from './config-raw'
+import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
 
 /** Returned by defineLayer(); pass as LayerTemplate :to */
 export interface LayerDefine {
@@ -10,7 +11,12 @@ export interface LayerDefine {
 export interface LayerInstance {
   /** Snapshot tier only — plain config, not MaybeRefOrGetter. */
   open: (config?: LayerConfigContent) => void
-  close: () => void
+  /**
+   * Open as a confirm session. Settles when the layer closes.
+   * Rejects with LayerConfirmError (code: 'busy') if already open or confirming.
+   */
+  confirm: (config?: LayerConfigContent) => Promise<LayerConfirmResult>
+  close: (options?: LayerCloseOptions) => void
   unmount: () => void
   clone: (config?: MaybeRefOrGetter<LayerConfigContent>) => LayerInstance
   readonly visible: boolean

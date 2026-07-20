@@ -14,8 +14,12 @@ function createTestApp() {
   })
   const state = reactive({ visible: false })
   const host = shallowRef<LayerHost | null>(null)
-  const layerApp = createLayerApp({ store, state, host })
-  return { state, host, layerApp }
+  const close = (payload?: { source?: string }) => {
+    void payload
+    state.visible = false
+  }
+  const layerApp = createLayerApp({ store, state, host, close })
+  return { state, host, layerApp, close }
 }
 
 describe('createLayerApp', () => {
@@ -132,7 +136,14 @@ describe('createLayerApp / SSR', () => {
     })
     const state = reactive({ visible: true })
     const host = shallowRef<LayerHost | null>(null)
-    const layerApp = createLayerApp({ store, state, host })
+    const layerApp = createLayerApp({
+      store,
+      state,
+      host,
+      close: () => {
+        state.visible = false
+      },
+    })
     expect(layerApp.mounted).toBe(true)
     layerApp.unmount()
   })

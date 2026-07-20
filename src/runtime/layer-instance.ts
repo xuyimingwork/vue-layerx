@@ -16,6 +16,9 @@ import type {
   LayerConfigContent,
   LayerInstanceStoreInit,
   LayerInstanceStoreWithTemplate,
+  LayerCloseOptions,
+  LayerClosePayload,
+  LayerConfirmResult,
 } from '@/types'
 import {
   toFragmentFromContent,
@@ -25,8 +28,14 @@ import {
 import { withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import { createLayerApp } from '@/runtime/layer-app'
+import { LayerConfirmError } from '@/shared/layer-confirm-error'
 import { warn } from '@/shared/warn'
 import type { LayerHost } from '@/types/layer-host'
+
+type Confirming = {
+  resolve: (result: LayerConfirmResult) => void
+  reject: (error: LayerConfirmError) => void
+}
 
 export function createLayerInstance({
   create,
@@ -61,21 +70,44 @@ export function createLayerInstance({
     visible: false,
   })
   const host = shallowRef<LayerHost | null>(null)
-
-  const app = createLayerApp({ store, state, host })
-
-  const dispose = () => {
-    state.visible = false
-    app.unmount()
-  }
+  let confirming: Confirming | null = null
 
   const open = (config?: LayerConfigContent) => {
     store.open = toFragmentFromContent(config)
     state.visible = true
   }
 
-  const close = () => {
+  const close = (payload: LayerClosePayload = {}) => {
+    if (confirming) {
+      const args = payload.args ?? []
+      const result: LayerConfirmResult = {
+        source: payload.source ?? 'instance',
+        event: payload.event,
+        args,
+        data: args[0],
+      }
+      if (payload.confirmed === true) confirming.resolve(result)
+      else confirming.reject(new LayerConfirmError({ code: 'close', result }))
+      confirming = null
+    }
     state.visible = false
+  }
+
+  const app = createLayerApp({ store, state, host, close })
+
+  const dispose = () => {
+    close({ source: 'unmount' })
+    app.unmount()
+  }
+
+  const confirm = (config?: LayerConfigContent) => {
+    if (confirming || state.visible) {
+      return Promise.reject(new LayerConfirmError({ code: 'busy' }))
+    }
+    return new Promise<LayerConfirmResult>((resolve, reject) => {
+      confirming = { resolve, reject }
+      open(config)
+    })
   }
 
   const bindHost = ({ silent = false } = {}) => {
@@ -103,8 +135,17 @@ export function createLayerInstance({
   }
 
   const instance: LayerInstance = {
-    open,
-    close,
+    open(config) {
+      if (confirming) {
+        warn('open() ignored: confirm() is pending')
+        return
+      }
+      open(config)
+    },
+    confirm,
+    close(options?: LayerCloseOptions) {
+      close({ ...options, source: 'instance' })
+    },
     unmount: dispose,
     bindHost,
     contentRef: computed(() => (state.visible ? contentRef.value : null)),

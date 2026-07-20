@@ -703,7 +703,9 @@ xxx.open({
 ```ts
 interface LayerInstance {
   open(config?: LayerConfigContent): void
-  close(): void
+  /** Confirm session: settles on close. Busy if already open/confirming. */
+  confirm(config?: LayerConfigContent): Promise<LayerConfirmResult>
+  close(options?: LayerCloseOptions): void
   clone(config?: LayerConfigContent): LayerInstance
   readonly visible: boolean
   readonly contentRef: ComputedRef<ComponentPublicInstance | null>
@@ -711,6 +713,8 @@ interface LayerInstance {
   bindHost(): void
 }
 ```
+
+`confirm()` 打开一层并返回 Promise：关层时若 `closeOn.confirmed === true`（或 `close({ confirmed: true })`）则 **resolve** `LayerConfirmResult`，否则 **reject** `LayerConfirmError`（`code: 'close'`，`result` 与 resolve 同形）。再入 `confirm` / 在已 `open` 时调 `confirm` → `code: 'busy'`。confirming 期间公开 `open` 忽略并 warn。`result.source` 为 `content` | `container` | `instance` | `unmount`；事件驱动时带 `event` / `args` / `data`（`data === args[0]`）。
 
 `contentRef` / `containerRef`：内部 `shallowRef` + `store.refs` 桶 `props.ref`；对外 `computed(() => visible ? target : null)`。`close()` 后立即可见为 `null`。
 
@@ -795,7 +799,7 @@ useDialog(UserForm, { closeOn: ['success', 'cancel'] })
 }
 ```
 
-即 **`closeOn: ['success']` → `onSuccess: () => close()`**（emit 名按 Vue 惯例转为 `on` + PascalCase）。Canonical 中 `when: 'always'` 表示无条件关；`when` 为函数时仅当返回值 **`=== true`** 才 `close()`（同步，不 await）。`confirmed` 为预留字段，本轮 bind **不读**。跨 tier 删除某 event：`closeOn: { submit: false }` 或 `{ event: 'submit', when: 'none' }`（数组 string `'none'` 表示事件名，不是 tombstone）。
+即 **`closeOn: ['success']` → `onSuccess: () => close({ source:'content', event, args, confirmed })`**（emit 名按 Vue 惯例转为 `on` + PascalCase）。Canonical 中 `when: 'always'` 表示无条件关；`when` 为函数时仅当返回值 **`=== true`** 才 `close()`（同步，不 await）。**`confirmed`**：bind **已读**；仅当 `confirmed === true` 时 `confirm()` Promise **resolve**，否则（含数组糖默认 `false`）走 reject `code:'close'`。要用 `confirm()` 做「确认成功」须写 object 形，例如 `closeOn: { confirm: { when: 'always', confirmed: true } }`。跨 tier 删除某 event：`closeOn: { submit: false }` 或 `{ event: 'submit', when: 'none' }`（数组 string `'none'` 表示事件名，不是 tombstone）。
 
 content 的 `onXxx` 由 vue-layerx 在 bind 阶段**统一写入** `bound.content.props`。若 `open` / `useX` 的 `props` 与 `closeOn` 同名（如 `onSuccess`），bind 时合并为单一 wrapper：**先调用用户 handler，再按 `when` 决定是否 `close()`**。
 

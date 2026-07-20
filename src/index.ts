@@ -1,4 +1,5 @@
 export * from './api'
+export { LayerConfirmError } from './shared/layer-confirm-error'
 export type {
   LayerAdapter,
   LayerBound,
@@ -17,4 +18,7 @@ export type {
   CloseOnPolicyObjectRaw,
   CloseOnRaw,
   CloseOnWhen,
+  LayerConfirmSource,
+  LayerConfirmResult,
+  LayerCloseOptions,
 } from './types'

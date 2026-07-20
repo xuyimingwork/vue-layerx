@@ -31,6 +31,13 @@ export type { LayerBound, LayerBoundNode } from './bound'
 
 export type { LayerInstance, LayerDefine } from './instance'
 
+export type {
+  LayerConfirmSource,
+  LayerConfirmResult,
+  LayerCloseOptions,
+  LayerClosePayload,
+} from './confirm'
+
 export type { LayerHost } from './layer-host'
 
 export type {
