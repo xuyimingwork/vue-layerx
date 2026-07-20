@@ -106,214 +106,223 @@ const useDialog = createLayer(BaseDialog, {
 
 ### defineLayer 在内容组件中配置
 
-内容组件本身是普通 Vue 组件。但弹层场景下，它常常还要回答两件事：
+在上面的用法里，内容组件可以是任意的普通 vue 组件。我们希望组件既可以用在普通场景里，也可以无痛用到弹层里。
+
+但弹层场景下，内容组件常常还要回答两件事：
 
 - 在弹层里打开时，外面弹层容器的标题、宽度等应该是什么？
 - 用户点了组件内的按钮，比如「保存 / 取消」等，要不要关掉弹层？
 
 这些东西只有内容组件的作者自身最清楚，如果使用方配置，每次 `open` 时都要传一遍，很麻烦又需要使用方深入内容组件。
-所以在内容组件里，需要有个工具来配置外层容器，它就是 `defineLayer`。
 
+所以需要有个工具来配置内容组件在弹层内的整体表现，它就是 `defineLayer`。
 
+可以这样配置容器：
 
+```vue
+<!-- HelloWorld.vue -->
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
 
-Content 是普通 Vue 组件，可同时用于页内与弹层。在 content 的 `setup` 里调用 `defineLayer`，为当次打开注册 container 默认与 `closeOn`：
-
-```ts
-const layer = defineLayer({
-  props: { title: '新建用户', width: '480px' },
-  content: { closeOn: ['success', 'cancel'] },
+defineLayer({
+  props: { title: '我的弹层', width: '480px' }
 })
+</script>
+<template>
+  <p>Hello World</p>
+</template>
 ```
 
-- `closeOn`：content 的 emit 名；触发时自动 `close()`。
-- `defineLayer` 返回 `LayerDefine`（含 `exists`），供 `LayerTemplate :to` 使用。
-- 仅在弹层 content 树内生效；页内直接渲染该组件时不会注册弹层配置。
+同时，可以配置如何监听内容组件的事件来关闭弹层
+
+```vue
+<!-- HelloWorld.vue -->
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
+
+defineLayer({
+  props: { title: '我的弹层', width: '480px' },
+  content: {
+    closeOn: ['ok']
+  }
+})
+const emit = defineEmits(['ok'])
+</script>
+<template>
+  <p>Hello World</p>
+  <button @click="emit('ok')">OK</button>
+</template>
+```
+
+`defineLayer` 中的所有配置，仅在 `HelloWorld.vue` 作为弹层内容组件时生效，`HelloWorld.vue` 在其它场景中使用与普通组件没有任何区别。
 
 ### useLayer 与实例使用
 
-```ts
-const dialog = useDialog(UserForm, {
-  // use tier：可跟 ref / getter 长期绑定
-  // props: { id: selectedId.value }
-})
+有容器、有内容后，就可以用 `useLayer` 创建弹层实例了。
 
-dialog.open({ props: { mode: 'edit', id: 1 } }) // open tier：当次快照
-dialog.close()
+```vue
+<!-- App.vue -->
+<script setup lang="ts">
+import HelloWorld from './HelloWorld.vue'
+import { useDialog } from './dialog'
+
+const dialog = useDialog(HelloWorld)
+</script>
+
+<template>
+  <button @click="dialog.open()">
+    打开弹层
+  </button>
+  <button @click="dialog.close()">
+    关闭弹层
+  </button>
+</template>
 ```
 
-| | 说明 |
-|--|------|
-| `useLayer(Content?, config?)` | `createLayer` 的返回值，**不是**独立导出 |
-| `open(config?)` | 打开；参数为 plain 对象；已打开时再次 `open` 只更新配置 |
-| `close()` | 关闭（不卸 portal） |
-| `clone(config?)` | 派生独立实例（独立 `visible`） |
+> 注意 `useLayer` 并不是 `vue-layerx` 导出的函数，而是由 `createLayer` 返回的。可以起自己喜欢的名字，比如：`useDialog`、`useDrawer` 等。
 
-`createLayer` / `defineLayer` / `useLayer` / `clone` 的配置可以是 getter 或 ref（live）；**`open(config)` 只接受普通对象**（当次快照）。需要长期跟状态时，写在 `use` / `define`，再空参 `open()`。详见 [响应式配置](#响应式配置)。
+> 由于容器标题、closeOn 等已经在 `defineLayer` 中配置，这里的 `useDialog` 和 `open` 可以不需要任何参数，就能达成效果。
+
+#### 用 open 向内容组件传参
+
+`dialog.open` 允许向内容组件传入参数：
+
+```vue
+<!-- App.vue -->
+<template>
+  <button @click="dialog.open({ props: { id: 1, mode: 'edit' } })">
+    打开弹层
+  </button>
+</template>
+```
+
+#### 用 useLayer 向内容组件传参
+
+一些每次打开都要传递的参数，可以放在 useLayer 中，简化 open 时的传参：
+
+```vue
+<!-- App.vue -->
+<script setup lang="ts">
+// ...
+const dialog = useDialog(HelloWorld, {
+  props: { mode: 'edit' }
+})
+</script>
+
+<template>
+  <button @click="dialog.open({ props: { id: 1 } })">
+    打开弹层
+  </button>
+</template>
+```
+
+#### 顶层 props 指哪一侧
+
+前面两处都出现了顶层 `props`，但含义不一样：
+
+| API | 顶层 `props` → |
+|-----|----------------|
+| `createLayer` / `defineLayer` | **容器**（如 `title`、`width`） |
+| `useLayer` / `open` / `clone` | **内容**（如 `id`、`mode`） |
+
+另一侧要显式写出字段名：内容侧用 `content`，容器侧用 `container`。
+
+```ts
+// defineLayer：顶层 props = 容器
+defineLayer({ props: { title: '编辑用户' } })
+// open：顶层 props = 内容；改标题要走 container
+dialog.open({
+  props: { id: 1 },
+  container: { props: { title: '当次标题' } },
+})
+```
 
 ### LayerTemplate 向插槽传递内容
 
-`LayerTemplate` 把插槽内容投到 container 或 content 的同名 slot。**`:to` 必填。**
+前面例子里，内容只进入容器的 `default` 插槽。实际使用中，容器往往有其它插槽，比如：
 
 ```vue
-<!-- content 内（creator）：投进 Dialog 等同名 slot -->
-<LayerTemplate :to="layer" name="footer">
-  <button @click="emit('success')">保存</button>
-</LayerTemplate>
+<!-- HelloWorld.vue -->
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
 
-<!-- 调用方（caller）：远程投进 content 的同名 slot -->
-<LayerTemplate :to="dialog" name="header">
-  <span>自定义头部</span>
-</LayerTemplate>
-
-<!-- 调用方：远程投进 container slot（覆盖 content 内同名模板） -->
-<LayerTemplate :to="dialog" container name="footer">
-  <button>调用方 footer</button>
-</LayerTemplate>
+defineLayer({
+  // ...
+})
+</script>
+<template>
+  <p>Hello World</p>
+  <button @click="emit('ok')">OK</button>
+</template>
 ```
 
-- **creator**（`:to` 为 `defineLayer()` 返回值）：固定投 container；`#default` 为目标 slot scoped props flat 透传；宿主态读 `layer.exists`。
-- **caller**（`:to` 为 `LayerInstance`）：投 content slot；加 `container` 则投 container slot；`#default` 参数与目标 scoped slot 一致。
-- **`visible-outside`**：页内渲染同一 content 时也显示该模板（如页内编辑也要保存按钮）。
+如何把 `button` 投到 `ElDialog` 的 `footer` 中呢？
+
+`vue-layerx` 提供了 `LayerTemplate`，只需要：
+
+```vue
+<!-- HelloWorld.vue -->
+<script setup lang="ts">
+import { defineLayer, LayerTemplate } from 'vue-layerx'
+
+const layer = defineLayer({
+  // ...
+})
+</script>
+<template>
+  <p>Hello World</p>
+  <LayerTemplate :to="layer" name="footer">
+    <button @click="emit('ok')">OK</button>
+  </LayerTemplate>
+</template>
+```
+
+`LayerTemplate` 包裹的内容默认不会渲染，只会在弹层中使用时，将内容投递到对应的插槽中去。
+
+#### 使用方的插槽投递
+
+内容组件可以给容器组件的插槽投递东西，同样，使用方能给内容组件和容器组件投递东西。
+
+```vue
+<!-- App.vue -->
+<script setup lang="ts">
+// ...
+const dialog = useDialog(HelloWorld)
+</script>
+
+<template>
+  <button @click="dialog.open({ props: { id: 1 } })">
+    打开弹层
+  </button>
+  <LayerTemplate :to="dialog" name="header">
+    <span>给内容组件的自定义头部</span>
+  </LayerTemplate>
+  <LayerTemplate :to="dialog" container name="footer">
+    <button>给容器组件的自定义 footer（覆盖内容组件的 footer）</button>
+  </LayerTemplate>
+</template>
+```
 
 ### 配置合并
 
-配置按 tier 合并，**后者覆盖前者**（同名字段）：
+前面的例子里在各种不同的地方都出现了配置。它们的优先级是如何计算的呢？
 
-```text
-open > use > use:template > define > define:template > create
-```
+`vue-layerx` 内部有一条严格的配置覆盖机制，常用的优先级是
 
-```ts
-const useDialog = createLayer(ElDialog, {
-  props: { width: '480px' }, // create
-})
+`instance.open` > `useLayer` > `defineLayer` > `createLayer`
 
-const dialog = useDialog(UserForm, {
-  container: { props: { width: '520px' } }, // use
-})
+对于 `LayerTemplate` 投递的模板来说：
 
-dialog.open({
-  container: { props: { title: '覆盖标题', width: '640px' } }, // open
-})
-```
-
-- `createLayer` / `defineLayer`：顶层字段 → container，`content` 显式写 content。
-- `useLayer` / `open` / `clone`：顶层字段 → content，`container` 显式写 container。
-
-细则（slot、未知字段等）见 [配置合并规则](#配置合并规则)。
-
----
-
-
-每次 `open` / 配置变更走：
-
-```text
-merge → adapter → refs → bind → render
-```
-
-1. **merge**：汇总各 tier 的 `content` / `container` 片段（`component` / `props` / `slots`；content 另有 `closeOn`，container 另有 `model`）。
-2. **adapter**：该实例所属工厂的切面（可选）。
-3. **refs**：框架内部 ref 与用户 `props.ref` 链式合并。
-4. **bind**：`closeOn` → content 事件；`visible` → container `[model]` / `onUpdate:model`。
-5. **render**：`h()` 挂到 portal。
-
-Slot 与命令式 `slots` 同构，按同一优先级链合并。容器 slot 名不一致（如 Dialog `#title` vs Drawer `#header`）应在 **adapter** 里搬移 key，而不是在 merge 层维护映射表。
-
-节点上仅白名单字段参与契约；未知键不保证经 merge 保留（见 [ADR 0004](./docs/adr/0004-merge-unknown-fields.md)）。
+- `useLayer` > to dialog template > `defineLayer`
+- `useLayer` > to layer template > `createLayer`
 
 ### 响应式配置
 
-| API | 配置源 | 语义 |
-|-----|--------|------|
-| `createLayer` / `defineLayer` / `useLayer` / `clone` | `MaybeRefOrGetter` | live：getter / ref / computed 会持续订阅 |
-| `open(config?)` | plain `LayerConfigContent` | 当次快照；**不**接受 getter |
-
-典型用法：
-
-```ts
-// 调用方长期绑选中行；open 只负责打开
-const dialog = useDialog(UserForm, () => ({
-  props: { id: selectedId.value },
-}))
-dialog.open()
-
-// content 内倒计时 title（同一次打开不 remount content）
-defineLayer(() => ({
-  props: { title: `请确认（${left.value}s）` },
-}))
-```
-
-`clone` 对父 `use` 做 live 折叠：未覆盖字段继续跟父；`clone` 自身 source 也可是 getter。`clone` **不继承**父 `use` 的 `props.ref`。
-
 ### adapter
-
-`adapter` 挂在 `createLayer` 第二参，是**工厂级切面**：该工厂创建的每个实例，在 merge 之后、bind 之前都会跑同一个 adapter。
-
-```ts
-type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
-
-const useDrawer = createLayer(ElDrawer, {
-  props: { direction: 'rtl', size: '360px' },
-  adapter: (fragment) => {
-    const container = fragment.container ?? {}
-    const { title, footer, ...rest } = container.slots ?? {}
-    return {
-      ...fragment,
-      container: {
-        ...container,
-        // 滤掉 Dialog 专用 props
-        props: Object.fromEntries(
-          Object.entries(container.props ?? {}).filter(([k]) => k !== 'width'),
-        ),
-        // Dialog #title → Drawer #header
-        slots: {
-          ...rest,
-          ...(title ? { header: title } : {}),
-          ...(footer ? { footer } : {}),
-        },
-      },
-    }
-  },
-})
-```
-
-适合：窄屏换壳、滤无效 props、对齐 slot / `model`。`open` 可改 `container.component`，但仍走该工厂的 adapter；容器差异由 adapter 处理。
 
 ### bindHost 与生命周期
 
-设计上，弹层实例应**归属于某个组件**（Host），便于随页面卸载一起清理。
-
-| API | 行为 |
-|-----|------|
-| `open()` | 打开；**close 后再 open** 会重建 content；已打开时 `open` 只更新配置 |
-| `close()` | `visible = false`，不卸 portal DOM |
-| `unmount()` | 卸 portal；**不**清除已绑定的 host |
-| Host `onUnmounted` | 自动 `dispose`（卸 portal）并清空 host |
-
-```ts
-// 页面 setup 内创建：自动 bindHost，组件卸载时弹层一并清理
-const dialog = useDialog(UserForm)
-
-// 模块级单例：须在 App / ConfigProvider 子树内 setup 调用
-export const messageBox = useDialog(AlertContent)
-// App.vue setup:
-messageBox.bindHost()
-```
-
-`clone()` 走完整实例创建，在调用点的 setup 内自动 `bindHost`；与父实例的 host 无关。
-
-弹层 portal 挂在 `document.body`，与 Host 组件树 DOM 分离。为让 content 仍能 `inject` 祖先 provide（如 `ElConfigProvider` 的 locale / size），每个实例维护自己的 `host`：
-
-- `useLayer` / `clone` 在 setup 内创建时自动 `bindHost()`。
-- 模块顶层创建时无 setup，保持 bare portal；需要 inject 时再手动 `bindHost()`。
-- 同一 host 重复绑定为 no-op；绑到其他 host 或非 setup 调用时开发环境 warn。
-
-未 `bindHost` 仍可 `open()`，只是 content 拿不到 Host 子树的 provide。
-
----
-
-## API
+## API（TODO:）
 
 ### `createLayer`
 
