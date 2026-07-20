@@ -8,8 +8,20 @@ export type LayerRefCallback = (
   el: ComponentPublicInstance | null,
 ) => void
 
-/** Canonical closeOn; same shape as CloseOnRaw this round */
-export type CloseOn = string[]
+/** closeOn when: tombstone / always / sync predicate (=== true closes) */
+export type CloseOnWhen =
+  | 'none'
+  | 'always'
+  | ((...args: unknown[]) => boolean)
+
+/** Canonical closeOn entry (fields always present after normalize) */
+export type CloseOnEntry = {
+  when: CloseOnWhen
+  confirmed: boolean
+}
+
+/** Canonical closeOn: event → entry; store may include when:'none' until merge drops it */
+export type CloseOn = Record<string, CloseOnEntry>
 
 /** Canonical props — ref is callback only (after normalizePropRef) */
 export interface LayerProps {

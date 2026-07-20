@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`closeOn`**：Canonical 为 `Record<event, { when, confirmed }>`；Raw 支持数组 / Record 糖（含 `true` / `false` / `when`）；跨 tier **按 event patch**（非整表替换）；`when: 'none'` / `false` 删除该 event；`when` 函数仅 `=== true` 时关层；`confirmed` 预留（bind 未接线）
 - **Config domain types (Raw / Canonical / Bound)** — split into `types/config-raw.ts`, `types/config.ts`, `types/bound.ts`; see [docs/config-naming.md](./docs/config-naming.md)
 - **`CloseOnConfig` → `CloseOnRaw` / `CloseOn`**; **`LayerNormalized` / `LayerNodeNormalized` → `LayerBound` / `LayerBoundNode`**
 - **`LayerPropsRaw`** accepts `props.ref` as `Ref` or callback; Canonical `LayerProps.ref` is callback-only after `toFragment*` / `normalizeNode*`

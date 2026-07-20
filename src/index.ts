@@ -12,5 +12,9 @@ export type {
   LayerConfigContainer,
   LayerConfigCreate,
   CloseOn,
+  CloseOnEntry,
+  CloseOnEntryRaw,
+  CloseOnPolicyObjectRaw,
   CloseOnRaw,
+  CloseOnWhen,
 } from './types'

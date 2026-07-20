@@ -100,7 +100,10 @@ describe('layer store merge', () => {
     })
     const viewStore = createDefineStore()
 
-    expect(mergeLayerStores(instanceStore, viewStore).content.closeOn).toEqual(['cancel'])
+    expect(mergeLayerStores(instanceStore, viewStore).content.closeOn).toEqual({
+      done: { when: 'always', confirmed: false },
+      cancel: { when: 'always', confirmed: false },
+    })
   })
 
   it('should fall back closeOn through use and define tiers', () => {
@@ -113,7 +116,7 @@ describe('layer store merge', () => {
         }),
         viewStore,
       ).content.closeOn,
-    ).toEqual(['done'])
+    ).toEqual({ done: { when: 'always', confirmed: false } })
 
     viewStore.define = toFragmentFromContainer({ content: { closeOn: ['submit'] } })
     expect(
@@ -123,7 +126,10 @@ describe('layer store merge', () => {
         }),
         viewStore,
       ).content.closeOn,
-    ).toEqual(['done'])
+    ).toEqual({
+      submit: { when: 'always', confirmed: false },
+      done: { when: 'always', confirmed: false },
+    })
 
     expect(
       mergeLayerStores(
@@ -133,7 +139,11 @@ describe('layer store merge', () => {
         }),
         viewStore,
       ).content.closeOn,
-    ).toEqual(['cancel'])
+    ).toEqual({
+      submit: { when: 'always', confirmed: false },
+      done: { when: 'always', confirmed: false },
+      cancel: { when: 'always', confirmed: false },
+    })
   })
 
   it('should merge container model with priority open > use > define > create', () => {

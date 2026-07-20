@@ -1,14 +1,30 @@
 import type { Component, Ref } from 'vue'
 import type {
+  CloseOnWhen,
   LayerAdapter,
   LayerRefCallback,
   LayerSlotRender,
 } from './config'
 
-/** User-facing closeOn sugar; same shape as CloseOn this round */
-export type CloseOnRaw = string[]
+export type { CloseOnWhen, LayerRefCallback }
 
-export type { LayerRefCallback }
+/** object 形：when 必填（禁止无 when 的 confirmed） */
+export type CloseOnPolicyObjectRaw = {
+  when: CloseOnWhen
+  confirmed?: boolean
+}
+
+/** 数组 object 条目 */
+export type CloseOnEntryRaw = CloseOnPolicyObjectRaw & { event: string }
+
+/**
+ * User-facing closeOn sugar.
+ * Array string = event name (always). Record value true/false/CloseOnWhen/object = policy sugar.
+ * Bare array string `'none'` is an event named none, not a tombstone.
+ */
+export type CloseOnRaw =
+  | Array<string | CloseOnEntryRaw>
+  | Record<string, boolean | CloseOnWhen | CloseOnPolicyObjectRaw>
 
 /** Public / Raw props — ref may be Ref or callback */
 export interface LayerPropsRaw {

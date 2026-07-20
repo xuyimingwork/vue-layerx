@@ -19,6 +19,7 @@ import type {
   LayerConfigNodeRaw,
   LayerPropsRaw,
 } from '@/types/config-raw'
+import { mergeCloseOn, normalizeCloseOn } from './close-on'
 import { warn } from '@/shared/warn'
 
 /** Normalize props.ref to a callback; unsupported values warn and become undefined. */
@@ -81,7 +82,10 @@ export function normalizeNodeContent(
 ): LayerConfigNodeContent | undefined {
   if (!node) return undefined
   const result: LayerConfigNodeContent = normalizeNode(node) ?? {}
-  if (node.closeOn !== undefined) result.closeOn = [...node.closeOn]
+  if (node.closeOn !== undefined) {
+    const closeOn = normalizeCloseOn(node.closeOn)
+    if (closeOn !== undefined) result.closeOn = closeOn
+  }
   return result
 }
 
@@ -152,9 +156,8 @@ export function mergeNodeContent(
   ...sources: (LayerConfigNodeContent | undefined)[]
 ): LayerConfigNodeContent {
   const result: LayerConfigNodeContent = mergeNode(...sources)
-  for (const source of sources) {
-    if (source?.closeOn !== undefined) result.closeOn = source.closeOn
-  }
+  const closeOn = mergeCloseOn(...sources.map((s) => s?.closeOn))
+  if (closeOn !== undefined) result.closeOn = closeOn
   return result
 }
 
@@ -220,7 +223,7 @@ export function stripContentNode(
   const result = stripNode(node, prefix, shouldStrip) as LayerConfigNodeContent
   if (node.closeOn !== undefined) {
     const path = `${prefix}.closeOn`
-    if (!shouldStrip(path)) result.closeOn = node.closeOn
+    if (!shouldStrip(path)) result.closeOn = { ...node.closeOn }
   }
   return result
 }

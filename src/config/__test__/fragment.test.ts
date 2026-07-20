@@ -17,7 +17,10 @@ describe('toFragmentFromContainer', () => {
       }),
     ).toEqual({
       container: { props: { title: 'x', width: '400px' }, model: 'open' },
-      content: { props: { tone: 'info' }, closeOn: ['done'] },
+      content: {
+        props: { tone: 'info' },
+        closeOn: { done: { when: 'always', confirmed: false } },
+      },
     })
   })
 })
@@ -31,7 +34,10 @@ describe('toFragmentFromContent', () => {
         closeOn: ['done'],
       }),
     ).toEqual({
-      content: { props: { message: 'hi' }, closeOn: ['done'] },
+      content: {
+        props: { message: 'hi' },
+        closeOn: { done: { when: 'always', confirmed: false } },
+      },
       container: { props: { title: 'x' } },
     })
   })
@@ -97,13 +103,19 @@ describe('stripFragment', () => {
       stripFragment(
         {
           container: { props: { title: 'x', ref: vi.fn() } },
-          content: { props: { message: 'hi', ref: vi.fn() }, closeOn: ['done'] },
+          content: {
+            props: { message: 'hi', ref: vi.fn() },
+            closeOn: { done: { when: 'always', confirmed: false } },
+          },
         },
         (path) => path.endsWith('.props.ref'),
       ),
     ).toEqual({
       container: { props: { title: 'x' } },
-      content: { props: { message: 'hi' }, closeOn: ['done'] },
+      content: {
+        props: { message: 'hi' },
+        closeOn: { done: { when: 'always', confirmed: false } },
+      },
     })
   })
 
@@ -119,13 +131,13 @@ describe('stripFragment', () => {
       stripFragment(
         {
           container: { model: 'open' },
-          content: { closeOn: ['done'] },
+          content: { closeOn: { done: { when: 'always', confirmed: false } } },
         },
         (path) => path.endsWith('.props.ref'),
       ),
     ).toEqual({
       container: { model: 'open' },
-      content: { closeOn: ['done'] },
+      content: { closeOn: { done: { when: 'always', confirmed: false } } },
     })
   })
 })

@@ -18,11 +18,13 @@ describe('normalizeNode', () => {
     expect(normalized?.props?.a).toBe(1)
   })
 
-  it('should copy closeOn array on content nodes', () => {
+  it('should normalize closeOn array on content nodes', () => {
     const closeOn = ['done']
     const normalized = normalizeNodeContent({ closeOn })
-    expect(normalized?.closeOn).toEqual(['done'])
-    expect(normalized?.closeOn).not.toBe(closeOn)
+    expect(normalized?.closeOn).toEqual({
+      done: { when: 'always', confirmed: false },
+    })
+    expect(normalized?.closeOn).not.toBe(closeOn as never)
   })
 })
 

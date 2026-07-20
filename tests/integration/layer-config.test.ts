@@ -213,7 +213,7 @@ describe('layer config', () => {
       expect(queryBodyDialog()).toBeFalsy()
     })
 
-    it('should replace closeOn from lower tiers instead of merging arrays', async () => {
+    it('should patch closeOn per event across tiers', async () => {
       const { wrapper } = await mountOpenLayer(createLayer(Container), {
         Content: makeSubmitContentWithDefineLayer(['submit']),
         useConfig: { closeOn: ['done'] },
@@ -221,13 +221,10 @@ describe('layer config', () => {
       })
 
       await clickBodyButton('submit', wrapper)
-      expect(queryBodyDialog()).toBeTruthy()
-
-      await clickBodyButton('done', wrapper)
       expect(queryBodyDialog()).toBeFalsy()
     })
 
-    it('should let open-tier closeOn win over define and use tiers', async () => {
+    it('should keep lower closeOn events when open only adds another', async () => {
       const { wrapper } = await mountOpenLayer(createLayer(Container), {
         Content: SubmitContent,
         useConfig: { closeOn: ['done'] },
@@ -237,6 +234,21 @@ describe('layer config', () => {
 
       await clickBodyButton('submit', wrapper)
       expect(queryBodyDialog()).toBeTruthy()
+
+      await clickBodyButton('done', wrapper)
+      expect(queryBodyDialog()).toBeFalsy()
+    })
+
+    it('should remove a lower closeOn event with false', async () => {
+      const { wrapper } = await mountOpenLayer(createLayer(Container), {
+        Content: SubmitContent,
+        useConfig: { closeOn: ['done'] },
+        open: (dialog) =>
+          dialog.open({
+            props: { message: 'hi' },
+            closeOn: { done: false, cancel: true },
+          }),
+      })
 
       await clickBodyButton('done', wrapper)
       expect(queryBodyDialog()).toBeTruthy()

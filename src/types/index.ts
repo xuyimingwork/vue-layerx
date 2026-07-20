@@ -1,5 +1,7 @@
 export type {
   CloseOn,
+  CloseOnEntry,
+  CloseOnWhen,
   LayerAdapter,
   LayerConfigFragment,
   LayerConfigFragmentCreate,
@@ -13,6 +15,8 @@ export type {
 } from './config'
 
 export type {
+  CloseOnEntryRaw,
+  CloseOnPolicyObjectRaw,
   CloseOnRaw,
   LayerConfigContent,
   LayerConfigContainer,

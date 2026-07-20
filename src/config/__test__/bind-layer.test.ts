@@ -43,7 +43,10 @@ describe('bindLayerTree', () => {
     const close = vi.fn()
     const bound = bindLayer({
       fragment: {
-        content: { component: Content, closeOn: ['done'] },
+        content: {
+          component: Content,
+          closeOn: { done: { when: 'always', confirmed: false } },
+        },
         container: { component: Container },
       },
       visible: true,
@@ -75,7 +78,10 @@ describe('bindLayerTree', () => {
     const close = vi.fn()
     const bound = bindLayer({
       fragment: {
-        content: { component: Content, closeOn: ['save'] },
+        content: {
+          component: Content,
+          closeOn: { save: { when: 'always', confirmed: false } },
+        },
         container: { component: Container, model: 'visible' },
       },
       visible: true,

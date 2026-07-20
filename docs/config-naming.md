@@ -8,8 +8,8 @@
 
 | 域 | 含义 | 类型文件 | 可否含糖 |
 |----|------|----------|----------|
-| **Raw** | 用户写法（公开 flat） | [`src/types/config-raw.ts`](../src/types/config-raw.ts) | ✅（`props.ref` 可为 `Ref`；`closeOn` 为 `CloseOnRaw`） |
-| **Canonical** | store、merge、adapter、refs | [`src/types/config.ts`](../src/types/config.ts) | ❌（`ref` 仅为 callback；`closeOn` 为 `CloseOn`） |
+| **Raw** | 用户写法（公开 flat） | [`src/types/config-raw.ts`](../src/types/config-raw.ts) | ✅（`props.ref` 可为 `Ref`；`closeOn` 为 `CloseOnRaw` 数组/Record 糖） |
+| **Canonical** | store、merge、adapter、refs | [`src/types/config.ts`](../src/types/config.ts) | ❌（`ref` 仅为 callback；`closeOn` 为 `CloseOn` = `Record<event, CloseOnEntry>`） |
 | **Bound** | bind 输出，可直接 `h()` | [`src/types/bound.ts`](../src/types/bound.ts) | ❌ |
 
 ```text
@@ -44,10 +44,10 @@ LayerBound
 
 | Raw | Canonical | Bound |
 |-----|-----------|-------|
-| `CloseOnRaw` | `CloseOn` | （已写入 props `onXxx`） |
+| `CloseOnRaw` | `CloseOn`（`CloseOnEntry`；`when` 可含 `'none'`） | （已写入 props `onXxx`） |
 | `LayerPropsRaw` | `LayerProps` | `LayerBoundNode.props` |
 | `LayerConfigNode*Raw` | `LayerConfigNode*` | `LayerBoundNode` |
 | `LayerConfigContent` / `Container` | — | — |
 | — | `LayerConfigFragment` | `LayerBound` |
 
-本轮 `CloseOnRaw` 与 `CloseOn` 均为 `string[]`（身份分开，运行时同形）。
+`CloseOnRaw` → `normalizeCloseOn` → store 各 tier 的 `CloseOn`（完整 `{ when, confirmed }`，可含 `when: 'none'`）。`mergeCloseOn` 按 **event patch**、整份 entry 替换，并将 `when: 'none'` **删 key**；约定 merge 之后 / adapter / bind 不再保留 tombstone（bind 仍防御性跳过 `none`）。adapter 移除事件应删 key，勿写 `when: 'none'`。
