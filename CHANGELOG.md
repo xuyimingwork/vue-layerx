@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-07-20
+
 ### Added
 
 - **`LayerInstance.confirm(config?)`** — returns `Promise<LayerConfirmResult>`; settles on close via `closeOn.confirmed` / `close({ confirmed })` / container / unmount. Rejects with **`LayerConfirmError`** (`code: 'close' | 'busy'`, optional `result`). Mutual exclusion: confirming blocks public `open` (warn); busy if already open/confirming.
@@ -17,13 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`closeOn.confirmed`** — bind now reads it (no longer reserved); array sugar still defaults `confirmed: false` (reject path for `confirm()`).
 - Close path: bind → `emit('update:visible', false, payload)` → layer-app forwards instance internal `close` (single place for `visible=false` + confirm settle).
-- **`closeOn`**：Canonical 为 `Record<event, { when, confirmed }>`；Raw 支持数组 / Record 糖（含 `true` / `false` / `when`）；跨 tier **按 event patch**（非整表替换）；`when: 'none'` / `false` 删除该 event；`when` 函数仅 `=== true` 时关层
+- **`closeOn`** — Canonical is `Record<event, { when, confirmed }>`; Raw supports array / Record sugar (`true` / `false` / `when`); cross-tier **per-event patch** (not whole-table replace); `when: 'none'` / `false` removes that event; `when` functions close only when `=== true`
 - **Config domain types (Raw / Canonical / Bound)** — split into `types/config-raw.ts`, `types/config.ts`, `types/bound.ts`; see [docs/config-naming.md](./docs/config-naming.md)
 - **`CloseOnConfig` → `CloseOnRaw` / `CloseOn`**; **`LayerNormalized` / `LayerNodeNormalized` → `LayerBound` / `LayerBoundNode`**
 - **`LayerPropsRaw`** accepts `props.ref` as `Ref` or callback; Canonical `LayerProps.ref` is callback-only after `toFragment*` / `normalizeNode*`
 - **`normalizeNode*`** copies Raw → Canonical (no in-place mutation of user config)
 - **`LayerDefine.exists`** — replaces `inLayer` / `outsideLayer`; content asks whether the define's layer context exists (`true` = direct layer content)
 - **`LayerTemplate` `#default`** — creator path now flat-forwards target slot scoped props (same as caller); removed `LayerTemplateScope` (`inLayer` / `outsideLayer` / `slotProps` wrapper); host branching uses `layer.exists`
+
+### Notes
+
+- Install beta: `pnpm add vue-layerx@beta` or `vue-layerx@1.0.0-beta.2`
+- Breaking vs **1.0.0-beta.1**: `inLayer` / `outsideLayer` / `LayerTemplateScope` removed (`exists`); config type renames (`CloseOnRaw` / Bound); `closeOn` merge semantics
 
 ## [1.0.0-beta.1] - 2026-07-15
 
@@ -103,7 +110,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.1...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.2...HEAD
+[1.0.0-beta.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/xuyimingwork/vue-layerx/compare/v0.1.0...v1.0.0-beta.1
 [0.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/xuyimingwork/vue-layerx/releases/tag/v0.0.1

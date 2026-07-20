@@ -418,6 +418,7 @@ Creator / caller 的 `#default` 均为目标 slot scoped props flat 透传；宿
 
 - **0.0.1** 为占名占位；请升级并参照 [CHANGELOG 0.1.0](./CHANGELOG.md#010---2026-06-27)（`show/hide` → `open/close`，移除 `LayerBind` 等）。
 - **0.1.0 → 1.0 beta**：类型重命名等见 [CHANGELOG 1.0.0-beta.1](./CHANGELOG.md#100-beta1---2026-07-15)。
+- **1.0.0-beta.1 → beta.2**：`confirm()`、`exists` 替代 `inLayer`/`outsideLayer`、`closeOn` 按 event patch 等见 [CHANGELOG 1.0.0-beta.2](./CHANGELOG.md#100-beta2---2026-07-20)。
 
 ## License
 
