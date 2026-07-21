@@ -1,48 +1,48 @@
-# 为什么需要 vue-layerx
+# 简介
 
-## 一个 UserForm，三种 mode
-
-真实项目里**不会**拆 `UserDetail` + `UserForm`，也不会注册 `useEditLayer`：
-
-```vue
-<!-- UserForm.vue -->
-<ElInput v-model="name" :disabled="mode === 'view'" />
-```
-
-| mode | 场景 | 表现 |
-|------|------|------|
-| `view` | 列表点行看详情、OrderDetail 嵌入 | 表单 disabled，无保存按钮 |
-| `edit` | 列表点编辑 | 可编辑 + footer 保存 |
-| `create` | 列表新建 | 同上 |
-
-**一个工厂 `useDetailLayer(UserForm)`** 覆盖详情、编辑、新建；窄屏 `adapt` 换 Drawer。
-
-## 传统 vs vue-layerx
-
-**传统：**
-
-```vue
-const detailVisible = ref(false)
-const editVisible = ref(false)
-<!-- 两个 el-dialog，或一个 dialog 里 if (mode) ... -->
-```
-
-**vue-layerx：**
+vue-layerx 让你用**命令式**打开业务弹层，同时继续使用项目里已有的 Dialog / Drawer / Popup，不必换壳、也不必为引库自建一套弹窗。
 
 ```ts
-const userLayer = useDetailLayer(UserForm)
-
-userLayer.open({ props: { mode: 'view', ...row } })   // 详情
-userLayer.open({ props: { mode: 'edit', ...row } })   // 编辑
+const useDialog = createLayer(ElDialog)
+const dialog = useDialog(UserForm)
+dialog.open({ props: { id: 1 } })
 ```
 
-```vue
-<!-- OrderDetail.vue — 同一组件 -->
-<UserForm mode="view" v-bind="user" />
-```
+## 解决什么问题
 
-## 教程路线
+中大型 Vue 项目里，弹层一多就会同时出现：
 
-§1 详情弹层 → §2 OrderDetail 嵌入 → §3 编辑/新建 → §4 visible-outside → §5 adapt → §6 beforeClose
+- 页面里堆 `visible` + `<ElDialog>` 样板
+- 内容组件和某一种壳写死在一起，换 Drawer / 页内复用很痛
+- 想命令式 `open()`，又不愿全员改写 JSX 填插槽
 
-[搭建 BaseDialog](/guide/getting-started) → [§1](/guide/detail)
+vue-layerx 对准的是这一档需求：**编排「容器 × 内容」**，而不是再做一个弹窗 UI 库。
+
+## 核心模型
+
+| 角色 | 是什么 | 例子 |
+|------|--------|------|
+| **容器** | 靠 v-model 控制显隐、通常有 default slot 的组件 | `ElDialog`、`VanPopup`、项目 `BaseDialog` |
+| **内容** | 普通业务组件 | `UserForm`、`HelloWorld` |
+| **工厂** | `createLayer(容器)` 返回的组合式函数 | `useDialog`、`useDrawer` |
+| **实例** | `useDialog(内容)` 的返回值 | `open` / `close` / `visible` |
+
+内容按普通 Vue 组件来写（props in / emits out）；关层由外侧 `closeOn` 接线，而不是在内容里调 `close()`。
+
+## 和「自带壳」方案的差别
+
+| | vue-layerx | 自带壳的弹窗库 |
+|--|------------|----------------|
+| 壳 | 你们正在用的组件库 | 库自己的 Modal |
+| 插槽 | `LayerTemplate`，继续写 template | 常见要写 JSX / render |
+| 内容 | 可页内复用 | 往往弹层专用 |
+
+## 文档怎么读
+
+1. [快速上手](/guide/quick-start) — 装上并打开第一个弹层
+2. **基础** — 工厂、打开关闭、`defineLayer`、`closeOn`、`LayerTemplate`
+3. **进阶** — 配置合并、响应式、adapter、实例、SSR
+4. [API](/api/) — 查签名与类型
+5. （可选）[实践教程](/guide/cookbook/) — 用一个 UserForm 串起详情 / 编辑 / 适配
+
+本地可跑 Playground（导航栏入口）对照示例。

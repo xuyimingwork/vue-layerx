@@ -7,11 +7,11 @@ hero:
   tagline: 无需 visible 变量和模板样板代码<br />适配已有 Dialog / Drawer / Popup 组件
   actions:
     - theme: brand
-      text: 快速开始
-      link: /guide/introduction
+      text: 快速上手
+      link: /guide/quick-start
     - theme: alt
-      text: GitHub
-      link: https://github.com/xuyimingwork/vue-layerx
+      text: 简介
+      link: /guide/introduction
 
 features:
   - icon: 📋

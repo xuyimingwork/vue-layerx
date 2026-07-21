@@ -1,8 +1,8 @@
 <script setup>
-import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../examples/steps/03-edit/App.vue'
-import ListSource from '../examples/steps/03-edit/App.vue?raw'
-import FormSource from '../examples/tutorial/UserForm.vue?raw'
+import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
+import Demo from '../../examples/steps/03-edit/App.vue'
+import ListSource from '../../examples/steps/03-edit/App.vue?raw'
+import FormSource from '../../examples/tutorial/UserForm.vue?raw'
 </script>
 
 # §3 编辑 / 新建
@@ -30,4 +30,4 @@ userLayer.open({ props: { mode: 'create', onSubmit: fn } })
 
 ## 下一步
 
-页内也要保存按钮 → [§4 visible-outside](/guide/visible-outside)
+页内也要保存按钮 → [§4 visible-outside](/guide/cookbook/visible-outside)

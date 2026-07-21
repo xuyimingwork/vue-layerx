@@ -1,8 +1,8 @@
 <script setup>
-import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../examples/steps/02-compose/App.vue'
-import OrderSource from '../examples/tutorial/OrderDetail.vue?raw'
-import FormSource from '../examples/tutorial/UserForm.vue?raw'
+import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
+import Demo from '../../examples/steps/02-compose/App.vue'
+import OrderSource from '../../examples/tutorial/OrderDetail.vue?raw'
+import FormSource from '../../examples/tutorial/UserForm.vue?raw'
 </script>
 
 # §2 OrderDetail 嵌入
@@ -32,4 +32,4 @@ import FormSource from '../examples/tutorial/UserForm.vue?raw'
 
 ## 下一步
 
-[§3 编辑 / 新建](/guide/edit) — 仍是 `useDetailLayer`，改 `mode` 即可
+[§3 编辑 / 新建](/guide/cookbook/edit) — 仍是 `useDetailLayer`，改 `mode` 即可

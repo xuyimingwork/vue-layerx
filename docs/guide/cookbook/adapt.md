@@ -1,8 +1,8 @@
 <script setup>
-import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../examples/steps/05-adapt/App.vue'
-import PageSource from '../examples/steps/05-adapt/App.vue?raw'
-import LayersSource from '../.vitepress/shared/layers.ts?raw'
+import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
+import Demo from '../../examples/steps/05-adapt/App.vue'
+import PageSource from '../../examples/steps/05-adapt/App.vue?raw'
+import LayersSource from '../../.vitepress/shared/layers.ts?raw'
 </script>
 
 # §5 useDetailLayer + adapt
@@ -25,4 +25,4 @@ import LayersSource from '../.vitepress/shared/layers.ts?raw'
 
 ## 下一步
 
-[§6 beforeClose](/guide/before-close)
+[§6 beforeClose](/guide/cookbook/before-close)

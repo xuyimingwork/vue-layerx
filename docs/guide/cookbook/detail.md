@@ -1,8 +1,8 @@
 <script setup>
-import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../examples/steps/01-detail/App.vue'
-import ListSource from '../examples/steps/01-detail/App.vue?raw'
-import FormSource from '../examples/tutorial/UserForm.vue?raw'
+import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
+import Demo from '../../examples/steps/01-detail/App.vue'
+import ListSource from '../../examples/steps/01-detail/App.vue?raw'
+import FormSource from '../../examples/tutorial/UserForm.vue?raw'
 </script>
 
 # §1 列表详情弹层
@@ -33,4 +33,4 @@ userLayer.open({
 
 ## 下一步
 
-[§2 OrderDetail 嵌入](/guide/compose)
+[§2 OrderDetail 嵌入](/guide/cookbook/compose)

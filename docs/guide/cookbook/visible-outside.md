@@ -1,9 +1,9 @@
 <script setup>
-import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
-import BeforeDemo from '../examples/steps/04-visible-outside/before.vue'
-import AfterDemo from '../examples/steps/04-visible-outside/after.vue'
-import BeforeFormSource from '../examples/tutorial/UserFormWithoutOutside.vue?raw'
-import AfterFormSource from '../examples/tutorial/UserForm.vue?raw'
+import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
+import BeforeDemo from '../../examples/steps/04-visible-outside/before.vue'
+import AfterDemo from '../../examples/steps/04-visible-outside/after.vue'
+import BeforeFormSource from '../../examples/tutorial/UserFormWithoutOutside.vue?raw'
+import AfterFormSource from '../../examples/tutorial/UserForm.vue?raw'
 </script>
 
 # §4 visible-outside
@@ -32,4 +32,4 @@ import AfterFormSource from '../examples/tutorial/UserForm.vue?raw'
 
 ## 下一步
 
-[§5 adapt](/guide/adapt)
+[§5 adapt](/guide/cookbook/adapt)

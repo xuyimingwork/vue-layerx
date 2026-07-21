@@ -1,7 +1,7 @@
 <script setup>
-import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../examples/steps/03-edit/App.vue'
-import FormSource from '../examples/tutorial/UserForm.vue?raw'
+import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
+import Demo from '../../examples/steps/03-edit/App.vue'
+import FormSource from '../../examples/tutorial/UserForm.vue?raw'
 </script>
 
 # §6 未保存拦截

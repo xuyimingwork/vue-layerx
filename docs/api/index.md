@@ -1,112 +1,32 @@
 # API
 
-## 核心模式
+按导出查阅。用法叙事见 [指南](/guide/introduction)。
+
+## 核心调用链
 
 ```ts
-export const useDetailLayer = createLayer(BaseDialog, { adapter: detailAdapt })
+import { createLayer } from 'vue-layerx'
+import { ElDialog } from 'element-plus'
 
-const userLayer = useDetailLayer(UserForm)
-userLayer.open({ props: { mode: 'view' | 'edit' | 'create', ... } })
+export const useDialog = createLayer(ElDialog)
+
+const dialog = useDialog(HelloWorld)
+dialog.open({ props: { id: 1 } })
 ```
 
-一个内容组件 + 一个工厂。`mode: 'view'` 时 content 自行 disabled，不必拆 UserDetail。
+## 导出一览
 
-## `createLayer`
+| 导出 | 说明 |
+|------|------|
+| [`createLayer`](./create-layer) | 由容器创建 `useLayer` 工厂 |
+| [`defineLayer`](./define-layer) | 内容侧注册默认配置 |
+| [`LayerTemplate`](./layer-template) | 模板投递具名插槽 |
+| [`LayerNoContainer`](./layer-no-container) | 无外壳标记容器 |
+| [`LayerConfirmError`](./layer-instance#confirm) | `confirm()` 失败错误类 |
+| 类型 | 见 [类型](./types) · [配置](./config) |
 
-```ts
-createLayer(BaseDialog)                              // 配置可在 BaseDialog 内
-createLayer(BaseDialog, { adapter: adaptFn })        // useDetailLayer
-createLayer(BaseDialog, () => ({ props: { title: t('x') } }))  // live create tier
-```
+`useLayer` **不是**包导出，见 [`createLayer` 返回值](./use-layer)。
 
-第二参为 `MaybeRefOrGetter<LayerConfigCreate>`（plain / ref / getter / computed）。
+## 实例
 
-### `adapt`
-
-窄屏把 `container.component` 从 BaseDialog 换为 BaseDrawer，并滤掉 `width` / `size` 等。见 [§5](/guide/adapt)。
-
-## `defineLayer`
-
-```ts
-const layer = defineLayer({
-  props: { title: '...', width: '480px', size: '85vw' },
-  content: { closeOn: ['submit'] },  // view 模式通常无 submit
-})
-// layer: LayerDefine — layer.exists — 弹层内（direct content）为 true，页内 / 嵌套为 false
-
-// live（如倒计时 title，不 remount content）
-defineLayer(() => ({ props: { title: `请确认（${left.value}s）` } }))
-```
-
-## `useLayer` / `clone`
-
-```ts
-const id = ref('1')
-const userLayer = useDetailLayer(UserForm, () => ({ props: { recordId: id.value } }))
-userLayer.open() // 空参：吃当前 use tier
-
-const child = userLayer.clone(() => ({ props: { mode: 'edit' } }))
-// 父 use 未覆盖字段继续 live；clone 自身 source 也可 live
-```
-
-`open(config?)` **仅 plain 快照**（非 getter）。
-## `LayerTemplate`
-
-**`:to` 必填。** creator 传 `defineLayer()` 返回值；caller 传 `LayerInstance`。
-
-**`#default` 参数**（creator 与 caller 相同）：目标 slot 的 scoped props **flat 透传**。宿主态用 `layer.exists`（`LayerDefine`），不经 slot scope。
-
-```vue
-<!-- content 内：投进 Dialog 等同名 container slot；页内分支读 layer.exists -->
-<LayerTemplate :to="layer" name="footer" visible-outside>
-  <div v-if="!layer.exists">...</div>
-  <ElButton v-else>...</ElButton>
-</LayerTemplate>
-
-<!-- 容器 scoped props flat 透传（与 caller 相同） -->
-<LayerTemplate :to="layer" name="footer" v-slot="{ confirmLoading }">
-  ...
-</LayerTemplate>
-
-<!-- 调用方：远程投进 content 同名 slot -->
-<LayerTemplate :to="userLayer" name="form-end" v-slot="{ data }">
-  ...
-</LayerTemplate>
-
-<!-- 调用方：远程投进 Dialog 等同名 slot（覆盖 content 内 LayerTemplate） -->
-<LayerTemplate :to="userLayer" container name="footer" v-slot="{ confirmLoading }">
-  ...
-</LayerTemplate>
-```
-
-- **creator**（`:to="layer"`，`defineLayer()` 返回值）：固定投进 Dialog 等同名 container slot；`container` prop 无效；`#default` 得到容器 slot 的 scoped props。
-- **caller content**（`:to="userLayer"`）：投进 content 组件同名 `<slot>`；`#default` 参数即 content slot 的 scoped props。
-- **caller container**（`:to` + `container`）：投进 Dialog 等同名 slot；优先级高于 creator；`#default` 参数即 container slot 的 scoped props。
-
-**slot 优先级**（统一链）：`open > use > use:template > define > define:template > create`。
-
-`:to` 为 `useX(Content)` 返回的 `LayerInstance`。
-
-`visible-outside`：页内 edit 也要保存按钮时再加。view 模式不需要 footer。
-
-## `LayerInstance`
-
-| 方法 / 属性 | 说明 |
-|-------------|------|
-| `open(config?)` | 打开弹层；关闭后再打开会重建 content；已打开时 open 更新配置；confirming 中忽略并 warn |
-| `confirm(config?)` | 打开并返回 `Promise<LayerConfirmResult>`；`closeOn.confirmed: true` 或 `close({ confirmed: true })` 时 resolve，否则 reject `LayerConfirmError`（`code: 'close'`）；已打开/confirming 再调 → `code: 'busy'` |
-| `close(options?)` | 关闭（不卸 DOM 挂载点）；confirming 时可传 `{ confirmed?, args? }` |
-| `unmount()` | 卸 portal DOM；confirming 时 reject `source: 'unmount'`；**不**清 layerHost |
-| `clone(config?)` | 独立 instance；继承工厂配置与 `use` tier（**不继承**父 `use` 的 `props.ref`）；setup 内自动 `bindHost()` |
-| `contentRef` | 只读 computed；打开时指向 content 组件实例，关闭后为 `null` |
-| `containerRef` | 只读 computed；打开时指向 container 组件实例，关闭后为 `null` |
-| `visible` | 只读是否打开 |
-| `bindHost()` | 绑定**本 instance** 当前 setup Host 的 provide / appContext；同一 host 再调 no-op；绑到其他 host 或非 setup 调用时 dev warn；`useLayer` / `clone` 创建时自动尝试绑定 |
-
-**全局单例**（模块 `export const messageBox = useLayer(...)`）须在 App 或 `ElConfigProvider` **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject ConfigProvider。
-
-`props.ref`（`use` / `open` / `defineLayer` 的 props）与各 tier merge 时 **链式执行**；命令式场景推荐 `contentRef` / `containerRef`。`clone()` 不传 `props.ref` 时不会继承父 instance `use` tier 的用户 ref，需在 `clone(config)` 显式传入。
-
-## 教程
-
-[§1 列表详情](/guide/detail)
+[`LayerInstance`](./layer-instance) — `open` / `close` / `confirm` / `clone` / `bindHost` / …
