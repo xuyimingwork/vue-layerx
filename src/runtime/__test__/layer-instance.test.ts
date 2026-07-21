@@ -24,7 +24,7 @@ describe('createLayerInstance', () => {
       withoutDom(() => {
         const instance = makeInstance()
         expect(() => instance.open({ props: { message: 'ssr' } })).not.toThrow()
-        expect(instance.visible).toBe(true)
+        expect(instance.visible.value).toBe(true)
         expect(() => instance.unmount()).not.toThrow()
       })
     })
@@ -79,7 +79,7 @@ describe('createLayerInstance', () => {
         args: [],
         data: undefined,
       })
-      expect(instance.visible).toBe(false)
+      expect(instance.visible.value).toBe(false)
       instance.unmount()
     })
 

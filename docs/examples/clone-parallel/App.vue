@@ -29,8 +29,8 @@ const status = computed(() => {
       ? document.querySelectorAll('.el-overlay-dialog').length
       : 0
   return {
-    aVisible: instanceA.visible,
-    bVisible: instanceB.visible,
+    aVisible: instanceA.visible.value,
+    bVisible: instanceB.visible.value,
     domDialogs,
   }
 })
@@ -57,7 +57,7 @@ function openBFromA() {
       onAction: () => pushLog('收到实例 B 的 action 事件'),
     },
   })
-  pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
+  pushLog(`状态快照：A=${instanceA.visible.value}, B=${instanceB.visible.value}`)
 }
 
 function openBFromPage() {

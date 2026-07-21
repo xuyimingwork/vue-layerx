@@ -17,12 +17,11 @@
 | `LayerConfigContainer` | `defineLayer` |
 | `LayerConfigContent` | `use` / `open` / `clone` |
 
-## Canonical / Bound
+## Fragment / Adapter
 
 | 类型 | 说明 |
 |------|------|
 | `LayerConfigFragment` | 双侧分栏；adapter / store |
-| `LayerBound` | bind 输出，可 `h()` |
 | `LayerAdapter` | `(fragment) => fragment` |
 
 命名与管线见 [配置域命名](/config-naming)。
@@ -35,10 +34,10 @@ open > use > use:template > define > define:template > create
 
 ## closeOn
 
-- Raw：`CloseOnRaw`（数组糖或 Record）  
-- Canonical：`CloseOn` = `Record<event, { when, confirmed }>`  
-- 跨 tier：**按事件 patch**，非整表替换  
-- `when: 'none'` / `false` 去掉该事件  
+- 用户配置：`CloseOnRaw`（数组糖或 Record）
+- 跨 tier：**按事件 patch**，非整表替换
+- `when: 'none'` / `false` 去掉该事件
+- 数组糖默认 `confirmed: false`；`confirm()` 成功路径需显式 `confirmed: true`
 
 见 [指南：用事件关闭弹层](/guide/close-on)。
 

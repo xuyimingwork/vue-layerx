@@ -403,7 +403,7 @@ describe('layer config closeOn', () => {
         source: 'content',
         event: 'done',
       })
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should reject confirm with code close when confirmed is false', async () => {
@@ -425,7 +425,7 @@ describe('layer config closeOn', () => {
       await clickAndFlush(wrapper, 'cancel')
       await rejection
       await expect(promise).rejects.toBeInstanceOf(LayerConfirmError)
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should reject confirm with code close when array sugar closes', async () => {
@@ -441,7 +441,7 @@ describe('layer config closeOn', () => {
       const rejection = expect(promise).rejects.toMatchObject({ code: 'close' })
       await clickAndFlush(wrapper, 'cancel')
       await rejection
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should resolve confirm when open patches confirmed true over use array sugar', async () => {

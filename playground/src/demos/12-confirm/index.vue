@@ -26,7 +26,7 @@ async function askDelete() {
 }
 
 function forceCloseOk() {
-  if (!dialog.visible) {
+  if (!dialog.visible.value) {
     ElMessage.warning('请先打开 confirm')
     return
   }

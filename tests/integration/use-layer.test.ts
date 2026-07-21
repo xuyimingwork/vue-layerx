@@ -96,7 +96,7 @@ describe('useLayer', () => {
       dialog.close()
       await wrapper.vm.$nextTick()
 
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
       expect(queryBodyDialog()).toBeFalsy()
       expect(document.body.querySelector('div')).toBeTruthy()
 
@@ -130,7 +130,7 @@ describe('useLayer', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(dialog.visible).toBe(true)
+      expect(dialog.visible.value).toBe(true)
       expect(document.body.querySelector('.msg')?.textContent).toBe('second')
       expect(document.body.querySelectorAll('div')).toHaveLength(1)
     })
@@ -259,8 +259,8 @@ describe('useLayer', () => {
       mount(Host)
       await flushPromises()
 
-      expect(dialogA.visible).toBe(true)
-      expect(dialogB.visible).toBe(true)
+      expect(dialogA.visible.value).toBe(true)
+      expect(dialogB.visible.value).toBe(true)
       expect(document.body.querySelectorAll('.msg')).toHaveLength(2)
     })
   })

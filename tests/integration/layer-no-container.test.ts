@@ -97,10 +97,10 @@ describe('LayerNoContainer', () => {
   it('should close monolith via closeOn and model update', async () => {
     const { dialog, wrapper } = await mountOpen(MonolithDialog)
 
-    expect(dialog.visible).toBe(true)
+    expect(dialog.visible.value).toBe(true)
     document.body.querySelector<HTMLButtonElement>('.success')?.click()
     await wrapper.vm.$nextTick()
-    expect(dialog.visible).toBe(false)
+    expect(dialog.visible.value).toBe(false)
 
     dialog.open()
     await flushPromises()
@@ -108,7 +108,7 @@ describe('LayerNoContainer', () => {
       .querySelector<HTMLButtonElement>('.close-via-model')
       ?.click()
     await wrapper.vm.$nextTick()
-    expect(dialog.visible).toBe(false)
+    expect(dialog.visible.value).toBe(false)
   })
 
   it('should support createLayer(LayerNoContainer) directly', async () => {
@@ -149,7 +149,7 @@ describe('LayerNoContainer', () => {
     )
     await flushPromises()
 
-    expect(dialog.visible).toBe(true)
+    expect(dialog.visible.value).toBe(true)
     expect(queryBodyMonolith()).toBeNull()
     expect(document.body.querySelector('motion-dialog')).toBeNull()
     spy.mockRestore()

@@ -11,9 +11,9 @@
 | `close(options?)` | 关闭（不卸 DOM）。confirming 时可传 `{ confirmed?, args? }` |
 | `unmount()` | 卸 portal DOM；confirming 时 reject `source: 'unmount'`；**不**清 layerHost |
 | `clone(config?)` | 独立实例；继承组合式函数默认与创建时配置（**不继承**父级 `props.ref`）；setup 内自动 `bindHost()`；`config` 可为响应式源 |
+| `visible` | 只读 `ComputedRef<boolean>`；脚本 / 模板嵌套访问均需 `.value`（与 `contentRef` 一致） |
 | `contentRef` | 只读 computed；打开时指向 content 实例，否则 `null` |
 | `containerRef` | 只读 computed；打开时指向 container 实例，否则 `null` |
-| `visible` | 只读是否打开 |
 | `bindHost()` | 绑定本 instance 当前 setup Host 的 provide / appContext；同一 host 再调 no-op |
 
 ## LayerConfirmError

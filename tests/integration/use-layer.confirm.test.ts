@@ -89,7 +89,7 @@ describe('LayerInstance.confirm', () => {
         args: [],
         data: undefined,
       })
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
       expect(queryBodyDialog()).toBeFalsy()
     })
 
@@ -180,7 +180,7 @@ describe('LayerInstance.confirm', () => {
         args: [{ id: 1 }],
         data: { id: 1 },
       })
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should reject with code close when close is called without confirmed', async () => {
@@ -197,7 +197,7 @@ describe('LayerInstance.confirm', () => {
       })
       dialog.close()
       await assertion
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should reject with source container when container model updates to false', async () => {
@@ -219,7 +219,7 @@ describe('LayerInstance.confirm', () => {
       await closeViaModel(wrapper)
       await flushPromises()
       await assertion
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
   })
 
@@ -233,7 +233,7 @@ describe('LayerInstance.confirm', () => {
       await flushPromises()
 
       await expect(dialog.confirm()).rejects.toMatchObject({ code: 'busy' })
-      expect(dialog.visible).toBe(true)
+      expect(dialog.visible.value).toBe(true)
     })
 
     it('should reject busy when confirming again', async () => {
@@ -319,7 +319,7 @@ describe('LayerInstance.confirm', () => {
       const second = dialog.confirm({ props: { message: 'second' } })
       await flushPromises()
       expect(document.body.querySelector('.msg')?.textContent).toBe('second')
-      expect(dialog.visible).toBe(true)
+      expect(dialog.visible.value).toBe(true)
 
       document.body.querySelector<HTMLButtonElement>('.done')?.click()
       await wrapper.vm.$nextTick()
@@ -339,7 +339,7 @@ describe('LayerInstance.confirm', () => {
 
       dialog.open({ props: { message: 'after' } })
       await flushPromises()
-      expect(dialog.visible).toBe(true)
+      expect(dialog.visible.value).toBe(true)
       expect(document.body.querySelector('.msg')?.textContent).toBe('after')
     })
   })
@@ -422,7 +422,7 @@ describe('LayerInstance.confirm', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(dialog.visible).toBe(true)
+      expect(dialog.visible.value).toBe(true)
       expect(queryBodyDialog()).toBeTruthy()
 
       dialog.close({ confirmed: true })
@@ -452,7 +452,7 @@ describe('LayerInstance.confirm', () => {
         args: [true],
         data: true,
       })
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
   })
 })

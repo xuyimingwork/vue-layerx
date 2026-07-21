@@ -19,7 +19,7 @@ export interface LayerInstance {
   close: (options?: LayerCloseOptions) => void
   unmount: () => void
   clone: (config?: MaybeRefOrGetter<LayerConfigContent>) => LayerInstance
-  readonly visible: boolean
+  readonly visible: ComputedRef<boolean>
   readonly contentRef: ComputedRef<ComponentPublicInstance | null>
   readonly containerRef: ComputedRef<ComponentPublicInstance | null>
   /**

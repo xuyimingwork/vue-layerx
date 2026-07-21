@@ -1,6 +1,6 @@
 # 实例的更多能力
 
-[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`。这里补充克隆实例、拿组件引用、等待确认结果、以及模块单例要注意的一点。
+[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`（`visible` 为 `ComputedRef`，读写用 `.value`）。这里补充克隆实例、拿组件引用、等待确认结果、以及模块单例要注意的一点。
 
 ## 克隆一份独立实例
 

@@ -161,9 +161,7 @@ export function createLayerInstance({
         ),
       })
     },
-    get visible() {
-      return state.visible
-    },
+    visible: computed(() => state.visible),
   }
 
   bindHost({ silent: true })

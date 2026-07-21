@@ -149,7 +149,7 @@ describe('layer config', () => {
       await closeViaModel(wrapper)
 
       expect(queryBodyDialog()).toBeFalsy()
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should close when model update is emitted without a value', async () => {
@@ -161,7 +161,7 @@ describe('layer config', () => {
       await clickBodyButton('close-via-model-empty', wrapper)
 
       expect(queryBodyDialog()).toBeFalsy()
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should let open-tier model win over use and define tiers', async () => {
@@ -179,7 +179,7 @@ describe('layer config', () => {
       await closeViaModel(wrapper)
 
       expect(queryBodyDialog()).toBeFalsy()
-      expect(dialog.visible).toBe(false)
+      expect(dialog.visible.value).toBe(false)
     })
 
     it('should call user onUpdate handler before closing via model', async () => {

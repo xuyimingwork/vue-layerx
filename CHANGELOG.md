@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`LayerInstance.visible`** — now `ComputedRef<boolean>` (was plain boolean getter); use `dialog.visible.value`
+- **Public type exports slimmed** — package no longer exports pipeline types (`LayerBound` / `LayerBoundNode`, canonical `CloseOn*` / node types, `CloseOnEntryRaw` / `CloseOnPolicyObjectRaw`, etc.). Keep: config flats, `LayerConfigFragment` / `LayerAdapter`, instance/define, `CloseOnRaw`, confirm types
+
 ## [1.0.0-beta.3] - 2026-07-21
 
 ### Fixed

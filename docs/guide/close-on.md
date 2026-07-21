@@ -53,7 +53,7 @@ defineLayer({
 })
 ```
 
-日常列表 `['ok']` 足够。对象字段、`confirm()` 的配合见 [实例的更多能力](/guide/instance) 与 [API：配置](/api/config)。
+日常关层用列表 `['ok']` 足够。若配合 `confirm()`，确认类事件须显式 `{ confirmed: true }`（见上例 `submit`）。更多见 [实例的更多能力](/guide/instance) 与 [API：配置](/api/config)。
 
 多处都写了 `closeOn` 时怎么合并，见 [配置如何合并](/guide/config-merge)。
 
