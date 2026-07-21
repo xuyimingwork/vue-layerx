@@ -1,0 +1,70 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+# Trusted Publisher (OIDC) 需要此权限生成短期 token
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Latest Tag
+        id: latest_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 main 2>/dev/null || git tag -l 'v*' --merged main | sort -V | tail -1)
+          if [ -z "$LATEST_TAG" ] || [[ ! "$LATEST_TAG" =~ ^v ]]; then
+            echo "No valid v tag found on main branch"
+            exit 1
+          fi
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Latest tag on main: $LATEST_TAG"
+
+      - name: Setup Version
+        id: version
+        run: |
+          LATEST_TAG="${{ steps.latest_tag.outputs.tag }}"
+          TAG="${LATEST_TAG#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "$PKG_VERSION" ]; then
+            echo "Tag version ($TAG) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+          echo "Version match: $PKG_VERSION"
+          # 预发布版本使用对应 dist-tag，避免污染 latest
+          if [[ "$PKG_VERSION" =~ -(alpha|beta|rc)(\.[0-9]+)?$ ]]; then
+            NPM_TAG="${BASH_REMATCH[1]}"
+          else
+            NPM_TAG="latest"
+          fi
+          echo "npm_tag=$NPM_TAG" >> $GITHUB_OUTPUT
+          echo "Publishing to npm dist-tag: $NPM_TAG"
+
+      - name: Install Dependencies
+        uses: ./.github/actions/install
+
+      - name: Setup Playwright
+        uses: ./.github/actions/setup-playwright
+
+      # 全量测试环节包含构建流程
+      - name: Run Test
+        run: pnpm run test:all
+      
+      # Trusted Publisher 要求 npm CLI 11.5.1+
+      - name: Setup NPM
+        run: npm install -g npm@latest
+
+      # prepublishOnly 阶段会再次做构建与产物验证
+      # --provenance: 生成供应链溯源证明，Trusted Publisher 推荐显式指定
+      # --tag: 预发布版本打 beta/alpha/rc，正式版打 latest（默认）
+      - name: Publish To NPM
+        run: npm publish --provenance --access public --tag ${{ steps.version.outputs.npm_tag }}

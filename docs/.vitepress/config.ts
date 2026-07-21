@@ -9,8 +9,8 @@ const playgroundLink = process.env.DOCS_BASE
   : 'http://localhost:5173'
 
 export default defineConfig({
-  title: 'vue-layerx',
-  description: 'UserDetail 随处组合 · useDetailLayer 响应式换壳',
+  title: 'Vue Layerx',
+  description: '让弹窗组件通过命令方式调用',
   lang: 'zh-CN',
   base,
   cleanUrls: true,
