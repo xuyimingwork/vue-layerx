@@ -18,6 +18,32 @@ export const Container = defineComponent({
   },
 })
 
+/**
+ * Shell stays open while `showDefault` toggles the default slot.
+ * Used to assert: same-component slot unmount → destroy content (not park).
+ */
+export const ToggleDefaultSlotContainer = defineComponent({
+  name: 'ToggleDefaultSlotContainer',
+  props: {
+    modelValue: Boolean,
+    showDefault: { type: Boolean, default: true },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { slots }) {
+    return () =>
+      props.modelValue
+        ? h(
+            'motion-dialog',
+            { 'data-show-default': String(props.showDefault) },
+            [
+              props.showDefault ? slots.default?.() : null,
+              slots.footer?.(),
+            ],
+          )
+        : null
+  },
+})
+
 export function makeContent(withLayer = false) {
   return defineComponent({
     name: 'Content',

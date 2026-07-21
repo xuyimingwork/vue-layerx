@@ -1,10 +1,33 @@
-import { defineComponent, h, nextTick, onMounted, ref } from 'vue'
+import {
+  defineComponent,
+  h,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+} from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, type LayerInstance } from '@/index'
 import { flushPromises } from '@tests/helpers/dom'
-import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
+import {
+  Container,
+  makeContent,
+  queryBodyDialog,
+  ToggleDefaultSlotContainer,
+} from '@tests/fixtures/components'
 import { DrawerContainer } from '@tests/fixtures/layer-config'
+
+/** Content nodes not under parking (visible / leaked). */
+function queryAliveMsgs() {
+  return Array.from(document.body.querySelectorAll('.msg')).filter(
+    (el) => !el.closest('layer-content-parking'),
+  )
+}
+
+function queryParkedMsgs() {
+  return Array.from(document.body.querySelectorAll('layer-content-parking .msg'))
+}
 
 describe('reactive layer config', () => {
   describe('useLayer', () => {
@@ -211,15 +234,173 @@ describe('reactive layer config', () => {
     })
   })
 
-  describe('close without content leak', () => {
-    it('should park content in hidden parking when container destroys slot on close', async () => {
-      const useLayer = createLayer(Container)
-      const Content = makeContent()
+  /**
+   * Default-slot lifecycle (independent of visible):
+   * - deferred default → no content until slot appears
+   * - same container.component drops default → destroy content (no parking)
+   * - container.component swap → park / preserve (covered above)
+   */
+  describe('container default slot deferred appearance', () => {
+    it('should not mount content until default slot appears', async () => {
+      const useLayer = createLayer(ToggleDefaultSlotContainer)
+      const showDefault = ref(false)
+      let setupCount = 0
       let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'DeferredSlotContent',
+        setup() {
+          setupCount++
+          return () => h('span', { class: 'msg' }, 'deferred')
+        },
+      })
 
       const Host = defineComponent({
         setup() {
-          dialog = useLayer(Content, { props: { message: 'secret-note' } })
+          dialog = useLayer(Content, () => ({
+            container: { props: { showDefault: showDefault.value } },
+          }))
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeTruthy()
+      expect(queryBodyDialog()?.getAttribute('data-show-default')).toBe('false')
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(setupCount).toBe(0)
+
+      showDefault.value = true
+      await nextTick()
+      await flushPromises()
+
+      expect(queryBodyDialog()?.getAttribute('data-show-default')).toBe('true')
+      expect(document.body.querySelector('.msg')?.textContent).toBe('deferred')
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(setupCount).toBe(1)
+    })
+  })
+
+  describe('container default slot destroy while visible', () => {
+    it('should destroy content when same container hides default slot', async () => {
+      const useLayer = createLayer(ToggleDefaultSlotContainer)
+      const showDefault = ref(true)
+      let setupCount = 0
+      let unmountCount = 0
+      let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'SlotToggleContent',
+        setup() {
+          setupCount++
+          onBeforeUnmount(() => {
+            unmountCount++
+          })
+          return () => h('span', { class: 'msg' }, 'alive')
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, () => ({
+            container: { props: { showDefault: showDefault.value } },
+          }))
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeTruthy()
+      expect(queryAliveMsgs()).toHaveLength(1)
+      expect(setupCount).toBe(1)
+      expect(unmountCount).toBe(0)
+
+      showDefault.value = false
+      await nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeTruthy()
+      expect(queryBodyDialog()?.getAttribute('data-show-default')).toBe('false')
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(unmountCount).toBe(1)
+      expect(setupCount).toBe(1)
+    })
+
+    it('should remount content when default slot is shown again', async () => {
+      const useLayer = createLayer(ToggleDefaultSlotContainer)
+      const showDefault = ref(true)
+      let setupCount = 0
+      let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'SlotRemountContent',
+        setup() {
+          setupCount++
+          const note = ref(`gen-${setupCount}`)
+          return () => h('span', { class: 'msg' }, note.value)
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, () => ({
+            container: { props: { showDefault: showDefault.value } },
+          }))
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+      expect(document.body.querySelector('.msg')?.textContent).toBe('gen-1')
+      expect(setupCount).toBe(1)
+
+      showDefault.value = false
+      await nextTick()
+      await flushPromises()
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(setupCount).toBe(1)
+
+      showDefault.value = true
+      await nextTick()
+      await flushPromises()
+      expect(document.body.querySelector('.msg')?.textContent).toBe('gen-2')
+      expect(setupCount).toBe(2)
+      expect(queryParkedMsgs()).toHaveLength(0)
+    })
+  })
+
+  describe('close without content leak', () => {
+    it('should destroy content when container destroys slot on close', async () => {
+      const useLayer = createLayer(Container)
+      let setupCount = 0
+      let unmountCount = 0
+      let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'CloseDestroyContent',
+        setup() {
+          setupCount++
+          onBeforeUnmount(() => {
+            unmountCount++
+          })
+          return () => h('span', { class: 'msg' }, 'secret-note')
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content)
           onMounted(() => dialog.open())
           return () => h('motion-host')
         },
@@ -230,24 +411,16 @@ describe('reactive layer config', () => {
 
       expect(document.body.querySelector('motion-dialog')).toBeTruthy()
       expect(document.body.querySelector('.msg')?.textContent).toBe('secret-note')
+      expect(setupCount).toBe(1)
 
       dialog.close()
       await nextTick()
       await flushPromises()
 
       expect(document.body.querySelector('motion-dialog')).toBeNull()
-
-      const leaked = Array.from(document.body.querySelectorAll('.msg')).filter(
-        (el) => !el.closest('layer-content-parking'),
-      )
-      expect(leaked).toHaveLength(0)
-
-      const parked = document.body.querySelector('layer-content-parking .msg')
-      if (parked) {
-        expect(
-          (parked.closest('layer-content-parking') as HTMLElement).style.display,
-        ).toBe('none')
-      }
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(unmountCount).toBe(1)
     })
   })
 })

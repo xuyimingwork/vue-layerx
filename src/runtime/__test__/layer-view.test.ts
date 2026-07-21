@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { computed, defineComponent, ref, Teleport, type VNode } from 'vue'
+import { defineComponent, ref, Teleport, type VNode } from 'vue'
 import { MinimalContainer } from '@tests/fixtures/components'
 import { LayerNoContainer } from '../layer-no-container'
 import { createLayerViewVNode } from '../layer-view'
@@ -13,19 +13,9 @@ const StubContent = defineComponent({
 
 function asArrayTree(
   tree: ReturnType<typeof createLayerViewVNode>,
-): [VNode, VNode] {
+): [VNode, VNode | null] {
   expect(Array.isArray(tree)).toBe(true)
-  return tree as [VNode, VNode]
-}
-
-function parkingBackedRef(parking: HTMLUnknownElement) {
-  const anchor = ref<HTMLUnknownElement | null>(null)
-  return computed({
-    get: () => anchor.value ?? parking,
-    set: (el) => {
-      anchor.value = el as HTMLUnknownElement | null
-    },
-  })
+  return tree as [VNode, VNode | null]
 }
 
 describe('createLayerViewVNode', () => {
@@ -56,12 +46,12 @@ describe('createLayerViewVNode', () => {
     expect(anchor?.type).toBe('layer-content-to')
     expect(anchor?.props?.style).toEqual({ display: 'contents' })
 
-    expect(teleportVNode.type).toBe(Teleport)
-    expect(teleportVNode.props?.to).toBe(target)
-    expect(teleportVNode.props?.defer).toBe(true)
-    expect(teleportVNode.props?.disabled).toBeUndefined()
+    expect(teleportVNode?.type).toBe(Teleport)
+    expect(teleportVNode?.props?.to).toBe(target)
+    expect(teleportVNode?.props?.defer).toBeUndefined()
+    expect(teleportVNode?.props?.disabled).toBeUndefined()
 
-    const contentVNode = (teleportVNode.children as VNode[])?.[0]
+    const contentVNode = (teleportVNode?.children as VNode[])?.[0]
     const contentProps = contentVNode?.props as
       | Record<PropertyKey, unknown>
       | undefined
@@ -71,10 +61,33 @@ describe('createLayerViewVNode', () => {
     expect(contentProps?.key).toBe(1)
   })
 
-  it('should teleport to parking fallback when anchor is unset', () => {
+  it('should omit teleport when refContentTo is empty', () => {
+    const refContentTo = ref<HTMLUnknownElement | null>(null)
+    const [containerVNode, teleportVNode] = asArrayTree(
+      createLayerViewVNode({
+        container: {
+          component: MinimalContainer,
+          props: { modelValue: true },
+          slots: {},
+        },
+        content: {
+          component: StubContent,
+          props: { message: 'hello' },
+          slots: {},
+        },
+        openId: 1,
+        refContentTo,
+      }),
+    )
+
+    expect(containerVNode.type).toBe(MinimalContainer)
+    expect(teleportVNode).toBeNull()
+  })
+
+  it('should teleport to parking target when refContentTo is set to parking', () => {
     const parking = document.createElement('layer-content-parking')
     parking.style.display = 'none'
-    const refContentTo = parkingBackedRef(parking)
+    const refContentTo = ref<HTMLUnknownElement | null>(parking)
     const [, teleportVNode] = asArrayTree(
       createLayerViewVNode({
         container: {
@@ -92,11 +105,10 @@ describe('createLayerViewVNode', () => {
       }),
     )
 
-    expect(teleportVNode.type).toBe(Teleport)
-    expect(teleportVNode.props?.to).toBe(parking)
-    expect(teleportVNode.props?.defer).toBe(true)
-    expect(teleportVNode.props?.disabled).toBeUndefined()
-    expect((teleportVNode.children as VNode[])?.[0]?.type).toBe(StubContent)
+    expect(teleportVNode?.type).toBe(Teleport)
+    expect(teleportVNode?.props?.to).toBe(parking)
+    expect(teleportVNode?.props?.defer).toBeUndefined()
+    expect((teleportVNode?.children as VNode[])?.[0]?.type).toBe(StubContent)
   })
 
   it('should omit content branch when content is undefined', () => {
@@ -113,8 +125,8 @@ describe('createLayerViewVNode', () => {
       }),
     )
 
-    expect(teleportVNode.type).toBe(Teleport)
-    expect((teleportVNode.children as VNode[])?.[0]).toBeNull()
+    expect(teleportVNode?.type).toBe(Teleport)
+    expect((teleportVNode?.children as VNode[])?.[0]).toBeNull()
   })
 
   it('should flatten LayerNoContainer with content props overriding container', () => {

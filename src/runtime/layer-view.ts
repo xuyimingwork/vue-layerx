@@ -1,4 +1,5 @@
 import {
+  Component,
   computed,
   defineComponent,
   getCurrentInstance,
@@ -8,6 +9,7 @@ import {
   Ref,
   ref,
   Teleport,
+  toRaw,
   toValue,
   watch,
   type ComponentInternalInstance,
@@ -28,23 +30,31 @@ import { LayerNoContainer } from '@/runtime/layer-no-container'
 /** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
 const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
 
-function createParkingEl(): HTMLUnknownElement {
+function useParkingElement(): HTMLUnknownElement {
   const el = document.createElement('layer-content-parking')
   el.style.display = 'none'
+  document.body.appendChild(el)
+  onBeforeUnmount(() => el.remove())
   return el
 }
 
+
 /** Anchor when present; otherwise hidden parking so Teleport never uses disabled/in-place. */
-function useRefContentTo(): WritableComputedRef<HTMLUnknownElement> {
-  const anchorEl = ref<HTMLUnknownElement | null>(null)
-  const parkingEl = createParkingEl()
-  document.body.appendChild(parkingEl)
-  onBeforeUnmount(() => parkingEl.remove())
+function useRefContentTo(bound: Ref<LayerBound>): WritableComputedRef<HTMLUnknownElement | undefined> {
+  const anchor = ref<HTMLUnknownElement | null>(null)
+  const parking = useParkingElement()
+  const container = computed(() => toValue(bound).container?.component)
+  const active = ref<Component | null>(null)
 
   return computed({
-    get: () => anchorEl.value ?? parkingEl,
+    get: () => {
+      if (!active.value) return
+      return anchor.value ?? parking
+    },
     set: (el) => {
-      anchorEl.value = el as HTMLUnknownElement | null
+      anchor.value = el as HTMLUnknownElement | null
+      const same = toRaw(active.value) === toRaw(container.value)
+      active.value = !el && same ? null : container.value
     },
   })
 }
@@ -61,7 +71,7 @@ function isLayerContent(
 
 export interface CreateLayerViewVNodeOptions extends LayerBound {
   openId?: number
-  refContentTo: Ref<HTMLUnknownElement>
+  refContentTo: Ref<HTMLUnknownElement | undefined>
 }
 
 /** Build LayerView root VNode (container + optional content). Exported for unit tests. */
@@ -94,12 +104,11 @@ export function createLayerViewVNode({
         }
       }),  // 落点，不是 content
     }),
-    h(Teleport, {
-      to: refContentTo.value,
-      defer: true,
+    refContentTo.value ? h(Teleport, {
+      to: refContentTo.value
     }, [
       createLayerViewContentVNode({ key: openId, content, marked: true })
-    ])
+    ]) : null
   ]
 }
 
@@ -137,7 +146,6 @@ export const LayerView = defineComponent({
   },
   setup(props, { emit }) {
     const openId = ref(0)
-    const refContentTo = useRefContentTo()
     const defineStore = createLayerStore({
       define: {},
       'define:template': {},
@@ -214,6 +222,8 @@ export const LayerView = defineComponent({
         }
       },
     })
+
+    const refContentTo = useRefContentTo(bound)
 
     return () =>
       createLayerViewVNode({
