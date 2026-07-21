@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.4] - 2026-07-21
+
 ### Changed
 
 - **`LayerInstance.visible`** — now `ComputedRef<boolean>` (was plain boolean getter); use `dialog.visible.value`
 - **Public type exports slimmed** — package no longer exports pipeline types (`LayerBound` / `LayerBoundNode`, canonical `CloseOn*` / node types, `CloseOnEntryRaw` / `CloseOnPolicyObjectRaw`, etc.). Keep: config flats, `LayerConfigFragment` / `LayerAdapter`, instance/define, `CloseOnRaw`, confirm types
+
+### Notes
+
+- Install beta: `pnpm add vue-layerx@beta` or `vue-layerx@1.0.0-beta.4`
+- Breaking vs **1.0.0-beta.3**: `visible` access requires `.value`; removed non-user-facing type exports
 
 ## [1.0.0-beta.3] - 2026-07-21
 
@@ -130,7 +137,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.3...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.4...HEAD
+[1.0.0-beta.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/xuyimingwork/vue-layerx/compare/v0.1.0...v1.0.0-beta.1
