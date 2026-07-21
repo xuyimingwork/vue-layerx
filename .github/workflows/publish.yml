@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
@@ -49,22 +49,24 @@ jobs:
           echo "npm_tag=$NPM_TAG" >> $GITHUB_OUTPUT
           echo "Publishing to npm dist-tag: $NPM_TAG"
 
-      - name: Install Dependencies
-        uses: ./.github/actions/install
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
 
-      # 全量测试环节包含构建流程
-      - name: Run Test
-        run: pnpm run test:all
-      
+      - run: pnpm install --frozen-lockfile
+
       # Trusted Publisher 要求 npm CLI 11.5.1+
       - name: Setup NPM
         run: npm install -g npm@latest
 
-      # prepublishOnly 阶段会再次做构建与产物验证
-      # --provenance: 生成供应链溯源证明，Trusted Publisher 推荐显式指定
-      # --tag: 预发布版本打 beta/alpha/rc，正式版打 latest（默认）
+      # prepublishOnly 会执行 test + build
+      # --provenance: 生成供应链溯源证明
+      # --tag: 预发布打 beta/alpha/rc，正式版打 latest
       - name: Publish To NPM
         run: npm publish --provenance --access public --tag ${{ steps.version.outputs.npm_tag }}
