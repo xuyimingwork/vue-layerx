@@ -3,5 +3,8 @@ dist
 coverage
 docs/.vitepress/cache
 docs/.vitepress/dist
+smoke/node_modules
+smoke/dist
+smoke/pnpm-lock.yaml
 *.local
 .VSCodeCounter
