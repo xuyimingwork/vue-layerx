@@ -1,6 +1,6 @@
 # vue-layerx
 
-让弹层组件通过命令方式调用，三行代码打开弹窗：
+让弹层通过命令方式调用，三行代码打开弹窗：
 
 ```ts
 const useDialog = createLayer(ElDialog)

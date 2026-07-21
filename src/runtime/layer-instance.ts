@@ -81,7 +81,7 @@ export function createLayerInstance({
     if (confirming) {
       const args = payload.args ?? []
       const result: LayerConfirmResult = {
-        source: payload.source ?? 'instance',
+        source: payload.source!,
         event: payload.event,
         args,
         data: args[0],

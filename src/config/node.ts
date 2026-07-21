@@ -72,7 +72,7 @@ export function normalizeNodeContainer(
   node?: LayerConfigNodeContainerRaw,
 ): LayerConfigNodeContainer | undefined {
   if (!node) return undefined
-  const result: LayerConfigNodeContainer = normalizeNode(node) ?? {}
+  const result: LayerConfigNodeContainer = normalizeNode(node)!
   if (node.model !== undefined) result.model = node.model
   return result
 }
@@ -81,7 +81,7 @@ export function normalizeNodeContent(
   node?: LayerConfigNodeContentRaw,
 ): LayerConfigNodeContent | undefined {
   if (!node) return undefined
-  const result: LayerConfigNodeContent = normalizeNode(node) ?? {}
+  const result: LayerConfigNodeContent = normalizeNode(node)!
   if (node.closeOn !== undefined) {
     const closeOn = normalizeCloseOn(node.closeOn)
     if (closeOn !== undefined) result.closeOn = closeOn
@@ -90,7 +90,7 @@ export function normalizeNodeContent(
 }
 
 function normalizeProps(props: LayerPropsRaw): LayerProps {
-  const result: LayerProps = { ...props }
+  const result: LayerProps = { ...props } as any
   if (props.ref !== undefined) {
     const ref = normalizePropRef(props.ref)
     if (ref !== undefined) result.ref = ref

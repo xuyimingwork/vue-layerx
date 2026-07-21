@@ -44,6 +44,33 @@ export const ToggleDefaultSlotContainer = defineComponent({
   },
 })
 
+/**
+ * Drawer shell with toggleable default slot.
+ * Used with Container swap: new component mounts before default appears → park.
+ */
+export const ToggleDefaultSlotDrawerContainer = defineComponent({
+  name: 'ToggleDefaultSlotDrawerContainer',
+  props: {
+    modelValue: Boolean,
+    showDefault: { type: Boolean, default: true },
+    size: String,
+  },
+  emits: ['update:modelValue'],
+  setup(props, { slots }) {
+    return () =>
+      props.modelValue
+        ? h(
+            'motion-drawer',
+            {
+              'data-show-default': String(props.showDefault),
+              'data-size': props.size,
+            },
+            props.showDefault ? slots.default?.() : null,
+          )
+        : null
+  },
+})
+
 export function makeContent(withLayer = false) {
   return defineComponent({
     name: 'Content',

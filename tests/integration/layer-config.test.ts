@@ -8,15 +8,12 @@ import {
   DefineUseSlotContent,
   DrawerContainer,
   FlexibleModelContainer,
-  HandlerContent,
   ModeContent,
   ModelContainer,
   HeaderFooterContainer,
   RefChainContent,
   SlotContent,
-  SubmitContent,
   TieredModeContent,
-  makeSubmitContentWithDefineLayer,
   slotSpan,
 } from '@tests/fixtures/layer-config'
 import {
@@ -195,80 +192,6 @@ describe('layer config', () => {
       await closeViaModel(wrapper)
 
       expect(onUpdate).toHaveBeenCalledWith(false)
-      expect(queryBodyDialog()).toBeFalsy()
-    })
-  })
-
-  describe('closeOn', () => {
-    it('should close when define-tier closeOn event is emitted', async () => {
-      const { wrapper } = await mountOpenLayer(createLayer(Container), {
-        Content: makeSubmitContentWithDefineLayer(['submit']),
-        open: (dialog) => dialog.open({ props: { message: 'hi' } }),
-      })
-
-      await clickBodyButton('done', wrapper)
-      expect(queryBodyDialog()).toBeTruthy()
-
-      await clickBodyButton('submit', wrapper)
-      expect(queryBodyDialog()).toBeFalsy()
-    })
-
-    it('should patch closeOn per event across tiers', async () => {
-      const { wrapper } = await mountOpenLayer(createLayer(Container), {
-        Content: makeSubmitContentWithDefineLayer(['submit']),
-        useConfig: { closeOn: ['done'] },
-        open: (dialog) => dialog.open({ props: { message: 'hi' } }),
-      })
-
-      await clickBodyButton('submit', wrapper)
-      expect(queryBodyDialog()).toBeFalsy()
-    })
-
-    it('should keep lower closeOn events when open only adds another', async () => {
-      const { wrapper } = await mountOpenLayer(createLayer(Container), {
-        Content: SubmitContent,
-        useConfig: { closeOn: ['done'] },
-        open: (dialog) =>
-          dialog.open({ props: { message: 'hi' }, closeOn: ['cancel'] }),
-      })
-
-      await clickBodyButton('submit', wrapper)
-      expect(queryBodyDialog()).toBeTruthy()
-
-      await clickBodyButton('done', wrapper)
-      expect(queryBodyDialog()).toBeFalsy()
-    })
-
-    it('should remove a lower closeOn event with false', async () => {
-      const { wrapper } = await mountOpenLayer(createLayer(Container), {
-        Content: SubmitContent,
-        useConfig: { closeOn: ['done'] },
-        open: (dialog) =>
-          dialog.open({
-            props: { message: 'hi' },
-            closeOn: { done: false, cancel: true },
-          }),
-      })
-
-      await clickBodyButton('done', wrapper)
-      expect(queryBodyDialog()).toBeTruthy()
-
-      await clickBodyButton('cancel', wrapper)
-      expect(queryBodyDialog()).toBeFalsy()
-    })
-
-    it('should call existing content handler before closeOn closes layer', async () => {
-      const onDone = vi.fn()
-      const { wrapper } = await mountOpenLayer(createLayer(Container), {
-        Content: HandlerContent,
-        useConfig: { closeOn: ['done'] },
-        open: (dialog) =>
-          dialog.open({ props: { message: 'hi', onDone } }),
-      })
-
-      await clickBodyButton('done', wrapper)
-
-      expect(onDone).toHaveBeenCalled()
       expect(queryBodyDialog()).toBeFalsy()
     })
   })

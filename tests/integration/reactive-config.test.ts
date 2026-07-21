@@ -15,6 +15,7 @@ import {
   makeContent,
   queryBodyDialog,
   ToggleDefaultSlotContainer,
+  ToggleDefaultSlotDrawerContainer,
 } from '@tests/fixtures/components'
 import { DrawerContainer } from '@tests/fixtures/layer-config'
 
@@ -239,8 +240,99 @@ describe('reactive layer config', () => {
    * - deferred default → no content until slot appears
    * - same container.component drops default → destroy content (no parking)
    * - container.component swap → park / preserve (covered above)
+   * - swap onto container whose default is deferred → park until slot appears
    */
   describe('container default slot deferred appearance', () => {
+    it('should park content when swapping onto a container without default slot yet', async () => {
+      const useLayer = createLayer(Container)
+      const asDrawer = ref(false)
+      const showDefault = ref(false)
+      let setupCount = 0
+      let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'ParkAcrossSwapContent',
+        setup() {
+          setupCount++
+          const note = ref('initial')
+          return () =>
+            h('motion-div', { class: 'content' }, [
+              h('span', { class: 'msg note' }, note.value),
+              h(
+                'button',
+                {
+                  class: 'edit-note',
+                  onClick: () => {
+                    note.value = 'edited'
+                  },
+                },
+                'edit',
+              ),
+            ])
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, () => ({
+            container: asDrawer.value
+              ? {
+                  component: ToggleDefaultSlotDrawerContainer,
+                  props: {
+                    showDefault: showDefault.value,
+                    size: '80%',
+                  },
+                }
+              : {
+                  component: Container,
+                },
+          }))
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-dialog')).toBeTruthy()
+      expect(queryAliveMsgs()).toHaveLength(1)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(setupCount).toBe(1)
+
+      document.body.querySelector('.edit-note')?.dispatchEvent(new MouseEvent('click'))
+      await nextTick()
+      expect(document.body.querySelector('.note')?.textContent).toBe('edited')
+
+      asDrawer.value = true
+      await nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-drawer')).toBeTruthy()
+      expect(document.body.querySelector('motion-dialog')).toBeNull()
+      expect(
+        document.body.querySelector('motion-drawer')?.getAttribute('data-show-default'),
+      ).toBe('false')
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(1)
+      expect(queryParkedMsgs()[0]?.textContent).toBe('edited')
+      expect(setupCount).toBe(1)
+
+      showDefault.value = true
+      await nextTick()
+      await flushPromises()
+
+      expect(
+        document.body.querySelector('motion-drawer')?.getAttribute('data-show-default'),
+      ).toBe('true')
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(queryAliveMsgs()).toHaveLength(1)
+      expect(document.body.querySelector('motion-drawer .note')?.textContent).toBe(
+        'edited',
+      )
+      expect(setupCount).toBe(1)
+    })
+
     it('should not mount content until default slot appears', async () => {
       const useLayer = createLayer(ToggleDefaultSlotContainer)
       const showDefault = ref(false)

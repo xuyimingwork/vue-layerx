@@ -45,7 +45,9 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 |------|-----|--------------|
 | `create-layer.test.ts` | `createLayer` | `factory` / `create tier defaults` / `adapter` |
 | `use-layer.test.ts` | `useLayer` / `LayerInstance` | `open and close` / `closeOn` / `instance refs` |
-| `layer-config.test.ts` | config merge | `PROPS_MERGE_CASES` + `CLONE_PROPS_CASES`；`CONTAINER/CONTENT_SLOT_MERGE_CASES`（缺 1 / 缺 open+1） |
+| `layer-config.test.ts` | config merge（props / model / slots / component / ref / clone defaults） | `partial merge` / `config shape` / `container model` / … |
+| `layer-config.priority.test.ts` | config merge 优先级矩阵 | `PROPS_MERGE_CASES` / `CLONE_PROPS_CASES` / slot merge cases |
+| `layer-config.close-on.test.ts` | `closeOn` 用法与行为 | `declaration sites` / `array sugar` / `record sugar` / `when` / `confirmed` / `cross-tier patch` / `with props.onXxx` / `invalid closeOn` |
 | `use-layer.host.test.ts` | `LayerInstance.bindHost` | `provide and inject` / `bindHost` |
 | `use-layer.clone.test.ts` | `LayerInstance.clone` | `parallel instances` / `independent defaults` / `cleanup` / `bindHost` / `instance refs` |
 
@@ -63,6 +65,8 @@ Which public API are you testing?
 ├─ createLayer 工厂 / create tier 默认值     → create-layer.test.ts
 ├─ useLayer / open / close / remount / refs  → use-layer.test.ts
 ├─ config merge（open > use > define > create；use > use:template；define > define:template） → layer-config.test.ts
+├─ config merge 优先级矩阵                     → layer-config.priority.test.ts
+├─ closeOn 写法 / 关层与 confirm 结算行为      → layer-config.close-on.test.ts
 ├─ bindHost / inject 继承（普通 instance）   → use-layer.host.test.ts
 ├─ clone() 实例隔离 / 并行 / cleanup / bindHost / refs  → use-layer.clone.test.ts
 ├─ defineLayer                               → define-layer.test.ts
