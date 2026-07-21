@@ -57,6 +57,8 @@ export function createLayerApp(options: {
           visible: state.visible,
           store,
           'onUpdate:visible': (value: boolean, payload?: LayerClosePayload) => {
+            // LayerView only emits false; keep guard for v-model contract.
+            /* v8 ignore next -- @preserve */
             if (value) return
             close(payload)
           },

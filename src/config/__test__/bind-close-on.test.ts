@@ -7,6 +7,18 @@ const always = (confirmed = false) =>
   ({ when: 'always' as const, confirmed })
 
 describe('normalizeCloseOn', () => {
+  it('should return undefined for undefined input', () => {
+    expect(normalizeCloseOn(undefined)).toBeUndefined()
+  })
+
+  it('should return undefined for empty or all-invalid arrays', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(normalizeCloseOn([])).toBeUndefined()
+    expect(normalizeCloseOn([123, null] as never)).toBeUndefined()
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
   it('should expand array strings to always entries', () => {
     expect(normalizeCloseOn(['done', 'cancel'])).toEqual({
       done: always(),

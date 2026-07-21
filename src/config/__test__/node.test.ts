@@ -8,6 +8,10 @@ import {
 } from '../node'
 
 describe('normalizeNode', () => {
+  it('should return undefined for empty input', () => {
+    expect(normalizeNode(undefined)).toBeUndefined()
+  })
+
   it('should not mutate input props.ref', () => {
     const userRef = ref(null)
     const node = { props: { a: 1, ref: userRef } }
