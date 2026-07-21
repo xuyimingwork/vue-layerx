@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.3] - 2026-07-21
+
+### Fixed
+
+- Container slot unmount / remount: keep content mounted when the container slot tears down; render content again when the slot is not mounted
+
+### Changed
+
+- Docs site redesign and guide improvements
+- Publish workflow cleanup (Trusted Publisher path; drop unused Playwright / custom actions)
+
+### Notes
+
+- Install beta: `pnpm add vue-layerx@beta` or `vue-layerx@1.0.0-beta.3`
+
 ## [1.0.0-beta.2] - 2026-07-20
 
 ### Added
@@ -110,7 +125,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.2...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/xuyimingwork/vue-layerx/compare/v0.1.0...v1.0.0-beta.1
 [0.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v0.0.1...v0.1.0
