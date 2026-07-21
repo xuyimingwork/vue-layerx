@@ -13,6 +13,7 @@ import ProvideInjectDemo from './09-provide-inject/index.vue'
 import LayerNoContainerDemo from './10-layer-no-container/index.vue'
 import OpenSwapContainerDemo from './11-open-swap-container/index.vue'
 import ConfirmDemo from './12-confirm/index.vue'
+import NestedSelfDemo from './13-nested-self/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -62,6 +63,15 @@ export const demoGroups: DemoGroup[] = [
           'LayerTemplate visible-outside + layer.exists：页内 footer 落表单下，弹层时通过 slot render fn 挂到 Dialog.footer。',
         tags: ['visible-outside', 'layer.exists', 'content 复用'],
         component: InlineReuseDemo,
+      },
+      {
+        id: 'nested-self',
+        level: 3,
+        title: '自引用嵌套详情',
+        description:
+          '页内 UserDetail → 点好友开弹层 → 弹层内再点好友叠一层。content 用 getCurrentInstance().type + useDialog(Self) 避开循环依赖，每层独立 instance。',
+        tags: ['getCurrentInstance', 'useDialog(Self)', '嵌套 open', '页内复用'],
+        component: NestedSelfDemo,
       },
     ],
   },

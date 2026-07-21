@@ -15,12 +15,16 @@ src/
     01-basic/              # Lv.1 打开与关闭
     02-crud/               # Lv.2 列表 CRUD
     03-inline-reuse/       # Lv.3 页内复用
+    13-nested-self/        # Lv.3 自引用嵌套详情（页内 → 弹层 → 再叠层）
     04-dual-layer/         # Lv.4 Dialog / Drawer 双容器
     05-clone/              # Lv.5 clone 多实例
     06-before-close/       # Lv.6 未保存拦截
     07-config-merge/       # Lv.7 配置合并
     08-lifecycle/          # Lv.8 工厂默认与卸载清理
     09-provide-inject/     # Lv.9 provide / inject · bindHost
+    10-layer-no-container/ # LayerNoContainer 存量单体
+    11-open-swap-container/# 内容内全屏换壳
+    12-confirm/            # confirm() Promise
 ```
 
 每个 demo 目录：
