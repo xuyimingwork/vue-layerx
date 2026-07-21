@@ -1,6 +1,6 @@
 # 打开与关闭
 
-有了工厂和内容组件后，用工厂创建**弹层实例**，再命令式开关。
+有了组合式函数（如 `useDialog`）和内容组件之后，先创建**弹层实例**，再 `open` / `close`。
 
 ## 创建实例
 
@@ -18,21 +18,19 @@ const dialog = useDialog(HelloWorld)
 </template>
 ```
 
-若内容侧已用 `defineLayer` 配好标题、`closeOn` 等，`open()` 可以不带参数。
-
 ## 向内容传参
 
-### open 当次传入
+### 打开时传入（最常用）
 
 ```ts
 dialog.open({ props: { id: 1, mode: 'edit' } })
 ```
 
-在 `useLayer` / `open` / `clone` 里，**顶层 `props` 指内容**（如 `id`、`mode`）。
+这里顶层的 `props` 交给**内容组件**（`id`、`mode` 等）。
 
-### useLayer 默认传入
+### 创建实例时写默认
 
-每次打开都要带的参数，可放在创建实例时：
+每次打开都要带的参数，可以写在 `useDialog` 的第二参，少在 `open` 里重复：
 
 ```ts
 const dialog = useDialog(HelloWorld, {
@@ -44,32 +42,47 @@ dialog.open({ props: { id: 1 } })
 
 ## 顶层 props 指哪一侧
 
-| API | 顶层 `props` → |
-|-----|----------------|
-| `createLayer` / `defineLayer` | **容器**（`title`、`width`） |
-| `useLayer` / `open` / `clone` | **内容**（`id`、`mode`） |
+配置里经常出现顶层 `props`，含义取决于写在哪：
 
-另一侧要显式写出字段名：内容侧用 `content`，容器侧用 `container`。
+| 写在哪里 | 顶层 `props` 给谁 |
+|----------|-------------------|
+| `createLayer` 第二参 | **容器**（`title`、`width`） |
+| `useDialog` / `open` | **内容**（`id`、`mode`） |
+
+若在 `open` 时既要给内容传参、又要改容器标题，内容用顶层 `props`，容器写到 `container` 里：
 
 ```ts
-defineLayer({ props: { title: '编辑用户' } })
-
 dialog.open({
   props: { id: 1 },
   container: { props: { title: '当次标题' } },
 })
 ```
 
-## 常用实例成员
+（内容组件里也可以用 `defineLayer` 声明容器默认标题，见下一章。）
+
+## 常用实例能力
 
 | 成员 | 说明 |
 |------|------|
-| `open(config?)` | 打开；`config` 为 plain 快照 |
-| `close()` | 关闭 |
-| `visible` | 只读是否打开 |
+| `open(config?)` | 打开弹层 |
+| `close()` | 关闭弹层 |
+| `visible` | 是否打开（只读） |
 
-更多（`clone`、`confirm`、`bindHost`、refs）见 [实例进阶](/guide/instance)。
+`clone`、`confirm`、模块单例等见 [实例的更多能力](/guide/instance)。
+
+## 可以不传内容组件
+
+`useDialog()` 允许省略内容组件——此时仍是「有容器」，只是还没有业务内容（空壳）。改壳的标题、宽度等，请走 `container:`，不要指望顶层 `props`（顶层在这一侧默认指内容，没有内容时没有落点）。
+
+```ts
+const shell = useDialog()
+shell.open({
+  container: { props: { title: '仅外壳', width: '480px' } },
+})
+```
+
+这和「一个文件里 Dialog+表单还没拆开」不是同一类问题。后者要用 `LayerNoContainer`，把整颗旧组件当作内容，见 [壳与内容未拆分](/guide/no-container)。
 
 ## 下一步
 
-[defineLayer](/guide/define-layer) — 在内容组件里声明默认标题与关层行为
+[在内容里声明默认](/guide/define-layer)

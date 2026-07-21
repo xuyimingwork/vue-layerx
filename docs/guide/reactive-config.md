@@ -1,47 +1,45 @@
 # 响应式配置
 
-`createLayer`、`defineLayer`、`useLayer`、`clone` 的配置支持 `MaybeRefOrGetter`：传入 plain 对象、`ref`、`computed` 或 getter 均可。
+有时默认标题要跟语言包走，或倒计时要反映在标题上。  
+`createLayer`、`defineLayer`、`useDialog`（以及后面的 `clone`）的配置，除了传普通对象，还可以传 `ref`、`computed` 或返回配置的函数——配置会保持「活的」。
 
-## 哪些是 live
+## 示例
 
 ```ts
-// 工厂：i18n 标题随语言变
+// 组合式函数：标题跟 i18n 变
 createLayer(ElDialog, () => ({
   props: { title: t('user.edit') },
 }))
 
-// define：倒计时标题（不 remount content）
+// 内容里：倒计时标题
 defineLayer(() => ({
   props: { title: `请确认（${left.value}s）` },
 }))
 
-// use：随列表当前行变化
+// 创建实例时：跟着当前行 id
 const id = ref('1')
 const dialog = useDialog(UserForm, () => ({
   props: { recordId: id.value },
 }))
 ```
 
-live 源在弹层**已打开**时仍可驱动合并结果更新（例如 title）。
+弹层已经打开时，这类配置仍可继续更新合并结果（例如标题数字在变）。
 
-## open 是快照
+## open 的参数是「当次快照」
 
-`open(config?)` 的参数**只能是 plain 对象**，表示当次打开的快照，不是 getter。
+`open({ ... })` 只接受普通对象，表示**这一次**打开带上的值，不要传函数：
 
 ```ts
-dialog.open({ props: { id: row.id } }) // OK
-// dialog.open(() => ({ props: { id: id.value } })) // 不要这样
+dialog.open({ props: { id: row.id } }) // 正确
 ```
 
-空 `open()` 使用当前 live 的 use / 更低 tier，不再额外叠一层 open 快照。
+不传参的 `open()`，会用上面那些「活的」默认配置，不再叠一层当次覆盖。
 
-## 与 remount 的关系
+## 关掉再开 vs 开着再 open
 
-- `close()` 后再 `open()`：内容子树重建，`defineLayer` / 内容侧 `LayerTemplate` 会再跑一遍 setup  
-- 已打开时再次 `open(config)`：更新 open tier，**不**默认 remount 内容  
-
-设计细节见仓库 [ADR 0003](https://github.com/xuyimingwork/vue-layerx/blob/main/docs/adr/0003-reactive-layer-config.md)。
+- `close()` 后再 `open()`：内容会重新挂载，`defineLayer` 等会再执行一遍  
+- 已经打开时再 `open({ props })`：主要更新当次配置，**默认不会**拆掉重建内容  
 
 ## 下一步
 
-[adapter](/guide/adapter)
+[按环境换容器](/guide/adapter)

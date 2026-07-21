@@ -18,10 +18,10 @@ dialog.open({ props: { id: 1 } })
 
 | 导出 | 说明 |
 |------|------|
-| [`createLayer`](./create-layer) | 由容器创建 `useLayer` 工厂 |
+| [`createLayer`](./create-layer) | 由容器创建组合式函数（如 `useDialog`） |
 | [`defineLayer`](./define-layer) | 内容侧注册默认配置 |
 | [`LayerTemplate`](./layer-template) | 模板投递具名插槽 |
-| [`LayerNoContainer`](./layer-no-container) | 无外壳标记容器 |
+| [`LayerNoContainer`](./layer-no-container) | 壳与内容未拆分时的拍平标记 |
 | [`LayerConfirmError`](./layer-instance#confirm) | `confirm()` 失败错误类 |
 | 类型 | 见 [类型](./types) · [配置](./config) |
 

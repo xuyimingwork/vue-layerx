@@ -10,7 +10,7 @@
 | `confirm(config?)` | 打开并返回 `Promise<LayerConfirmResult>`。`closeOn.confirmed: true` 或 `close({ confirmed: true })` 时 resolve，否则 reject [`LayerConfirmError`](#layerconfirmerror)（`code: 'close'`）。已打开 / confirming 再调 → `code: 'busy'` |
 | `close(options?)` | 关闭（不卸 DOM）。confirming 时可传 `{ confirmed?, args? }` |
 | `unmount()` | 卸 portal DOM；confirming 时 reject `source: 'unmount'`；**不**清 layerHost |
-| `clone(config?)` | 独立实例；继承工厂与 `use` tier（**不继承**父 `use` 的 `props.ref`）；setup 内自动 `bindHost()`；`config` 可为 live |
+| `clone(config?)` | 独立实例；继承组合式函数默认与创建时配置（**不继承**父级 `props.ref`）；setup 内自动 `bindHost()`；`config` 可为响应式源 |
 | `contentRef` | 只读 computed；打开时指向 content 实例，否则 `null` |
 | `containerRef` | 只读 computed；打开时指向 container 实例，否则 `null` |
 | `visible` | 只读是否打开 |
@@ -37,8 +37,8 @@ try {
 export const messageBox = useDialog(MessageContent)
 ```
 
-须在 App 或 ConfigProvider **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject。见 [指南：实例进阶](/guide/instance)。
+须在 App 或 ConfigProvider **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject。见 [指南：实例的更多能力](/guide/instance)。
 
 ## props.ref
 
-各 tier 的 `props.ref` 合并时链式执行。命令式场景推荐 `contentRef` / `containerRef`。`clone()` 不传 `props.ref` 时不会继承父 `use` 的用户 ref。
+各处的 `props.ref` 合并时链式执行。命令式场景推荐 `contentRef` / `containerRef`。`clone()` 不传 `props.ref` 时不会继承父实例创建时配置里的用户 ref。

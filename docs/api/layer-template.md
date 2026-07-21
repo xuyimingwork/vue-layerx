@@ -36,4 +36,4 @@
 
 slot 统一链：`open > use > use:template > define > define:template > create`。
 
-见 [指南：LayerTemplate](/guide/layer-template)。
+见 [指南：用模板填写插槽](/guide/layer-template)。

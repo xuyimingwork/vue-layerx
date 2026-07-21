@@ -1,10 +1,18 @@
-# LayerTemplate
+# 用模板填写插槽
 
-内容默认只进入容器的 `default` 插槽。组件库 Dialog 通常还有 `footer`、`title` 等具名插槽——内容写在另一个 SFC 里、壳又是命令式远程挂载时，普通 `<template #footer>` 用不了。
+到目前为止，内容只会出现在容器的**默认插槽**里。但 `ElDialog` 等通常还有 `footer`、`header` / `title` 等具名插槽。
 
-`LayerTemplate` 用**模板语法**声明一块具名模板，投递到目标组件的同名 slot。
+问题在于：内容写在自己的 `.vue` 里，容器又是 `open()` 时远程挂上的——你没法像平时那样写：
 
-## 内容侧投递到容器
+```vue
+<ElDialog>
+  <template #footer>…</template>
+</ElDialog>
+```
+
+`LayerTemplate` 就是用**仍然熟悉的模板语法**，把一块内容投到目标组件的同名插槽里。
+
+## 在内容组件里填容器的 footer
 
 ```vue
 <script setup lang="ts">
@@ -25,13 +33,15 @@ const emit = defineEmits(['ok'])
 </template>
 ```
 
-- `:to` **必填**：内容侧传 `defineLayer()` 的返回值  
-- `name` 与目标 slot 同名（如 `footer`）  
-- 包裹内容默认**不在原位置渲染**；仅在弹层中作为 slot 渲染  
+记住三点：
 
-## 调用方投递
+1. `:to` 必填——这里传 `defineLayer()` 的返回值  
+2. `name` 和容器上的插槽名一致（如 `footer`）  
+3. 这块内容默认**不会**显示在内容组件原来的位置，只在弹层打开时出现在对应插槽里  
 
-使用方可以把模板投进**内容**或**容器**的插槽：
+## 调用方也可以投递（稍后再用也行）
+
+打开弹层的页面，可以把模板投给**内容**的插槽，或覆盖**容器**的插槽：
 
 ```vue
 <script setup lang="ts">
@@ -41,27 +51,29 @@ const dialog = useDialog(HelloWorld)
 <template>
   <button @click="dialog.open({ props: { id: 1 } })">打开</button>
 
-  <!-- 投进内容组件的同名 <slot> -->
+  <!-- 填内容组件上的 <slot name="header"> -->
   <LayerTemplate :to="dialog" name="header">
-    <span>给内容的自定义头部</span>
+    <span>自定义头部</span>
   </LayerTemplate>
 
-  <!-- 投进容器同名 slot（可覆盖内容侧 footer） -->
+  <!-- 填容器的 footer（可盖过内容里写的 footer） -->
   <LayerTemplate :to="dialog" container name="footer">
     <button>调用方 footer</button>
   </LayerTemplate>
 </template>
 ```
 
-| 写法 | 目标 |
-|------|------|
-| 内容内 `:to="layer"` | 容器同名 slot |
-| 调用方 `:to="instance"` | 内容同名 `<slot>` |
-| 调用方 `:to` + `container` | 容器同名 slot（高于内容侧模板） |
+| 写法 | 填到哪里 |
+|------|----------|
+| 内容里 `:to="layer"` | 容器的同名插槽 |
+| 页面里 `:to="dialog"` | 内容的同名 `<slot>` |
+| 页面里再加 `container` | 容器的同名插槽 |
 
-## visible-outside
+先掌握「内容里填 footer」就够用；调用方投递等真正需要再回来看。
 
-需要**页内也展示**同一块 UI（例如页内编辑也要保存按钮）时：
+## 页内也要显示同一块区域时
+
+有时同一组件既在页内用、又在弹层里用，页内也要按钮。加上 `visible-outside`，并配合 `layer.exists` 分支：
 
 ```vue
 <LayerTemplate :to="layer" name="footer" visible-outside>
@@ -70,15 +82,12 @@ const dialog = useDialog(HelloWorld)
 </LayerTemplate>
 ```
 
-- `visible-outside`：页内在原位置渲染  
-- 弹层内仍通过 slot 投递；宿主态用 `layer.exists` 分支  
+完整例子见 [实践教程 §4](/guide/cookbook/visible-outside)。
 
-完整业务故事见 [实践：visible-outside](/guide/cookbook/visible-outside)。
+## 插槽作用域参数
 
-## scoped 透传
-
-`#default` 收到目标 slot 的 scoped props（flat 透传），与在父组件写 `#footer="{ … }"` 类似。
+和普通 `#footer="{ xxx }"` 一样，可以用 `v-slot` 接收目标插槽传下来的参数。
 
 ## 下一步
 
-[配置合并](/guide/config-merge)
+基础用法到这里可以告一段落。若配置写在多处、不知道谁覆盖谁，读 [配置如何合并](/guide/config-merge)。

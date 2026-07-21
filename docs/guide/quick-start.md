@@ -8,11 +8,11 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
-peer：`vue` `^3.5.0`。
+需要 Vue `^3.5.0`（peerDependency）。
 
-## 创建工厂
+## 用 createLayer 得到组合式函数
 
-任意弹层**容器组件**都可以通过 `createLayer` 生成组合式函数：
+任意弹层**容器组件**都可以交给 `createLayer`，生成你项目里的 `useDialog` / `useDrawer` 等：
 
 ```ts
 // dialog.ts
@@ -22,11 +22,11 @@ import { ElDialog } from 'element-plus'
 export const useDialog = createLayer(ElDialog)
 ```
 
-> **弹层**：Dialog、Drawer、Popup 等弹出式交互形态的统称。
+> **弹层**：Dialog、Drawer、Popup 等弹出式交互的统称。
 
-容器就是靠 v-model 控制显示隐藏、通常有 default slot 的组件。Element Plus、Ant Design Vue、Vant、项目内 `BaseDialog` 都可以。
+容器 = 靠 v-model（或同类显隐 prop）控制显示、通常带 default 插槽的组件。Element Plus、Ant Design Vue、Vant、项目内 `BaseDialog` 都可以。
 
-## 创建实例并打开
+## 传入内容并打开
 
 内容可以是任意普通组件：
 
@@ -51,10 +51,12 @@ const dialog = useDialog(HelloWorld)
 </template>
 ```
 
-`useDialog` **不是**包的独立导出，而是 `createLayer` 的返回值；项目里可叫 `useDrawer`、`usePopup` 等。
+注意：`useDialog` **不是**从 `vue-layerx` 直接导出的，而是你用 `createLayer` 自己生成的；名字可以叫 `useDrawer`、`usePopup` 等。
 
 ## 下一步
 
-- [创建弹层工厂](/guide/create-layer) — 默认 props、`model`
-- [打开与关闭](/guide/open-close) — 向内容传参
-- [defineLayer](/guide/define-layer) — 在内容里声明标题与关层
+按顺序往下读即可：
+
+1. [创建弹层组合式函数](/guide/create-layer) — 默认宽度、`model` 名  
+2. [打开与关闭](/guide/open-close) — 怎么给内容传参  
+3. [在内容里声明默认](/guide/define-layer) — 标题等默认值写在内容组件旁  

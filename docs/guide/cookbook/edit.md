@@ -8,10 +8,10 @@ import FormSource from '../../examples/tutorial/UserForm.vue?raw'
 # §3 编辑 / 新建
 
 ::: info 本章新增
-同一工厂，`mode: 'edit' | 'create'` · `closeOn` · footer 保存
+同一 `useDetailLayer`，`mode: 'edit' | 'create'` · `closeOn` · footer 保存
 :::
 
-**不新增工厂。** `useDetailLayer` 已经包含编辑能力：
+**不必再注册一套组合式函数。** `useDetailLayer` 已经包含编辑能力：
 
 ```ts
 userLayer.open({ props: { mode: 'edit', initialName: row.name, onSubmit: fn } })

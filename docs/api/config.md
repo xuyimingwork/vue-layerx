@@ -40,7 +40,7 @@ open > use > use:template > define > define:template > create
 - 跨 tier：**按事件 patch**，非整表替换  
 - `when: 'none'` / `false` 去掉该事件  
 
-见 [指南：closeOn](/guide/close-on)。
+见 [指南：用事件关闭弹层](/guide/close-on)。
 
 ## 未知字段
 

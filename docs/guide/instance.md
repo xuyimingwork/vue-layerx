@@ -1,54 +1,61 @@
-# 实例进阶
+# 实例的更多能力
 
-`useLayer(Content)`（即 `createLayer` 返回的工厂）得到 `LayerInstance`。基础用法见 [打开与关闭](/guide/open-close)；本节补齐进阶成员。
+[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`。这里补充克隆实例、拿组件引用、等待确认结果、以及模块单例要注意的一点。
 
-## clone
-
-派生**独立**实例，继承工厂与父级 `use` tier（不继承父 `use` 的 `props.ref`）：
+## 克隆一份独立实例
 
 ```ts
 const main = useDialog(UserForm, { props: { mode: 'view' } })
 const editor = main.clone({ props: { mode: 'edit' } })
 ```
 
-`clone` 的配置可为 live（`MaybeRefOrGetter`）。
+`editor` 与 `main` 互不影响；会带上原来的默认配置，但可以再覆盖。
 
-## contentRef / containerRef
+## 拿到内容 / 容器组件实例
 
-只读 computed：打开时分别指向内容 / 容器组件实例，关闭后为 `null`。命令式访问子实例时优先用它们，而不是在配置里玩 `props.ref` 字符串。
+打开后可通过只读的 `contentRef`、`containerRef` 访问组件实例；关闭后为 `null`。需要命令式调子组件方法时用它们即可。
 
-## unmount
+## 卸掉挂载点：unmount
 
-卸掉 portal DOM 挂载点。与 `close()`（只关可见性）不同。confirming 中 `unmount` 会按约定 settle/reject，详见 API。
+`close()` 只是关掉显示；`unmount()` 会卸掉弹层挂到页面上的 DOM。一般业务用 `close` 就够。
 
-## confirm
+## 等待用户确认：confirm
 
-需要「打开 → 等用户确认再拿到结果」时：
+需要「打开 → 等用户点确认再继续」时：
 
 ```ts
+import { LayerConfirmError } from 'vue-layerx'
+
 try {
   const result = await dialog.confirm({ props: { id: 1 } })
-  // closeOn.confirmed: true 或 close({ confirmed: true })
+  // 用户走了「确认」路径
 } catch (e) {
   if (e instanceof LayerConfirmError) {
-    // code: 'close' | 'busy'
+    // 取消、关闭或忙：e.code 为 'close' | 'busy'
   }
 }
 ```
 
-与 `closeOn` 的 `confirmed` 字段配合。完整表见 [API：LayerInstance](/api/layer-instance)。
+这要和 `closeOn` 里哪些事件算「确认」配合（见 [API：LayerInstance](/api/layer-instance)）。日常「点确定就关」用 [用事件关闭弹层](/guide/close-on) 的列表写法即可。
 
-## bindHost 与模块单例
+## 模块顶层的单例：bindHost
 
-在 `setup` 里调用的 `useLayer` / `clone` 会自动尝试 `bindHost()`，以便内容能 `inject` 到 App / ConfigProvider。
+在组件 `setup` 里写的 `useDialog(...)` 一般不用操心。
 
-**模块级单例**（例如 `export const messageBox = useDialog(...)` 写在模块顶层）必须在 App 或 `ElConfigProvider` **子树内**的 setup 中手动：
+若把实例建在**模块顶层**（例如全局 MessageBox）：
+
+```ts
+// layers/message-box.ts
+export const messageBox = useDialog(MessageContent)
+```
+
+需要在 App（或 `ElConfigProvider`）**里面**的某个 `setup` 中调用一次：
 
 ```ts
 messageBox.bindHost()
 ```
 
-否则 content 拿不到全局 provide。同一 host 重复调用为 no-op。
+否则内容组件可能拿不到全局的 provide（主题、语言等）。
 
 ## 下一步
 
