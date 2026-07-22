@@ -48,4 +48,4 @@ layer.exists // true：弹层中；false：页内等普通使用
 
 ## 下一步
 
-[用事件关闭弹层](/guide/close-on)
+标题、宽度解决的是「打开时长什么样」。用户点了确定之后要不要关层，同样可以在内容里用 `defineLayer` 声明——见 [用事件关闭弹层](/guide/close-on)。
