@@ -44,7 +44,7 @@ export default defineConfig({
         {
           text: '进阶',
           items: [
-            { text: '设计要点', link: '/guide/design' },
+            { text: '设计决策', link: '/guide/design' },
             { text: '配置如何合并', link: '/guide/config-merge' },
             { text: '响应式配置', link: '/guide/reactive-config' },
             { text: '实例的更多能力', link: '/guide/instance' },
