@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import ClientOnly from './ClientOnly.vue'
 
@@ -24,6 +24,7 @@ const props = withDefaults(
 
 const visible = ref(props.expand)
 const copied = ref(false)
+const activeIndex = ref(0)
 
 const displayFiles = computed<DemoFile[]>(() => {
   if (props.files.length) return props.files
@@ -31,9 +32,25 @@ const displayFiles = computed<DemoFile[]>(() => {
   return []
 })
 
+const activeFile = computed(() => displayFiles.value[activeIndex.value])
+
+const activeLang = computed(() => {
+  const name = activeFile.value?.name ?? ''
+  if (name.endsWith('.ts') || name.endsWith('.tsx')) return 'ts'
+  if (name.endsWith('.js') || name.endsWith('.jsx')) return 'js'
+  if (name.endsWith('.css')) return 'css'
+  if (name.endsWith('.json')) return 'json'
+  return 'vue'
+})
+
+watch(displayFiles, (files) => {
+  if (activeIndex.value >= files.length) activeIndex.value = 0
+})
+
 async function copyCode() {
-  const text = displayFiles.value.map((f) => `// ${f.name}\n${f.code}`).join('\n\n')
-  await navigator.clipboard.writeText(text)
+  const file = activeFile.value
+  if (!file) return
+  await navigator.clipboard.writeText(file.code)
   copied.value = true
   setTimeout(() => {
     copied.value = false
@@ -70,21 +87,32 @@ async function copyCode() {
 
     <Transition name="demo-source">
       <div v-show="visible" class="demo-block__source">
-        <div
-          v-for="file in displayFiles"
-          :key="file.name"
-          class="demo-block__file"
-        >
-          <div class="demo-block__file-name">{{ file.name }}</div>
-          <div class="language-vue vp-adaptive-theme">
-            <button
-              type="button"
-              class="demo-block__collapse"
-              title="隐藏源码"
-              @click="visible = false"
-            />
-            <pre><code class="language-vue">{{ file.code }}</code></pre>
-          </div>
+        <div v-if="displayFiles.length > 1" class="demo-block__tabs" role="tablist">
+          <button
+            v-for="(file, index) in displayFiles"
+            :key="file.name"
+            type="button"
+            role="tab"
+            class="demo-block__tab"
+            :class="{ 'demo-block__tab--active': index === activeIndex }"
+            :aria-selected="index === activeIndex"
+            @click="activeIndex = index"
+          >
+            {{ file.name }}
+          </button>
+        </div>
+        <div v-else-if="activeFile" class="demo-block__file-name">
+          {{ activeFile.name }}
+        </div>
+
+        <div v-if="activeFile" class="demo-block__code" :class="`language-${activeLang}`">
+          <button
+            type="button"
+            class="demo-block__collapse"
+            title="隐藏源码"
+            @click="visible = false"
+          />
+          <pre><code :class="`language-${activeLang}`">{{ activeFile.code }}</code></pre>
         </div>
       </div>
     </Transition>
@@ -148,8 +176,38 @@ async function copyCode() {
   background: var(--vp-code-block-bg);
 }
 
-.demo-block__file + .demo-block__file {
-  border-top: 1px solid var(--vp-c-divider);
+.demo-block__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 0 8px;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+  overflow-x: auto;
+}
+
+.demo-block__tab {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+  font-family: var(--vp-font-family-mono);
+  line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.demo-block__tab:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.demo-block__tab--active {
+  color: var(--vp-c-brand-1);
+  border-bottom-color: var(--vp-c-brand-1);
 }
 
 .demo-block__file-name {
@@ -161,7 +219,11 @@ async function copyCode() {
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-.demo-block__file :deep(pre) {
+.demo-block__code {
+  position: relative;
+}
+
+.demo-block__code :deep(pre) {
   margin: 0;
   padding: 12px 16px;
   overflow-x: auto;
@@ -169,7 +231,7 @@ async function copyCode() {
   line-height: 1.6;
 }
 
-.demo-block__file :deep(code) {
+.demo-block__code :deep(code) {
   font-family: var(--vp-font-family-mono);
 }
 
@@ -177,6 +239,7 @@ async function copyCode() {
   position: absolute;
   right: 12px;
   top: 8px;
+  z-index: 1;
   width: 28px;
   height: 28px;
   border: none;
@@ -184,6 +247,10 @@ async function copyCode() {
   background: var(--vp-c-bg-soft);
   cursor: pointer;
   opacity: 0.7;
+}
+
+.demo-block__collapse:hover {
+  opacity: 1;
 }
 
 .demo-block__collapse::before,
@@ -198,14 +265,9 @@ async function copyCode() {
   transform: translate(-50%, -50%);
 }
 
-.demo-block__file .language-vue {
-  position: relative;
-}
-
 .demo-source-enter-active,
 .demo-source-leave-active {
-  transition: opacity 0.2s ease, max-height 0.25s ease;
-  overflow: hidden;
+  transition: opacity 0.2s ease;
 }
 
 .demo-source-enter-from,

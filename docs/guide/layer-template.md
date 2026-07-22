@@ -82,7 +82,7 @@ const dialog = useDialog(HelloWorld)
 </LayerTemplate>
 ```
 
-完整例子见 [实践教程 §4](/guide/cookbook/visible-outside)。
+完整例子见 [实践教程：内容复用：页内 / Dialog / Drawer](/guide/cookbook/content-reuse)；调用方投递见 [弹层插槽怎么填](/guide/cookbook/layer-template)。
 
 ## 插槽作用域参数
 

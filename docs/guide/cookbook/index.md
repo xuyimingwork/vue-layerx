@@ -1,14 +1,13 @@
 # 实践教程
 
-用一个 `UserForm` 串起详情、页内嵌入、编辑、双宿主操作区、窄屏换壳与未保存拦截。建议先读完[快速上手](/guide/quick-start)和基础几章，再跟着做。
+带着具体问题来读。建议先完成[快速上手](/guide/quick-start)；下面按「常见程度」排列，不必按序读完。
 
-| 章节 | 你会学到 |
-|------|----------|
-| [§1 列表详情弹层](./detail) | 命令式打开详情 |
-| [§2 页内复用同一内容](./compose) | 同一组件嵌在订单页 |
-| [§3 编辑与新建](./edit) | 改 `mode`，不必新开一套 |
-| [§4 页内也要操作区](./visible-outside) | `visible-outside` |
-| [§5 窄屏换 Drawer](./adapt) | 少见：用 `adapter` 换壳 |
-| [§6 未保存拦截](./before-close) | beforeClose |
+| 遇到什么 | 看哪篇 |
+|----------|--------|
+| 命令式打开后，操作区 / 头部写不进去 | [弹层插槽怎么填](./layer-template) |
+| 同一内容既要嵌页面，又要 Dialog / Drawer | [内容复用：页内 / Dialog / Drawer](./content-reuse) |
+| 复杂列表选择后要拿回结果 | [获取弹层结果](./confirm) |
+| 老 Dialog 和表单还粘在一起 | [存量弹窗渐进接入](./legacy) |
+| 弹层里还要再开一层 | [嵌套弹层](./nested-self) |
 
-从 [§1](./detail) 开始。
+更全的探索示例见导航栏 **Playground**。

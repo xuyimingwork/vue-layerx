@@ -24,7 +24,7 @@ defineLayer({
 </template>
 ```
 
-和 `createLayer` 一样：这里顶层的 `props` 作用在**容器**上。
+和 `createLayer` 一样：这里顶层的 `props` 作用在**容器**上（标题、宽度，以及容器自己的能力如 `beforeClose` 等，都会透传）。
 
 配好之后，调用方常常可以直接 `dialog.open()`，不必再传标题。
 
