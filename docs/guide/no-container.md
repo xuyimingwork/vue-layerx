@@ -18,7 +18,7 @@ userDialog.open({ props: { id: 1 } })
 `LayerNoContainer` 的意思是：**框架不再外面再包一层容器**，只渲染你传入的那颗组件（拍平为 `h(UserDialog)`）。  
 所以这里的「内容」其实是整颗旧弹窗；等拆出纯 `UserForm` 后，把 `createLayer(LayerNoContainer)` 换成 `createLayer(ElDialog)` 即可，调用方的 `open({ props })` 可以尽量不动。
 
-也可用同一个 `createLayer(ElDialog)`，在 `adapter` 里遇到单体组件时再把容器换成 `LayerNoContainer`，与已拆分的内容共用一个组合式函数——见 [实践教程：存量弹窗渐进接入](/guide/cookbook/legacy) 与 [ADR 0001](https://github.com/xuyimingwork/vue-layerx/blob/main/docs/adr/0001-legacy-monolith-progressive-adoption.md)。
+也可用同一个 `createLayer(ElDialog)`，在 `adapter` 里遇到单体组件时再把容器换成 `LayerNoContainer`，与已拆分的内容共用一个组合式函数——见 [未拆分内容/容器弹窗接入](/guide/cookbook/legacy) 与 [ADR 0001](https://github.com/xuyimingwork/vue-layerx/blob/main/docs/adr/0001-legacy-monolith-progressive-adoption.md)。
 
 ## 为什么不是「只有容器、没有内容」？
 

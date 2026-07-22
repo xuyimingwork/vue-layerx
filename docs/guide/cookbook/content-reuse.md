@@ -6,7 +6,7 @@ import PanelSource from '../../examples/content-reuse/FilterPanel.vue?raw'
 import LayersSource from '../../examples/shared/layers.ts?raw'
 </script>
 
-# 内容复用：页内 / Dialog / Drawer
+# 复用内容组件
 
 同一份 `FilterPanel`：嵌在页面里改筛选，也可以用 Dialog 或 Drawer 打开。内容只维护一份；`defineLayer` 同时声明 `width`（Dialog）与 `direction`（Drawer），工厂 `adapter` 各自滤掉无关 props。
 

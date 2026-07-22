@@ -5,7 +5,7 @@ import AppSource from '../../examples/confirm/App.vue?raw'
 import PickerSource from '../../examples/confirm/MemberPicker.vue?raw'
 </script>
 
-# 获取弹层结果
+# 获取弹层返回结果
 
 需要从**复杂内容**拿回数据时（例如成员列表：页内可勾选，也可弹层多选），用 `confirm()` 等待关闭并拿到结果——不是 `ElMessageBox` 那种一句话确认。
 

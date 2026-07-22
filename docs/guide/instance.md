@@ -36,7 +36,7 @@ try {
 }
 ```
 
-这要和 `closeOn` 里哪些事件算「确认」配合（见 [API：LayerInstance](/api/layer-instance)）。完整可跑示例见 [实践教程：获取弹层结果](/guide/cookbook/confirm)。日常「点确定就关」用 [用事件关闭弹层](/guide/close-on) 的列表写法即可。
+这要和 `closeOn` 里哪些事件算「确认」配合（见 [API：LayerInstance](/api/layer-instance)）。完整可跑示例见 [获取弹层返回结果](/guide/cookbook/confirm)。日常「点确定就关」用 [用事件关闭弹层](/guide/close-on) 的列表写法即可。
 
 ## 模块顶层的单例：bindHost
 

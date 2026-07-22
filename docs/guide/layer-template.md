@@ -1,3 +1,10 @@
+<script setup>
+import DemoBlock from '../.vitepress/theme/components/DemoBlock.vue'
+import Demo from '../examples/layer-template/App.vue'
+import AppSource from '../examples/layer-template/App.vue?raw'
+import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
+</script>
+
 # 用模板填写插槽
 
 到目前为止，内容只会出现在容器的**默认插槽**里。但 `ElDialog` 等通常还有 `footer`、`header` / `title` 等具名插槽。
@@ -11,6 +18,18 @@
 ```
 
 `LayerTemplate` 就是用**仍然熟悉的模板语法**，把一块内容投到目标组件的同名插槽里。
+
+## 试一试
+
+下面这个例子：内容组件把确定按钮投到容器 `footer`；调用方再往内容的 `#header` 投一块标签。
+
+<DemoBlock
+  :demo="Demo"
+  :files="[
+    { name: 'App.vue', code: AppSource },
+    { name: 'HelloContent.vue', code: ContentSource },
+  ]"
+/>
 
 ## 在内容组件里填容器的 footer
 
@@ -39,9 +58,9 @@ const emit = defineEmits(['ok'])
 2. `name` 和容器上的插槽名一致（如 `footer`）  
 3. 这块内容默认**不会**显示在内容组件原来的位置，只在弹层打开时出现在对应插槽里  
 
-## 调用方也可以投递（稍后再用也行）
+## 调用方也可以投递
 
-打开弹层的页面，可以把模板投给**内容**的插槽，或覆盖**容器**的插槽：
+打开弹层的页面，可以把模板投给**内容**的插槽，或覆盖**容器**的插槽（见上方 Demo 的 `App.vue`）：
 
 ```vue
 <script setup lang="ts">
@@ -49,7 +68,7 @@ const dialog = useDialog(HelloWorld)
 </script>
 
 <template>
-  <button @click="dialog.open({ props: { id: 1 } })">打开</button>
+  <button @click="dialog.open()">打开</button>
 
   <!-- 填内容组件上的 <slot name="header"> -->
   <LayerTemplate :to="dialog" name="header">
@@ -82,7 +101,7 @@ const dialog = useDialog(HelloWorld)
 </LayerTemplate>
 ```
 
-完整例子见 [实践教程：内容复用：页内 / Dialog / Drawer](/guide/cookbook/content-reuse)；调用方投递见 [弹层插槽怎么填](/guide/cookbook/layer-template)。
+完整可跑例子见 [复用内容组件](/guide/cookbook/content-reuse)。
 
 ## 插槽作用域参数
 

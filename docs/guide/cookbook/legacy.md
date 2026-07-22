@@ -6,7 +6,7 @@ import DialogSource from '../../examples/legacy/UserDialog.vue?raw'
 import FormSource from '../../examples/legacy/UserForm.vue?raw'
 </script>
 
-# 存量弹窗渐进接入
+# 未拆分内容/容器弹窗接入
 
 老项目里常见「一个 `.vue` 里已经写好了 `<el-dialog>` + 表单」。短期内拆不开时，用 `LayerNoContainer` 先命令式打开整颗组件；拆出纯表单后，同一 `useLayer` 仍可打开已拆分的 content——调用方的 `open({ props })` 尽量不动。
 
