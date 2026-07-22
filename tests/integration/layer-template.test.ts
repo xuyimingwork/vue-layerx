@@ -1,4 +1,4 @@
-import { defineComponent, h, onMounted } from 'vue'
+import { defineComponent, h, onMounted, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import {
@@ -79,6 +79,47 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.footer-btn')).toBeTruthy()
         expect(document.querySelector('.content .footer-btn')).toBeFalsy()
+      })
+
+      it('should drop defineLayer container slot when open swaps content while visible', async () => {
+        const useLayer = createLayer(Container)
+        const ContentWithFooter = makeContent(true)
+        const ContentWithoutFooter = defineComponent({
+          name: 'ContentWithoutFooter',
+          props: { message: String },
+          setup(props) {
+            return () =>
+              h('motion-div', { class: 'content alt' }, [
+                h('span', { class: 'msg' }, props.message),
+              ])
+          },
+        })
+        let dialog!: LayerInstance
+
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(ContentWithFooter)
+            return () => h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open({ props: { message: 'with-footer' } })
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.footer-btn')).toBeTruthy()
+        expect(document.body.querySelector('.msg')?.textContent).toBe('with-footer')
+
+        dialog.open({
+          component: ContentWithoutFooter,
+          props: { message: 'no-footer' },
+        })
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.msg')?.textContent).toBe('no-footer')
+        expect(document.body.querySelector('.footer-btn')).toBeFalsy()
       })
 
       it('should pass empty flat slot props when layer is open', async () => {
@@ -438,6 +479,25 @@ describe('LayerTemplate', () => {
         expect(wrapper.find('.footer-btn').exists()).toBe(true)
       })
 
+      it('should dispose page-local LayerTemplate without error when unmounted', () => {
+        const wrapper = mount(
+          defineComponent({
+            setup() {
+              const layer = defineLayer()
+              return () =>
+                h(
+                  LayerTemplate,
+                  { to: layer, name: 'footer', visibleOutside: true },
+                  () => h('button', { class: 'footer-btn' }, 'footer'),
+                )
+            },
+          }),
+        )
+
+        expect(wrapper.find('.footer-btn').exists()).toBe(true)
+        expect(() => wrapper.unmount()).not.toThrow()
+      })
+
       it('should render in place when visible-outside is set on Content nested inside another Content', async () => {
         const useLayer = createLayer(Container)
 
@@ -777,6 +837,195 @@ describe('LayerTemplate', () => {
         expect(document.body.querySelector('.caller-footer')).toBeTruthy()
         expect(document.body.querySelector('.creator-footer')).toBeFalsy()
         expect(document.querySelector('.content .caller-footer')).toBeFalsy()
+      })
+
+      it('should restore creator footer when caller LayerTemplate unmounts', async () => {
+        const useLayer = createLayer(Container)
+        const showCaller = ref(true)
+
+        const Content = defineComponent({
+          name: 'ContentWithCreatorFooter',
+          setup() {
+            const layer = defineLayer()
+            return () =>
+              h('div', { class: 'content' }, [
+                h(LayerTemplate, { to: layer, name: 'footer' }, () =>
+                  h('span', { class: 'creator-footer' }, 'creator'),
+                ),
+              ])
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () =>
+              showCaller.value
+                ? h(LayerTemplate, { to: dialog, container: true, name: 'footer' }, () =>
+                    h('span', { class: 'caller-footer' }, 'caller'),
+                  )
+                : h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.caller-footer')).toBeTruthy()
+        expect(document.body.querySelector('.creator-footer')).toBeFalsy()
+
+        showCaller.value = false
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.caller-footer')).toBeFalsy()
+        expect(document.body.querySelector('.creator-footer')).toBeTruthy()
+      })
+
+      it('should rebind when name prop changes', async () => {
+        const useLayer = createLayer(MultiSlotContainer)
+        const slotName = ref('footer')
+
+        const Content = defineComponent({
+          name: 'PlainContent',
+          setup() {
+            return () => h('div', { class: 'content' }, 'body')
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () =>
+              h(
+                LayerTemplate,
+                { to: dialog, container: true, name: slotName.value },
+                () => h('span', { class: 'caller-slot' }, slotName.value),
+              )
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.caller-slot')?.textContent).toBe('footer')
+        expect(
+          document.body.querySelector('motion-dialog')?.querySelectorAll('.caller-slot'),
+        ).toHaveLength(1)
+
+        slotName.value = 'header'
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.caller-slot')?.textContent).toBe('header')
+        const dialogEl = document.body.querySelector('motion-dialog')
+        const slots = dialogEl?.querySelectorAll('.caller-slot') ?? []
+        expect(slots).toHaveLength(1)
+        // header is rendered before footer in MultiSlotContainer (default, header, footer)
+        expect(dialogEl?.children[1]?.classList.contains('caller-slot')).toBe(true)
+      })
+
+      it('should rebind when container prop changes', async () => {
+        const useLayer = createLayer(Container)
+        const asContainer = ref(false)
+
+        const Content = defineComponent({
+          name: 'ScopedContent',
+          setup(_props, { slots }) {
+            return () =>
+              h('div', { class: 'content' }, [
+                h('span', { class: 'body' }, 'body'),
+                slots.footer?.(),
+              ])
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () =>
+              h(
+                LayerTemplate,
+                {
+                  to: dialog,
+                  container: asContainer.value,
+                  name: 'footer',
+                },
+                () => h('span', { class: 'bound-footer' }, 'bound'),
+              )
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.querySelector('.content .bound-footer')).toBeTruthy()
+        expect(document.body.querySelector('motion-dialog > .bound-footer')).toBeFalsy()
+
+        asContainer.value = true
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.querySelector('.content .bound-footer')).toBeFalsy()
+        expect(document.body.querySelector('motion-dialog > .bound-footer')).toBeTruthy()
+      })
+
+      it('should rebind when to prop changes between instances', async () => {
+        const useLayer = createLayer(Container)
+        const Content = defineComponent({
+          name: 'PlainContent',
+          setup() {
+            return () => h('div', { class: 'content' }, 'body')
+          },
+        })
+
+        let dialogA!: LayerInstance
+        let dialogB!: LayerInstance
+        const target = ref<'a' | 'b'>('a')
+
+        const Host = defineComponent({
+          setup() {
+            dialogA = useLayer(Content)
+            dialogB = useLayer(Content)
+            return () =>
+              h(
+                LayerTemplate,
+                {
+                  to: target.value === 'a' ? dialogA : dialogB,
+                  container: true,
+                  name: 'footer',
+                },
+                () => h('span', { class: 'shared-footer' }, target.value),
+              )
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialogA.open()
+        dialogB.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        const dialogs = document.body.querySelectorAll('motion-dialog')
+        expect(dialogs).toHaveLength(2)
+        expect(dialogs[0]?.querySelector('.shared-footer')?.textContent).toBe('a')
+        expect(dialogs[1]?.querySelector('.shared-footer')).toBeFalsy()
+
+        target.value = 'b'
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(dialogs[0]?.querySelector('.shared-footer')).toBeFalsy()
+        expect(dialogs[1]?.querySelector('.shared-footer')?.textContent).toBe('b')
       })
 
       it('should keep to defineLayer template when caller targets a different slot name', async () => {

@@ -25,7 +25,7 @@ import {
   mergeFragment,
   stripFragment,
 } from '@/config/fragment'
-import { withTemplateTo } from '@/shared/layer-template-to'
+import { renderless, withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import { createLayerApp } from '@/runtime/layer-app'
 import { LayerConfirmError } from '@/shared/layer-confirm-error'
@@ -174,14 +174,14 @@ export function createLayerInstance({
 
   return withTemplateTo(instance, {
     template({ name, container, render }) {
-      store.template({
+      const dispose = store.template({
         key: container ? 'use:template.container' : 'use:template.content',
         name,
         entry: {
           render: (slotProps: Record<string, unknown> = {}) => render(slotProps),
         },
       })
-      return { render: () => null }
+      return { render: renderless, dispose }
     },
   })
 }

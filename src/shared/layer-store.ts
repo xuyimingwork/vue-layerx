@@ -1,24 +1,17 @@
 import { reactive, type UnwrapNestedRefs } from 'vue'
-import type { TemplateSlotKey } from '@/types/store'
+import type { LayerStoreMethods, TemplateSlotKey } from '@/types/store'
 import type { LayerConfigFragment, LayerTemplateEntry } from '@/types/config'
 import { warn } from '@/shared/warn'
 
 export type {
   TemplateSlotKey,
+  LayerStoreMethods,
   LayerInstanceStore,
   LayerViewStore,
   LayerInstanceStoreInit,
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
 } from '@/types/store'
-
-type LayerStoreMethods = {
-  template: (opts: {
-    key: TemplateSlotKey
-    name: string
-    entry: LayerTemplateEntry
-  }) => void
-}
 
 function parseTemplateKey(key: TemplateSlotKey): {
   bucket: string
@@ -61,14 +54,19 @@ export function createLayerStore<T extends Record<string, unknown>>(
   }) => {
     const { bucket, side } = parseTemplateKey(key)
     const fragment = (store as Record<string, LayerConfigFragment>)[bucket]
-    if (!fragment) return
+    if (!fragment) return () => {}
     const slots = ensureSlots(fragment, side)
     if (slots[name]) {
       warn(
         `Duplicate LayerTemplate name="${name}" in ${key}; latter wins`,
       )
     }
-    slots[name] = (slotProps) => entry.render(slotProps ?? {})
+    const render = (slotProps?: Record<string, unknown>) =>
+      entry.render(slotProps ?? {})
+    slots[name] = render
+    return () => {
+      if (slots[name] === render) delete slots[name]
+    }
   }
 
   return Object.assign(store, { template }) as UnwrapNestedRefs<T> &

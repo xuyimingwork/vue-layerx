@@ -41,12 +41,12 @@ export interface LayerInstanceStoreInit {
   refs: LayerConfigFragment
 }
 
-type LayerStoreMethods = {
+export type LayerStoreMethods = {
   template: (opts: {
     key: TemplateSlotKey
     name: string
     entry: LayerTemplateEntry
-  }) => void
+  }) => () => void
 }
 
 export type LayerInstanceStoreWithTemplate = UnwrapNestedRefs<LayerInstanceStore> &
@@ -61,7 +61,7 @@ export type LayerDefineContext = {
   template: (opts: {
     name: string
     render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null
-  }) => void
+  }) => () => void
 }
 
 /**

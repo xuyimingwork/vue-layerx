@@ -15,7 +15,7 @@
 
 | Prop | 说明 |
 |------|------|
-| `to` | **必填**。内容侧：`defineLayer()` 返回值；调用方：`LayerInstance` |
+| `to` | **必填**。内容侧：`defineLayer()` 返回值；调用方：`LayerInstance`。与 `name` / `container` 变化时会重新注册 |
 | `name` | 目标 slot 名 |
 | `container` | 仅 caller：写入容器 slot 链，而非内容 slot 链 |
 | `visibleOutside` | 页内在原位置也渲染；弹层内仍投递 slot |

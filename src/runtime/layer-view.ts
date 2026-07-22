@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  ComputedRef,
   defineComponent,
   getCurrentInstance,
   h,
@@ -40,7 +41,7 @@ function useParkingElement(): HTMLUnknownElement {
 
 
 /** Anchor when present; otherwise hidden parking so Teleport never uses disabled/in-place. */
-function useRefContentTo(bound: Ref<LayerBound>): WritableComputedRef<HTMLUnknownElement | undefined> {
+function useRefContentTo(bound: Ref<LayerBound>, visible: ComputedRef<boolean>): WritableComputedRef<HTMLUnknownElement | undefined> {
   const anchor = ref<HTMLUnknownElement | null>(null)
   const parking = useParkingElement()
   const container = computed(() => toValue(bound).container?.component)
@@ -49,12 +50,15 @@ function useRefContentTo(bound: Ref<LayerBound>): WritableComputedRef<HTMLUnknow
   return computed({
     get: () => {
       if (!active.value) return
-      return anchor.value ?? parking
+      // prefer container anchor; park only while open (deferred default / mid-swap)
+      return anchor.value ?? (visible.value ? parking : undefined)
     },
     set: (el) => {
       anchor.value = el as HTMLUnknownElement | null
       const same = toRaw(active.value) === toRaw(container.value)
-      active.value = !el && same ? null : container.value
+      active.value = (!el && same) 
+        ? null // 容器主动卸载了默认插槽
+        : container.value // 容器没有卸载默认插槽
     },
   })
 }
@@ -186,8 +190,6 @@ export const LayerView = defineComponent({
       () => props.visible,
       (visible, prev) => {
         if (!visible || prev) return
-        defineStore.define = computed(() => ({})) 
-        defineStore['define:template'] = {}
         openId.value++
       },
     )
@@ -210,7 +212,7 @@ export const LayerView = defineComponent({
             name: string
             render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null
           }) {
-            defineStore.template({
+            return defineStore.template({
               key: 'define:template.container',
               name,
               entry: {
@@ -223,7 +225,7 @@ export const LayerView = defineComponent({
       },
     })
 
-    const refContentTo = useRefContentTo(bound)
+    const refContentTo = useRefContentTo(bound, computed(() => props.visible))
 
     return () =>
       createLayerViewVNode({

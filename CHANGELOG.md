@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`LayerTemplate` prop rebind** — `to` / `name` / `container` 变化时 dispose 旧注册并按新键重新 `template()`（与挂卸载语义一致）。
+
+### Fixed
+
+- **Mid-open content swap** — `open({ component })` while visible no longer keeps the previous content's `define` / `define:template` slots (e.g. leftover footer).
+- **Caller `LayerTemplate` unmount** — unregister `use:template` on dispose so creator slots are no longer masked after `v-if` teardown.
+- **Close while parked** — clearing content parking when `visible` becomes false so Teleport does not leave content under `layer-content-parking`.
+
 ## [1.0.0-beta.5] - 2026-07-22
 
 ### Fixed

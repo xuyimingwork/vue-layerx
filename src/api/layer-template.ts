@@ -1,12 +1,17 @@
 import {
   defineComponent,
+  onBeforeUnmount,
+  shallowRef,
+  watch,
   type PropType,
   type SlotsType,
   type VNode,
 } from 'vue'
 import {
+  renderless,
   resolveTemplateTo,
   type LayerTemplateTo,
+  type TemplateToContent,
 } from '@/shared/layer-template-to'
 
 export type { LayerTemplateTo }
@@ -40,12 +45,26 @@ export const LayerTemplate = defineComponent({
     const slotRender = (slotProps?: Record<string, unknown>) =>
       slots.default?.(slotProps) ?? null
 
-    const content = resolveTemplateTo(props.to).template({
-      name: props.name,
-      container: props.container,
-      render: slotRender,
+    const content = shallowRef<TemplateToContent>({
+      render: renderless,
+      dispose: () => {},
     })
 
-    return () => (props.visibleOutside ? content.render() : null)
+    watch(
+      () => [props.to, props.name, props.container] as const,
+      () => {
+        content.value.dispose()
+        content.value = resolveTemplateTo(props.to).template({
+          name: props.name,
+          container: props.container,
+          render: slotRender,
+        })
+      },
+      { immediate: true },
+    )
+
+    onBeforeUnmount(() => content.value.dispose())
+
+    return () => (props.visibleOutside ? content.value.render() : null)
   },
 })

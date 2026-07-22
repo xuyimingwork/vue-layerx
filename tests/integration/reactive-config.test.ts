@@ -514,5 +514,73 @@ describe('reactive layer config', () => {
       expect(queryParkedMsgs()).toHaveLength(0)
       expect(unmountCount).toBe(1)
     })
+
+    it('should destroy content when closing while parked after container swap', async () => {
+      const useLayer = createLayer(Container)
+      const asDrawer = ref(false)
+      const showDefault = ref(false)
+      let setupCount = 0
+      let unmountCount = 0
+      let dialog!: LayerInstance
+
+      const Content = defineComponent({
+        name: 'ParkThenCloseContent',
+        setup() {
+          setupCount++
+          onBeforeUnmount(() => {
+            unmountCount++
+          })
+          return () => h('span', { class: 'msg' }, 'parked-secret')
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer(Content, () => ({
+            container: asDrawer.value
+              ? {
+                  component: ToggleDefaultSlotDrawerContainer,
+                  props: {
+                    showDefault: showDefault.value,
+                    size: '80%',
+                  },
+                }
+              : {
+                  component: Container,
+                },
+          }))
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      })
+
+      mount(Host)
+      await flushPromises()
+
+      expect(queryAliveMsgs()).toHaveLength(1)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(setupCount).toBe(1)
+      expect(unmountCount).toBe(0)
+
+      asDrawer.value = true
+      await nextTick()
+      await flushPromises()
+
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(1)
+      expect(queryParkedMsgs()[0]?.textContent).toBe('parked-secret')
+      expect(setupCount).toBe(1)
+      expect(unmountCount).toBe(0)
+
+      dialog.close()
+      await nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('motion-drawer')).toBeNull()
+      expect(document.body.querySelector('motion-dialog')).toBeNull()
+      expect(queryAliveMsgs()).toHaveLength(0)
+      expect(queryParkedMsgs()).toHaveLength(0)
+      expect(unmountCount).toBe(1)
+    })
   })
 })

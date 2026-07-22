@@ -7,7 +7,11 @@ export type TemplateToRender = (
 
 export type TemplateToContent = {
   render: () => VNode | VNode[] | null
+  dispose: () => void
 }
+
+/** Local tree stays empty; slot is delivered remotely. */
+export const renderless = (): null => null
 
 export type LayerTemplateToCapabilities = {
   template(opts: {

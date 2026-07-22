@@ -1,7 +1,7 @@
 import { getCurrentInstance, inject, type MaybeRefOrGetter } from 'vue'
 import type { LayerConfigContainer, LayerDefine } from '@/types'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
-import { withTemplateTo } from '@/shared/layer-template-to'
+import { renderless, withTemplateTo } from '@/shared/layer-template-to'
 
 export function defineLayer(
   config: MaybeRefOrGetter<LayerConfigContainer> = {},
@@ -23,14 +23,15 @@ export function defineLayer(
       if (!ctx) {
         return {
           render: () => render({}),
+          dispose: () => {},
         }
       }
 
-      ctx.template({
+      const dispose = ctx.template({
         name,
         render: (slotProps: Record<string, unknown> = {}) => render(slotProps),
       })
-      return { render: () => null }
+      return { render: renderless, dispose }
     },
   })
 }
