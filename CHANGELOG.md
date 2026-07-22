@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.5] - 2026-07-22
+
 ### Fixed
 
 - **`LayerTemplate` + `defineLayer` container slots** — 关闭后再打开时 footer 等 creator slot 丢失。再次打开时 `define` 重置为 `computed(() => ({}))`（避免替换 readonly computed 告警），`define:template` 重置为新的 plain `{}` 供 `LayerTemplate` 重新注册。
@@ -14,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **`LayerInstance.visible` / `content` / `container`** — 只读 getter（非 `ComputedRef`）；`contentRef` / `containerRef` 更名为 `content` / `container`。直接 `dialog.visible`，观测用 `watch(() => dialog.visible)`。见 [ADR 0006](./docs/adr/0006-instance-state-as-getters.md)
+
+### Notes
+
+- Install beta: `pnpm add vue-layerx@beta` or `vue-layerx@1.0.0-beta.5`
+- Breaking vs **1.0.0-beta.4**: `visible` / `content` / `container` 不再是 `ComputedRef`（去掉 `.value`）；`contentRef` / `containerRef` 改名
 
 ## [1.0.0-beta.4] - 2026-07-21
 
@@ -145,7 +152,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.4...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.5...HEAD
+[1.0.0-beta.5]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.1...v1.0.0-beta.2
