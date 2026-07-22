@@ -14,6 +14,7 @@ import LayerNoContainerDemo from './10-layer-no-container/index.vue'
 import OpenSwapContainerDemo from './11-open-swap-container/index.vue'
 import ConfirmDemo from './12-confirm/index.vue'
 import NestedSelfDemo from './13-nested-self/index.vue'
+import TemplateRebindDemo from './14-template-rebind/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -63,6 +64,15 @@ export const demoGroups: DemoGroup[] = [
           'LayerTemplate visible-outside + layer.exists：页内 footer 落表单下，弹层时通过 slot render fn 挂到 Dialog.footer。',
         tags: ['visible-outside', 'layer.exists', 'content 复用'],
         component: InlineReuseDemo,
+      },
+      {
+        id: 'template-rebind',
+        level: 3,
+        title: 'LayerTemplate 切 slot',
+        description:
+          '弹层打开后在 content 内切换 LayerTemplate 的 :name（header / footer）：visible 时 dispose 旧注册并重绑，绿标在 Dialog 插槽间移动。',
+        tags: ['LayerTemplate', ':name', 'dispose', '重绑', 'content 内'],
+        component: TemplateRebindDemo,
       },
       {
         id: 'nested-self',

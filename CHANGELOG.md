@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **`LayerTemplate` prop rebind** — `to` / `name` / `container` 变化时 dispose 旧注册并按新键重新 `template()`（与挂卸载语义一致）。
+- **`LayerTemplate` 动态注册** — 挂载注册 / 卸载注销；`to` / `name` / `container` 变化时 dispose 旧键并按新目标重新 `template()`（与卸掉再挂等价）。见 [指南](./docs/guide/layer-template.md) / [API](./docs/api/layer-template.md)。
 
 ### Fixed
 

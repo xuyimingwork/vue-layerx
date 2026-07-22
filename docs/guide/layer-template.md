@@ -76,6 +76,6 @@ import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
 基础用法到这里可以告一段落。
 
 - 页内复用、`visible-outside`：见 [复用内容组件](/guide/cookbook/content-reuse)
-- 作用域参数等细节：见 [API：LayerTemplate](/api/layer-template)
+- Props、插槽优先级，以及挂卸载 / 改 `name` 时的注册细节：见 [API：LayerTemplate](/api/layer-template)
 - 设计决策：见 [设计决策](/guide/design)
 - 谁覆盖谁：见 [配置如何合并](/guide/config-merge)
