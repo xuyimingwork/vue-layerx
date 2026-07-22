@@ -7,15 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-22
+
+First **stable 1.0**. 公开 API 以当前定稿为准（含 `LayerInstance.visible` / `content` / `container` 只读 getter 等）；此后遵循 SemVer，breaking 将走新 major。
+
+**关于 1.0.0-beta.x：** beta 阶段把 `beta.1` … `beta.5` 当作小版本试验通道使用——能力打磨、命名与读法调整、bug 修复都直接发下一档 beta，**没有**按「beta 内也冻结公开 API / 严格 SemVer」约束。各档 Notes 里的 Breaking 仅方便对照迁移，不代表稳定版承诺。从任意 beta 升到 **1.0.0**，请以本文档与当前文档站为准，勿假设相邻 beta 可无感替换。
+
 ### Added
 
-- **`LayerTemplate` 动态注册** — 挂载注册 / 卸载注销；`to` / `name` / `container` 变化时 dispose 旧键并按新目标重新 `template()`（与卸掉再挂等价）。见 [指南](./docs/guide/layer-template.md) / [API](./docs/api/layer-template.md)。
+- **`LayerTemplate` 动态注册** — 挂载注册 / 卸载注销；`to` / `name` / `container` 变化时 dispose 旧键并按新目标重新 `template()`（与卸掉再挂等价；非主推用法）。见 [指南](./docs/guide/layer-template.md) / [API](./docs/api/layer-template.md)
 
 ### Fixed
 
-- **Mid-open content swap** — `open({ component })` while visible no longer keeps the previous content's `define` / `define:template` slots (e.g. leftover footer).
-- **Caller `LayerTemplate` unmount** — unregister `use:template` on dispose so creator slots are no longer masked after `v-if` teardown.
-- **Close while parked** — clearing content parking when `visible` becomes false so Teleport does not leave content under `layer-content-parking`.
+- **Mid-open content swap** — `open({ component })` while visible no longer keeps the previous content's `define` / `define:template` slots (e.g. leftover footer)
+- **Caller `LayerTemplate` unmount** — unregister `use:template` on dispose so creator slots are no longer masked after `v-if` teardown
+- **Close while parked** — clearing content parking when `visible` becomes false so Teleport does not leave content under `layer-content-parking`
+
+### Notes
+
+- Install: `pnpm add vue-layerx` or `vue-layerx@1.0.0`（`latest`）
+- 相对 **1.0.0-beta.5**：无公开 API breaking（本版为生命周期 fix + 上述小增强）
+- 相对 **更早 beta**：请通读 beta.2–beta.5 的 Notes（如 `confirm`、`exists`、`visible` 读法、`content` / `container` 命名等），一次性对齐到 1.0.0
 
 ## [1.0.0-beta.5] - 2026-07-22
 
@@ -162,7 +174,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.5...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.5...v1.0.0
 [1.0.0-beta.5]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.3...v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.2...v1.0.0-beta.3
