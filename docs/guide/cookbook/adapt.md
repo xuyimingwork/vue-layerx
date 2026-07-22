@@ -8,7 +8,7 @@ import LayersSource from '../../.vitepress/shared/layers.ts?raw'
 # §5 useDetailLayer + adapt
 
 ::: info 本章新增
-`adapt` — 窄屏 Dialog → Drawer，业务页仍 `userLayer.open(...)` 一行
+少见用法：窄屏把 Dialog 换成 Drawer。日常「统一改配置」见 [用 adapter 统一改配置](/guide/adapter)
 :::
 
 详情弹层在窄屏改 Drawer——**还是同一个 `useDetailLayer(UserForm)`**，不用在业务页写 `if (mobile)`。

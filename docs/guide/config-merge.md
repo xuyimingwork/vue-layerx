@@ -34,4 +34,4 @@ open（当次打开）
 
 ## 下一步
 
-[响应式配置](/guide/reactive-config) · [按环境换容器](/guide/adapter)
+[响应式配置](/guide/reactive-config) · [用 adapter 统一改配置](/guide/adapter)

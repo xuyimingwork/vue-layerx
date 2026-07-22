@@ -33,4 +33,4 @@ export const useDialog = createLayer(ElDialog, {
 type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
 ```
 
-在配置合并之后、渲染之前整形。见 [指南：按环境换容器](/guide/adapter)。
+配置合并完之后、弹层显示之前再改一刀。用来给某个 `useDialog` 统一加约定，见 [指南：用 adapter 统一改配置](/guide/adapter)。

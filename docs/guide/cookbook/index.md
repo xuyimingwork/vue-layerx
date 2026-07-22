@@ -8,7 +8,7 @@
 | [§2 页内复用同一内容](./compose) | 同一组件嵌在订单页 |
 | [§3 编辑与新建](./edit) | 改 `mode`，不必新开一套 |
 | [§4 页内也要操作区](./visible-outside) | `visible-outside` |
-| [§5 窄屏换 Drawer](./adapt) | `adapter` 换容器 |
+| [§5 窄屏换 Drawer](./adapt) | 少见：用 `adapter` 换壳 |
 | [§6 未保存拦截](./before-close) | beforeClose |
 
 从 [§1](./detail) 开始。

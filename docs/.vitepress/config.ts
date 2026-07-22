@@ -46,7 +46,7 @@ export default defineConfig({
           items: [
             { text: '配置如何合并', link: '/guide/config-merge' },
             { text: '响应式配置', link: '/guide/reactive-config' },
-            { text: '按环境换容器', link: '/guide/adapter' },
+            { text: '用 adapter 统一改配置', link: '/guide/adapter' },
             { text: '实例的更多能力', link: '/guide/instance' },
             { text: 'SSR 与限制', link: '/guide/ssr' },
             { text: '壳与内容未拆分', link: '/guide/no-container' },

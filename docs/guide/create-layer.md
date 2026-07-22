@@ -13,7 +13,7 @@ export const useDialog = createLayer(ElDialog)
 
 ## 给容器写默认配置
 
-第二参可写入该组合式函数的默认配置，例如宽度、是否挂到 body：
+第二参可写入容器的一些配置，例如 props：
 
 ```ts
 const useDialog = createLayer(ElDialog, {
@@ -21,11 +21,11 @@ const useDialog = createLayer(ElDialog, {
 })
 ```
 
-这里顶层的 `props` 作用在**容器**上（`title`、`width` 等），不是内容组件的 props。
-
 ## 显隐字段不叫 modelValue 时
 
-默认把内部显示状态绑到 `modelValue`（普通 `v-model`）。若容器用的是别的名字，用 `model` 声明：
+vue-layerx 使用 `v-model`（`modelValue` 和 `onUpdate:modelValue`）控制容器组件的显示隐藏。
+
+若容器用的是别的名字，用 `model` 声明：
 
 ```ts
 const useDialog = createLayer(BaseDialog, {
@@ -36,19 +36,21 @@ const useDialog = createLayer(BaseDialog, {
 
 Vant 的 `show`、部分自研壳的自定义字段同理。
 
-## 项目里怎么放
+> 如果组件不是通过 `v-model` 方式控制 `visible`，可以先自行封装包裹一层。
 
-常见做法是按容器各建一个文件：
+## 建议文件位置
+
+通过 `createLayer` 创建的 `useXxx` 相当于普通的组合式函数，可以和其他组合式函数放一起：
 
 ```text
-src/layers/
+src/composables/
   dialog.ts   → createLayer(ElDialog, …) → useDialog
   drawer.ts   → createLayer(ElDrawer, …) → useDrawer
 ```
 
-业务页只 `import { useDialog } from '@/layers/dialog'`。
+业务页只 `import { useDialog } from '@/composables/dialog'`。
 
-以后若要按屏幕宽度自动把 Dialog 换成 Drawer，见进阶里的 [按环境换容器](/guide/adapter)。
+以后若需要「各处配置合并完之后，仍按项目约定再改一刀」（而不是普通默认 props），见进阶里的 [用 adapter 统一改配置](/guide/adapter)。
 
 ## 下一步
 

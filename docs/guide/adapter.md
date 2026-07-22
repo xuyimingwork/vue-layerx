@@ -1,46 +1,43 @@
-# 按环境换容器
+# 用 adapter 统一改配置
 
-有时同一套业务，宽屏用 Dialog、窄屏用 Drawer。  
-你可以在 `createLayer` 上挂一个 `adapter` 函数：在配置合并之后、真正渲染之前，改掉容器组件、删掉对方不认识的 props、对齐插槽名等。
+> 多数业务页作者可以跳过本章。一般是维护 `composables/dialog.ts` 这类文件时才需要。
 
-业务页仍然只写一行 `userLayer.open(...)`，不必自己 `if (mobile)`。
+前面写过：配置会从 `createLayer`、`defineLayer`、`open` 等处叠在一起，[越靠后的优先级越高](/guide/config-merge)。
 
-## 何时需要
+所以如果只在 `createLayer` 里写 `props: { closeOnClickModal: false }`，那只是默认值——后面某次 `open` 写成 `true`，仍然会变成 `true`。
 
-- 窄屏 Dialog → Drawer / Popup  
-- Dialog 的 `#title` 和 Drawer 的 `#header` 等名字不一致  
-- 目标容器不支持某些 props（例如 Drawer 没有 `width`）
-
-## 写法示例
+有时项目要的不是默认，而是**最后结果必须如此**（谁写了都不算）。这时可以给 `createLayer` 加一个 `adapter`：等各处配置都合并完，再把结果交给你改一改，改完才拿去显示。业务页照常 `open()`。
 
 ```ts
 import type { LayerAdapter } from 'vue-layerx'
-import { ElDialog, ElDrawer } from 'element-plus'
+import { createLayer } from 'vue-layerx'
+import { ElDialog } from 'element-plus'
 
-const adapt: LayerAdapter = (fragment) => {
-  if (!isNarrow()) return fragment
-  const props = { ...fragment.container?.props }
-  delete props.width
-  return {
-    ...fragment,
-    container: {
-      ...fragment.container,
-      component: ElDrawer,
-      props,
+const enforceMaskNotClosable: LayerAdapter = (config) => ({
+  ...config,
+  container: {
+    ...config.container,
+    props: {
+      ...config.container?.props,
+      closeOnClickModal: false, // 写在后面：合并完再钉死
     },
-  }
-}
+  },
+})
 
-export const useDetailLayer = createLayer(ElDialog, { adapter: adapt })
+export const useDialog = createLayer(ElDialog, {
+  adapter: enforceMaskNotClosable,
+})
 ```
 
-`adapter` 跟这个组合式函数绑定：用 `useDetailLayer` 打开的实例，都会走上面的逻辑。
+也可以在这里根据合并结果做改名、删字段等（例如把 `width` 挪成另一个壳的 `size`）。按屏幕宽窄换 Dialog / Drawer 也能做，但比较少见，完整例子见 [实践教程 §5](/guide/cookbook/adapt)。
 
-## 和 open 里换容器的关系
+老弹窗还没拆开、又想和已拆好的内容共用同一个 `useDialog` 时，也可以在 `adapter` 里换成 `LayerNoContainer`，见 [壳与内容未拆分](/guide/no-container)。
 
-你也可以在 `open` / 创建实例时指定 `container.component`，但最终仍会先合并配置，再跑 `adapter`。`adapter` 可以再次改掉容器。
+## 和 open 里改配置怎么选
 
-业务向完整例子见 [实践教程 §5](/guide/cookbook/adapt)。
+- 只影响这一次 → `open({ … })` 或 `useDialog(内容, { … })`  
+- 没有人写时的默认 → `createLayer` 第二参的 `props`  
+- 合并完仍要按项目约定改掉 → `adapter`
 
 ## 下一步
 
