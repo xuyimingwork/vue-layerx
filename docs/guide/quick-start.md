@@ -51,12 +51,14 @@ const dialog = useDialog(HelloWorld)
 </template>
 ```
 
-注意：`useDialog` **不是**从 `vue-layerx` 直接导出的，而是你用 `createLayer` 自己生成的；名字可以叫 `useDrawer`、`usePopup` 等。
-
 ## 下一步
 
-按顺序往下读即可：
+按侧栏「基础」顺序往下读即可：
 
 1. [创建弹层组合式函数](/guide/create-layer) — 默认宽度、`model` 名  
-2. [打开与关闭](/guide/open-close) — 怎么给内容传参  
-3. [在内容里声明默认](/guide/define-layer) — 标题等默认值写在内容组件旁  
+2. [打开与关闭](/guide/open-close) — 给内容传参、顶层 `props` 指哪一侧  
+3. [在内容组件里配置弹层](/guide/define-layer) — 标题等默认值写在内容组件旁  
+4. [用事件关闭弹层](/guide/close-on) — 内容 `emit`，外侧 `closeOn`  
+5. [用模板填写插槽](/guide/layer-template) — 往 `footer` 等具名插槽投递  
+
+壳和内容还粘在一起、暂时拆不开？可先看 [壳与内容未拆分](/guide/no-container)。

@@ -72,17 +72,8 @@ dialog.open({
 
 ## 可以不传内容组件
 
-`useDialog()` 允许省略内容组件——此时仍是「有容器」，只是还没有业务内容（空壳）。改壳的标题、宽度等，请走 `container:`，不要指望顶层 `props`（顶层在这一侧默认指内容，没有内容时没有落点）。
-
-```ts
-const shell = useDialog()
-shell.open({
-  container: { props: { title: '仅外壳', width: '480px' } },
-})
-```
-
-这和「一个文件里 Dialog+表单还没拆开」不是同一类问题。后者要用 `LayerNoContainer`，把整颗旧组件当作内容，见 [壳与内容未拆分](/guide/no-container)。
+`useDialog()` 允许省略内容组件——仍是「有容器」的空壳；改标题、宽度请走 `container:`（顶层 `props` 默认指内容，没有内容时没有落点）。这和「Dialog + 表单还粘在一个文件里」不是一类问题，建模对比见 [壳与内容未拆分](/guide/no-container)。
 
 ## 下一步
 
-[在内容里声明默认](/guide/define-layer)
+[在内容组件里配置弹层](/guide/define-layer)

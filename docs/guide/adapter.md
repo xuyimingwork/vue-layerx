@@ -41,4 +41,4 @@ export const useDialog = createLayer(ElDialog, {
 
 ## 下一步
 
-[实例的更多能力](/guide/instance)
+[SSR 与限制](/guide/ssr)

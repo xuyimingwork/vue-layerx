@@ -29,6 +29,15 @@ userDialog.open({ props: { id: 1 } })
 | **壳和内容还粘在一起**（本页） | 单体始终是 **content**；用 `LayerNoContainer` 表示外面没有第二层壳 | `createLayer(LayerNoContainer)(UserDialog)` |
 | **只要空壳、暂时没有业务体** | 仍是「有容器」；内容可以不绑 | `useDialog()` 不传 Content，壳的配置走 `container:` |
 
+空壳示例：
+
+```ts
+const shell = useDialog()
+shell.open({
+  container: { props: { title: '仅外壳', width: '480px' } },
+})
+```
+
 原因简要说：
 
 1. 以后拆分时，角色必须是「`UserForm` = 内容」；一开始就把单体当成容器，迁移方向反了。  

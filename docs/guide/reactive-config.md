@@ -42,4 +42,4 @@ dialog.open({ props: { id: row.id } }) // 正确
 
 ## 下一步
 
-[用 adapter 统一改配置](/guide/adapter)
+[实例的更多能力](/guide/instance)

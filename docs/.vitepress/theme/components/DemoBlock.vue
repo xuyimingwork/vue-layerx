@@ -16,10 +16,13 @@ const props = withDefaults(
     source?: string
     title?: string
     expand?: boolean
+    /** 只展示可交互预览，不提供展开源码 */
+    previewOnly?: boolean
   }>(),
   {
     files: () => [],
     expand: false,
+    previewOnly: false,
   },
 )
 
@@ -89,13 +92,13 @@ function escapeHtml(text: string) {
       </ClientOnly>
     </div>
 
-    <div class="demo-block__actions">
+    <div v-if="!previewOnly && displayFiles.length" class="demo-block__actions">
       <button type="button" class="demo-block__btn" @click="visible = !visible">
         {{ visible ? '隐藏源码' : '展开源码' }}
       </button>
     </div>
 
-    <Transition name="demo-source">
+    <Transition v-if="!previewOnly" name="demo-source">
       <div v-show="visible" class="demo-block__source">
         <div v-if="displayFiles.length > 1" class="demo-block__tabs" role="tablist">
           <button

@@ -34,4 +34,4 @@ defineLayer(() => ({
 
 返回值用作 [`LayerTemplate`](./layer-template) 的 `:to`。**不**提供 `open` / `close`。
 
-见 [指南：在内容里声明默认](/guide/define-layer)。
+见 [指南：在内容组件里配置弹层](/guide/define-layer)。

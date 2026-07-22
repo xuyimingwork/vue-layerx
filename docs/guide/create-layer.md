@@ -2,8 +2,6 @@
 
 `createLayer` 接收一个**容器组件**，返回组合式函数（例如 `useDialog`）。之后业务页只调用这个组合式函数，不必每次再写容器模板。
 
-## 基本用法
-
 ```ts
 import { createLayer } from 'vue-layerx'
 import { ElDialog } from 'element-plus'
@@ -36,7 +34,7 @@ const useDialog = createLayer(BaseDialog, {
 
 Vant 的 `show`、部分自研壳的自定义字段同理。
 
-> 如果组件不是通过 `v-model` 方式控制 `visible`，可以先自行封装包裹一层。
+> 如果组件不是通过 `v-model` 方式控制显隐，可以先自行封装包裹一层。
 
 ## 建议文件位置
 

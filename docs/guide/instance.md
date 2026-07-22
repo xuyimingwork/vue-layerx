@@ -59,4 +59,4 @@ messageBox.bindHost()
 
 ## 下一步
 
-[SSR 与限制](/guide/ssr)
+[用 adapter 统一改配置](/guide/adapter)

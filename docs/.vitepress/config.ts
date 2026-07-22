@@ -36,7 +36,7 @@ export default defineConfig({
           items: [
             { text: '创建弹层组合式函数', link: '/guide/create-layer' },
             { text: '打开与关闭', link: '/guide/open-close' },
-            { text: '在内容里声明默认', link: '/guide/define-layer' },
+            { text: '在内容组件里配置弹层', link: '/guide/define-layer' },
             { text: '用事件关闭弹层', link: '/guide/close-on' },
             { text: '用模板填写插槽', link: '/guide/layer-template' },
           ],
@@ -44,10 +44,11 @@ export default defineConfig({
         {
           text: '进阶',
           items: [
+            { text: '设计要点', link: '/guide/design' },
             { text: '配置如何合并', link: '/guide/config-merge' },
             { text: '响应式配置', link: '/guide/reactive-config' },
-            { text: '用 adapter 统一改配置', link: '/guide/adapter' },
             { text: '实例的更多能力', link: '/guide/instance' },
+            { text: '用 adapter 统一改配置', link: '/guide/adapter' },
             { text: 'SSR 与限制', link: '/guide/ssr' },
             { text: '壳与内容未拆分', link: '/guide/no-container' },
           ],

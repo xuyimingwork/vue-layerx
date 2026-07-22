@@ -92,16 +92,7 @@ const dialog = useDialog(HelloWorld)
 
 ## 页内也要显示同一块区域时
 
-有时同一组件既在页内用、又在弹层里用，页内也要按钮。加上 `visible-outside`，并配合 `layer.exists` 分支：
-
-```vue
-<LayerTemplate :to="layer" name="footer" visible-outside>
-  <div v-if="!layer.exists">页内操作区</div>
-  <button v-else @click="emit('ok')">弹层内 OK</button>
-</LayerTemplate>
-```
-
-完整可跑例子见 [复用内容组件](/guide/cookbook/content-reuse)。
+同一组件既嵌页面又进弹层、且页内也要操作区时：给 `LayerTemplate` 加 `visible-outside`，并用 `layer.exists` 分支。完整可跑例子见 [复用内容组件](/guide/cookbook/content-reuse)。
 
 ## 插槽作用域参数
 
@@ -109,4 +100,4 @@ const dialog = useDialog(HelloWorld)
 
 ## 下一步
 
-基础用法到这里可以告一段落。若配置写在多处、不知道谁覆盖谁，读 [配置如何合并](/guide/config-merge)。
+基础用法到这里可以告一段落。若想弄清「为什么要拆壳 / 内容、为什么配置能多层覆盖」，读 [设计要点](/guide/design)；若只关心谁覆盖谁，直接读 [配置如何合并](/guide/config-merge)。
