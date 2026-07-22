@@ -7,9 +7,18 @@ import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
 
 # 用模板填写插槽
 
-到目前为止，内容只会出现在容器的**默认插槽**里。但 `ElDialog` 等通常还有 `footer`、`header` / `title` 等具名插槽。
+上一章把确定做成内容里的按钮：
 
-问题在于：内容写在自己的 `.vue` 里，容器又是 `open()` 时远程挂上的——你没法像平时那样写：
+```vue
+<template>
+  <p>Hello World</p>
+  <button @click="emit('ok')">OK</button>
+</template>
+```
+
+实际项目里，确定按钮常常希望出现在容器的 `footer`。
+
+但内容组件里并没有 `ElDialog`，没法像平时那样写：
 
 ```vue
 <ElDialog>
@@ -19,31 +28,11 @@ import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
 
 `LayerTemplate` 就是用**仍然熟悉的模板语法**，把一块内容投到目标组件的同名插槽里。
 
-## 试一试
+## 在内容里填容器的 footer
 
-下面这个例子：内容组件把确定按钮投到容器 `footer`；调用方再往内容的 `#header` 投一块标签。
-
-<DemoBlock
-  :demo="Demo"
-  :files="[
-    { name: 'App.vue', code: AppSource },
-    { name: 'HelloContent.vue', code: ContentSource },
-  ]"
-/>
-
-## 在内容组件里填容器的 footer
+把按钮用 `LayerTemplate` 包起来，投到容器的 `footer`：
 
 ```vue
-<script setup lang="ts">
-import { defineLayer, LayerTemplate } from 'vue-layerx'
-
-const layer = defineLayer({
-  props: { title: '我的弹层' },
-  content: { closeOn: ['ok'] },
-})
-const emit = defineEmits(['ok'])
-</script>
-
 <template>
   <p>Hello World</p>
   <LayerTemplate :to="layer" name="footer">
@@ -52,52 +41,41 @@ const emit = defineEmits(['ok'])
 </template>
 ```
 
-记住三点：
+`layer` 是 `defineLayer()` 的返回值。这块内容不会留在正文里，只会出现在容器的 `footer`。
 
-1. `:to` 必填——这里传 `defineLayer()` 的返回值  
-2. `name` 和容器上的插槽名一致（如 `footer`）  
-3. 这块内容默认**不会**显示在内容组件原来的位置，只在弹层打开时出现在对应插槽里  
+<DemoBlock
+  :demo="Demo"
+  :files="[
+    { name: 'HelloContent.vue', code: ContentSource },
+    { name: 'App.vue', code: AppSource },
+  ]"
+/>
 
-## 调用方也可以投递
+## 调用方也可以往内容里塞插槽
 
-打开弹层的页面，可以把模板投给**内容**的插槽，或覆盖**容器**的插槽（见上方 Demo 的 `App.vue`）：
+调用方若要往内容的具名插槽里塞东西，页面上通常也没有直接写内容组件，没法用普通的 `#header`：
 
 ```vue
-<script setup lang="ts">
-const dialog = useDialog(HelloWorld)
-</script>
-
-<template>
-  <button @click="dialog.open()">打开</button>
-
-  <!-- 填内容组件上的 <slot name="header"> -->
-  <LayerTemplate :to="dialog" name="header">
-    <span>自定义头部</span>
-  </LayerTemplate>
-
-  <!-- 填容器的 footer（可盖过内容里写的 footer） -->
-  <LayerTemplate :to="dialog" container name="footer">
-    <button>调用方 footer</button>
-  </LayerTemplate>
-</template>
+<HelloWorld>
+  <template #header>…</template>
+</HelloWorld>
 ```
 
-| 写法 | 填到哪里 |
-|------|----------|
-| 内容里 `:to="layer"` | 容器的同名插槽 |
-| 页面里 `:to="dialog"` | 内容的同名 `<slot>` |
-| 页面里再加 `container` | 容器的同名插槽 |
+同样用 `LayerTemplate`，`:to` 换成实例：
 
-先掌握「内容里填 footer」就够用；调用方投递等真正需要再回来看。
+```vue
+<LayerTemplate :to="dialog" name="header">
+  <span>自定义头部</span>
+</LayerTemplate>
+```
 
-## 页内也要显示同一块区域时
-
-同一组件既嵌页面又进弹层、且页内也要操作区时：给 `LayerTemplate` 加 `visible-outside`，并用 `layer.exists` 分支。完整可跑例子见 [复用内容组件](/guide/cookbook/content-reuse)。
-
-## 插槽作用域参数
-
-和普通 `#footer="{ xxx }"` 一样，可以用 `v-slot` 接收目标插槽传下来的参数。
+内容里需要有 `<slot name="header" />`。若要改容器插槽（例如盖掉内容写的 `footer`），加 `container` 即可，见 [配置如何合并](/guide/config-merge)。
 
 ## 下一步
 
-基础用法到这里可以告一段落。若想弄清「为什么要拆壳 / 内容、为什么配置能多层覆盖」，读 [设计要点](/guide/design)；若只关心谁覆盖谁，直接读 [配置如何合并](/guide/config-merge)。
+基础用法到这里可以告一段落。
+
+- 页内复用、`visible-outside`：见 [复用内容组件](/guide/cookbook/content-reuse)
+- 作用域参数等细节：见 [API：LayerTemplate](/api/layer-template)
+- 为什么要拆壳 / 内容、配置为何能多层覆盖：见 [设计要点](/guide/design)
+- 谁覆盖谁：见 [配置如何合并](/guide/config-merge)

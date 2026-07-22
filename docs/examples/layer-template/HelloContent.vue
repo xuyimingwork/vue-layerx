@@ -7,23 +7,13 @@ const emit = defineEmits<{
 }>()
 
 const layer = defineLayer({
-  props: { title: '内容里填 footer', width: '420px' },
+  props: { title: '我的弹层', width: '420px' },
   content: { closeOn: ['ok'] },
 })
 </script>
 
 <template>
-  <p class="body">
-    默认插槽是正文；下方
-    <code>LayerTemplate</code>
-    投到容器的
-    <code>#footer</code>
-    。页面还可往内容的
-    <code>#header</code>
-    再投一块。
-  </p>
-
-  <slot name="header" />
+  <p class="body">正文在默认插槽；确定按钮经 <code>LayerTemplate</code> 投到容器的 <code>#footer</code>。</p>
 
   <LayerTemplate :to="layer" name="footer">
     <ElButton type="primary" @click="emit('ok')">确定</ElButton>
@@ -32,7 +22,7 @@ const layer = defineLayer({
 
 <style scoped>
 .body {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 14px;
   line-height: 1.6;
   color: var(--el-text-color-regular);
