@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`LayerTemplate` + `defineLayer` container slots** — 关闭后再打开时 footer 等 creator slot 丢失。再次打开时 `define` 重置为 `computed(() => ({}))`（避免替换 readonly computed 告警），`define:template` 重置为新的 plain `{}` 供 `LayerTemplate` 重新注册。
+
 ### Changed
 
 - **`LayerInstance.visible` / `content` / `container`** — 只读 getter（非 `ComputedRef`）；`contentRef` / `containerRef` 更名为 `content` / `container`。直接 `dialog.visible`，观测用 `watch(() => dialog.visible)`。见 [ADR 0006](./docs/adr/0006-instance-state-as-getters.md)

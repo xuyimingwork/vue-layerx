@@ -147,7 +147,7 @@ export const LayerView = defineComponent({
   setup(props, { emit }) {
     const openId = ref(0)
     const defineStore = createLayerStore({
-      define: {},
+      define: computed(() => ({})),
       'define:template': {},
     })
 
@@ -186,8 +186,8 @@ export const LayerView = defineComponent({
       () => props.visible,
       (visible, prev) => {
         if (!visible || prev) return
-        defineStore.define = computed(() => {})
-        defineStore['define:template'] = computed(() => {})
+        defineStore.define = computed(() => ({})) 
+        defineStore['define:template'] = {}
         openId.value++
       },
     )

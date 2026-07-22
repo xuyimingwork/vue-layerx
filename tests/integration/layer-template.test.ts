@@ -50,6 +50,37 @@ describe('LayerTemplate', () => {
         expect(document.querySelector('.content .footer-btn')).toBeFalsy()
       })
 
+      it('should keep defineLayer container slot after close then reopen', async () => {
+        const useLayer = createLayer(Container)
+        const Content = makeContent(true)
+        let dialog!: LayerInstance
+
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () => h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open({ props: { message: 'first' } })
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.footer-btn')).toBeTruthy()
+
+        dialog.close()
+        await wrapper.vm.$nextTick()
+        expect(document.body.querySelector('.footer-btn')).toBeFalsy()
+
+        dialog.open({ props: { message: 'second' } })
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(document.body.querySelector('.footer-btn')).toBeTruthy()
+        expect(document.querySelector('.content .footer-btn')).toBeFalsy()
+      })
+
       it('should pass empty flat slot props when layer is open', async () => {
         const useLayer = createLayer(Container)
         let captured: Record<string, unknown> | undefined
