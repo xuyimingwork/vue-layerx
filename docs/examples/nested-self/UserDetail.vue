@@ -27,6 +27,7 @@ const layer = defineLayer(() => ({
   props: {
     title: `${user.value.name} · 用户详情`,
     width: '420px',
+    draggable: true,
   },
   content: { closeOn: ['close'] },
 }))

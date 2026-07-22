@@ -37,7 +37,7 @@ shell.open({
 })
 ```
 
-壳的配置请显式写在 `container:`。这**不是**「Dialog+表单写在一个文件里还没拆开」——那种情况见 [壳与内容未拆分](/guide/no-container)（`LayerNoContainer` + 单体做内容）。
+壳的配置请显式写在 `container:`。这**不是**「Dialog+表单写在一个文件里还没拆开」——那种情况见 [容器与内容未拆分](/guide/no-container)（`LayerNoContainer` + 单体做内容）。
 
 ## 返回值
 

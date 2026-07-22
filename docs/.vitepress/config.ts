@@ -50,7 +50,7 @@ export default defineConfig({
             { text: '实例的更多能力', link: '/guide/instance' },
             { text: '用 adapter 统一改配置', link: '/guide/adapter' },
             { text: 'SSR 与限制', link: '/guide/ssr' },
-            { text: '壳与内容未拆分', link: '/guide/no-container' },
+            { text: '容器与内容未拆分', link: '/guide/no-container' },
           ],
         },
         {

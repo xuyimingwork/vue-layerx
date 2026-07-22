@@ -31,7 +31,7 @@ export const useDialog = createLayer(ElDialog, {
 
 也可以在这里根据合并结果做改名、删字段等（例如把 `width` 挪成另一个壳的 `size`）。页内与 Dialog / Drawer 共用同一内容的例子见 [复用内容组件](/guide/cookbook/content-reuse)。
 
-老弹窗还没拆开、又想和已拆好的内容共用同一个 `useDialog` 时，也可以在 `adapter` 里换成 `LayerNoContainer`，见 [壳与内容未拆分](/guide/no-container) 与 [未拆分内容/容器弹窗接入](/guide/cookbook/legacy)。
+老弹窗还没拆开、又想和已拆好的内容共用同一个 `useDialog` 时，也可以在 `adapter` 里换成 `LayerNoContainer`，见 [容器与内容未拆分](/guide/no-container) 与 [未拆分内容/容器弹窗接入](/guide/cookbook/legacy)。
 
 ## 和 open 里改配置怎么选
 

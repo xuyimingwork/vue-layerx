@@ -17,4 +17,4 @@
 
 ## 相关
 
-- [壳与内容未拆分](/guide/no-container)
+- [容器与内容未拆分](/guide/no-container)

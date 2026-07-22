@@ -30,4 +30,4 @@ useLayer(UserDialog) // 拍平，不再外套一层 Dialog
 useLayer(UserForm)   // 正常壳 + 内容
 ```
 
-建模说明见[壳与内容未拆分](/guide/no-container)。
+建模说明见[容器与内容未拆分](/guide/no-container)。
