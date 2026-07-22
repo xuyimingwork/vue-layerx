@@ -41,7 +41,7 @@ describe('LayerInstance.clone', () => {
       document.body.querySelector<HTMLButtonElement>('.done')?.click()
       await wrapper.vm.$nextTick()
 
-      expect(cloned.visible.value).toBe(false)
+      expect(cloned.visible).toBe(false)
       expect(queryBodyDialog()).toBeFalsy()
     })
 
@@ -67,7 +67,7 @@ describe('LayerInstance.clone', () => {
       document.body.querySelector<HTMLButtonElement>('.close-via-model')?.click()
       await wrapper.vm.$nextTick()
 
-      expect(cloned.visible.value).toBe(false)
+      expect(cloned.visible).toBe(false)
       expect(queryBodyDialog()).toBeFalsy()
     })
 
@@ -122,8 +122,8 @@ describe('LayerInstance.clone', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(base.visible.value).toBe(true)
-      expect(cloned.visible.value).toBe(true)
+      expect(base.visible).toBe(true)
+      expect(cloned.visible).toBe(true)
       expect(queryAllBodyDialogs()).toHaveLength(2)
       expect(Array.from(document.body.querySelectorAll('.msg')).map((el) => el.textContent)).toEqual([
         'base',
@@ -154,8 +154,8 @@ describe('LayerInstance.clone', () => {
       cloned.close()
       await wrapper.vm.$nextTick()
 
-      expect(cloned.visible.value).toBe(false)
-      expect(base.visible.value).toBe(true)
+      expect(cloned.visible).toBe(false)
+      expect(base.visible).toBe(true)
       expect(queryAllBodyDialogs()).toHaveLength(1)
       expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Base')
       expect(queryBodyDialog()?.querySelector('.msg')?.textContent).toBe('base')
@@ -183,8 +183,8 @@ describe('LayerInstance.clone', () => {
       cloned.close()
       await wrapper.vm.$nextTick()
 
-      expect(base.visible.value).toBe(true)
-      expect(cloned.visible.value).toBe(false)
+      expect(base.visible).toBe(true)
+      expect(cloned.visible).toBe(false)
       expect(queryAllBodyDialogs()).toHaveLength(1)
       expect(queryBodyDialog()?.querySelector('.msg')?.textContent).toBe('base')
     })
@@ -389,8 +389,8 @@ describe('LayerInstance.clone', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(parentRef.value === base.contentRef.value).toBe(true)
-      expect(parentRef.value === cloned.contentRef.value).toBe(false)
+      expect(parentRef.value === base.content).toBe(true)
+      expect(parentRef.value === cloned.content).toBe(false)
     })
 
     it('should accept clone-specific props.ref', async () => {
@@ -415,8 +415,8 @@ describe('LayerInstance.clone', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(parentRef.value).toBe(base.contentRef.value)
-      expect(childRef.value).toBe(cloned.contentRef.value)
+      expect(parentRef.value).toBe(base.content)
+      expect(childRef.value).toBe(cloned.content)
       // 会导致 [Vue warn]: Avoid app logic that relies on enumerating keys on a component instance.
       // expect(childRef.value).not.toBe(parentRef.value)
       expect(childRef.value === parentRef.value).toBe(false)

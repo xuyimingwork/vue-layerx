@@ -25,8 +25,8 @@ function pushLog(message: string) {
 const status = computed(() => {
   void tick.value
   return {
-    aVisible: instanceA.visible.value,
-    bVisible: instanceB.visible.value,
+    aVisible: instanceA.visible,
+    bVisible: instanceB.visible,
     domDialogs: document.querySelectorAll('.el-overlay-dialog').length,
   }
 })
@@ -42,7 +42,7 @@ function openA() {
     container: { props: { title: '实例 A（base · 480px）' } },
   })
   pushLog('instanceA.open() — A.visible=true')
-  pushLog(`状态快照：A=${instanceA.visible.value}, B=${instanceB.visible.value}`)
+  pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
 function openBFromA() {
@@ -54,7 +54,7 @@ function openBFromA() {
       onAction: () => pushLog('收到实例 B 的 action 事件'),
     },
   })
-  pushLog(`状态快照：A=${instanceA.visible.value}, B=${instanceB.visible.value}`)
+  pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
   pushLog(`document 中 .el-overlay-dialog 数量：${document.querySelectorAll('.el-overlay-dialog').length}`)
 }
 
@@ -67,24 +67,24 @@ function openBFromPage() {
       onAction: () => pushLog('收到实例 B 的 action 事件'),
     },
   })
-  pushLog(`状态快照：A=${instanceA.visible.value}, B=${instanceB.visible.value}`)
+  pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
 function hideA() {
   instanceA.close()
   pushLog('instanceA.close()')
-  pushLog(`状态快照：A=${instanceA.visible.value}, B=${instanceB.visible.value}`)
+  pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
 function hideB() {
   instanceB.close()
   pushLog('instanceB.close()（仅关闭 B，挂载点保留至 Host 卸载）')
-  pushLog(`状态快照：A=${instanceA.visible.value}, B=${instanceB.visible.value}`)
+  pushLog(`状态快照：A=${instanceA.visible}, B=${instanceB.visible}`)
 }
 
 function probeDom() {
   pushLog(
-    `探测：A.visible=${instanceA.visible.value}, B.visible=${instanceB.visible.value}, overlay=${document.querySelectorAll('.el-overlay-dialog').length}`,
+    `探测：A.visible=${instanceA.visible}, B.visible=${instanceB.visible}, overlay=${document.querySelectorAll('.el-overlay-dialog').length}`,
   )
 }
 </script>

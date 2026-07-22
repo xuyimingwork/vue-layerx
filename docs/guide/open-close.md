@@ -66,7 +66,7 @@ dialog.open({
 |------|------|
 | `open(config?)` | 打开弹层 |
 | `close()` | 关闭弹层 |
-| `visible` | 是否打开（只读 `ComputedRef`，用 `.value`） |
+| `visible` | 是否打开（只读 getter，直接读 `dialog.visible`） |
 
 `clone`、`confirm`、模块单例等见 [实例的更多能力](/guide/instance)。
 

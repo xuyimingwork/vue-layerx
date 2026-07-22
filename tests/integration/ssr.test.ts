@@ -10,7 +10,7 @@ describe('SSR', () => {
       const useLayer = createLayer(Container)
       const instance = useLayer(makeContent())
       expect(() => instance.open()).not.toThrow()
-      expect(instance.visible.value).toBe(true)
+      expect(instance.visible).toBe(true)
       instance.unmount()
     })
   })
@@ -23,7 +23,7 @@ describe('SSR', () => {
     const instance = useLayer(makeContent())
     try {
       expect(() => instance.open()).not.toThrow()
-      expect(instance.visible.value).toBe(true)
+      expect(instance.visible).toBe(true)
 
       await nextTick()
       await flushPromises()

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`LayerInstance.visible` / `content` / `container`** — 只读 getter（非 `ComputedRef`）；`contentRef` / `containerRef` 更名为 `content` / `container`。直接 `dialog.visible`，观测用 `watch(() => dialog.visible)`。见 [ADR 0006](./docs/adr/0006-instance-state-as-getters.md)
+
 ## [1.0.0-beta.4] - 2026-07-21
 
 ### Changed

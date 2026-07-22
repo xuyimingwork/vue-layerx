@@ -1,4 +1,4 @@
-import type { ComputedRef, ComponentPublicInstance, MaybeRefOrGetter } from 'vue'
+import type { ComponentPublicInstance, MaybeRefOrGetter } from 'vue'
 import type { LayerConfigContent } from './config-raw'
 import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
 
@@ -19,9 +19,12 @@ export interface LayerInstance {
   close: (options?: LayerCloseOptions) => void
   unmount: () => void
   clone: (config?: MaybeRefOrGetter<LayerConfigContent>) => LayerInstance
-  readonly visible: ComputedRef<boolean>
-  readonly contentRef: ComputedRef<ComponentPublicInstance | null>
-  readonly containerRef: ComputedRef<ComponentPublicInstance | null>
+  /** Read-only getter; track via `dialog.visible` / `watch(() => dialog.visible)`. */
+  readonly visible: boolean
+  /** Read-only getter; open → content component instance, closed → `null`. Not a Vue Ref. */
+  readonly content: ComponentPublicInstance | null
+  /** Read-only getter; open → container component instance, closed → `null`. Not a Vue Ref. */
+  readonly container: ComponentPublicInstance | null
   /**
    * Bind portal inherit context to current setup host.
    * Same-host re-call is a silent no-op; binding a different host or calling outside setup warns in dev.

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import type { Component } from 'vue'
+import { codeToHtml } from 'shiki'
 import ClientOnly from './ClientOnly.vue'
 
 export interface DemoFile {
@@ -23,8 +24,8 @@ const props = withDefaults(
 )
 
 const visible = ref(props.expand)
-const copied = ref(false)
 const activeIndex = ref(0)
+const highlightedHtml = ref('')
 
 const displayFiles = computed<DemoFile[]>(() => {
   if (props.files.length) return props.files
@@ -34,27 +35,44 @@ const displayFiles = computed<DemoFile[]>(() => {
 
 const activeFile = computed(() => displayFiles.value[activeIndex.value])
 
-const activeLang = computed(() => {
-  const name = activeFile.value?.name ?? ''
-  if (name.endsWith('.ts') || name.endsWith('.tsx')) return 'ts'
-  if (name.endsWith('.js') || name.endsWith('.jsx')) return 'js'
+function langOf(name: string) {
+  if (name.endsWith('.ts') || name.endsWith('.tsx')) return 'typescript'
+  if (name.endsWith('.js') || name.endsWith('.jsx')) return 'javascript'
   if (name.endsWith('.css')) return 'css'
   if (name.endsWith('.json')) return 'json'
   return 'vue'
-})
+}
 
 watch(displayFiles, (files) => {
   if (activeIndex.value >= files.length) activeIndex.value = 0
 })
 
-async function copyCode() {
+watchEffect(async () => {
   const file = activeFile.value
-  if (!file) return
-  await navigator.clipboard.writeText(file.code)
-  copied.value = true
-  setTimeout(() => {
-    copied.value = false
-  }, 2000)
+  if (!file) {
+    highlightedHtml.value = ''
+    return
+  }
+  const lang = langOf(file.name)
+  try {
+    highlightedHtml.value = await codeToHtml(file.code, {
+      lang,
+      themes: {
+        light: 'github-light',
+        dark: 'github-dark',
+      },
+      defaultColor: false,
+    })
+  } catch {
+    highlightedHtml.value = `<pre><code>${escapeHtml(file.code)}</code></pre>`
+  }
+})
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
 }
 </script>
 
@@ -74,14 +92,6 @@ async function copyCode() {
     <div class="demo-block__actions">
       <button type="button" class="demo-block__btn" @click="visible = !visible">
         {{ visible ? '隐藏源码' : '展开源码' }}
-      </button>
-      <button
-        v-if="displayFiles.length"
-        type="button"
-        class="demo-block__btn"
-        @click="copyCode"
-      >
-        {{ copied ? '已复制' : '复制代码' }}
       </button>
     </div>
 
@@ -105,15 +115,11 @@ async function copyCode() {
           {{ activeFile.name }}
         </div>
 
-        <div v-if="activeFile" class="demo-block__code" :class="`language-${activeLang}`">
-          <button
-            type="button"
-            class="demo-block__collapse"
-            title="隐藏源码"
-            @click="visible = false"
-          />
-          <pre><code :class="`language-${activeLang}`">{{ activeFile.code }}</code></pre>
-        </div>
+        <div
+          v-if="highlightedHtml"
+          class="demo-block__code vp-code"
+          v-html="highlightedHtml"
+        />
       </div>
     </Transition>
   </div>
@@ -220,12 +226,13 @@ async function copyCode() {
 }
 
 .demo-block__code {
-  position: relative;
+  overflow-x: auto;
 }
 
 .demo-block__code :deep(pre) {
   margin: 0;
   padding: 12px 16px;
+  background: transparent !important;
   overflow-x: auto;
   font-size: 13px;
   line-height: 1.6;
@@ -233,36 +240,24 @@ async function copyCode() {
 
 .demo-block__code :deep(code) {
   font-family: var(--vp-font-family-mono);
+  background: transparent !important;
+  padding: 0;
+  font-size: inherit;
 }
 
-.demo-block__collapse {
-  position: absolute;
-  right: 12px;
-  top: 8px;
-  z-index: 1;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 4px;
-  background: var(--vp-c-bg-soft);
-  cursor: pointer;
-  opacity: 0.7;
+.demo-block__code :deep(.shiki),
+.demo-block__code :deep(.shiki span) {
+  background: transparent !important;
 }
 
-.demo-block__collapse:hover {
-  opacity: 1;
+/* shiki dual theme via CSS variables (defaultColor: false) */
+.demo-block__code :deep(.shiki span) {
+  color: var(--shiki-light);
 }
 
-.demo-block__collapse::before,
-.demo-block__collapse::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 12px;
-  height: 2px;
-  background: var(--vp-c-text-2);
-  transform: translate(-50%, -50%);
+:root.dark .demo-block__code :deep(.shiki span),
+.dark .demo-block__code :deep(.shiki span) {
+  color: var(--shiki-dark);
 }
 
 .demo-source-enter-active,

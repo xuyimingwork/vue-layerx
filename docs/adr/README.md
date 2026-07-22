@@ -9,3 +9,4 @@
 | [0003](./0003-reactive-layer-config.md) | Layer 配置响应式（MaybeRefOrGetter + store computed） | Accepted |
 | [0004](./0004-merge-unknown-fields.md) | `mergeFragment` / 节点是否保留未知字段 | Accepted（白名单；扩展待定） |
 | [0005](./0005-content-self-contained-close-on.md) | `defineLayer` 不暴露 `close`：关层经 content emit + `closeOn` | Accepted |
+| [0006](./0006-instance-state-as-getters.md) | `LayerInstance` 状态用只读 getter：`visible` / `content` / `container` | Accepted |

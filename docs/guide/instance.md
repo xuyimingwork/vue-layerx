@@ -1,6 +1,6 @@
 # 实例的更多能力
 
-[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`（`visible` 为 `ComputedRef`，读写用 `.value`）。这里补充克隆实例、拿组件引用、等待确认结果、以及模块单例要注意的一点。
+[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`（`visible` 为只读 getter，直接读 `dialog.visible`）。这里补充克隆实例、拿组件引用、等待确认结果、以及模块单例要注意的一点。
 
 ## 克隆一份独立实例
 
@@ -13,7 +13,7 @@ const editor = main.clone({ props: { mode: 'edit' } })
 
 ## 拿到内容 / 容器组件实例
 
-打开后可通过只读的 `contentRef`、`containerRef` 访问组件实例；关闭后为 `null`。需要命令式调子组件方法时用它们即可。
+打开后可通过只读的 `content`、`container` 访问组件实例；关闭后为 `null`。需要命令式调子组件方法时用它们即可。
 
 ## 卸掉挂载点：unmount
 

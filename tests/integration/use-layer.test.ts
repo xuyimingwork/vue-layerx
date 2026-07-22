@@ -96,7 +96,7 @@ describe('useLayer', () => {
       dialog.close()
       await wrapper.vm.$nextTick()
 
-      expect(dialog.visible.value).toBe(false)
+      expect(dialog.visible).toBe(false)
       expect(queryBodyDialog()).toBeFalsy()
       expect(document.body.querySelector('div')).toBeTruthy()
 
@@ -130,7 +130,7 @@ describe('useLayer', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(dialog.visible.value).toBe(true)
+      expect(dialog.visible).toBe(true)
       expect(document.body.querySelector('.msg')?.textContent).toBe('second')
       expect(document.body.querySelectorAll('div')).toHaveLength(1)
     })
@@ -259,8 +259,8 @@ describe('useLayer', () => {
       mount(Host)
       await flushPromises()
 
-      expect(dialogA.visible.value).toBe(true)
-      expect(dialogB.visible.value).toBe(true)
+      expect(dialogA.visible).toBe(true)
+      expect(dialogB.visible).toBe(true)
       expect(document.body.querySelectorAll('.msg')).toHaveLength(2)
     })
   })
@@ -314,7 +314,7 @@ describe('useLayer', () => {
   })
 
   describe('instance refs', () => {
-    it('should expose contentRef with defineExpose after open', async () => {
+    it('should expose content with defineExpose after open', async () => {
       const useLayer = createLayer(Container)
       let dialog!: LayerInstance
 
@@ -339,10 +339,10 @@ describe('useLayer', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(dialog.contentRef.value?.ping?.()).toBe('pong')
+      expect(dialog.content?.ping?.()).toBe('pong')
     })
 
-    it('should set contentRef to null when layer is closed', async () => {
+    it('should set content to null when layer is closed', async () => {
       const useLayer = createLayer(Container)
       const Content = makeContent()
       let dialog!: LayerInstance
@@ -358,14 +358,14 @@ describe('useLayer', () => {
       const wrapper = mount(Host)
       await wrapper.vm.$nextTick()
       await flushPromises()
-      expect(dialog.contentRef.value).not.toBeNull()
+      expect(dialog.content).not.toBeNull()
 
       dialog.close()
       await wrapper.vm.$nextTick()
-      expect(dialog.contentRef.value).toBeNull()
+      expect(dialog.content).toBeNull()
     })
 
-    it('should track container component in containerRef while visible', async () => {
+    it('should track container component in container while visible', async () => {
       const useLayer = createLayer(Container)
       let dialog!: LayerInstance
 
@@ -381,10 +381,10 @@ describe('useLayer', () => {
       await wrapper.vm.$nextTick()
       await flushPromises()
 
-      expect(dialog.containerRef.value).not.toBeNull()
+      expect(dialog.container).not.toBeNull()
       dialog.close()
       await wrapper.vm.$nextTick()
-      expect(dialog.containerRef.value).toBeNull()
+      expect(dialog.container).toBeNull()
     })
 
     it('should chain props.ref Ref with internal ref onto same content instance', async () => {
@@ -412,8 +412,8 @@ describe('useLayer', () => {
       mount(Host)
       await flushPromises()
 
-      expect(userRef.value).toBe(dialog.contentRef.value)
-      expect(dialog.contentRef.value?.marker).toBe('content')
+      expect(userRef.value).toBe(dialog.content)
+      expect(dialog.content?.marker).toBe('content')
     })
 
     it('should warn and ignore string ref on use tier', async () => {

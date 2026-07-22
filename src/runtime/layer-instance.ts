@@ -44,8 +44,8 @@ export function createLayerInstance({
   create: ComputedRef<LayerConfigFragmentCreate>
   use: ComputedRef<LayerConfigFragment>
 }): LayerInstance {
-  const containerRef = shallowRef<ComponentPublicInstance | null>(null)
-  const contentRef = shallowRef<ComponentPublicInstance | null>(null)
+  const containerEl = shallowRef<ComponentPublicInstance | null>(null)
+  const contentEl = shallowRef<ComponentPublicInstance | null>(null)
   const store = createLayerInstanceStore({
     create,
     use,
@@ -53,14 +53,14 @@ export function createLayerInstance({
       container: {
         props: {
           ref: (el: ComponentPublicInstance | null) => {
-            containerRef.value = el
+            containerEl.value = el
           },
         },
       },
       content: {
         props: {
           ref: (el: ComponentPublicInstance | null) => {
-            contentRef.value = el
+            contentEl.value = el
           },
         },
       },
@@ -148,8 +148,12 @@ export function createLayerInstance({
     },
     unmount: dispose,
     bindHost,
-    contentRef: computed(() => (state.visible ? contentRef.value : null)),
-    containerRef: computed(() => (state.visible ? containerRef.value : null)),
+    get content() {
+      return state.visible ? contentEl.value : null
+    },
+    get container() {
+      return state.visible ? containerEl.value : null
+    },
     clone(config: MaybeRefOrGetter<LayerConfigContent> = {}) {
       return createLayerInstance({
         create,
@@ -161,7 +165,9 @@ export function createLayerInstance({
         ),
       })
     },
-    visible: computed(() => state.visible),
+    get visible() {
+      return state.visible
+    },
   }
 
   bindHost({ silent: true })

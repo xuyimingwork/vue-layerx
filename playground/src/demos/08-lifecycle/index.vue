@@ -13,11 +13,11 @@ let autoCloseTimer: ReturnType<typeof setInterval> | null = null
 
 const statusLabel = computed(() => {
   if (countdown.value > 0) return `${countdown.value}s 后自动 close()`
-  return alertDialog.visible.value ? '已打开' : '已关闭'
+  return alertDialog.visible ? '已打开' : '已关闭'
 })
 const statusType = computed(() => {
   if (countdown.value > 0) return 'warning'
-  return alertDialog.visible.value ? 'success' : 'info'
+  return alertDialog.visible ? 'success' : 'info'
 })
 
 function clearAutoClose() {

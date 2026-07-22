@@ -318,7 +318,7 @@ type LayerBound = {
 | **container** | 外层容器，如 `MyDialog` |
 | **content** | 内层业务组件，如 `UserForm` |
 | **UserDialog** | `useDialog(UserForm)` 构建的逻辑组合体：`MyDialog` + `UserForm` |
-| **Layer 实例** | `useDialog(UserForm)` 返回值；含 `open` / `close` / `clone` / `visible` / `contentRef` / `containerRef` |
+| **Layer 实例** | `useDialog(UserForm)` 返回值；含 `open` / `close` / `clone` / `visible` / `content` / `container` |
 | **模板名 / 插槽名** | `LayerTemplate` 的 `name`，与目标组件 slot 同名，如 `title`、`footer` |
 | **direct layer content** | `useX` / `open` 绑定的根 content 组件；仅其内部 `:to="layer"` 的 `LayerTemplate` 进外层 MyDialog |
 
@@ -708,19 +708,19 @@ interface LayerInstance {
   close(options?: LayerCloseOptions): void
   clone(config?: LayerConfigContent): LayerInstance
   readonly visible: boolean
-  readonly contentRef: ComputedRef<ComponentPublicInstance | null>
-  readonly containerRef: ComputedRef<ComponentPublicInstance | null>
+  readonly content: ComponentPublicInstance | null
+  readonly container: ComponentPublicInstance | null
   bindHost(): void
 }
 ```
 
 `confirm()` 打开一层并返回 Promise：关层时若 `closeOn.confirmed === true`（或 `close({ confirmed: true })`）则 **resolve** `LayerConfirmResult`，否则 **reject** `LayerConfirmError`（`code: 'close'`，`result` 与 resolve 同形）。再入 `confirm` / 在已 `open` 时调 `confirm` → `code: 'busy'`。confirming 期间公开 `open` 忽略并 warn。`result.source` 为 `content` | `container` | `instance` | `unmount`；事件驱动时带 `event` / `args` / `data`（`data === args[0]`）。
 
-`contentRef` / `containerRef`：内部 `shallowRef` + `store.refs` 桶 `props.ref`；对外 `computed(() => visible ? target : null)`。`close()` 后立即可见为 `null`。
+`visible` / `content` / `container`：只读 **getter**（非 `ComputedRef`）。内部 `shallowRef` + `store.refs` 桶 `props.ref`；对外 `get content() { return visible ? target : null }`（`container` 同理）。属性访问即可追踪依赖；`watch` 用 `watch(() => dialog.visible)`。`close()` 后立即可见为 `null`。不提供 setter——开闭只走 `open` / `close` / `confirm`。
 
 ### `clone(config?)`
 
-`clone` 从当前实例派生**新实例**（独立 `visible`、独立 `open`/`close`、独立 `contentRef`/`containerRef`），继承工厂 `create` / `adapter`；父实例 **`use` tier** 与 `clone(config)` 在创建时折叠进子实例的 **`use`**：
+`clone` 从当前实例派生**新实例**（独立 `visible`、独立 `open`/`close`、独立 `content`/`container`），继承工厂 `create` / `adapter`；父实例 **`use` tier** 与 `clone(config)` 在创建时折叠进子实例的 **`use`**：
 
 ```ts
 use: mergeFragment(
