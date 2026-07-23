@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-23
+
+### Fixed
+
+- **Vue DevTools** — layer portals mount with `createApp` so `LayerApp` / `LayerView` show up in DevTools (previously `render()` + borrowed context stayed invisible). Closes [#1](https://github.com/xuyimingwork/vue-layerx/issues/1).
+
+### Changed
+
+- **Host bridge** — `useBridgeHost` keeps LayerApp context in sync with `bindHost`; `useHostViewKey` remounts `LayerView` only while visible when the baked host is stale (late `bindHost` takes effect on the next open).
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.0.1` or `vue-layerx@latest`
+- 无公开 API breaking
+
 ## [1.0.0] - 2026-07-22
 
 First **stable 1.0**. 公开 API 以当前定稿为准（含 `LayerInstance.visible` / `content` / `container` 只读 getter 等）；此后遵循 SemVer，breaking 将走新 major。
@@ -174,7 +189,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.5...v1.0.0
 [1.0.0-beta.5]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.4...v1.0.0-beta.5
 [1.0.0-beta.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.3...v1.0.0-beta.4
