@@ -8,7 +8,7 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
-需要 Vue `^3.5.0`（peerDependency）。
+需要 Vue `^3.3.0`（peerDependency）。
 
 ## 用 createLayer 得到组合式函数
 

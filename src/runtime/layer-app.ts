@@ -34,17 +34,19 @@ function canUseDom(): boolean {
  * Direct `appContext = host.appContext` makes DevTools resolve this tree under
  * the main app (instance.appContext.app), which throws when selecting nodes
  * (e.g. Cannot read properties of undefined (reading 'type')).
+ *
+ * `host` is always a real setup instance from `bindHost` / `getCurrentInstance`
+ * (has `appContext` + `provides`); `host == null` is handled above.
  */
 function bridgeHost(instance: LayerHost, host: LayerHost | null) {
   if (!host) return
 
-  const appContext = Object.create(host.appContext ?? null)
+  const appContext = Object.create(host.appContext) as LayerHost['appContext']
   // Keep createApp()'s App so DevTools stays on this LayerApp record.
   appContext.app = instance.appContext.app
-  appContext.provides = Object.create(host.provides ?? null)
-
+  appContext.provides = Object.create(host.provides)
   instance.appContext = appContext
-  instance.provides = Object.create(host.provides ?? null)
+  instance.provides = Object.create(host.provides)
 }
 
 /** Keep current instance bridged to the latest host (does not remount children). */

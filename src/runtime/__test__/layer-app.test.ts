@@ -99,17 +99,6 @@ describe('createLayerApp', () => {
 
     layerApp.unmount()
   })
-
-  it('should build appContext when host appContext and provides are nullish', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const { state, host, layerApp } = createTestApp()
-    host.value = { appContext: null, provides: null } as unknown as LayerHost
-    state.visible = true
-    await expect(nextTick()).rejects.toThrow()
-    expect(layerApp.mounted).toBe(true)
-    layerApp.unmount()
-    warn.mockRestore()
-  })
 })
 
 describe('createLayerApp / SSR', () => {

@@ -1,6 +1,7 @@
 node_modules
 dist
 coverage
+.pnpm-store
 docs/.vitepress/cache
 docs/.vitepress/dist
 smoke/node_modules
