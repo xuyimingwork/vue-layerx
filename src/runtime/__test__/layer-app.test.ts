@@ -80,6 +80,26 @@ describe('createLayerApp', () => {
     layerApp.unmount()
   })
 
+  it('should keep LayerApp appContext.app after host bridge', async () => {
+    const wrapper = mount(defineComponent({ template: '<div />' }))
+    const { state, host, layerApp } = createTestApp()
+    host.value = wrapper.vm.$ as LayerHost
+    state.visible = true
+    await nextTick()
+
+    const root = document.body.querySelector('div') as any
+    const instance = root?.__vue_app__?._instance
+    expect(instance).toBeTruthy()
+    expect(instance.appContext.app).toBe(root.__vue_app__)
+    expect(instance.appContext.app).not.toBe(wrapper.vm.$.appContext.app)
+    // Host globals still reachable via prototype chain
+    expect(Object.getPrototypeOf(instance.appContext)).toBe(
+      host.value!.appContext,
+    )
+
+    layerApp.unmount()
+  })
+
   it('should build appContext when host appContext and provides are nullish', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { state, host, layerApp } = createTestApp()

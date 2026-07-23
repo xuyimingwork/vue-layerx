@@ -192,6 +192,7 @@ export const LayerView = defineComponent({
         if (!visible || prev) return
         openId.value++
       },
+      { immediate: true }
     )
 
     provide(LAYER_VIEW_KEY, {
