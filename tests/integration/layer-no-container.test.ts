@@ -3,6 +3,7 @@ import { defineComponent, h, onMounted, type Component } from 'vue'
 import { mount } from '@vue/test-utils'
 import {
   createLayer,
+  defineLayer,
   LayerNoContainer,
   type LayerInstance,
 } from '@/index'
@@ -71,7 +72,7 @@ describe('LayerNoContainer', () => {
     expect(wrapper.element.childNodes.length).toBe(0)
   })
 
-  it('should flatten monolith content when adapter swaps to LayerNoContainer', async () => {
+  it('should project container props onto monolith content when adapter swaps to LayerNoContainer', async () => {
     const { dialog } = await mountOpen(MonolithDialog, (d) =>
       d.open({ props: { mode: 'edit', width: '720px' } }),
     )
@@ -83,6 +84,52 @@ describe('LayerNoContainer', () => {
     expect(el?.getAttribute('data-mode')).toBe('edit')
     expect(document.body.querySelector('motion-dialog')).toBeNull()
     expect(dialog.content).toBeTruthy()
+  })
+
+  it('should keep content instance when defineLayer swaps Container to LayerNoContainer', async () => {
+    let setupCount = 0
+    const MonolithWithDefine = defineComponent({
+      name: 'MonolithWithDefine',
+      props: {
+        modelValue: Boolean,
+        title: String,
+      },
+      emits: ['update:modelValue', 'success'],
+      setup(props, { emit }) {
+        setupCount++
+        defineLayer({ component: LayerNoContainer })
+        return () =>
+          props.modelValue
+            ? h('motion-monolith-define', [
+                h(
+                  'button',
+                  { class: 'success', onClick: () => emit('success') },
+                  'ok',
+                ),
+              ])
+            : null
+      },
+    })
+
+    const useShell = createLayer(Container, {
+      props: { title: 'Shell' },
+    })
+    let dialog!: LayerInstance
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          dialog = useShell(MonolithWithDefine, { closeOn: ['success'] })
+          onMounted(() => dialog.open())
+          return () => h('motion-host')
+        },
+      }),
+    )
+    await flushPromises()
+    await wrapper.vm.$nextTick()
+
+    expect(document.body.querySelector('motion-monolith-define')).toBeTruthy()
+    expect(document.body.querySelector('motion-dialog')).toBeNull()
+    expect(setupCount).toBe(1)
   })
 
   it('should keep BaseDialog shell for normal content', async () => {

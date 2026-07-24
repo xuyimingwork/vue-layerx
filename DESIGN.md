@@ -576,13 +576,14 @@ export const useDialog = createLayer(MyDialog, {
 
 标记组件：作 `createLayer` 的 container，或在 **adapter / use / open** 里把 `container.component` 换成它。详见 [ADR 0001](docs/adr/0001-legacy-monolith-progressive-adoption.md)。
 
-`createLayerViewVNode` 遇 `LayerNoContainer` 时拍平：
+`createLayerViewVNode` 遇 `LayerNoContainer` 时与真壳同构（Teleport + 锚点），并把容器 props 投影到 content：
 
 ```ts
-h(content, { ...container.props, ...content.props, key }, content.slots)
+h(LayerNoContainer, {}, { default: () => h('layer-content-to', …) })
+// + Teleport → h(content, { ...container.props, ...content.props, key }, content.slots)
 ```
 
-content 覆盖 container（create 默认与 open 在拍平相遇；bind 的 `modelValue` 在 container 上，正常勿在 content.props 再传）。
+content 覆盖 container（create 默认与 open 在投影相遇；bind 的 `modelValue` 经投影落到 content，正常勿在 content.props 再传）。
 
 **推荐：同一 `useLayer` 混用单体与拆分 content**（项目维护 `withDialog`）：
 
@@ -595,7 +596,7 @@ export const useLayer = createLayer(BaseDialog, {
       : f,
 })
 
-useLayer(UserDialog) // 内嵌 el-dialog → 拍平
+useLayer(UserDialog) // 内嵌 el-dialog → 透明壳 + props 投影
 useLayer(UserForm)   // 仍包 BaseDialog
 ```
 

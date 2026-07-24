@@ -85,21 +85,10 @@ export function createLayerViewVNode({
   openId,
   refContentTo
 }: CreateLayerViewVNodeOptions): VNode | (VNode | null)[] | null {
-  if (container.component === LayerNoContainer) {
-    return createLayerViewContentVNode({ 
-      key: openId, 
-      content: content ? {
-        ...content,
-        props: {
-          ...container.props,
-          ...content.props
-        },
-      } : content
-    })
-  }
+  const noContainer = container.component === LayerNoContainer
 
   return [
-    h(container.component, container.props, {
+    h(container.component, noContainer ? {} : container.props, {
       ...container.slots,
       default: () => h('layer-content-to', { 
         ref: (el) => refContentTo.value = el as HTMLUnknownElement,
@@ -111,15 +100,25 @@ export function createLayerViewVNode({
     refContentTo.value ? h(Teleport, {
       to: refContentTo.value
     }, [
-      createLayerViewContentVNode({ key: openId, content, marked: true })
+      createLayerViewContentVNode({ 
+        key: openId, 
+        content: noContainer && content
+        ? {
+            ...content,
+            props: {
+              ...container.props,
+              ...content.props,
+            },
+          }
+        : content
+      })
     ]) : null
   ]
 }
 
-function createLayerViewContentVNode({ key, content, marked }: {
+function createLayerViewContentVNode({ key, content }: {
   key: number | undefined
   content: LayerBoundNode | undefined
-  marked?: boolean
 }) {
   if (!content) return null
   return h(
@@ -127,7 +126,7 @@ function createLayerViewContentVNode({ key, content, marked }: {
     {
       ...content.props,
       key,
-      [LAYER_CONTENT]: !!marked,
+      [LAYER_CONTENT]: true,
     },
     content.slots,
   )

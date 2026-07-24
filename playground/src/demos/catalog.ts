@@ -11,6 +11,7 @@ import ConfigMergeDemo from './07-config-merge/index.vue'
 import LifecycleDemo from './08-lifecycle/index.vue'
 import ProvideInjectDemo from './09-provide-inject/index.vue'
 import LayerNoContainerDemo from './10-layer-no-container/index.vue'
+import DefineNoContainerDemo from './15-define-no-container/index.vue'
 import OpenSwapContainerDemo from './11-open-swap-container/index.vue'
 import ConfirmDemo from './12-confirm/index.vue'
 import NestedSelfDemo from './13-nested-self/index.vue'
@@ -45,9 +46,18 @@ export const demoGroups: DemoGroup[] = [
         level: 2,
         title: 'LayerNoContainer 存量单体',
         description:
-          '同一 useLayer：adapter 对内嵌 Dialog 的 content 换成 LayerNoContainer 拍平；UserForm 仍走 ElDialog。也可 createLayer(LayerNoContainer)。',
+          '同一 useLayer：adapter 对内嵌 Dialog 的 content 换成 LayerNoContainer（透明壳 + props 投影）；UserForm 仍走 ElDialog。也可 createLayer(LayerNoContainer)。',
         tags: ['LayerNoContainer', 'adapter', '渐进接入'],
         component: LayerNoContainerDemo,
+      },
+      {
+        id: 'define-no-container',
+        level: 2,
+        title: 'defineLayer 自报 LayerNoContainer',
+        description:
+          '工厂仍是 createLayer(ElDialog)、无 adapter；单体 content 内 defineLayer({ component: LayerNoContainer }) 同构换壳（park，不 remount）。可与上一例对比。',
+        tags: ['defineLayer', 'LayerNoContainer', 'component'],
+        component: DefineNoContainerDemo,
       },
     ],
   },

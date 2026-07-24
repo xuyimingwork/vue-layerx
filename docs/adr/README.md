@@ -10,3 +10,4 @@
 | [0004](./0004-merge-unknown-fields.md) | `mergeFragment` / 节点是否保留未知字段 | Accepted（白名单；扩展待定） |
 | [0005](./0005-content-self-contained-close-on.md) | `defineLayer` 不暴露 `close`：关层经 content emit + `closeOn` | Accepted |
 | [0006](./0006-instance-state-as-getters.md) | `LayerInstance` 状态用只读 getter：`visible` / `content` / `container` | Accepted |
+| [0007](./0007-static-define-via-define-options.md) | 内容侧静态 define：`defineOptions` 优先于自研宏 / setup 内换 `LayerNoContainer` | Deferred（搁置） |

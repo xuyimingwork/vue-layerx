@@ -26,7 +26,7 @@ const useLayer = createLayer(ElDialog, {
       ? { ...f, container: { ...f.container, component: LayerNoContainer } }
       : f,
 })
-useLayer(UserDialog) // 拍平，不再外套一层 Dialog
+useLayer(UserDialog) // 透明壳 + props 投影，不再外套一层 Dialog
 useLayer(UserForm)   // 正常壳 + 内容
 ```
 

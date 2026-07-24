@@ -1,12 +1,14 @@
 import { defineComponent } from 'vue'
 
 /**
- * Public marker container: no outer shell.
- * When used as createLayer's container (or swapped in via adapter / use / open),
- * createLayerViewVNode flattens to h(content) with content props overriding container props.
+ * Public marker / transparent container: no outer dialog shell.
+ * createLayerViewVNode keeps the same Teleport + default-slot anchor tree as
+ * real shells (so ElDialog → LayerNoContainer swap can park content), and
+ * projects container props onto content (modelValue, create defaults).
  */
 export const LayerNoContainer = defineComponent({
   name: 'LayerNoContainer',
+  inheritAttrs: false,
   setup(_, { slots }) {
     return () => slots.default?.() ?? null
   },

@@ -129,35 +129,43 @@ describe('createLayerViewVNode', () => {
     expect((teleportVNode?.children as VNode[])?.[0]).toBeNull()
   })
 
-  it('should flatten LayerNoContainer with content props overriding container', () => {
+  it('should use Teleport tree for LayerNoContainer and project props onto content', () => {
     const contentRef = vi.fn()
     const onUpdate = vi.fn()
-    const tree = createLayerViewVNode({
-      container: {
-        component: LayerNoContainer,
-        props: {
-          modelValue: true,
-          'onUpdate:modelValue': onUpdate,
-          width: '480px',
-          title: 'from-container',
+    const target = document.createElement('div')
+    const refContentTo = ref<HTMLUnknownElement | null>(target)
+    const [containerVNode, teleportVNode] = asArrayTree(
+      createLayerViewVNode({
+        container: {
+          component: LayerNoContainer,
+          props: {
+            modelValue: true,
+            'onUpdate:modelValue': onUpdate,
+            width: '480px',
+            title: 'from-container',
+          },
+          slots: {},
         },
-        slots: {},
-      },
-      content: {
-        component: StubContent,
-        props: {
-          message: 'hello',
-          width: '720px',
-          ref: contentRef,
+        content: {
+          component: StubContent,
+          props: {
+            message: 'hello',
+            width: '720px',
+            ref: contentRef,
+          },
+          slots: {},
         },
-        slots: {},
-      },
-      openId: 2,
-      refContentTo: ref(null),
-    }) as VNode
+        openId: 2,
+        refContentTo,
+      }),
+    )
 
-    const props = tree.props as Record<PropertyKey, unknown>
-    expect(tree.type).toBe(StubContent)
+    expect(containerVNode.type).toBe(LayerNoContainer)
+    expect(containerVNode.props).toEqual({})
+
+    const contentVNode = (teleportVNode?.children as VNode[])?.[0]
+    const props = contentVNode?.props as Record<PropertyKey, unknown>
+    expect(contentVNode?.type).toBe(StubContent)
     expect(props.message).toBe('hello')
     expect(props.modelValue).toBe(true)
     expect(props['onUpdate:modelValue']).toBe(onUpdate)
@@ -167,6 +175,6 @@ describe('createLayerViewVNode', () => {
     expect(props.key).toBe(2)
 
     const symbolKeys = Object.getOwnPropertySymbols(props)
-    expect(symbolKeys.some((key) => props[key] === true)).toBe(false)
+    expect(symbolKeys.some((key) => props[key] === true)).toBe(true)
   })
 })
