@@ -61,4 +61,4 @@ const dialog = useDialog(HelloWorld)
 4. [用事件关闭弹层](/guide/close-on) — 内容 `emit` + `closeOn`  
 5. [用模板填写插槽](/guide/layer-template) — 往 `footer` 等具名插槽投递  
 
-壳和内容还粘在一起、暂时拆不开？可先看 [容器与内容未拆分](/guide/no-container)。
+容器与表单还粘在一个文件里、暂时拆不开？进阶里见 [容器与内容未拆分](/guide/no-container)。

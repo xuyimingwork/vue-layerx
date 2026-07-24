@@ -27,4 +27,4 @@ const filterDrawer = useDrawer(FilterPanel)
 // 页内：<FilterPanel @apply="…" />
 ```
 
-按屏宽在一个工厂里自动换壳，见[用 adapter 统一改配置](/guide/adapter)。
+按屏宽在一个工厂里自动换容器，见[用 adapter 统一改配置](/guide/adapter)。

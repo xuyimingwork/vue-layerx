@@ -13,7 +13,7 @@ function useLayer(
 
 | 参数 | 说明 |
 |------|------|
-| `Content` | 内容组件；**可省略**（只要空壳、暂无业务体时） |
+| `Content` | 内容组件；**可省略**（只要容器、暂无业务体时） |
 | `config` | 创建实例时的默认配置；顶层 `props` 指**内容**；可为响应式源 |
 
 ```ts
@@ -28,16 +28,16 @@ const dialog = useDialog(UserForm, () => ({
 }))
 ```
 
-### 省略 Content（空壳）
+### 省略 Content（仅容器）
 
 ```ts
 const shell = useDialog()
 shell.open({
-  container: { props: { title: '仅外壳' } },
+  container: { props: { title: '仅容器' } },
 })
 ```
 
-壳的配置请显式写在 `container:`。这**不是**「Dialog+表单写在一个文件里还没拆开」——那种情况见 [容器与内容未拆分](/guide/no-container)（`LayerNoContainer` + 单体做内容）。
+容器的配置请显式写在 `container:`。这**不是**「Dialog+表单写在一个文件里还没拆开」——那种情况见 [容器与内容未拆分](/guide/no-container)（内容里 `defineLayer({ component: LayerNoContainer })`）。
 
 ## 返回值
 

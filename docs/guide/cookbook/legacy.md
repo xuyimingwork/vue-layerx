@@ -8,7 +8,9 @@ import FormSource from '../../examples/legacy/UserForm.vue?raw'
 
 # 未拆分内容/容器弹窗接入
 
-老项目里常见「一个 `.vue` 里已经写好了 `<el-dialog>` + 表单」。短期内拆不开时，用 `LayerNoContainer` 先命令式打开整颗组件；拆出纯表单后，同一 `useLayer` 仍可打开已拆分的 content——调用方的 `open({ props })` 尽量不动。
+老项目里常见「一个 `.vue` 里已经写好了 `<el-dialog>` + 表单」。新用户可先看指南里更简单的写法：[容器与内容未拆分](/guide/no-container)（内容里 `defineLayer({ component: LayerNoContainer })`）。
+
+本页 Demo：同一 `useLayer` 混用单体与已拆分 content——adapter 按组件换成 `LayerNoContainer`；拆出纯表单后，调用方的 `open({ props })` 尽量不动。
 
 <DemoBlock
   :demo="Demo"
@@ -26,8 +28,8 @@ const useLayer = createLayer(ElDialog, {
       ? { ...f, container: { ...f.container, component: LayerNoContainer } }
       : f,
 })
-useLayer(UserDialog) // 透明壳 + props 投影，不再外套一层 Dialog
-useLayer(UserForm)   // 正常壳 + 内容
+useLayer(UserDialog) // LayerNoContainer + props 投影，不再外套一层 Dialog
+useLayer(UserForm)   // 普通容器 + 内容
 ```
 
 建模说明见[容器与内容未拆分](/guide/no-container)。

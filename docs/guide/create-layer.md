@@ -32,7 +32,7 @@ const useDialog = createLayer(BaseDialog, {
 })
 ```
 
-Vant 的 `show`、部分自研壳的自定义字段同理。
+Vant 的 `show`、部分自研容器的自定义字段同理。
 
 > 如果组件不是通过 `v-model` 方式控制显隐，可以先自行封装包裹一层。
 

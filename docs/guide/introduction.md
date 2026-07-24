@@ -19,9 +19,9 @@ dialog.open()
 
 弹层一多，页面容易堆 `visible` 样板；内容和 Dialog / Drawer 写死在一起后，换容器、页内复用都很痛。
 
-vue-layerx 不替换你们的组件库，也不另造一套 Modal——只提供命令式 API，把「弹层壳」和「业务内容」拆开编排。不必换栈。
+vue-layerx 不替换你们的组件库，也不另造一套 Modal——只提供命令式 API，把「容器组件」和「内容组件」拆开编排。不必换栈。
 
-若壳和表单暂时还粘在一个 `.vue` 里，不必先大拆，见 [容器与内容未拆分](/guide/no-container)。
+若容器与表单暂时还粘在一个 `.vue` 里，不必先大拆，见 [容器与内容未拆分](/guide/no-container)。
 
 ## 核心概念
 
@@ -29,7 +29,7 @@ vue-layerx 不替换你们的组件库，也不另造一套 Modal——只提供
 
 | | 职责 | 例子 |
 |--|------|------|
-| **容器（container）** | 显隐、遮罩、标题栏等壳 | `ElDialog`、`ElDrawer`、项目内 `BaseDialog` |
+| **容器（container）** | 显隐、遮罩、标题栏等 | `ElDialog`、`ElDrawer`、项目内 `BaseDialog` |
 | **内容（content）** | 普通业务组件，可页内复用 | `HelloWorld`、`UserForm` |
 
 对应到 API：

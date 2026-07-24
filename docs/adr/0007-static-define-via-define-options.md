@@ -2,19 +2,19 @@
 
 - **状态**：Deferred（搁置；不删文）
 - **日期**：2026-07-24（搁置：同日）
-- **关联**：[ADR 0001](./0001-legacy-monolith-progressive-adoption.md)（`LayerNoContainer` 同构透明壳）；[ADR 0002](./0002-open-use-override-container-component.md)；[ADR 0003](./0003-reactive-layer-config.md)
+- **关联**：[ADR 0001](./0001-legacy-monolith-progressive-adoption.md)（`LayerNoContainer` 同构透明容器）；[ADR 0002](./0002-open-use-override-container-component.md)；[ADR 0003](./0003-reactive-layer-config.md)
 
 ---
 
 ## 为何搁置
 
-[ADR 0001](./0001-legacy-monolith-progressive-adoption.md) 已将 `LayerNoContainer` 改为与真壳 **同构 Teleport** + props 投影。事后 `defineLayer({ component: LayerNoContainer })` 可 park content、**不必二次 setup**；在接受「首帧可能仍是工厂壳」的前提下，content 内自报写法已足够优雅。
+[ADR 0001](./0001-legacy-monolith-progressive-adoption.md) 已将 `LayerNoContainer` 改为与普通容器 **同构 Teleport** + props 投影。事后 `defineLayer({ component: LayerNoContainer })` 可 park content、**不必二次 setup**；在接受「首帧可能仍是工厂默认容器」的前提下，content 内自报写法已足够优雅。
 
-本篇原驱动里更急的痛（remount / 双 setup）已消除。余下仅是 **挂载前可知静态 define → 首帧壳就正确**（以及可选的静态 title / closeOn），优先级下降，**暂不实现** `defineOptions({ layerx })` 自动读取。若日后要「首帧零错壳」且不愿维护 adapter 表，再拾起本文方向。
+本篇原驱动里更急的痛（remount / 双 setup）已消除。余下仅是 **挂载前可知静态 define → 首帧容器就正确**（以及可选的静态 title / closeOn），优先级下降，**暂不实现** `defineOptions({ layerx })` 自动读取。若日后要「首帧容器正确」且不愿维护 adapter 表，再拾起本文方向。
 
 当前推荐：
 
-- 挂载前定壳：`adapter` / `createLayer(LayerNoContainer)`（ADR 0001）
+- 挂载前选定容器：`adapter` / `createLayer(LayerNoContainer)`（ADR 0001）
 - content 自报、可接受首帧：`defineLayer({ component: LayerNoContainer })`
 
 以下正文保留原讨论，供将来参考。
@@ -23,26 +23,26 @@
 
 ## 背景
 
-[ADR 0001](./0001-legacy-monolith-progressive-adoption.md) 定稿：存量单体始终作为 **content**，用 `LayerNoContainer`（透明壳 + props 投影）；推荐在 **adapter**（或 `createLayer(LayerNoContainer)`）里于挂载前换壳，以便与已拆分 content 共用同一 `useLayer`。
+[ADR 0001](./0001-legacy-monolith-progressive-adoption.md) 定稿：存量单体始终作为 **content**，用 `LayerNoContainer`（透明容器 + props 投影）；推荐在 **adapter**（或 `createLayer(LayerNoContainer)`）里于挂载前换容器，以便与已拆分 content 共用同一 `useLayer`。
 
-实践中仍有人希望在 **content 文件内**自报「不要外层壳」，写法接近：
+实践中仍有人希望在 **content 文件内**自报「不要外层容器」，写法接近：
 
 ```ts
 defineLayer({ component: LayerNoContainer })
 ```
 
-`defineLayer` 顶层本就可以写 `component`（打开后 Dialog ↔ Drawer 换壳亦然，见 playground）。问题不在 API 能否表达，而在 **时序**（首帧可能仍是工厂壳）。
+`defineLayer` 顶层本就可以写 `component`（打开后 Dialog ↔ Drawer 换容器亦然，见 playground）。问题不在 API 能否表达，而在 **时序**（首帧可能仍是工厂默认容器）。
 
-> **实现注记（2026-07-24）**：`LayerNoContainer` 已与真壳同构 Teleport 树，事后 `defineLayer` 换成它时可 park content、避免二次 setup；首帧仍可能先走工厂壳。本 ADR 讨论的静态 `defineOptions` 仍针对「挂载前可知」。
+> **实现注记（2026-07-24）**：`LayerNoContainer` 已与普通容器同构 Teleport 树，事后 `defineLayer` 换成它时可 park content、避免二次 setup；首帧仍可能先走工厂默认容器。本 ADR 讨论的静态 `defineOptions` 仍针对「挂载前可知」。
 
 ### 约束（挂载前可知）
 
 ```text
-要在 content 挂载前知道壳 → 不能依赖 setup 内的 defineLayer
+要在 content 挂载前知道容器 → 不能依赖 setup 内的 defineLayer
 要跑 defineLayer           → 得先挂上 content
 ```
 
-目标仍是：配置写在 content 旁、与普通 content 一样 `useDialog(X)`，且 **首次 open 的首帧壳就正确**（不只是 setup 一次）。
+目标仍是：配置写在 content 旁、与普通 content 一样 `useDialog(X)`，且 **首次 open 的首帧容器就正确**（不只是 setup 一次）。
 
 ---
 
@@ -57,12 +57,12 @@ defineLayer({ component: LayerNoContainer })
 | | A. 仅 adapter / `createLayer(LayerNoContainer)`（现状） | B. setup `defineLayer({ component: LayerNoContainer })` | C. 自研宏：编译抬升 `defineLayer` 静态子集 | D. `defineOptions` 挂静态 `LayerConfigContainer` |
 |--|--|--|--|--|
 | 声明位置 | 工厂 / 项目表 | content 文件 | content 文件（糖） | content 文件 |
-| 首次 setup | 1 次 | 1 次（同构换壳 park；首帧壳仍可能错） | 1 次（抬升成功时） | 1 次（挂载前可读） |
+| 首次 setup | 1 次 | 1 次（同构换容器 park；首帧容器仍可能错） | 1 次（抬升成功时） | 1 次（挂载前可读） |
 | 接入成本 | 零编译器 | 零 | unplugin + 跟 Vue 版本 | Vue 3.3+ 自带 |
 | live 配置 | 不负责 | ✅ `MaybeRefOrGetter` | 只能抬静态；live 仍要 runtime | 静态进 options；live 仍 `defineLayer` |
 | `LayerTemplate :to` | — | ✅ 返回值 | 仍需 runtime `defineLayer` | 仍需 runtime `defineLayer` |
 
-另议：打开时先 park content 收 define、同 tick 再定壳——能缓解首帧错壳，但管线复杂；**不取**为默认方案。同构 `LayerNoContainer` 已覆盖「事后换壳不 remount」。
+另议：打开时先 park content 收 define、同 tick 再选定容器——能缓解首帧容器错误，但管线复杂；**不取**为默认方案。同构 `LayerNoContainer` 已覆盖「事后换容器不 remount」。
 
 ---
 
@@ -70,7 +70,7 @@ defineLayer({ component: LayerNoContainer })
 
 ### 1. 不推荐以 B 作为「首帧就必须正确」的主路径
 
-`defineLayer({ component: LayerNoContainer })` 在同构 Teleport 下可 **只 setup 一次**，适合接受首帧可能仍是工厂壳的场景。文档与 ADR 0001 对渐进接入仍以 **挂载前定壳**（adapter / `createLayer(LayerNoContainer)`）为准。B 亦适合「已打开后」改 `component`（ADR 0002 / live define）。
+`defineLayer({ component: LayerNoContainer })` 在同构 Teleport 下可 **只 setup 一次**，适合接受首帧可能仍是工厂默认容器的场景。文档与 ADR 0001 对渐进接入仍以 **挂载前选定容器**（adapter / `createLayer(LayerNoContainer)`）为准。B 亦适合「已打开后」改 `component`（ADR 0002 / live define）。
 
 ### 2. 不做「把 defineLayer 编成静态」的一等宏（否决 C 为起点）
 
@@ -131,13 +131,13 @@ open > use > defineLayer(setup) > defineOptions 静态 > create
 
 ### 支持（目标）
 
-- 挂载前读取 content 组件上的静态 define，首次 open 即可正确壳 / 带默认 props·closeOn
+- 挂载前读取 content 组件上的静态 define，首次 open 即可正确容器 / 带默认 props·closeOn
 - 与 live `defineLayer`、`LayerTemplate` 并存
 - 普通 `defineComponent({ layerx: { … } })` 与 `<script setup>` + `defineOptions` 同契约
 
 ### 不支持 / 不替代
 
-- 用静态 option 表达 `() => ({ component: expanded ? ElDrawer : ElDialog })` 等 live 换壳
+- 用静态 option 表达 `() => ({ component: expanded ? ElDrawer : ElDialog })` 等 live 换容器
 - 用静态 option 提供 `LayerDefine`（`exists` / `:to`）
 - 无插件时的「只写 defineLayer、自动抬升」（那是可选宏的将来式）
 
@@ -162,4 +162,4 @@ open > use > defineLayer(setup) > defineOptions 静态 > create
 
 - [ADR 0001](./0001-legacy-monolith-progressive-adoption.md)
 - [指南：容器与内容未拆分](../guide/no-container.md)
-- Playground：`10-layer-no-container`（adapter）；`15-define-no-container`（setup 内 `defineLayer` 换壳，对比时序）
+- Playground：`10-layer-no-container`（adapter）；`15-define-no-container`（setup 内 `defineLayer` 换容器，对比时序）

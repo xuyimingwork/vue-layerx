@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **peer `vue`** — `^3.5.0` → `^3.3.0`（API 地板：官方 `toValue` / `MaybeRefOrGetter`）
-- **`LayerNoContainer`** — 不再拍平为 `h(content)`；与真壳同构 Teleport + default 锚点，并将 `container.props` 投影到 content。`defineLayer` / adapter 事后换成 NoContainer 时可 park content、避免 remount。见 [ADR 0001](./docs/adr/0001-legacy-monolith-progressive-adoption.md)
+- **`LayerNoContainer`** — 不再拍平为 `h(content)`；与普通容器同构 Teleport + default 锚点，并将 `container.props` 投影到 content。`defineLayer` / adapter 事后换成 NoContainer 时可 park content、避免 remount。见 [ADR 0001](./docs/adr/0001-legacy-monolith-progressive-adoption.md)
 
 ## [1.0.1] - 2026-07-23
 
