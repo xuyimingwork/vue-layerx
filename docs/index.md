@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: Vue Layerx
-  text: 命令式打开弹窗类组件
-  tagline: 无需 visible 变量和模板样板代码<br />适配已有 Dialog / Drawer / Popup 组件
+  text: 弹窗编程新范式
+  tagline: 像路由导航一样调度弹窗<br />像普通组件一样复用弹窗内容<br />适配已有 Dialog / Drawer / Popup 组件
   actions:
     - theme: brand
       text: 快速上手
@@ -14,22 +14,22 @@ hero:
       link: /guide/introduction
 
 features:
-  - icon: 📋
-    title: 无需 visible 样板
-    details: 不用维护显示变量，也不用在页面模板里堆 Dialog。
-  - icon: 🏭
-    title: 模板式编写插槽
-    details: 支持用 template 投递插槽，无需强制 JSX。
+  - icon: 🚀
+    title: 一行代码唤起
+    details: 告别 visible + 模板预埋。open() 传参即开，体验接近路由跳转。
   - icon: ✂️
-    title: 适配已有弹窗
-    details: 包装 Dialog / Drawer / Popup，零外部依赖，不换 UI 组件库。
+    title: 容器与内容彻底解耦
+    details: 表单只写业务，Dialog / Drawer 只做外壳。同一内容可弹窗、可抽屉、可页内嵌入。
+  - icon: 📋
+    title: 模板语法写插槽
+    details: 用熟悉的 <template> 把 footer / header 投递到外层，无需强制 JSX。
+  - icon: 🔌
+    title: 适配已有组件库
+    details: 适配 Element Plus、Naive UI、Ant Design Vue 等现有 Dialog / Drawer，零外部依赖。
   - icon: 📦
-    title: TypeScript
-    details: 源码全量 TS，提供完整类型定义与推导。
-  - icon: 🌐
-    title: 测试覆盖 100%
-    details: 语句 / 分支 / 函数 / 行全覆盖，集成与单元用例严苛打磨。
-  - icon: 📘
-    title: 支持 SSR
-    details: 可在 Nuxt / Vite SSR 中安全引入。
+    title: TypeScript 友好
+    details: 源码全量 TS，完整类型推导。
+  - icon: ✅
+    title: 工程级保障
+    details: 测试覆盖 100%，支持 SSR，可在 Nuxt / Vite SSR 中安全使用。
 ---
