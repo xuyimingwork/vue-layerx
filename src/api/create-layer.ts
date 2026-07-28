@@ -1,4 +1,4 @@
-import { computed, toValue, type Component, type MaybeRefOrGetter } from 'vue'
+import { computed, type Component } from 'vue'
 import type {
   LayerConfigCreate,
   LayerConfigContent,
@@ -11,6 +11,7 @@ import {
   toFragmentFromContainer,
 } from '@/config/fragment'
 import { createLayerInstance } from '@/runtime/layer-instance'
+import { toValue, type MaybeRefOrGetter } from '@/compat'
 
 export function createLayer(
   Container: Component,

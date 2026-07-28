@@ -1,136 +1,29 @@
 import {
-  Component,
   computed,
-  ComputedRef,
   defineComponent,
-  getCurrentInstance,
-  h,
-  onBeforeUnmount,
   provide,
-  Ref,
   ref,
-  Teleport,
-  toRaw,
-  toValue,
   watch,
-  type ComponentInternalInstance,
-  type MaybeRefOrGetter,
   type PropType,
   type VNode,
-  type WritableComputedRef,
 } from 'vue'
 import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type { LayerBound, LayerBoundNode, LayerConfigContainer } from '@/types'
+import type { LayerConfigContainer } from '@/types'
 import type { LayerClosePayload } from '@/types/confirm'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
-import { LayerNoContainer } from '@/runtime/layer-no-container'
+import {
+  createLayerViewVNode,
+  getSetupInstance,
+  isLayerContent,
+  toValue,
+  useContentPlacement,
+  type MaybeRefOrGetter,
+} from '@/compat'
 
-/** Marked on content root vnode by createLayerViewVNode; read in getDefineContext. */
-const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
-
-function useParkingElement(): HTMLUnknownElement {
-  const el = document.createElement('layer-content-parking')
-  el.style.display = 'none'
-  document.body.appendChild(el)
-  onBeforeUnmount(() => el.remove())
-  return el
-}
-
-
-/** Anchor when present; otherwise hidden parking so Teleport never uses disabled/in-place. */
-function useRefContentTo(bound: Ref<LayerBound>, visible: ComputedRef<boolean>): WritableComputedRef<HTMLUnknownElement | undefined> {
-  const anchor = ref<HTMLUnknownElement | null>(null)
-  const parking = useParkingElement()
-  const container = computed(() => toValue(bound).container?.component)
-  const active = ref<Component | null>(null)
-
-  return computed({
-    get: () => {
-      if (!active.value) return
-      // prefer container anchor; park only while open (deferred default / mid-swap)
-      return anchor.value ?? (visible.value ? parking : undefined)
-    },
-    set: (el) => {
-      anchor.value = el as HTMLUnknownElement | null
-      const same = toRaw(active.value) === toRaw(container.value)
-      active.value = (!el && same) 
-        ? null // 容器主动卸载了默认插槽
-        : container.value // 容器没有卸载默认插槽
-    },
-  })
-}
-
-function isLayerContent(
-  instance: ComponentInternalInstance | null | undefined,
-): boolean {
-  const vnodeProps = instance?.vnode?.props as
-    | Record<PropertyKey, unknown>
-    | null
-    | undefined
-  return vnodeProps?.[LAYER_CONTENT] === true
-}
-
-export interface CreateLayerViewVNodeOptions extends LayerBound {
-  openId?: number
-  refContentTo: Ref<HTMLUnknownElement | undefined>
-}
-
-/** Build LayerView root VNode (container + optional content). Exported for unit tests. */
-export function createLayerViewVNode({
-  container,
-  content,
-  openId,
-  refContentTo
-}: CreateLayerViewVNodeOptions): VNode | (VNode | null)[] | null {
-  const noContainer = container.component === LayerNoContainer
-
-  return [
-    h(container.component, noContainer ? {} : container.props, {
-      ...container.slots,
-      default: () => h('layer-content-to', { 
-        ref: (el) => refContentTo.value = el as HTMLUnknownElement,
-        style: {
-          display: 'contents'
-        }
-      }),  // 落点，不是 content
-    }),
-    refContentTo.value ? h(Teleport, {
-      to: refContentTo.value
-    }, [
-      createLayerViewContentVNode({ 
-        key: openId, 
-        content: noContainer && content
-        ? {
-            ...content,
-            props: {
-              ...container.props,
-              ...content.props,
-            },
-          }
-        : content
-      })
-    ]) : null
-  ]
-}
-
-function createLayerViewContentVNode({ key, content }: {
-  key: number | undefined
-  content: LayerBoundNode | undefined
-}) {
-  if (!content) return null
-  return h(
-    content.component,
-    {
-      ...content.props,
-      key,
-      [LAYER_CONTENT]: true,
-    },
-    content.slots,
-  )
-}
+export { createLayerViewVNode } from '@/compat'
 
 export const LayerView = defineComponent({
   name: 'LayerView',
@@ -157,7 +50,6 @@ export const LayerView = defineComponent({
     const close = (payload?: LayerClosePayload) =>
       emit('update:visible', false, payload)
 
-    /** Raw store tiers → single merge fragment (config domain). */
     const merged = computed(() =>
       mergeFragment(
         props.store.create,
@@ -169,14 +61,12 @@ export const LayerView = defineComponent({
       ),
     )
 
-    /** Run factory adapter from create bucket. */
     const adapted = computed(() => {
       const adapter = props.store.create.adapter
       const fragment = merged.value
       return adapter ? adapter(fragment) : fragment
     })
 
-    /** Adapt output + refs → bind-ready normalized tree. */
     const bound = computed(() =>
       bindLayer({
         fragment: mergeFragment(props.store.refs, adapted.value),
@@ -191,19 +81,19 @@ export const LayerView = defineComponent({
         if (!visible || prev) return
         openId.value++
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     provide(LAYER_VIEW_KEY, {
       getDefineContext() {
-        const instance = getCurrentInstance()
+        const instance = getSetupInstance()
         if (!isLayerContent(instance)) return null
 
         return {
           config(source: MaybeRefOrGetter<LayerConfigContainer>) {
             defineStore.define = computed(() =>
               toFragmentFromContainer(toValue(source)),
-            ) as any
+            ) as never
           },
           template({
             name,
@@ -225,14 +115,17 @@ export const LayerView = defineComponent({
       },
     })
 
-    const refContentTo = useRefContentTo(bound, computed(() => props.visible))
+    const refContentTo = useContentPlacement(
+      bound,
+      computed(() => props.visible),
+    )
 
     return () =>
       createLayerViewVNode({
         container: bound.value.container,
         content: bound.value.content,
         openId: bound.value.content ? openId.value : undefined,
-        refContentTo
+        refContentTo,
       })
   },
 })

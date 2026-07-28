@@ -1,6 +1,6 @@
 # ADR 0008：Vue 2.7 适配
 
-- **状态**：Accepted（范围已定；**待实现**；前置：[ADR 0009](./0009-integration-tests-consume-dist.md)）
+- **状态**：Accepted（**已实现**；前置 [ADR 0009](./0009-integration-tests-consume-dist.md) 已完成）
 - **日期**：2026-07-28
 - **关联**：[DESIGN.md](../../DESIGN.md) 兼容性；[ADR 0001](./0001-legacy-monolith-progressive-adoption.md)；[ADR 0002](./0002-open-use-override-container-component.md)；[ADR 0003](./0003-reactive-layer-config.md)；[ADR 0009](./0009-integration-tests-consume-dist.md)（Vue 3 集成迁独立包 / 只消费 dist，**须先完成**）
 
@@ -81,7 +81,7 @@
 | 场景 | 是否常踩 | 说明 |
 |------|----------|------|
 | 打开后改 `container.component` | 少见（进阶） | Vue 3 可 park content；2.7 嵌套 diff 会丢 content state（D0.3） |
-| 默认 `model` | 换 UI 库时 | 3→`modelValue`，2.7→`visible`（D0.6）；跨端复制工厂配置时要注意 |
+| 默认 `model` | 换 UI 库时 | 3→`modelValue`，2.7→`value`（D0.6）；Element UI 等需显式 `model: 'visible'` |
 | 内部树形（有无 Teleport） | 通常无感 | Dialog 自身常 `append-to-body`；用户仍 `open()` |
 
 **不**做：专用子路径、对「同名 API」按版本 throw、首期砍 `LayerTemplate` 等。行为差 **只写文档 / changelog**，不加强制 runtime 警告（可选日后加）。
@@ -167,16 +167,15 @@ instance.$el.remove()
 | Vue | 默认 `model` | prop | 更新事件 |
 |-----|--------------|------|----------|
 | **3** | `modelValue` | `modelValue`（或显式 `model`） | 始终 `update:${model}`（flat：`onUpdate:${model}`） |
-| **2.7** | `visible` | 同 `model` | **`model === 'value'`** → `input`（flat：`onInput`）；**否则** → `update:${model}`（默认即 `visible` + `update:visible`） |
+| **2.7** | `value` | 同 `model` | **`model === 'value'`** → `input`（flat：`onInput`）；**否则** → `update:${model}`（如 `visible` + `update:visible`） |
 
 ```text
 # Vue 3（现行）
 modelValue  +  update:modelValue
 
 # Vue 2.7
-默认：     visible  +  update:visible
-model=value： value   +  input
-其它显式 model（如 open）： open + update:open
+默认：     value   +  input
+其它显式 model（如 visible / open）： visible + update:visible、open + update:open
 ```
 
 用户仍可用 `createLayer(Dialog, { model: '…' })` / tier 覆盖改 prop 名；事件按上表由 `model` 推导，**不**另开 `event` 配置项（除非将来修订）。
@@ -212,7 +211,7 @@ h(container, /* 经 toPlatformVNodeData 后的 data */, {
 
 | 导出（compat 聚合） | Vue 3 | Vue 2.7 |
 |---------------------|-------|---------|
-| `DEFAULT_CONTAINER_MODEL` | `'modelValue'` | `'visible'` |
+| `DEFAULT_CONTAINER_MODEL` | `'modelValue'` | `'value'` |
 | `getModelUpdateFlatKey(model)` | 恒 `'onUpdate:' + model` | `model === 'value'` → `'onInput'`；否则 `'onUpdate:' + model` |
 
 - core 的 `bindLayer` / `bindContainerModel` 从聚合层取上述值；产出仍是 flat props。
@@ -223,7 +222,7 @@ h(container, /* 经 toPlatformVNodeData 后的 data */, {
 
 公开 API 仍只有 `bindHost()`。内部 Host 经 compat 统一窄接口（名称实现自定），例如：
 
-- `getSetupProxy()` / `isSetupMounted()` / `onHostUnmounted(cb)` / `createLayerApp` 所用挂载原语。
+- `getSetupInstance()` / `hasSetupContext()` / `onHostUnmounted(cb)` / `createLayerApp` 所用挂载原语。
 
 约束：
 
@@ -234,7 +233,7 @@ h(container, /* 经 toPlatformVNodeData 后的 data */, {
 
 **D0.22 Vue 2.7 测试 harness（独立包）**
 
-与 [ADR 0009](./0009-integration-tests-consume-dist.md) 同构：**集成 / 兼容线只消费 `dist`**，用独立 workspace 包隔离 Vue 大版本解析。
+与 [ADR 0009](./0009-integration-tests-consume-dist.md) 同构：**集成 / 兼容线只消费 `dist`**，用独立 workspace 包隔离 Vue 大版本解析；**覆盖率另开 src-alias 趟**（与 `tests-vue3` 双跑对称）。
 
 | 包 | 职责 | 依赖要点 |
 |----|------|----------|
@@ -242,12 +241,20 @@ h(container, /* 经 toPlatformVNodeData 后的 data */, {
 | `tests-vue3` | Vue 3 **全量集成**（ADR 0009） | `vue-layerx: workspace:*` + `vue@3` + `@vue/test-utils@2` |
 | `tests-vue2` | Vue 2.7 **关键路径** + **入口解析冒烟**（本篇） | `vue-layerx: workspace:*` + `vue@2.7` + `@vue/test-utils@1` |
 
+双跑：
+
+| 趟 | 配置 | 作用 |
+|----|------|------|
+| **门禁** | `tests-vue2/vitest.config.ts` | 只消费 dist；CI / `prepublishOnly` |
+| **覆盖率** | 根 `vitest.vue2-coverage.config.ts` | `vue-layerx`→`src`，`vue` 钉到 tests-vue2 的 2.7；**不**代替门禁 |
+
 约束：
 
 - **前置**：ADR 0009 已合并（`tests-vue3` 存在且集成只 `import from 'vue-layerx'`）。本篇实现 **不**负责把现行 `tests/integration` 迁出根包。
 - **否决**根包同时安装 `vue@2` + `vue@3`、或靠 npm alias / Vitest 全局改写 `vue` 解析跑双端（易串版）。
-- `tests-vue2` **不**追求与 `tests-vue3` 全量对等；覆盖 mount / Host / 换容器自然 remount / bind·model（默认 `visible`）/ `defineLayer` 内容根 + D0.19 入口冒烟即可。
+- `tests-vue2` **不**追求与 `tests-vue3` 全量对等；覆盖 mount / Host / 换容器自然 remount / bind·model（默认 `value`）/ `defineLayer` 内容根 + D0.19 入口冒烟即可。
 - 流水线：`pnpm build` → 根 unit → `tests-vue3` → `tests-vue2`（后两步均依赖 dist）。
+- Coverage：`unit` + vue3-alias + vue2-alias → merge；CI **不**设 100% threshold。
 - 用例按 `@vue/test-utils@1` API **新写**；不要指望把 Vue 3 集成原样改 alias 就能绿。
 
 ---
@@ -504,10 +511,10 @@ Vue 3：`getCurrentInstance()` + `isMounted`。2.7 的 setup 实例是 proxy，�
 |------|------|
 | A | 2.7 默认 `'visible'`（Element UI Dialog） |
 | B | 仍默认 `'modelValue'`，文档强制 `createLayer(Dialog, { model: 'visible' })` |
-| C | 按 `vue` 大版本自动选默认（3→modelValue，2→visible） |
+| C | 按 `vue` 大版本自动选默认（3→`modelValue`，2.7→`value`，与平台默认 v-model 对齐） |
 | D | 无默认，缺 `model` 则 dev 抛错 |
 
-- **决策**：**C**（并入 **D0.6**；实现见 **D0.20**）— Vue 3 → `modelValue`；Vue 2.7 → `visible`；由 compat 注入 `DEFAULT_CONTAINER_MODEL`，bind 不读 `isVue2`。
+- **决策**：**C**（并入 **D0.6**；实现见 **D0.20**）— Vue 3 → `modelValue`；Vue 2.7 → `value`；Element UI 等用 `visible` 时显式 `model: 'visible'`。由 compat 注入 `DEFAULT_CONTAINER_MODEL`，bind 不读 `isVue2`。
 
 #### D4.2 更新事件命名（bind-container-model）
 
@@ -756,7 +763,7 @@ README 写「零外部依赖」。若 2.7 引入 `vue-demi` / `portal-vue`：
 | `LayerNoContainer` | 同构 Teleport + 全投影 | 扁平 `h(content)` + **全投影**（D0.5 / D2.1-A） |
 | Host provide | `appContext` 桥接 | **`extend` + `parent: proxy`**（D0.8 / D0.21） |
 | 全局插件 / `$message` | 独立 App + 桥接 | 宿主 `Vue` 构造器上 `extend`（D0.8） |
-| 默认 `model` / 更新事件 | `modelValue` + `update:modelValue` | `visible` + `update:visible`；`value`→`input`（D0.6 / D0.20） |
+| 默认 `model` / 更新事件 | `modelValue` + `update:modelValue` | `value` + `input`；其它→`update:${model}`（D0.6 / D0.20） |
 | 公开 API | 现行 | **同名全做**；差仅文档（D0.13） |
 
 ---
@@ -813,7 +820,7 @@ D3.5 A（D0.18 / D0.21：适配层对齐 bindHost 语义；窄接口）
 D3.6 A（随 D0.8：Host 卸则 dispose；晚 bind 下次 open）
 D3.7 A（D0.18：SSR 同 Vue 3）
 D3.8 A（D0.18：挂 document.body）
-D4.1 C（D0.6 / D0.20：3→modelValue，2.7→visible；由 compat 注入）
+D4.1 C（D0.6 / D0.20：3→modelValue，2.7→value；由 compat 注入）
 D4.2 A（D0.6 / D0.20：3 恒 onUpdate:model；2.7 value→onInput，其它→onUpdate:model）
 D4.3 A（D0.11：h 前翻译 onXxx→on；首期无 nativeOn；不做 value/input 二次特例）
 D4.4 A（D0.18：ref 同 Vue 3）

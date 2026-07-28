@@ -81,7 +81,8 @@ src/
 └── view/                    # LayerView 组件、纯 h() 渲染
 
 tests/                       # unit 辅助：setup、纯 helpers、薄 fixture
-tests-vue3/                  # Vue 3 集成：只消费 vue-layerx dist（见 ADR 0009）
+tests-vue3/                  # Vue 3 集成：只消费 vue-layerx dist（ADR 0009）
+tests-vue2/                  # Vue 2.7 关键路径：只消费 dist（ADR 0008）
 ```
 
 | 层 | 职责 | 主要文件 |
@@ -89,11 +90,12 @@ tests-vue3/                  # Vue 3 集成：只消费 vue-layerx dist（见 AD
 | **types/** | 配置 Raw / Canonical / Bound；实例 / Store；LayerHost | `config-raw.ts`、`config.ts`、`bound.ts`、`instance.ts`、`store.ts`、`layer-host.ts` |
 | **shared/** | 跨层 inject 契约、store 工厂、template-to 协议 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts` |
-| **runtime/** | instance 生命周期、portal 挂载 | `layer-instance.ts`、`layer-app.ts` |
+| **compat/** | Vue 大版本分端（挂载 / 视图 / model / Host） | `env.ts`、`vue2/`、`vue3/`、`index.ts` |
+| **runtime/** | instance 生命周期、LayerView 编排 | `layer-instance.ts`、`layer-view.ts`、`layer-app.ts`（re-export） |
 | **view/** | `LayerView` 组件（merge → adapter → bind → createLayerViewVNode） | `layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
-各层 `__test__/` 与模块同目录；Vue 3 集成测试在 `tests-vue3/`（`import from 'vue-layerx'`，须先 `pnpm build`）。
+各层 `__test__/` 与模块同目录；集成在 `tests-vue3/` / `tests-vue2/`（`import from 'vue-layerx'`，须先 `pnpm build`）。
 
 ### 模块依赖
 

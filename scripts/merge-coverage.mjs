@@ -5,6 +5,7 @@
  * Expects:
  *   coverage/unit/coverage-final.json
  *   coverage/integration/coverage-final.json
+ *   coverage/integration-vue2/coverage-final.json
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -21,6 +22,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const inputs = [
   path.join(root, 'coverage/unit/coverage-final.json'),
   path.join(root, 'coverage/integration/coverage-final.json'),
+  path.join(root, 'coverage/integration-vue2/coverage-final.json'),
 ]
 const outDir = path.join(root, 'coverage')
 

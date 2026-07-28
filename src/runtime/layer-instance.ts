@@ -1,13 +1,10 @@
 import {
   computed,
-  getCurrentInstance,
   onUnmounted,
   reactive,
   shallowRef,
-  toValue,
   type ComponentPublicInstance,
   type ComputedRef,
-  type MaybeRefOrGetter,
 } from 'vue'
 import type {
   LayerConfigFragment,
@@ -27,10 +24,16 @@ import {
 } from '@/config/fragment'
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
-import { createLayerApp } from '@/runtime/layer-app'
+import {
+  createLayerApp,
+  getSetupInstance,
+  hasSetupContext,
+  toValue,
+  type LayerHost,
+  type MaybeRefOrGetter,
+} from '@/compat'
 import { LayerConfirmError } from '@/shared/layer-confirm-error'
 import { warn } from '@/shared/warn'
-import type { LayerHost } from '@/types/layer-host'
 
 type Confirming = {
   resolve: (result: LayerConfirmResult) => void
@@ -111,23 +114,20 @@ export function createLayerInstance({
   }
 
   const bindHost = ({ silent = false } = {}) => {
-    const current = getCurrentInstance()
-
+    const current = getSetupInstance() as LayerHost | null
     if (host.value) {
       if (!silent && current && current !== host.value) {
         warn('bindHost() ignored: already bound to another host')
       }
       return
     }
-
-    if (!current || current.isMounted) {
+    if (!hasSetupContext()) {
       if (!silent) {
         warn('bindHost() must be called synchronously during setup')
       }
       return
     }
-
-    host.value = current as LayerHost
+    host.value = current as any
     onUnmounted(() => {
       host.value = null
       dispose()

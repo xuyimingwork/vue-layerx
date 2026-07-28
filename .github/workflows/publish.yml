@@ -66,7 +66,7 @@ jobs:
       - name: Setup NPM
         run: npm install -g npm@latest
 
-      # prepublishOnly: unit → build → integration（集成消费 dist）
+      # prepublishOnly: unit → build → tests-vue3 → tests-vue2（集成消费 dist）
       # --provenance: 生成供应链溯源证明
       # --tag: 预发布打 beta/alpha/rc，正式版打 latest
       - name: Publish To NPM

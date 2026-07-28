@@ -1,4 +1,5 @@
-import type { ComputedRef, MaybeRefOrGetter, UnwrapNestedRefs, VNode } from 'vue'
+import type { ComputedRef, UnwrapNestedRefs, VNode } from 'vue'
+import type { MaybeRefOrGetter } from '@/compat'
 import type {
   LayerConfigFragment,
   LayerConfigFragmentCreate,

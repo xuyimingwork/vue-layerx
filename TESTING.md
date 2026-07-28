@@ -7,7 +7,8 @@ Tests follow a two-tier layout:
 | Tier | Location | Purpose |
 |------|----------|---------|
 | Unit | `src/**/__test__/*.test.ts` | Test internal modules in isolation, co-located with source |
-| Integration | `tests-vue3/integration/*.test.ts` | Test public API as an installed consumer of **`dist`** |
+| Integration (Vue 3) | `tests-vue3/integration/*.test.ts` | Public API as installed consumer of **`dist`** |
+| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` | Critical path + D0.19 smoke against **`dist`** |
 
 Root `tests/` holds unit-only helpers:
 
@@ -17,23 +18,21 @@ tests/
   helpers/dom.ts           # withoutDom, clearBody, flushPromises (no library imports)
   fixtures/components.ts   # thin unit fixtures (may import @/ source)
 
-tests-vue3/                # workspace package; depends on vue-layerx: workspace:*
-  setup.ts
-  helpers/                 # dom + mount helpers (import vue-layerx)
-  fixtures/                # integration fixtures (import vue-layerx)
-  integration/             # public API scenario tests
+tests-vue3/                # workspace; vue@3 + vue-layerx: workspace:*
+tests-vue2/                # workspace; vue@2.7 + vue-layerx: workspace:*
 ```
 
-Do **not** share fixtures/helpers that import the library between unit and integration (src vs dist would load two copies). Pure DOM helpers may be duplicated or kept under root `tests/helpers/` only for unit; `tests-vue3` has its own copy.
+Do **not** share fixtures/helpers that import the library across unit / vue3 / vue2 (src vs dist, or Vue major mismatch). Pure DOM helpers may be duplicated.
 
 ## Import Rules
 
 | Tier | Allowed imports |
 |------|-----------------|
-| `tests-vue3/` | `vue-layerx` (values + types), local `../helpers` / `../fixtures`, `vue`, `@vue/test-utils` |
-| `src/**/__test__/` | The module under test, its internal dependencies, `@tests/*`, `vue`, `@vue/test-utils` |
+| `tests-vue3/` | `vue-layerx` (values + types), local helpers/fixtures, `vue@3`, `@vue/test-utils@2` |
+| `tests-vue2/` | `vue-layerx`, local helpers/fixtures, `vue@2.7`（原生挂载；无 VTU） |
+| `src/**/__test__/` | The module under test, internals, `@tests/*`, `vue@3`, `@vue/test-utils@2` |
 
-Integration tests must not alias `vue-layerx` / `@` to repository `src/` in the **dist gate** (`tests-vue3/vitest.config.ts`). The separate coverage config (`vitest.integration-coverage.config.ts`) may alias for src attribution only. If a scenario needs an internal API, it belongs in unit tests.
+Dist-gate configs must not alias `vue-layerx` / `@` to repository `src/`. Coverage-only configs (`vitest.integration-coverage.config.ts`, `vitest.vue2-coverage.config.ts`) may alias for src attribution. If a scenario needs an internal API, it belongs in unit tests.
 
 ## Integration Tests — User Perspective
 
@@ -134,20 +133,23 @@ it('should pass empty flat slot props when Content is mounted on page with visib
 ```bash
 pnpm test                      # unit only（源码）
 pnpm test:watch
-pnpm build && pnpm test:integration   # 集成门禁：只消费 dist
+pnpm build && pnpm test:integration        # Vue 3 dist 门禁
+pnpm build && pnpm test:integration:vue2   # Vue 2.7 dist 门禁
 
 # Coverage（与 dist 门禁分离）
-pnpm test:coverage             # unit → coverage/unit
-pnpm test:coverage:integration # 同套集成用例 + alias vue-layerx→src → coverage/integration
-pnpm test:coverage:merge       # 合并 → coverage/
-pnpm test:coverage:all         # 上面三步
+pnpm test:coverage                         # → coverage/unit
+pnpm test:coverage:integration             # vue3-alias → coverage/integration
+pnpm test:coverage:integration:vue2        # vue2-alias → coverage/integration-vue2
+pnpm test:coverage:merge                   # → coverage/
+pnpm test:coverage:all                     # 上面四步
 ```
 
-Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/` 以便 V8 记到源码。CI **不**用 100% threshold 卡关；本地可用合并报告看缺口。
+Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/`（vue2 趟另钉 `vue@2.7`）以便 V8 记到源码。CI **不**用 100% threshold 卡关。
+
 ## Adding New Tests
 
 1. Decide user perspective (caller vs content author) for integration; use module boundary for unit.
-2. Integration: reuse fixtures from `tests-vue3/fixtures`; unit: reuse `@tests/fixtures/components`.
+2. Integration: reuse fixtures from `tests-vue3/fixtures` or `tests-vue2/fixtures`; unit: reuse `@tests/fixtures/components`.
 3. Use the local `helpers/dom` for DOM cleanup, SSR stubs, and async flushing.
 4. Name new cases with the **should … when …** pattern.
 5. Group related cases with nested `describe` blocks rather than long flat lists.

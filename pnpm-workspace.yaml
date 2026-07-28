@@ -2,3 +2,4 @@ packages:
   - '.'
   - 'playground'
   - 'tests-vue3'
+  - 'tests-vue2'

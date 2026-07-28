@@ -1,13 +1,13 @@
-import { getCurrentInstance, inject, type MaybeRefOrGetter } from 'vue'
+import { inject } from 'vue'
 import type { LayerConfigContainer, LayerDefine } from '@/types'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
+import { hasSetupContext, type MaybeRefOrGetter } from '@/compat'
 
 export function defineLayer(
   config: MaybeRefOrGetter<LayerConfigContainer> = {},
 ): LayerDefine {
-  const instance = getCurrentInstance()
-  if (!instance || instance.isMounted) {
+  if (!hasSetupContext()) {
     throw new Error(
       '[vue-layerx] defineLayer() must be called synchronously inside setup().',
     )
