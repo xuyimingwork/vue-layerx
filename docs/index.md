@@ -22,7 +22,7 @@ features:
     details: 表单只写业务，Dialog / Drawer 只做外壳。同一内容可弹窗、可抽屉、可页内嵌入。
   - icon: 📋
     title: 模板语法写插槽
-    details: 用熟悉的 <template> 把 footer / header 投递到外层，无需强制 JSX。
+    details: 用熟悉的 &lt;template&gt; 把 footer / header 投递到外层，无需强制 JSX。
   - icon: 🔌
     title: 适配已有组件库
     details: 适配 Element Plus、Naive UI、Ant Design Vue 等现有 Dialog / Drawer，零外部依赖。
