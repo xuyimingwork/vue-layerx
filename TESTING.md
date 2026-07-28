@@ -33,7 +33,7 @@ Do **not** share fixtures/helpers that import the library between unit and integ
 | `tests-vue3/` | `vue-layerx` (values + types), local `../helpers` / `../fixtures`, `vue`, `@vue/test-utils` |
 | `src/**/__test__/` | The module under test, its internal dependencies, `@tests/*`, `vue`, `@vue/test-utils` |
 
-Integration tests must not alias `vue-layerx` / `@` to repository `src/`. If a scenario needs an internal API, it belongs in unit tests.
+Integration tests must not alias `vue-layerx` / `@` to repository `src/` in the **dist gate** (`tests-vue3/vitest.config.ts`). The separate coverage config (`vitest.integration-coverage.config.ts`) may alias for src attribution only. If a scenario needs an internal API, it belongs in unit tests.
 
 ## Integration Tests — User Perspective
 
@@ -132,12 +132,18 @@ it('should pass empty flat slot props when Content is mounted on page with visib
 ## Running Tests
 
 ```bash
-pnpm test                 # unit only
-pnpm test:watch           # unit watch
-pnpm test:coverage        # unit coverage (integration has no src coverage)
-pnpm build && pnpm test:integration
+pnpm test                      # unit only（源码）
+pnpm test:watch
+pnpm build && pnpm test:integration   # 集成门禁：只消费 dist
+
+# Coverage（与 dist 门禁分离）
+pnpm test:coverage             # unit → coverage/unit
+pnpm test:coverage:integration # 同套集成用例 + alias vue-layerx→src → coverage/integration
+pnpm test:coverage:merge       # 合并 → coverage/
+pnpm test:coverage:all         # 上面三步
 ```
 
+Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/` 以便 V8 记到源码。CI **不**用 100% threshold 卡关；本地可用合并报告看缺口。
 ## Adding New Tests
 
 1. Decide user perspective (caller vs content author) for integration; use module boundary for unit.
