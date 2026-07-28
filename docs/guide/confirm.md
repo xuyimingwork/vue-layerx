@@ -106,4 +106,4 @@ try {
 
 ## 下一步
 
-`clone`、`unmount`、模块单例等见 [实例的更多能力](/guide/instance)。错误码与成员表见 [API：LayerInstance](/api/layer-instance)。
+运行时再定内容见 [动态指定内容组件](/guide/dynamic-content)。`clone`、`unmount`、模块单例等见 [实例的更多能力](/guide/instance)。错误码与成员表见 [API：LayerInstance](/api/layer-instance)。

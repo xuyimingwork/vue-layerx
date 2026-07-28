@@ -71,7 +71,7 @@ import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
 
 内容里需要有 `<slot name="header" />`。若要改容器插槽（例如盖掉内容写的 `footer`），加 `container` 即可，见 [配置如何合并](/guide/config-merge)。
 
-## 也可以用 JSX（可选）
+## 也可以用 JSX
 
 若项目里内容都用 JSX 写，也可以在配置的 `slots` 里用 JSX（或 `h()`）投递插槽，不必再用 `LayerTemplate`。与上面同一场景：
 

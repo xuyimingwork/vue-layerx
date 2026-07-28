@@ -74,6 +74,8 @@ dialog.open({
 
 `useDialog()` 允许省略内容组件——仍是「有容器、无内容」；改标题、宽度请走 `container:`（顶层 `props` 默认指内容，没有内容时没有落点）。这和「Dialog + 表单还粘在一个文件里」不是一类问题，建模对比见 [容器与内容未拆分](/guide/no-container)。
 
+运行时再传入内容（含异步组件）见 [动态指定内容组件](/guide/dynamic-content)。
+
 ## 下一步
 
 [在内容组件里配置弹层](/guide/define-layer)
