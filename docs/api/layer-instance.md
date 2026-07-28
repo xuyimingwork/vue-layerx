@@ -37,7 +37,7 @@ try {
 export const messageBox = useDialog(MessageContent)
 ```
 
-须在 App 或 ConfigProvider **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject。见 [指南：实例的更多能力](/guide/instance)。
+须在 App 或 ConfigProvider **子树内** setup 调用 `messageBox.bindHost()`，否则 content 无法 inject。见 [指南：上下文与生命周期](/guide/context-lifecycle)。
 
 ## props.ref
 

@@ -73,4 +73,4 @@ async function openHeavy() {
 
 ## 下一步
 
-`confirm` 等结果见 [等待弹层结果](/guide/confirm)。实例上的 `clone` / `bindHost` 见 [实例的更多能力](/guide/instance)。
+`confirm` 等结果见 [等待弹层结果](/guide/confirm)。`bindHost` / Host 见 [上下文与生命周期](/guide/context-lifecycle)；`clone` 等见 [实例的更多能力](/guide/instance)。

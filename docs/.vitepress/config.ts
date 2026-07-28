@@ -49,6 +49,7 @@ export default defineConfig({
             { text: '响应式配置', link: '/guide/reactive-config' },
             { text: '等待弹层结果', link: '/guide/confirm' },
             { text: '动态指定内容组件', link: '/guide/dynamic-content' },
+            { text: '上下文与生命周期', link: '/guide/context-lifecycle' },
             { text: '实例的更多能力', link: '/guide/instance' },
             { text: '用 adapter 统一改配置', link: '/guide/adapter' },
             { text: '容器与内容未拆分', link: '/guide/no-container' },
