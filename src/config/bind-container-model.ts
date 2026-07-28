@@ -6,10 +6,7 @@ export { DEFAULT_CONTAINER_MODEL }
 
 /** `onUpdate:x` → `update:x`; `onInput` → `input` (strip `on`, lower first letter). */
 function toEvent(flatProp: string): string {
-  if (/^on[A-Z]/.test(flatProp)) {
-    return flatProp[2]!.toLowerCase() + flatProp.slice(3)
-  }
-  return flatProp
+  return flatProp[2]!.toLowerCase() + flatProp.slice(3)
 }
 
 export function bindContainerModel(
