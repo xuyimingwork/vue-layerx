@@ -47,6 +47,7 @@ export default defineConfig({
             { text: '设计决策', link: '/guide/design' },
             { text: '配置如何合并', link: '/guide/config-merge' },
             { text: '响应式配置', link: '/guide/reactive-config' },
+            { text: '等待弹层结果', link: '/guide/confirm' },
             { text: '实例的更多能力', link: '/guide/instance' },
             { text: '用 adapter 统一改配置', link: '/guide/adapter' },
             { text: '容器与内容未拆分', link: '/guide/no-container' },
@@ -59,7 +60,6 @@ export default defineConfig({
           items: [
             { text: '概览', link: '/guide/cookbook/' },
             { text: '复用内容组件', link: '/guide/cookbook/content-reuse' },
-            { text: '获取弹层返回结果', link: '/guide/cookbook/confirm' },
             { text: '未拆分内容/容器弹窗接入', link: '/guide/cookbook/legacy' },
             { text: '内容组件嵌套弹层', link: '/guide/cookbook/nested-self' },
           ],

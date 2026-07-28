@@ -37,7 +37,7 @@ open > use > use:template > define > define:template > create
 - 用户配置：`CloseOnRaw`（数组糖或 Record）
 - 跨 tier：**按事件 patch**，非整表替换
 - `when: 'none'` / `false` 去掉该事件
-- 数组糖默认 `confirmed: false`；`confirm()` 成功路径需显式 `confirmed: true`
+- 数组糖默认 `confirmed: false`；`confirm()` 成功路径需显式 `confirmed: true`（见 [等待弹层结果](/guide/confirm)）
 
 见 [指南：用事件关闭弹层](/guide/close-on)。
 

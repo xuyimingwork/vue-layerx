@@ -1,6 +1,8 @@
 # 实例的更多能力
 
-[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`（`visible` 为只读 getter，直接读 `dialog.visible`）。这里补充克隆实例、拿组件引用、等待确认结果、以及模块单例要注意的一点。
+[打开与关闭](/guide/open-close) 里已经用过 `open` / `close` / `visible`（`visible` 为只读 getter，直接读 `dialog.visible`）。这里补充克隆实例、拿组件引用，以及模块单例要注意的一点。
+
+要从弹层拿回数据，见 [等待弹层结果](/guide/confirm)。
 
 ## 克隆一份独立实例
 
@@ -18,25 +20,6 @@ const editor = main.clone({ props: { mode: 'edit' } })
 ## 卸掉挂载点：unmount
 
 `close()` 只是关掉显示；`unmount()` 会卸掉弹层挂到页面上的 DOM。一般业务用 `close` 就够。
-
-## 等待用户确认：confirm
-
-需要「打开 → 等用户点确认再继续」时：
-
-```ts
-import { LayerConfirmError } from 'vue-layerx'
-
-try {
-  const result = await dialog.confirm({ props: { id: 1 } })
-  // 用户走了「确认」路径
-} catch (e) {
-  if (e instanceof LayerConfirmError) {
-    // 取消、关闭或忙：e.code 为 'close' | 'busy'
-  }
-}
-```
-
-这要和 `closeOn` 里哪些事件带 `confirmed: true` 配合（见 [API：LayerInstance](/api/layer-instance)）。完整可跑示例见 [获取弹层返回结果](/guide/cookbook/confirm)。日常「点确定就关」用 [用事件关闭弹层](/guide/close-on) 即可，不必先碰 `confirmed`。
 
 ## 模块顶层的单例：bindHost
 

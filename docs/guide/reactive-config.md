@@ -42,4 +42,4 @@ dialog.open({ props: { id: row.id } }) // 正确
 
 ## 下一步
 
-[实例的更多能力](/guide/instance)
+要从弹层拿回数据再继续，见 [等待弹层结果](/guide/confirm)。`clone`、模块单例等见 [实例的更多能力](/guide/instance)。

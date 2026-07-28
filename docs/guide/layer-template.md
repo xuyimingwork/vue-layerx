@@ -71,6 +71,28 @@ import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
 
 内容里需要有 `<slot name="header" />`。若要改容器插槽（例如盖掉内容写的 `footer`），加 `container` 即可，见 [配置如何合并](/guide/config-merge)。
 
+## 也可以用 JSX（可选）
+
+若项目里内容都用 JSX 写，也可以在配置的 `slots` 里用 JSX（或 `h()`）投递插槽，不必再用 `LayerTemplate`。与上面同一场景：
+
+```tsx
+import { ElButton } from 'element-plus'
+
+const layer = defineLayer({
+  props: { title: '我的弹层', width: '420px' },
+  content: { closeOn: ['ok'] },
+  slots: {
+    footer: () => (
+      <ElButton type="primary" onClick={() => emit('ok')}>
+        确定
+      </ElButton>
+    ),
+  },
+})
+```
+
+`use` / `open` 同理。同一侧写入时，配置里的 `slots` 高于同名的 `LayerTemplate`，见 [配置如何合并](/guide/config-merge)。
+
 ## 下一步
 
 基础用法到这里可以告一段落。
