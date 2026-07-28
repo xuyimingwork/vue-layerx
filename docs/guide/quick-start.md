@@ -59,6 +59,6 @@ const dialog = useDialog(HelloWorld)
 2. [打开与关闭](/guide/open-close) — 给内容传参、顶层 `props` 指哪一侧  
 3. [在内容组件里配置弹层](/guide/define-layer) — 标题等默认值写在内容组件旁  
 4. [用事件关闭弹层](/guide/close-on) — 内容 `emit` + `closeOn`  
-5. [用模板填写插槽](/guide/layer-template) — 往 `footer` 等具名插槽投递  
+5. [向弹层投递插槽](/guide/layer-template) — 往 `footer` 等具名插槽投递  
 
 容器与表单还粘在一个文件里、暂时拆不开？进阶里见 [容器与内容未拆分](/guide/no-container)。

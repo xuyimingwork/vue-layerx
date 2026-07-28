@@ -38,7 +38,7 @@ export default defineConfig({
             { text: '打开与关闭', link: '/guide/open-close' },
             { text: '在内容组件里配置弹层', link: '/guide/define-layer' },
             { text: '用事件关闭弹层', link: '/guide/close-on' },
-            { text: '用模板填写插槽', link: '/guide/layer-template' },
+            { text: '向弹层投递插槽', link: '/guide/layer-template' },
           ],
         },
         {

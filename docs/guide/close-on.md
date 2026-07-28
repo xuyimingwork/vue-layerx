@@ -114,6 +114,6 @@ dialog.open({
 
 ## 下一步
 
-确定按钮常常要放到容器的 `footer` 插槽里，而不是堆在内容中间——见 [用模板填写插槽](/guide/layer-template)。
+确定按钮常常要放到容器的 `footer` 插槽里，而不是堆在内容中间——见 [向弹层投递插槽](/guide/layer-template)。
 
 要从弹层拿回数据（而不只是关层），见 [等待弹层结果](/guide/confirm)。

@@ -5,7 +5,7 @@ import AppSource from '../examples/layer-template/App.vue?raw'
 import ContentSource from '../examples/layer-template/HelloContent.vue?raw'
 </script>
 
-# 用模板填写插槽
+# 向弹层投递插槽
 
 上一章把确定做成内容里的按钮：
 
