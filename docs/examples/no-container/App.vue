@@ -48,11 +48,11 @@ function openFactory() {
 <template>
   <div class="no-container-demo">
     <p class="no-container-demo__hint">
-      对比两种定容器时机。下方「内容 setup 次数」在每次内容挂载时 +1；同构换容器后两者通常都是每次打开 +1。观感上弹窗一般无差。
+      A：调用方与普通 content 一样；B：专属无容器工厂，打开前就定好。下方「内容 setup 次数」在每次内容挂载时 +1。
     </p>
     <div class="no-container-demo__actions">
       <ElButton type="primary" @click="openDefine">
-        A · defineLayer 自报（推荐）
+        A · 通过 defineLayer 配置
       </ElButton>
       <ElButton @click="openFactory">
         B · createLayer(LayerNoContainer)
