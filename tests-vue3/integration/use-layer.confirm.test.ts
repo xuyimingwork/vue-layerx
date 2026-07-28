@@ -5,16 +5,16 @@ import {
   createLayer,
   LayerConfirmError,
   type LayerInstance,
-} from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
-import { closeViaModel } from '@tests/helpers/layer-config-mount'
+} from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
+import { closeViaModel } from '../helpers/layer-config-mount'
 import {
   Container,
   makeContent,
   makeContentWithDefineLayer,
   queryBodyDialog,
-} from '@tests/fixtures/components'
-import { ModelContainer } from '@tests/fixtures/layer-config'
+} from '../fixtures/components'
+import { ModelContainer } from '../fixtures/layer-config'
 
 const PayloadContent = defineComponent({
   name: 'PayloadContent',

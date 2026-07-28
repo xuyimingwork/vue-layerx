@@ -1,21 +1,21 @@
 import { defineComponent, h, inject, onMounted, provide, ref, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createLayer, type LayerInstance } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
+import { createLayer, type LayerInstance } from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
 import {
   Container,
   makeContent,
   queryAllBodyDialogs,
   queryBodyDialog,
-} from '@tests/fixtures/components'
+} from '../fixtures/components'
 import {
   FlexibleModelContainer,
   HeaderFooterContainer,
   SlotContent,
   SubmitContent,
   slotSpan,
-} from '@tests/fixtures/layer-config'
+} from '../fixtures/layer-config'
 
 describe('LayerInstance.clone', () => {
   describe('use-tier inheritance', () => {

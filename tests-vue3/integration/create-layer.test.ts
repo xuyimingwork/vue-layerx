@@ -1,9 +1,9 @@
 import { defineComponent, h, onMounted } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createLayer, type LayerInstance } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
-import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
+import { createLayer, type LayerInstance } from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
+import { Container, makeContent, queryBodyDialog } from '../fixtures/components'
 
 const DrawerContainer = defineComponent({
   name: 'DrawerContainer',

@@ -91,4 +91,4 @@ adapter 可改回或再次改写 `use` / `open` 写入的 `container.component`�
 
 - [DESIGN.md](../../DESIGN.md)
 - [ADR 0001](./0001-legacy-monolith-progressive-adoption.md)
-- 集成测试：`tests/integration/layer-config.test.ts`（`component override`）
+- 集成测试：`tests-vue3/integration/layer-config.test.ts`（`component override`）

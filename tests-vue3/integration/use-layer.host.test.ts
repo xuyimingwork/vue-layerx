@@ -1,9 +1,9 @@
 import { defineComponent, h, inject, onMounted, provide } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import { createLayer, type LayerInstance } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
-import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
+import { createLayer, type LayerInstance } from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
+import { Container, makeContent, queryBodyDialog } from '../fixtures/components'
 
 describe('LayerInstance.bindHost', () => {
   describe('provide and inject', () => {

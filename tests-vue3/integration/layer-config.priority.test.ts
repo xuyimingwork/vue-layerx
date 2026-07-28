@@ -8,14 +8,14 @@ import {
   type LayerConfigContent,
   type LayerConfigContainer,
   type LayerInstance,
-} from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
+} from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
 import {
   Container,
   makeContent,
   makeContentWithDefineLayer,
   queryBodyDialog,
-} from '@tests/fixtures/components'
+} from '../fixtures/components'
 
 // Props: open > use (= clone folded) > define > create
 // Container slots: open > use > use:template > define > define:template > create

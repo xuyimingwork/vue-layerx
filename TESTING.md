@@ -7,30 +7,45 @@ Tests follow a two-tier layout:
 | Tier | Location | Purpose |
 |------|----------|---------|
 | Unit | `src/**/__test__/*.test.ts` | Test internal modules in isolation, co-located with source |
-| Integration | `tests/integration/*.test.ts` | Test public API from the **user's perspective** |
+| Integration | `tests-vue3/integration/*.test.ts` | Test public API as an installed consumer of **`dist`** |
 
-Shared infrastructure lives under `tests/`:
+Root `tests/` holds unit-only helpers:
 
 ```
 tests/
-  setup.ts              # global afterEach (DOM cleanup)
-  helpers/dom.ts        # withoutDom, clearBody, flushPromises
-  fixtures/components.ts # Container, makeContent, query helpers
-  integration/          # public API scenario tests (user-facing grouping)
+  setup.ts                 # global afterEach (DOM cleanup)
+  helpers/dom.ts           # withoutDom, clearBody, flushPromises (no library imports)
+  fixtures/components.ts   # thin unit fixtures (may import @/ source)
+
+tests-vue3/                # workspace package; depends on vue-layerx: workspace:*
+  setup.ts
+  helpers/                 # dom + mount helpers (import vue-layerx)
+  fixtures/                # integration fixtures (import vue-layerx)
+  integration/             # public API scenario tests
 ```
+
+Do **not** share fixtures/helpers that import the library between unit and integration (src vs dist would load two copies). Pure DOM helpers may be duplicated or kept under root `tests/helpers/` only for unit; `tests-vue3` has its own copy.
 
 ## Import Rules
 
 | Tier | Allowed imports |
 |------|-----------------|
-| `tests/integration/` | `@/index` (values + types), `@tests/*`, `vue`, `@vue/test-utils` |
+| `tests-vue3/` | `vue-layerx` (values + types), local `../helpers` / `../fixtures`, `vue`, `@vue/test-utils` |
 | `src/**/__test__/` | The module under test, its internal dependencies, `@tests/*`, `vue`, `@vue/test-utils` |
 
-Integration tests must not import from `@/runtime/*`, `@/config/*`, `@/types`, etc. If a scenario needs an internal API, it belongs in unit tests.
+Integration tests must not alias `vue-layerx` / `@` to repository `src/`. If a scenario needs an internal API, it belongs in unit tests.
 
 ## Integration Tests — User Perspective
 
 Integration files map to **public API exports**. Use nested `describe` blocks for usage perspectives within an API.
+
+Run integration only after a fresh build:
+
+```bash
+pnpm test                 # unit (source)
+pnpm build
+pnpm test:integration     # tests-vue3 → dist
+```
 
 ### Content author
 
@@ -117,15 +132,16 @@ it('should pass empty flat slot props when Content is mounted on page with visib
 ## Running Tests
 
 ```bash
-pnpm test              # run once
-pnpm test:watch        # watch mode
-pnpm test:coverage     # with coverage report
+pnpm test                 # unit only
+pnpm test:watch           # unit watch
+pnpm test:coverage        # unit coverage (integration has no src coverage)
+pnpm build && pnpm test:integration
 ```
 
 ## Adding New Tests
 
 1. Decide user perspective (caller vs content author) for integration; use module boundary for unit.
-2. Reuse fixtures from `@tests/fixtures/components` instead of inline mock components.
-3. Use `@tests/helpers/dom` for DOM cleanup, SSR stubs, and async flushing.
+2. Integration: reuse fixtures from `tests-vue3/fixtures`; unit: reuse `@tests/fixtures/components`.
+3. Use the local `helpers/dom` for DOM cleanup, SSR stubs, and async flushing.
 4. Name new cases with the **should … when …** pattern.
 5. Group related cases with nested `describe` blocks rather than long flat lists.

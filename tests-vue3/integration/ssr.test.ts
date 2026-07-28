@@ -1,8 +1,8 @@
 import { nextTick } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import { createLayer } from '@/index'
-import { flushPromises, withoutDom } from '@tests/helpers/dom'
-import { Container, makeContent, queryBodyDialog } from '@tests/fixtures/components'
+import { createLayer } from 'vue-layerx'
+import { flushPromises, withoutDom } from '../helpers/dom'
+import { Container, makeContent, queryBodyDialog } from '../fixtures/components'
 
 describe('SSR', () => {
   it('should not throw when factory open is called without DOM', () => {

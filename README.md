@@ -19,7 +19,18 @@ dialog.open()
 - 零外部依赖，不依赖三方 npm 包
 - 使用 TypeScript 编写，提供完整的类型定义
 - 单元测试覆盖率 100%，提供稳定性保障
+- 集成测试消费发布面 `dist`（见 `tests-vue3`）
 - 支持服务端渲染
+
+## 开发与测试
+
+```bash
+pnpm test                 # unit（源码）
+pnpm build
+pnpm test:integration     # Vue 3 集成（只 import vue-layerx → dist）
+```
+
+详见 [TESTING.md](./TESTING.md)。
 
 ## 安装
 

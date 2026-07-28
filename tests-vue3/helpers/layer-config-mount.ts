@@ -1,8 +1,8 @@
 import { defineComponent, h, onMounted, type Component } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { createLayer, type LayerConfigContent, type LayerInstance } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
-import { makeContent } from '@tests/fixtures/components'
+import { createLayer, type LayerConfigContent, type LayerInstance } from 'vue-layerx'
+import { flushPromises } from './dom'
+import { makeContent } from '../fixtures/components'
 
 type UseLayer = ReturnType<typeof createLayer>
 

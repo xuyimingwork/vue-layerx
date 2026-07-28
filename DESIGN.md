@@ -80,8 +80,8 @@ src/
 ├── runtime/                 # store、instance 生命周期、portal 挂载
 └── view/                    # LayerView 组件、纯 h() 渲染
 
-tests/
-└── integration/             # createLayer 端到端测试（与 src/ 分离）
+tests/                       # unit 辅助：setup、纯 helpers、薄 fixture
+tests-vue3/                  # Vue 3 集成：只消费 vue-layerx dist（见 ADR 0009）
 ```
 
 | 层 | 职责 | 主要文件 |
@@ -93,7 +93,7 @@ tests/
 | **view/** | `LayerView` 组件（merge → adapter → bind → createLayerViewVNode） | `layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
-各层 `__test__/` 与模块同目录；集成测试在 `tests/integration/`。
+各层 `__test__/` 与模块同目录；Vue 3 集成测试在 `tests-vue3/`（`import from 'vue-layerx'`，须先 `pnpm build`）。
 
 ### 模块依赖
 

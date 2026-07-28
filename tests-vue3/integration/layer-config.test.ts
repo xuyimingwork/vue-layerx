@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { createLayer } from '@/index'
-import { clearBody } from '@tests/helpers/dom'
+import { createLayer } from 'vue-layerx'
+import { clearBody } from '../helpers/dom'
 import {
   AltContent,
   CloneMergeContent,
@@ -15,17 +15,17 @@ import {
   SlotContent,
   TieredModeContent,
   slotSpan,
-} from '@tests/fixtures/layer-config'
+} from '../fixtures/layer-config'
 import {
   clickBodyButton,
   closeViaModel,
   mountOpenLayer,
-} from '@tests/helpers/layer-config-mount'
+} from '../helpers/layer-config-mount'
 import {
   Container,
   makeContentWithDefineLayer,
   queryBodyDialog,
-} from '@tests/fixtures/components'
+} from '../fixtures/components'
 
 describe('layer config', () => {
   afterEach(() => {

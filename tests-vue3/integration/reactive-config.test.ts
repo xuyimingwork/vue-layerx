@@ -8,16 +8,16 @@ import {
 } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createLayer, defineLayer, type LayerInstance } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
+import { createLayer, defineLayer, type LayerInstance } from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
 import {
   Container,
   makeContent,
   queryBodyDialog,
   ToggleDefaultSlotContainer,
   ToggleDefaultSlotDrawerContainer,
-} from '@tests/fixtures/components'
-import { DrawerContainer } from '@tests/fixtures/layer-config'
+} from '../fixtures/components'
+import { DrawerContainer } from '../fixtures/layer-config'
 
 /** Content nodes not under parking (visible / leaked). */
 function queryAliveMsgs() {

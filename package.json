@@ -22,14 +22,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:integration": "vitest run --coverage tests/integration",
-    "prepublishOnly": "pnpm test && pnpm build",
+    "prepublishOnly": "pnpm test && pnpm build && pnpm test:integration",
     "playground": "pnpm build && pnpm --filter playground dev",
     "playground:build": "pnpm build && pnpm --filter playground build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "site:build": "pnpm docs:build && pnpm playground:build && rm -rf docs/.vitepress/dist/playground && cp -R playground/dist docs/.vitepress/dist/playground"
+    "site:build": "pnpm docs:build && pnpm playground:build && rm -rf docs/.vitepress/dist/playground && cp -R playground/dist docs/.vitepress/dist/playground",
+    "test:integration": "pnpm --filter tests-vue3 test"
   },
   "repository": {
     "type": "git",

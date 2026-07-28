@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-import { defineLayer } from '@/index'
+import { defineLayer } from 'vue-layerx'
 
 export const DrawerContainer = defineComponent({
   name: 'DrawerContainer',

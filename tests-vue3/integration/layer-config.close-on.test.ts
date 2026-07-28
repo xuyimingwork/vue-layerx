@@ -1,21 +1,21 @@
 import { defineComponent, h } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import { createLayer, LayerConfirmError } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
+import { createLayer, LayerConfirmError } from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
 import {
   clickBodyButton,
   mountOpenLayer,
-} from '@tests/helpers/layer-config-mount'
+} from '../helpers/layer-config-mount'
 import {
   Container,
   makeContent,
   queryBodyDialog,
-} from '@tests/fixtures/components'
+} from '../fixtures/components'
 import {
   HandlerContent,
   SubmitContent,
   makeSubmitContentWithDefineLayer,
-} from '@tests/fixtures/layer-config'
+} from '../fixtures/layer-config'
 
 const GateContent = defineComponent({
   name: 'GateContent',

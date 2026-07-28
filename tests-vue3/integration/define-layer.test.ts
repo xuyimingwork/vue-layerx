@@ -1,13 +1,13 @@
 import { defineComponent, h, onMounted, type Component } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import { createLayer, defineLayer, type LayerDefine, type LayerInstance } from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
+import { createLayer, defineLayer, type LayerDefine, type LayerInstance } from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
 import {
   Container,
   makeContentWithDefineLayer,
   queryBodyDialog,
-} from '@tests/fixtures/components'
+} from '../fixtures/components'
 
 async function openLayer(
   Content: Component,

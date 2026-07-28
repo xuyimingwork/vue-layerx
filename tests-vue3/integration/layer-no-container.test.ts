@@ -6,13 +6,13 @@ import {
   defineLayer,
   LayerNoContainer,
   type LayerInstance,
-} from '@/index'
-import { flushPromises } from '@tests/helpers/dom'
-import { Container, makeContent } from '@tests/fixtures/components'
+} from 'vue-layerx'
+import { flushPromises } from '../helpers/dom'
+import { Container, makeContent } from '../fixtures/components'
 import {
   MonolithDialog,
   queryBodyMonolith,
-} from '@tests/fixtures/monolith-dialog'
+} from '../fixtures/monolith-dialog'
 
 function withDialog(component?: Component) {
   return component === MonolithDialog
