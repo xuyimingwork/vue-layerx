@@ -91,7 +91,7 @@ tests-vue2/                  # Vue 2.7 关键路径：只消费 dist（ADR 0008�
 | **shared/** | 跨层 inject 契约、store 工厂、template-to 协议 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts` |
 | **compat/** | Vue 大版本分端（挂载 / 视图 / model / Host） | `env.ts`、`vue2/`、`vue3/`、`index.ts` |
-| **runtime/** | instance 生命周期、LayerView 编排 | `layer-instance.ts`、`layer-view.ts`、`layer-app.ts`（re-export） |
+| **runtime/** | instance 生命周期、LayerView 编排 | `layer-instance.ts`、`layer-view.ts` |
 | **view/** | `LayerView` 组件（merge → adapter → bind → createLayerViewVNode） | `layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
@@ -151,7 +151,7 @@ flowchart TB
 | **config** | ✓ | — | internal | — | — |
 | **types** | — | — | — | — | — |
 
-**runtime → view**：`runtime/layer-app.ts`（`createLayerApp`）挂载 `view/layer-view.ts`（`LayerView` 组件）；`layer-instance` 持有 instance store 并委托 portal。`LayerView` 内部通过 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store。
+**runtime → view**：`compat.createLayerApp` 挂载 `runtime/layer-view.ts`（`LayerView`）；`layer-instance` 持有 instance store 并委托 portal。`LayerView` 内部通过 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store。
 
 **shared/contracts.ts**：`LAYER_VIEW_KEY`（LayerView provide；当前由 defineLayer inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`；`define:template.container` key 与 fragment 转换留在 LayerView 闭包。content 根标记为 `layer-view.ts` 模块私有 Symbol，由 `createLayerViewVNode` 写入 `vnode.props`，`getDefineContext` 读取。
 
@@ -163,10 +163,10 @@ flowchart TB
 createLayer / defineLayer / LayerTemplate          api/
         │
         ▼
-createLayerInstance + createLayerApp      runtime/
+createLayerInstance + createLayerApp      runtime/ + compat/
         │
         ▼
-LayerView → createLayerViewVNode                            view/
+LayerView → createLayerViewVNode                            runtime/ + compat/
         │
         ├── mergeFragment / toFragment*            config/fragment.ts
         ├── mergeNode / strip*Node                 config/node.ts

@@ -131,7 +131,7 @@ src/
 | 全局能力 | `$message` / `Vue.use` / 全局组件随 **宿主构造器上的 `extend`** 继承；**不**逐项抄 `prototype` |
 | 显隐 | LayerApp **长期存活**，用外部 `reactive`/`visible` 驱动；**不是**每次 `open` 都 `new`+`extend`（与「动态组件每次 mount」示例不同） |
 | 无 Host | 与 Vue 3 对齐：**允许**挂载 / `open`，此时无 `parent`（无页面 provide）；全局仍取决于所用 `Vue` 构造器（无 Host 时回退策略实现定，须测） |
-| 晚绑定 / Host 卸 | 对齐 Vue 3 意图：Host `onUnmounted` → dispose 弹层；晚 `bindHost` 下次 open 生效（细节可与 D3.6 一并验收；本条默认 **A**） |
+| 晚绑定 / Host 卸 | **下次 open 才 bake Host**（开着换 Host 不热更新 provide / 不 destroy）；Host `onUnmounted` → dispose 弹层 |
 
 示意（非最终源码）：
 
@@ -182,7 +182,7 @@ modelValue  +  update:modelValue
 
 **实现分工（与 D0.11 / D0.20 一致，避免前后打架）**：
 
-- compat 导出 `DEFAULT_CONTAINER_MODEL` 与 `getModelUpdateFlatKey(model)`（或等价名）。
+- compat 导出 `DEFAULT_CONTAINER_MODEL` 与 `toModelUpdateProp(model)`（或等价名）。
 - `bindContainerModel` / `bindLayer` **只消费**上述注入值，按传入的 `model` + flat 键写 props；**不**读 `isVue2`。
 - `toPlatformVNodeData` 只做 flat → Vue 2 `{ props, on, … }`，**不**再把 `onUpdate:value` 特判成 `input`。
 
@@ -212,7 +212,7 @@ h(container, /* 经 toPlatformVNodeData 后的 data */, {
 | 导出（compat 聚合） | Vue 3 | Vue 2.7 |
 |---------------------|-------|---------|
 | `DEFAULT_CONTAINER_MODEL` | `'modelValue'` | `'value'` |
-| `getModelUpdateFlatKey(model)` | 恒 `'onUpdate:' + model` | `model === 'value'` → `'onInput'`；否则 `'onUpdate:' + model` |
+| `toModelUpdateProp(model)` | 恒 `'onUpdate:' + model` | `model === 'value'` → `'onInput'`；否则 `'onUpdate:' + model` |
 
 - core 的 `bindLayer` / `bindContainerModel` 从聚合层取上述值；产出仍是 flat props。
 - **不**维护两套 `bind-*` 文件；**不**在 bind 内散落 `isVue2`。

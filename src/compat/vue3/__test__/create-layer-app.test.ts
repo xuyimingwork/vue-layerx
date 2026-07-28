@@ -2,7 +2,7 @@ import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vu
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
-import { createLayerApp } from '@/runtime/layer-app'
+import { createLayerApp } from '@/compat'
 import { LayerHost } from '@/types/layer-host'
 import { Container } from '@tests/fixtures/components'
 import { withoutDom } from '@tests/helpers/dom'
@@ -94,7 +94,51 @@ describe('createLayerApp', () => {
     expect(instance.appContext.app).not.toBe(wrapper.vm.$.appContext.app)
     // Host globals still reachable via prototype chain
     expect(Object.getPrototypeOf(instance.appContext)).toBe(
-      host.value!.appContext,
+      (host.value as { appContext: unknown }).appContext,
+    )
+
+    layerApp.unmount()
+  })
+
+  it('should remount LayerApp on next open when host changes while visible', async () => {
+    const first = mount(defineComponent({ template: '<div />' }))
+    const second = mount(defineComponent({ template: '<div />' }))
+    const { state, host, layerApp } = createTestApp()
+
+    const layerInstance = () => {
+      for (const node of document.body.querySelectorAll('div')) {
+        const app = (node as { __vue_app__?: { _instance?: { appContext: unknown } } })
+          .__vue_app__
+        if (app?._instance) return app._instance
+      }
+      return null
+    }
+
+    host.value = first.vm.$ as LayerHost
+    state.visible = true
+    await nextTick()
+
+    const before = layerInstance()
+    expect(Object.getPrototypeOf(before!.appContext)).toBe(
+      (first.vm.$ as { appContext: unknown }).appContext,
+    )
+
+    host.value = second.vm.$ as LayerHost
+    await nextTick()
+    expect(layerInstance()).toBe(before)
+    expect(Object.getPrototypeOf(before!.appContext)).toBe(
+      (first.vm.$ as { appContext: unknown }).appContext,
+    )
+
+    state.visible = false
+    await nextTick()
+    state.visible = true
+    await nextTick()
+
+    const after = layerInstance()
+    expect(after).not.toBe(before)
+    expect(Object.getPrototypeOf(after!.appContext)).toBe(
+      (second.vm.$ as { appContext: unknown }).appContext,
     )
 
     layerApp.unmount()
