@@ -1,6 +1,6 @@
 import { defineComponent, h, onMounted, ref } from 'vue'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   createLayer,
   defineLayer,
@@ -263,6 +263,7 @@ describe('LayerTemplate', () => {
       })
 
       it('should let latter LayerTemplate win when the same slot name is registered twice', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const useLayer = createLayer(Container)
         let dialog!: LayerInstance
 
@@ -294,6 +295,12 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.first-footer')).toBeFalsy()
         expect(document.body.querySelector('.second-footer')?.textContent).toBe('second')
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Duplicate LayerTemplate name="footer" in define:template.container',
+          ),
+        )
+        warn.mockRestore()
       })
 
       it('should ignore visible-outside when Content runs in layer context', async () => {
@@ -683,6 +690,7 @@ describe('LayerTemplate', () => {
       })
 
       it('should let latter LayerTemplate win when the same content slot name is registered twice', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const useLayer = createLayer(Container)
 
         const Content = defineComponent({
@@ -714,6 +722,12 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.first-extra')).toBeFalsy()
         expect(document.body.querySelector('.second-extra')?.textContent).toBe('second')
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Duplicate LayerTemplate name="extra" in use:template.content',
+          ),
+        )
+        warn.mockRestore()
       })
     })
 
@@ -1065,6 +1079,7 @@ describe('LayerTemplate', () => {
       })
 
       it('should let latter LayerTemplate win when the same container slot name is registered twice', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const useLayer = createLayer(Container)
 
         const Content = defineComponent({
@@ -1096,6 +1111,12 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.first-footer')).toBeFalsy()
         expect(document.body.querySelector('.second-footer')?.textContent).toBe('second')
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'Duplicate LayerTemplate name="footer" in use:template.container',
+          ),
+        )
+        warn.mockRestore()
       })
     })
   })
