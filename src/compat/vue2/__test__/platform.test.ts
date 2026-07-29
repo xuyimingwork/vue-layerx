@@ -66,11 +66,15 @@ describe('toPlatformSlots', () => {
     expect(toPlatformSlots({ footer: undefined })).toEqual({})
   })
 
-  it('should wrap defined slot renders as scopedSlots', () => {
+  it('should wrap defined slot renders as scopedSlots with proxy for $slots', () => {
     const footer = () => null
-    expect(toPlatformSlots({ footer, header: undefined })).toEqual({
-      scopedSlots: { footer },
-    })
+    const result = toPlatformSlots({ footer, header: undefined })
+    expect(result.scopedSlots?.footer).toBeTypeOf('function')
+    expect(result.scopedSlots?.footer).not.toBe(footer)
+    expect(
+      (result.scopedSlots?.footer as { proxy?: boolean } | undefined)?.proxy,
+    ).toBe(true)
+    expect(result.scopedSlots?.header).toBeUndefined()
   })
 })
 

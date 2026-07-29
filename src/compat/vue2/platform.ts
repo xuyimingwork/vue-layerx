@@ -89,10 +89,20 @@ function flatOnToVue2Event(key: string): string | null {
 /** Vue 2.7: function-slot map → scopedSlots (omit when empty so h() data stays clean). */
 export function toPlatformSlots(
   slots: Record<string, ((...args: never[]) => VNode | VNode[] | null) | undefined>,
-): { scopedSlots?: Record<string, (...args: never[]) => VNode | VNode[] | null> } {
-  const scopedSlots: Record<string, (...args: never[]) => VNode | VNode[] | null> = {}
+): { scopedSlots?: Record<string, ((...args: never[]) => VNode | VNode[] | null) & { proxy?: boolean }> } {
+  const scopedSlots: Record<
+    string,
+    ((...args: never[]) => VNode | VNode[] | null) & { proxy?: boolean }
+  > = {}
   for (const [name, render] of Object.entries(slots)) {
-    if (render) scopedSlots[name] = render
+    if (!render) continue
+    // Vue 2.6+: `proxy: true` reverse-proxies onto `$slots` so Element UI
+    // `v-if="$slots.footer"` sees named slots passed only via scopedSlots.
+    const fn = ((...args: never[]) => render(...args)) as ((
+      ...args: never[]
+    ) => VNode | VNode[] | null) & { proxy?: boolean }
+    fn.proxy = true
+    scopedSlots[name] = fn
   }
   if (Object.keys(scopedSlots).length === 0) return {}
   return { scopedSlots }
