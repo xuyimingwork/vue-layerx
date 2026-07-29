@@ -16,11 +16,14 @@ import PickerSource from '../examples/confirm/MemberPicker.vue?raw'
 ## 调用方：await confirm()
 
 ```ts
+loading.value = true
 try {
   const { data } = await picker.confirm({ props: { modelValue: ids } })
   // 使用 data …
 } catch {
   // 取消、点遮罩关闭等：按业务处理即可
+} finally {
+  loading.value = false // 按钮 :loading，等待期间更明显
 }
 ```
 

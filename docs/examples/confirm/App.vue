@@ -8,6 +8,7 @@ import { members, type Member } from './members'
 
 const selectedIds = ref<string[]>(['1'])
 const lastResult = ref('尚未调用 confirm()')
+const loading = ref(false)
 
 const picker = useDialog(MemberPicker)
 
@@ -21,6 +22,8 @@ function onInlineUpdate(ids: string[]) {
 }
 
 async function pickInDialog() {
+  if (loading.value) return
+  loading.value = true
   try {
     const result = await picker.confirm({
       props: { modelValue: selectedIds.value },
@@ -39,6 +42,8 @@ async function pickInDialog() {
     }
     lastResult.value = '已取消 / 关闭'
     ElMessage.info('未选择')
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -55,7 +60,9 @@ async function pickInDialog() {
     <MemberPicker :model-value="selectedIds" @update:model-value="onInlineUpdate" />
   </section>
 
-  <ElButton type="primary" @click="pickInDialog">弹层选择 · await confirm()</ElButton>
+  <ElButton type="primary" :loading="loading" @click="pickInDialog">
+    {{ loading ? '等待弹层结果…' : '弹层选择 · await confirm()' }}
+  </ElButton>
 
   <p class="last">
     最近结果：

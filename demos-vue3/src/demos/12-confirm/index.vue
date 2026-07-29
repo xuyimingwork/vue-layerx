@@ -7,8 +7,11 @@ import ConfirmContent from './ConfirmContent.vue'
 
 const dialog = useDialog(ConfirmContent)
 const last = ref<string>('尚未调用')
+const loading = ref(false)
 
 async function askDelete() {
+  if (loading.value) return
+  loading.value = true
   try {
     const result = await dialog.confirm()
     last.value = `resolve · source=${result.source} · data=${JSON.stringify(result.data)}`
@@ -22,6 +25,8 @@ async function askDelete() {
     }
     last.value = `reject · code=close · source=${e.result?.source} · event=${e.result?.event ?? '-'}`
     ElMessage.info('已取消')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -46,7 +51,9 @@ function forceCloseOk() {
   </p>
 
   <div class="actions">
-    <ElButton type="danger" @click="askDelete">await confirm()</ElButton>
+    <ElButton type="danger" :loading="loading" @click="askDelete">
+      {{ loading ? '等待结果…' : 'await confirm()' }}
+    </ElButton>
     <ElButton @click="forceCloseOk">close({ confirmed: true })</ElButton>
   </div>
 

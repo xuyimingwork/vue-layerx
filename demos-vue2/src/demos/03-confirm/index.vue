@@ -7,8 +7,11 @@ import ConfirmContent from './ConfirmContent.vue'
 
 const dialog = useDialog(ConfirmContent)
 const last = ref('尚未调用')
+const loading = ref(false)
 
 async function askDelete() {
+  if (loading.value) return
+  loading.value = true
   try {
     const result = await dialog.confirm()
     last.value = `resolve · source=${result.source} · data=${JSON.stringify(result.data)}`
@@ -22,6 +25,8 @@ async function askDelete() {
     }
     last.value = `reject · code=close · source=${e.result?.source} · event=${e.result?.event ?? '-'}`
     Message.info('已取消')
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -32,7 +37,9 @@ async function askDelete() {
 // closeOn.confirmed: true  → resolve
 // 取消 / 遮罩 / close()     → LayerConfirmError</code></pre>
 
-    <el-button type="danger" @click="askDelete">await confirm()</el-button>
+    <el-button type="danger" :loading="loading" @click="askDelete">
+      {{ loading ? '等待结果…' : 'await confirm()' }}
+    </el-button>
 
     <p class="last">
       最近结果：
