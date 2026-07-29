@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-29
+
 ### Added
 
 - **Vue 2.7 同包适配**（[ADR 0008](./docs/adr/0008-vue-2-7-adaptation.md)）：`compat/vue2` + `compat/vue3`；公开 API 同名全做
 - **`tests-vue2`**：独立 workspace 包，dist 门禁 + 关键路径；coverage 可走 src-alias 与 unit/vue3 合并
-- 文档：[Vue 2.7 兼容说明](./docs/guide/vue2.md)
+- 文档：[Vue 2.7 兼容说明](./docs/guide/vue2.md)；首页 / README 标注双端同包
+- **`demos-vue3` / `demos-vue2`**：可运行示例（含源码展开）；站点路径 `/demos/vue3/`、`/demos/vue2/`
 
 ### Changed
 
@@ -19,10 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 默认容器 `model`：Vue 3 为 `modelValue`；Vue 2.7 为 `value`（→ `input`）；其它名仍 `update:${model}`
 - Vue 2.7 **不做 Teleport**：打开后换 `container.component` 会自然 remount content（相对 Vue 3 park）
 
+### Fixed
+
+- **Vue 2 具名插槽** — `toPlatformSlots` 为 slot 函数设置 `proxy: true`，使 Element UI 等 `v-if="$slots.footer"` 能看到 footer
+
 ### Notes
 
 - Install: `pnpm add vue-layerx@1.1.0` or `vue-layerx@latest`
 - Vue 2 支持为 best-effort（无 SLA）
+- 无公开 API breaking（相对 1.0.x；Vue 2 为新增支持面）
 
 ## [1.0.2] - 2026-07-28
 
@@ -218,7 +226,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0-beta.5...v1.0.0
