@@ -17,6 +17,7 @@ import OpenSwapContainerDemo from './11-open-swap-container/index.vue'
 import ConfirmDemo from './12-confirm/index.vue'
 import NestedSelfDemo from './13-nested-self/index.vue'
 import TemplateRebindDemo from './14-template-rebind/index.vue'
+import PrintPreviewDemo from './16-print-preview/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -100,6 +101,16 @@ export const demoGroups: DemoGroup[] = [
         tags: ['getCurrentInstance', 'useDialog(Self)', '嵌套 open', '页内复用'],
         component: NestedSelfDemo,
         files: filesFor('13-nested-self'),
+      },
+      {
+        id: 'print-preview',
+        level: 3,
+        title: '打印预览与下载',
+        description:
+          'MyDialog 包装 ElDialog，「关闭」在壳内，业务按钮走 actions；列表→详情→预览，下载与 DownloadConfirm 归属预览。',
+        tags: ['MyDialog', 'actions', 'createLayer', '下载归预览'],
+        component: PrintPreviewDemo,
+        files: filesFor('16-print-preview'),
       },
     ],
   },
