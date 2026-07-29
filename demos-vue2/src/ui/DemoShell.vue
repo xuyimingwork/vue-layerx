@@ -7,10 +7,10 @@ defineProps<{
 </script>
 
 <template>
-  <div class="playground">
-    <header class="playground-header">
-      <div class="playground-header__inner">
-        <h1>vue-layerx · Vue 2.7 Playground</h1>
+  <div class="demo-shell">
+    <header class="demo-shell-header">
+      <div class="demo-shell-header__inner">
+        <h1>vue-layerx Demos · Vue 2.7</h1>
         <p>
           Element UI 示例。关键差异：Dialog 需
           <code>model: 'visible'</code>（不是默认 <code>value</code>）。
@@ -18,29 +18,29 @@ defineProps<{
       </div>
     </header>
 
-    <div class="playground-layout">
-      <nav class="playground-nav">
-        <div v-for="group in groups" :key="group.id" class="playground-nav__group">
-          <p class="playground-nav__group-title">{{ group.title }}</p>
-          <p class="playground-nav__group-sub">{{ group.subtitle }}</p>
+    <div class="demo-shell-layout">
+      <nav class="demo-shell-nav">
+        <div v-for="group in groups" :key="group.id" class="demo-shell-nav__group">
+          <p class="demo-shell-nav__group-title">{{ group.title }}</p>
+          <p class="demo-shell-nav__group-sub">{{ group.subtitle }}</p>
           <a
             v-for="item in group.items"
             :key="item.id"
             :href="`#${item.id}`"
-            class="playground-nav__link"
+            class="demo-shell-nav__link"
           >
             {{ item.title }}
           </a>
         </div>
       </nav>
 
-      <main class="playground-main">
+      <main class="demo-shell-main">
         <section
           v-for="group in groups"
           :key="group.id"
-          class="playground-group"
+          class="demo-shell-group"
         >
-          <header class="playground-group__header">
+          <header class="demo-shell-group__header">
             <h2>{{ group.title }}</h2>
             <p>{{ group.subtitle }}</p>
           </header>
@@ -76,27 +76,27 @@ defineProps<{
 </template>
 
 <style scoped>
-.playground {
+.demo-shell {
   min-height: 100vh;
 }
 
-.playground-header {
+.demo-shell-header {
   border-bottom: 1px solid var(--pg-border);
   background: var(--pg-surface);
 }
 
-.playground-header__inner {
+.demo-shell-header__inner {
   max-width: 1000px;
   margin: 0 auto;
   padding: 28px 24px 24px;
 }
 
-.playground-header h1 {
+.demo-shell-header h1 {
   margin: 0 0 8px;
   font-size: 1.45rem;
 }
 
-.playground-header p {
+.demo-shell-header p {
   margin: 0;
   max-width: 720px;
   color: var(--pg-muted);
@@ -104,7 +104,7 @@ defineProps<{
   line-height: 1.6;
 }
 
-.playground-layout {
+.demo-shell-layout {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: 24px;
@@ -114,7 +114,7 @@ defineProps<{
   align-items: start;
 }
 
-.playground-nav {
+.demo-shell-nav {
   position: sticky;
   top: 16px;
   padding: 12px;
@@ -123,19 +123,19 @@ defineProps<{
   background: var(--pg-surface);
 }
 
-.playground-nav__group-title {
+.demo-shell-nav__group-title {
   margin: 0 0 4px;
   font-size: 13px;
   font-weight: 600;
 }
 
-.playground-nav__group-sub {
+.demo-shell-nav__group-sub {
   margin: 0 0 10px;
   font-size: 12px;
   color: var(--pg-muted);
 }
 
-.playground-nav__link {
+.demo-shell-nav__link {
   display: block;
   padding: 6px 8px;
   border-radius: 4px;
@@ -144,21 +144,21 @@ defineProps<{
   font-size: 13px;
 }
 
-.playground-nav__link:hover {
+.demo-shell-nav__link:hover {
   background: var(--pg-code-bg);
   color: var(--pg-accent);
 }
 
-.playground-group__header {
+.demo-shell-group__header {
   margin-bottom: 16px;
 }
 
-.playground-group__header h2 {
+.demo-shell-group__header h2 {
   margin: 0 0 4px;
   font-size: 1.2rem;
 }
 
-.playground-group__header p {
+.demo-shell-group__header p {
   margin: 0;
   color: var(--pg-muted);
   font-size: 13px;
@@ -200,11 +200,11 @@ defineProps<{
 }
 
 @media (max-width: 800px) {
-  .playground-layout {
+  .demo-shell-layout {
     grid-template-columns: 1fr;
   }
 
-  .playground-nav {
+  .demo-shell-nav {
     position: static;
   }
 }

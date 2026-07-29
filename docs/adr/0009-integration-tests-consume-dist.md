@@ -65,7 +65,7 @@ import { createLayer, … } from '@/index'  // vitest alias → src/
 ```text
 vue-layerx/                 # 库 + unit（src/**/__test__，继续测源码 / 内部模块）
 tests-vue3/                 # Vue 3 集成：只 import 'vue-layerx'
-playground/                 # 照旧
+demos-vue3/                 # 照旧
 # （ADR 0008 实现时再加）tests-vue2/   # Vue 2.7 关键路径 + 入口冒烟
 ```
 

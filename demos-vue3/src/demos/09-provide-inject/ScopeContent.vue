@@ -10,13 +10,13 @@ import {
   useGlobalConfig,
 } from 'element-plus'
 import { defineLayer, LayerTemplate } from 'vue-layerx'
-import { PLAYGROUND_SCOPE_KEY } from './context'
+import { DEMOS_SCOPE_KEY } from './context'
 
 const emit = defineEmits<{
   close: []
 }>()
 
-const scopeSource = inject(PLAYGROUND_SCOPE_KEY, null)
+const scopeSource = inject(DEMOS_SCOPE_KEY, null)
 const scope = computed(() => unref(scopeSource))
 const epSize = useGlobalConfig('size', 'default')
 const epLocale = useGlobalConfig('locale')

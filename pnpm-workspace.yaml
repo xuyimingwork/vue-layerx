@@ -1,6 +1,6 @@
 packages:
   - '.'
-  - 'playground'
-  - 'playground-vue2'
+  - 'demos-vue3'
+  - 'demos-vue2'
   - 'tests-vue3'
   - 'tests-vue2'

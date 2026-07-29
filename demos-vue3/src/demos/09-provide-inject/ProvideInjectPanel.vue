@@ -2,7 +2,7 @@
 import { computed, provide, ref } from 'vue'
 import { ElAlert, ElButton, ElRadioButton, ElRadioGroup } from 'element-plus'
 import { useDialog } from '../../core/layers'
-import { PLAYGROUND_SCOPE_KEY, type PlaygroundScope } from './context'
+import { DEMOS_SCOPE_KEY, type DemoScope } from './context'
 import { moduleScopeDialog } from './module-dialog'
 import ScopeContent from './ScopeContent.vue'
 
@@ -15,13 +15,13 @@ const epLocaleKey = defineModel<EpLocaleKey>('epLocaleKey', { default: 'zh-cn' }
 
 const scopeSource = ref<ScopeSource>('order')
 
-const scope = computed<PlaygroundScope>(() =>
+const scope = computed<DemoScope>(() =>
   scopeSource.value === 'order'
     ? { label: '订单页', tagType: 'primary' }
     : { label: '部门页', tagType: 'success' },
 )
 
-provide(PLAYGROUND_SCOPE_KEY, scope)
+provide(DEMOS_SCOPE_KEY, scope)
 
 const pageDialog = useDialog(ScopeContent, {
   closeOn: ['close'],

@@ -42,4 +42,4 @@ createLayer(容器)  →  useDialog(内容)  →  instance.open()
 
 ## 接下来
 
-从 [快速上手](/guide/quick-start) 开始安装并打开第一个弹层，再按侧栏读基础与进阶。需要查签名看 [API](/api/)；按场景查阅看 [实践](/guide/cookbook/)。本地也可对照导航栏里的 **Playground**。
+从 [快速上手](/guide/quick-start) 开始安装并打开第一个弹层，再按侧栏读基础与进阶。需要查签名看 [API](/api/)；按场景查阅看 [实践](/guide/cookbook/)。本地也可对照导航栏里的 **Demos**（Vue 3 / Vue 2.7）。

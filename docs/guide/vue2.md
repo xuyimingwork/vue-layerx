@@ -48,10 +48,11 @@ const useDialog = createLayer(ElDialog, { model: 'visible' })
 ## 官方示例
 
 ```bash
-pnpm playground:vue2   # Vue 2.7 + Element UI，默认 :5174
+pnpm demos:vue2   # Vue 2.7 + Element UI，默认 :5174
+pnpm demos        # Vue 3 + Element Plus，默认 :5173
 ```
 
-见仓库 `playground-vue2/`（`model: 'visible'`、LayerTemplate、confirm）。完整 Vue 3 示例仍用 `pnpm playground`。
+见仓库 `demos-vue2/`（`model: 'visible'`、LayerTemplate、confirm）与 `demos-vue3/`。文档站导航 **Demos** 可打开已部署版本（`/demos/vue2/`、`/demos/vue3/`）。
 
 ## 测试
 

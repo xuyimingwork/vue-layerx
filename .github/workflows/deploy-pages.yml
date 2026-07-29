@@ -31,10 +31,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build docs + playground site
+      - name: Build docs + demos site
         env:
           DOCS_BASE: /vue-layerx/
-          PLAYGROUND_BASE: /vue-layerx/playground/
+          DEMOS_VUE3_BASE: /vue-layerx/demos/vue3/
+          DEMOS_VUE2_BASE: /vue-layerx/demos/vue2/
         run: pnpm site:build
 
       - uses: actions/upload-pages-artifact@v3

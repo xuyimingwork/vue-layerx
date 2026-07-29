@@ -11,7 +11,7 @@
 /*
  * VitePress base.css 在 prefers-reduced-motion: reduce 下把 * 的
  * animation-duration 压成 1ms。系统开「减少动态效果」时，文档站 Demo
- * 的 ElDialog / Drawer 会几乎无动画；Playground 无此规则故正常。
+ * 的 ElDialog / Drawer 会几乎无动画；Demos 无此规则故正常。
  * 仅恢复挂到 body 的 Element Plus 遮罩/弹层过渡。
  */
 @media (prefers-reduced-motion: reduce) {

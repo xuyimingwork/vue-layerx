@@ -4,9 +4,12 @@ import { resolve } from 'node:path'
 // GitHub Pages 项目站：https://xuyimingwork.github.io/vue-layerx/
 // 本地 dev/preview 用 '/'；CI 通过 DOCS_BASE 注入
 const base = process.env.DOCS_BASE || '/'
-const playgroundLink = process.env.DOCS_BASE
-  ? '/playground/'
+const demosVue3Link = process.env.DOCS_BASE
+  ? '/demos/vue3/'
   : 'http://localhost:5173'
+const demosVue2Link = process.env.DOCS_BASE
+  ? '/demos/vue2/'
+  : 'http://localhost:5174'
 
 export default defineConfig({
   title: 'Vue Layerx',
@@ -20,7 +23,13 @@ export default defineConfig({
     nav: [
       { text: '指南', link: '/guide/introduction' },
       { text: 'API', link: '/api/' },
-      { text: 'Playground', link: playgroundLink, target: '_blank' },
+      {
+        text: 'Demos',
+        items: [
+          { text: 'Vue 3 + Element Plus', link: demosVue3Link, target: '_blank' },
+          { text: 'Vue 2.7 + Element UI', link: demosVue2Link, target: '_blank' },
+        ],
+      },
     ],
     sidebar: {
       '/guide/': [

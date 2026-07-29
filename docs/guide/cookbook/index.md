@@ -11,4 +11,4 @@
 | 老 Dialog 和表单还粘在一起 | [未拆分内容/容器弹窗接入](./legacy) |
 | 弹层里还要再开一层 | [内容组件嵌套弹层](./nested-self) |
 
-插槽怎么填见基础 [向弹层投递插槽](/guide/layer-template)。更全的探索示例见导航栏 **Playground**。
+插槽怎么填见基础 [向弹层投递插槽](/guide/layer-template)。更全的探索示例见导航栏 **Demos**。

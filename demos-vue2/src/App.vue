@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { demoGroups } from './demos/catalog'
-import PlaygroundShell from './ui/PlaygroundShell.vue'
+import DemoShell from './ui/DemoShell.vue'
 </script>
 
 <template>
-  <PlaygroundShell :groups="demoGroups" />
+  <DemoShell :groups="demoGroups" />
 </template>
