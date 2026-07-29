@@ -46,7 +46,7 @@ UserDialog = MyDialog + UserForm
 ③ adapt           该实例工厂的 createLayer adapter（可选）(fragment) → fragment
 ④ refs            mergeFragment(store.refs, adapted)  // 框架 internal ref，refs 为第一源
 ⑤ bind            bindLayer(fragment, visible, close)  →  LayerBound
-⑥ render          createLayerViewVNode(bound)  →  h(...)
+⑥ render          useLayerViewRender(bound, visible)  →  h(...)
 ```
 
 类型域与命名见 [`docs/config-naming.md`](docs/config-naming.md)。
@@ -55,8 +55,8 @@ UserDialog = MyDialog + UserForm
 - **merge**：各层贡献 **Canonical LayerConfigNode 片段**（`content` / `container`）；`closeOn` 在 content、`model` 在 container；**slot 内容**含命令式 `slots` 与 **LayerTemplate 物化后的 slots**，按固定 tier 合并（见「配置 merge」）。
 - **adapt**：在 **LayerConfigFragment** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
 - **refs**：`store.refs` 桶在 adapter 之后合并；`props.ref` 链式 compose，internal 先于各 tier 用户 ref。
-- **bind**：把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + `onUpdate:${model}`；产出 `LayerBound`。
-- **render**：纯 `h()` 绑定 props / slots；**close 后再 open** 时 remount content；已打开时再次 `open()` 只更新 merge/props。
+- **bind**：把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + 更新监听（Vue 3 默认 `onUpdate:modelValue`；Vue 2.7 默认 `onInput`）；产出 `LayerBound`。
+- **render**：`compat.useLayerViewRender` 产出 vnode 树；**close 后再 open** 时 `openId` 递增 remount content；已打开时再次 `open()` 只更新 merge/props。
 
 使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域 fragment**；**bind 产出 LayerBound**（可直接 `h()`）。
 
@@ -66,7 +66,7 @@ UserDialog = MyDialog + UserForm
 
 ## 源码模块结构
 
-`src/` 按数据流分为五层，对外入口仍为根目录 [`index.ts`](src/index.ts)（re-export `api/` + `types/`）。
+`src/` 按数据流分层，对外入口仍为根目录 [`index.ts`](src/index.ts)（re-export `api/` + 部分 `types/` / `LayerConfirmError`）。
 
 ### 目录布局
 
@@ -74,86 +74,90 @@ UserDialog = MyDialog + UserForm
 src/
 ├── index.ts                 # 包入口 barrel
 ├── api/                     # createLayer / defineLayer / LayerTemplate
-├── types/                   # 纯类型契约（config-raw / config / bound / instance / store / layer-host）
-├── shared/                  # 跨层运行时契约（Symbol、inject key、检测函数）
+├── types/                   # 纯类型契约（config-raw / config / bound / instance / store / confirm）
+├── shared/                  # 跨层、无大版本分叉的运行时（Symbol、store、template-to、公开组件）
 ├── config/                  # fragment 构造、merge、bind
-├── runtime/                 # store、instance 生命周期、portal 挂载
-└── view/                    # LayerView 组件、纯 h() 渲染
+├── runtime/                 # instance 生命周期、LayerView 编排、createLayerApp
+└── compat/                  # Vue 大版本分端（env / vue2 / vue3 / polyfill）
 
-tests/                       # unit 辅助：setup、纯 helpers、薄 fixture
+# 各层 __test__/ 与模块同目录（unit）
 tests-vue3/                  # Vue 3 集成：只消费 vue-layerx dist（ADR 0009）
 tests-vue2/                  # Vue 2.7 关键路径：只消费 dist（ADR 0008）
 ```
 
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
-| **types/** | 配置 Raw / Canonical / Bound；实例 / Store；LayerHost | `config-raw.ts`、`config.ts`、`bound.ts`、`instance.ts`、`store.ts`、`layer-host.ts` |
-| **shared/** | 跨层 inject 契约、store 工厂、template-to 协议 | `contracts.ts`、`layer-store.ts`、`layer-template-to.ts` |
-| **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts` |
-| **compat/** | Vue 大版本分端（挂载 / 视图 / model / Host） | `env.ts`、`vue2/`、`vue3/`、`index.ts` |
-| **runtime/** | instance 生命周期、LayerView 编排 | `layer-instance.ts`、`layer-view.ts` |
-| **view/** | `LayerView` 组件（merge → adapter → bind → createLayerViewVNode） | `layer-view.ts` |
+| **types/** | 配置 Raw / Canonical / Bound；实例 / Store；confirm | `config-raw.ts`、`config.ts`、`bound.ts`、`instance.ts`、`store.ts`、`confirm.ts` |
+| **shared/** | inject key、content 根标记、store 工厂、template-to、warn、公开运行时符号 | `injection-keys.ts`、`layer-content.ts`、`layer-store.ts`、`layer-template-to.ts`、`layer-no-container.ts`、`layer-confirm-error.ts`、`warn.ts` |
+| **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts`、`close-on.ts` |
+| **compat/** | 按 Vue 大版本选实现：挂载、视图树、默认 model、Host、`h` 翻译 | `env.ts`、`index.ts`、`types.ts`、`polyfill/to-value.ts`、`vue2/*`、`vue3/*` |
+| **runtime/** | instance 生命周期、LayerApp 挂载、`LayerView`（merge → adapt → bind → render） | `layer-instance.ts`、`create-layer-app.ts`、`layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
-各层 `__test__/` 与模块同目录；集成在 `tests-vue3/` / `tests-vue2/`（`import from 'vue-layerx'`，须先 `pnpm build`）。
+集成测：`tests-vue3/` / `tests-vue2/`（`import from 'vue-layerx'`，须先 `pnpm build`）。
 
 ### 模块依赖
 
-上层只能依赖下层；**`config` 不依赖 `runtime`**；**`view` 不依赖 `runtime`**（portal 与 store 创建在 runtime）。
+上层只能依赖下层；**`config` 不依赖 `runtime` / `api`**。`LayerView` 已并入 `runtime/`（不再有独立 `view/` 目录）。`compat` 为横切平台层：`config`（默认 model / flat 更新键）、`runtime`（挂载与视图）、`api`（`toValue` / setup 探测）均可使用。
 
 ```mermaid
 flowchart TB
   index[index.ts]
   api[api]
   runtime[runtime]
-  view[view]
   config[config]
   shared[shared]
   types[types]
+  compat[compat]
 
   index --> api
   index --> types
-  index --> config
   api --> runtime
   api --> config
   api --> shared
   api --> types
-  runtime --> view
+  api --> compat
   runtime --> config
   runtime --> shared
   runtime --> types
-  view --> config
-  view --> shared
-  view --> types
-  shared --> types
+  runtime --> compat
   config --> types
+  config --> shared
+  config --> compat
+  shared --> types
+  compat --> shared
+  compat --> types
 ```
 
 | 层 | 允许 import | 禁止 import |
 |----|-------------|-------------|
-| **types/** | Vue 类型 only | 任何 `src/` 模块 |
-| **shared/** | `types/` | `config`、`runtime`、`view`、`api` |
-| **config/** | `types/` | `shared`、`runtime`、`view`、`api` |
-| **view/** | `types/`、`config/`、`shared/` | `runtime`、`api` |
-| **runtime/** | `types/`、`config/`、`shared/`、`view/` | `api` |
+| **types/** | Vue 类型 only | 任何 `src/` 运行时模块 |
+| **shared/** | `types/` | `config`、`runtime`、`api`、`compat` |
+| **compat/** | `types/`、`shared/`（如 `LAYER_CONTENT`） | `config`、`runtime`、`api` |
+| **config/** | `types/`、`shared/`（如 `warn`）、`compat/`（默认 model / `toModelUpdateProp`） | `runtime`、`api` |
+| **runtime/** | `types/`、`shared/`、`config/`、`compat/` | `api` |
 | **api/** | 以上所有层 | — |
 
-**依赖规则**：`types` / `shared` / `config` 为底层；`view` 负责渲染编排；`runtime` 管理 store + portal 并驱动 `LayerView`；`api` 在最外。`defineLayer` / `LayerTemplate` 通过 `shared/layer-template-to` 的 `withTemplateTo` / `resolveTemplateTo` 委托 `:to` 投递模板，**不** import `runtime/`。
+**依赖规则**：`types` / `shared` 为最底层；`compat` 提供平台常量与分端实现；`config` 做纯配置管线（可问 compat 要默认 model）；`runtime` 管 store + LayerApp + `LayerView` 编排；`api` 在最外。`defineLayer` / `LayerTemplate` 通过 `shared/layer-template-to` 的 `withTemplateTo` / `resolveTemplateTo` 委托 `:to` 投递模板，**不** import `runtime/`。
+
+**`shared` 准入**：无 Vue 大版本分叉、可被 config / runtime / api / compat 共用的协议与基础设施；平台相关的 `h` / Host / Teleport 留在 `compat/vue2|vue3`。
 
 #### 跨层依赖矩阵（生产代码）
 
-| Importer ↓ / Importee → | `types` | `shared` | `config` | `view` | `runtime` |
-|---------------------------|:-------:|:--------:|:--------:|:------:|:---------:|
-| **api** | ✓ | ✓ | ✓ | — | ✓（仅 `create-layer`） |
+| Importer ↓ / Importee → | `types` | `shared` | `compat` | `config` | `runtime` |
+|---------------------------|:-------:|:--------:|:--------:|:--------:|:---------:|
+| **api** | ✓ | ✓ | ✓ | ✓ | ✓（仅 `create-layer`） |
 | **runtime** | ✓ | ✓ | ✓ | ✓ | internal |
-| **view** | ✓ | ✓ | ✓ | internal | — |
+| **config** | ✓ | ✓ | ✓ | internal | — |
+| **compat** | ✓ | ✓ | internal | — | — |
 | **shared** | ✓ | — | — | — | — |
-| **config** | ✓ | — | internal | — | — |
 | **types** | — | — | — | — | — |
 
-**runtime → view**：`compat.createLayerApp` 挂载 `runtime/layer-view.ts`（`LayerView`）；`layer-instance` 持有 instance store 并委托 portal。`LayerView` 内部通过 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store。
+**runtime**：`createLayerApp`（经 `compat.createPlatformRoot`）挂载 `runtime/layer-view.ts`（`LayerView`）；`layer-instance` 持有 instance store 并委托 LayerApp。`LayerView` 内部用 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store；render 调用 `compat.useLayerViewRender(bound, visible)`。
 
-**shared/contracts.ts**：`LAYER_VIEW_KEY`（LayerView provide；当前由 defineLayer inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`；`define:template.container` key 与 fragment 转换留在 LayerView 闭包。content 根标记为 `layer-view.ts` 模块私有 Symbol，由 `createLayerViewVNode` 写入 `vnode.props`，`getDefineContext` 读取。
+**shared/injection-keys.ts**：`LAYER_VIEW_KEY`（LayerView provide；`defineLayer` inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`；`define:template.container` key 与 fragment 转换留在 LayerView 闭包。
+
+**shared/layer-content.ts**：共用 `LAYER_CONTENT` Symbol。`compat` 的 `markLayerContent` / `isLayerContent` 写入与读取：Vue 3 在 `vnode.props`；Vue 2.7 在 `$vnode.data`（不进 `props/`）。
 
 **shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：`exists` 时委托 `getDefineContext().template(...)`，caller 路径闭包 `store.template(...)`。
 
@@ -166,18 +170,18 @@ createLayer / defineLayer / LayerTemplate          api/
 createLayerInstance + createLayerApp      runtime/ + compat/
         │
         ▼
-LayerView → createLayerViewVNode                            runtime/ + compat/
+LayerView → useLayerViewRender                    runtime/ + compat/
         │
         ├── mergeFragment / toFragment*            config/fragment.ts
         ├── mergeNode / strip*Node                 config/node.ts
         ├── adapter（可选）                          api/create-layer 注册
         ├── bindLayer                              config/bind-layer.ts
-        └── createLayerViewVNode                     runtime/layer-view.ts
+        └── useLayerViewRender → h(...)            compat/vue3|vue2
 ```
 
 - **merge**：`config/fragment.ts`（`toFragmentFrom*`、`mergeFragment`、`stripFragment`）+ `config/node.ts`（node 级 normalize / merge / strip 原语）。
-- **bind**：`config/bind-layer.ts` 编排 `bind-container-model`、`bind-close-on`。
-- **render**：`runtime/layer-view.ts` 的 `createLayerViewVNode` 纯 `h()`；`LayerView` 是唯一的 merge → adapter → bind → render 编排点。
+- **bind**：`config/bind-layer.ts` 编排 `bind-container-model`、`bind-close-on`；默认 `model` / flat 更新键来自 `compat`（Vue 3：`modelValue`；Vue 2.7：`value` + `onInput`）。
+- **render**：`LayerView`（`runtime/layer-view.ts`）是唯一的 merge → adapter → bind → render 编排点；实际 `h()` 树由 `compat.useLayerViewRender` 产出（Vue 3：Teleport + parking；Vue 2.7：容器 default 嵌套 content，见 [ADR 0008](docs/adr/0008-vue-2-7-adaptation.md)）。
 
 ---
 
@@ -310,7 +314,7 @@ type LayerBound = {
   container: LayerBoundNode
 }
 
-/** bind 输出：props 已含 closeOn / model 绑定，createLayerViewVNode 直接 h() */
+/** bind 输出：props 已含 closeOn / model 绑定，useLayerViewRender 直接 h() */
 ```
 
 公开 flat（Raw）见 `LayerConfigContent` / `Container`（`*Node*Raw`，`props.ref` 可为 `Ref`）。完整三域见 [`docs/config-naming.md`](docs/config-naming.md)。
@@ -342,7 +346,7 @@ const DEFAULT_CONTAINER_MODEL = 'modelValue'
 
 顶层 `props` / `slots` / `model` 描述 **container**；`content` 为嵌套 content 默认（含 `closeOn`）。
 
-**`model`**：container 的 v-model prop 名，默认 `modelValue`，对应事件 `onUpdate:modelValue`。`createLayer` 第 2 参可设 `model: 'open'` 等；**adapter 可改 `model`**（如窄屏换 Drawer）。框架在 **bind** 阶段写入 `[model]: visible` 与 `[onUpdate:${model}]`。
+**`model`**：container 的 v-model prop 名；默认由 **compat** 注入（Vue 3：`modelValue` + `onUpdate:modelValue`；Vue 2.7：`value` + `onInput`）。`createLayer` 第 2 参可设 `model: 'open'` / `'visible'` 等；**adapter 可改 `model`**（如窄屏换 Drawer）。框架在 **bind** 阶段写入 `[model]: visible` 与对应更新监听（`compat.toModelUpdateProp`）。
 
 ---
 
@@ -570,7 +574,7 @@ export const useDialog = createLayer(MyDialog, {
 })
 ```
 
-无 `adapter` 时：直接 `bindLayerTree({ merged, visible, close })`。
+无 `adapter` 时：直接 `bindLayer({ fragment: merged, visible, close })`。
 
 **API 形态**：两参 `(layer, config?)`；`adapter` 在 `config` 内，仅 `createLayer` 可配置。
 
@@ -578,14 +582,18 @@ export const useDialog = createLayer(MyDialog, {
 
 标记组件：作 `createLayer` 的 container，或在 **adapter / use / open** 里把 `container.component` 换成它。详见 [ADR 0001](docs/adr/0001-legacy-monolith-progressive-adoption.md)。
 
-`createLayerViewVNode` 遇 `LayerNoContainer` 时与真壳同构（Teleport + 锚点），并把容器 props 投影到 content：
+`compat.useLayerViewRender` 遇 `LayerNoContainer` 时把容器 props 投影到 content（content 覆盖 container）。树形按大版本分叉（[ADR 0008](docs/adr/0008-vue-2-7-adaptation.md)）：
+
+- **Vue 3**：与真壳同构（Teleport + 锚点 / parking），换壳可 park content。
+- **Vue 2.7**：扁平 `h(content)`（无 Teleport）；换壳时嵌套 diff 自然 remount content。
 
 ```ts
+// Vue 3 示意
 h(LayerNoContainer, {}, { default: () => h('layer-content-to', …) })
 // + Teleport → h(content, { ...container.props, ...content.props, key }, content.slots)
 ```
 
-content 覆盖 container（create 默认与 open 在投影相遇；bind 的 `modelValue` 经投影落到 content，正常勿在 content.props 再传）。
+content 覆盖 container（create 默认与 open 在投影相遇；bind 的显隐字段经投影落到 content，正常勿在 content.props 再传）。
 
 **推荐：同一 `useLayer` 混用单体与拆分 content**（项目维护 `withDialog`）：
 
@@ -754,7 +762,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。LayerView setup 以 `computed` 派生 `merged → adapted → bound`（`mergeFragment` 汇总各桶，再 adapter → **`mergeFragment(refs, adapted)`** → bind）；render 只调用 `createLayerViewVNode`。creator 路径：`defineLayer` → `getDefineContext().config` / `.template` 写入 define store（template key 固定为 `define:template.container`）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `store.template({ key: 'use:template.*', ... })`。
+每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。LayerView setup 以 `computed` 派生 `merged → adapted → bound`（`mergeFragment` 汇总各桶，再 adapter → **`mergeFragment(refs, adapted)`** → bind）；render 调用 `compat.useLayerViewRender`。creator 路径：`defineLayer` → `getDefineContext().config` / `.template` 写入 define store（template key 固定为 `define:template.container`）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `store.template({ key: 'use:template.*', ... })`。
 
 `mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 
@@ -1050,7 +1058,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 10. **`to` 分流**：`:to="layer"`（LayerDefine）→ define:template.container；`:to="instance"` → use:template.content；`:to="instance" container` → use:template.container。
 11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；`createLayer(layer, config?)` 两参；不导出 `useLayer`。
 12. **`clone`**：`open > clone > use > define > create`；`closeOn` 按 event patch；与用户 `onXxx` 合并为 wrapper（用户先，再按 `when` 决定 `close()`）。
-13. **`model`**：container v-model prop 名，默认 `modelValue`；adapter 可改；`bindLayerTree` 在 bind 写入。
+13. **`model`**：container v-model prop 名，默认由 compat 按大版本注入（3→`modelValue`，2.7→`value`）；adapter 可改；`bindLayer` 在 bind 写入。
 14. 同名 `LayerTemplate` 重复注册：**warning + 后者覆盖**（各注册域内）。
 15. **`useX()` 可无 Content**；**SSR 兼容**（客户端 `open()`）。
 
@@ -1076,7 +1084,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 |------|------|
 | merge 与 adapter 分离 | 优先级在框架 merge，项目在 adapter 整形配置 |
 | 两参 `createLayer` + `config.adapter` | defaults / adapter 职责清晰；adapter 存 store 顶层 |
-| bind 与 render 分离 | bind 写 runtime props；createLayerViewVNode 纯 h() |
+| bind 与 render 分离 | bind 写 runtime props；`useLayerViewRender` 纯 `h()`（compat 分端） |
 | `defineLayer` 全局 inject | 与 Vue `defineXxx` 拉齐；content 不感知容器 |
 | `defineLayer` 无 `close`；关层经 emit / `closeOn` | content 自包含，页内与弹层用法一致（[ADR 0005](docs/adr/0005-content-self-contained-close-on.md)） |
 | slot render fn 投递 | container / content 模板跨树投送；与 Vue slot 语义同构 |
@@ -1088,6 +1096,6 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 | `LayerTemplate :to` | 显式绑定实例；列表页走 content slot 链 |
 | 插槽与 Vue 同构 | `name` = slot 名；对不上就不渲染；框架不校验 slot 清单 |
 | Drawer 差异走 `adapter` | 滤 props、搬移 `merged.container.slots` 的 key |
-| `model` 默认 modelValue | 非标准 v-model 容器在 createLayer 设 `model` |
+| `model` 默认由 compat 注入 | Vue 3→`modelValue`；Vue 2.7→`value`；非标准名在 createLayer 设 `model` |
 | `clone` 多一层 `clone` tier | 实例级 defaults，介于 `open` 与 `use` 之间 |
 | 同名 `LayerTemplate` warning | 后者覆盖，dev 可发现误配 |

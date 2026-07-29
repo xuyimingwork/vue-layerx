@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { LAYER_CONTENT } from '@/shared/layer-content'
 import {
   isLayerContent,
   markLayerContent,
@@ -48,7 +49,7 @@ describe('toPlatformVNodeData', () => {
     expect(data.class).toBe('x')
     expect(data.style).toEqual({ color: 'red' })
     expect(data.props).toEqual({ width: 100 })
-    expect(data.vueLayerxLayerContent).toBe(true)
+    expect(data[LAYER_CONTENT]).toBe(true)
     expect(data.on).toBeUndefined()
   })
 
@@ -81,9 +82,7 @@ describe('toPlatformSlots', () => {
 describe('isLayerContent', () => {
   it('should read mark from $vnode.data on the setup proxy', () => {
     expect(isLayerContent(null)).toBe(false)
-    expect(isLayerContent({ $vnode: { data: { vueLayerxLayerContent: true } } })).toBe(
-      true,
-    )
+    expect(isLayerContent({ $vnode: { data: { [LAYER_CONTENT]: true } } })).toBe(true)
     expect(isLayerContent({ $vnode: { data: {} } })).toBe(false)
   })
 })

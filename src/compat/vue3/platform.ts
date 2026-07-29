@@ -1,7 +1,5 @@
 import type { VNode } from 'vue'
-
-/** Content-root mark for defineLayer (D0.10). Vue 3: Symbol on vnode.props. */
-const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
+import { LAYER_CONTENT } from '@/shared/layer-content'
 
 export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const
 

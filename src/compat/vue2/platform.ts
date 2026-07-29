@@ -1,10 +1,5 @@
 import type { VNode } from 'vue'
-
-/**
- * Vue 2.7: Symbol keys on h() data are unreliable; use a plain data field.
- * Must not collide with user props (not placed under props/).
- */
-const LAYER_CONTENT = 'vueLayerxLayerContent'
+import { LAYER_CONTENT } from '@/shared/layer-content'
 
 /** Aligns with Vue 3 `modelValue`: Vue 2.7 default v-model is `value` + `input`. */
 export const DEFAULT_CONTAINER_MODEL = 'value' as const
@@ -117,7 +112,7 @@ export function markLayerContent(
 export function isLayerContent(instance: object | null | undefined): boolean {
   if (!instance) return false
   // Expect setup proxy (getSetupInstance) or Options `this` — both expose $vnode.
-  const data = (instance as { $vnode?: { data?: Record<string, unknown> } }).$vnode
+  const data = (instance as { $vnode?: { data?: Record<PropertyKey, unknown> } }).$vnode
     ?.data
   return data?.[LAYER_CONTENT] === true
 }
