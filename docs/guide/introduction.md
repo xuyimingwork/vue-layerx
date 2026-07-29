@@ -14,6 +14,7 @@ dialog.open()
 ```
 
 <DemoBlock :demo="Demo" preview-only />
+> 同一套 API 可用于 **Vue 3.3+** 与 **Vue 2.7**（同包；2.7 差异见 [Vue 2.7 兼容](/guide/vue2)）。
 
 ## 解决什么问题
 

@@ -26,10 +26,10 @@ features:
   - icon: 🔌
     title: 适配已有组件库
     details: 适配 Element Plus、Naive UI、Ant Design Vue 等现有 Dialog / Drawer，零外部依赖。
-  - icon: 📦
-    title: TypeScript 友好
-    details: 源码全量 TS，完整类型推导。
+  - icon: 🔀
+    title: Vue 3 与 Vue 2.7
+    details: 同包、同名 API。Vue 2.7 为 best-effort 适配，差异见兼容说明。
+    link: /guide/vue2
   - icon: ✅
     title: 工程级保障
-    details: 测试覆盖 100%，支持 SSR，可在 Nuxt / Vite SSR 中安全使用。
----
+    details: 测试覆盖 100%，支持 SSR；TypeScript 完整类型推导。---
