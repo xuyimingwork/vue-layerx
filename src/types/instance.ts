@@ -1,5 +1,5 @@
 import type { ComponentPublicInstance } from 'vue'
-import type { MaybeRefOrGetter } from '@/compat'
+import type { MaybeRefOrGetter } from './maybe-ref'
 import type { LayerConfigContent } from './config-raw'
 import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
 

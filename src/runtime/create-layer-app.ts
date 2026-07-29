@@ -6,17 +6,22 @@ import {
 } from 'vue'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import type { LayerClosePayload } from '@/types/confirm'
+import type { LayerHost } from '@/types/layer-host'
 import { LayerView } from '@/runtime/layer-view'
 import {
   createPlatformRoot,
   toPlatformVNodeData,
-  type LayerAppHandle,
-  type LayerAppState,
-  type LayerHost,
   type PlatformRootHandle,
 } from '@/compat'
 
-export type { LayerAppHandle, LayerAppState }
+export interface LayerAppState {
+  visible: boolean
+}
+
+export interface LayerAppHandle {
+  readonly mounted: boolean
+  unmount: () => void
+}
 
 function canUseDom(): boolean {
   return typeof document !== 'undefined'

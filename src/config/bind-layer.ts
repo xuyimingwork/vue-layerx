@@ -1,7 +1,8 @@
 import type { LayerConfigFragment } from '@/types/config'
 import type { LayerBound } from '@/types/bound'
 import type { LayerClosePayload } from '@/types/confirm'
-import { DEFAULT_CONTAINER_MODEL, bindContainerModel } from './bind-container-model'
+import { DEFAULT_CONTAINER_MODEL } from '@/compat'
+import { bindContainerModel } from './bind-container-model'
 import { bindCloseOn } from './bind-close-on'
 
 export function bindLayer(ctx: {
@@ -18,12 +19,7 @@ export function bindLayer(ctx: {
 
   const containerBound = {
     component: container.component!,
-    props: bindContainerModel(
-      container.props ?? {},
-      visible,
-      model,
-      close,
-    ),
+    props: bindContainerModel(container.props ?? {}, visible, model, close),
     slots: container.slots ?? {},
   }
 

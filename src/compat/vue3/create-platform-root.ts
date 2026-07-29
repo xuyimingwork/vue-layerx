@@ -1,7 +1,7 @@
 import * as Vue from 'vue'
 import type { Component } from 'vue'
 import type { LayerHost, PlatformRootHandle } from '@/compat/types'
-import { getSetupInstance } from './host'
+import { getSetupInstance } from './setup-instance'
 
 export type { PlatformRootHandle }
 

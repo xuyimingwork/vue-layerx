@@ -40,6 +40,8 @@ export type {
 
 export type { LayerHost } from './layer-host'
 
+export type { MaybeRefOrGetter } from './maybe-ref'
+
 export type {
   TemplateSlotKey,
   LayerInstanceStore,

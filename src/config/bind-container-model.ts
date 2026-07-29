@@ -1,8 +1,6 @@
 import type { LayerProps } from '@/types'
 import type { LayerClosePayload } from '@/types/confirm'
-import { DEFAULT_CONTAINER_MODEL, toModelUpdateProp } from '@/compat'
-
-export { DEFAULT_CONTAINER_MODEL }
+import { toModelUpdateProp } from '@/compat'
 
 /** `onUpdate:x` → `update:x`; `onInput` → `input` (strip `on`, lower first letter). */
 function toEvent(flatProp: string): string {

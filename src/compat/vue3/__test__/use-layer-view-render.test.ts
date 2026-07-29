@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import { MinimalContainer } from '@tests/fixtures/components'
 import type { LayerBound } from '@/types'
 import { LayerNoContainer } from '@/shared/layer-no-container'
-import { useLayerViewRender } from '@/compat/vue3/use-layer-view-render'
+import { useLayerViewRender } from '../use-layer-view-render'
 
 const StubContent = defineComponent({
   name: 'StubContent',

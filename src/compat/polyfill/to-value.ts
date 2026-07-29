@@ -1,7 +1,7 @@
-import { isRef, type Ref } from 'vue'
+import { isRef } from 'vue'
+import type { MaybeRefOrGetter } from '@/types/maybe-ref'
 
-/** Local shim — Vue 2.7 has no MaybeRefOrGetter in its public types. */
-export type MaybeRefOrGetter<T> = T | Ref<T> | (() => T)
+export type { MaybeRefOrGetter }
 
 /** Polyfill of Vue 3 `toValue` (D0.9). Do not named-import `toValue` from `vue`. */
 export function toValue<T>(source: MaybeRefOrGetter<T>): T {

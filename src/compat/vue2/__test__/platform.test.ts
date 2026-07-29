@@ -4,7 +4,7 @@ import {
   markLayerContent,
   toPlatformSlots,
   toPlatformVNodeData,
-} from '../platform-vnode'
+} from '../platform'
 
 describe('toPlatformVNodeData', () => {
   it('should map onUpdate and onXxx flat keys into on', () => {

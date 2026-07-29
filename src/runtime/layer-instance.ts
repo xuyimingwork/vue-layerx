@@ -28,9 +28,9 @@ import {
   getSetupInstance,
   hasSetupContext,
   toValue,
-  type LayerHost,
   type MaybeRefOrGetter,
 } from '@/compat'
+import type { LayerHost } from '@/types/layer-host'
 import { createLayerApp } from '@/runtime/create-layer-app'
 import { LayerConfirmError } from '@/shared/layer-confirm-error'
 import { warn } from '@/shared/warn'
