@@ -25,13 +25,13 @@ import {
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/shared/layer-store'
 import {
-  createLayerApp,
   getSetupInstance,
   hasSetupContext,
   toValue,
   type LayerHost,
   type MaybeRefOrGetter,
 } from '@/compat'
+import { createLayerApp } from '@/runtime/create-layer-app'
 import { LayerConfirmError } from '@/shared/layer-confirm-error'
 import { warn } from '@/shared/warn'
 
@@ -96,7 +96,15 @@ export function createLayerInstance({
     state.visible = false
   }
 
-  const app = createLayerApp({ store, state, host, close })
+  const app = createLayerApp({
+    store,
+    state,
+    host,
+    onUpdateVisible: (value, payload) => {
+      if (value) return
+      close(payload)
+    },
+  })
 
   const dispose = () => {
     close({ source: 'unmount' })

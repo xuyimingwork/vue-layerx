@@ -24,7 +24,7 @@ export default defineConfig({
     include: [
       './tests-vue2/integration/**/*.test.ts',
       // Vue 2.7-only internals (excluded from main unit vitest)
-      './src/compat/vue2/__test__/create-layer-app.test.ts',
+      './src/runtime/__test__/create-layer-app.vue2.test.ts',
     ],
     coverage: {
       provider: 'v8',

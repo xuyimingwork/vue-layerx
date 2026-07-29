@@ -7,9 +7,14 @@ import {
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import type { LayerClosePayload } from '@/types/confirm'
 import { LayerView } from '@/runtime/layer-view'
-import type { LayerAppHandle, LayerAppState, LayerHost } from '@/compat/types'
-import { toPlatformVNodeData } from './platform-vnode'
-import { resolveHostVue, type VueInstance } from './vue-ctor'
+import {
+  createPlatformRoot,
+  toPlatformVNodeData,
+  type LayerAppHandle,
+  type LayerAppState,
+  type LayerHost,
+  type PlatformRootHandle,
+} from '@/compat'
 
 export type { LayerAppHandle, LayerAppState }
 
@@ -18,28 +23,24 @@ function canUseDom(): boolean {
 }
 
 /**
- * Vue 2.7 LayerApp: `HostVue.extend` + `parent` for provide / globals (D0.8).
- *
- * Host changes while open are ignored on the live app; the next open remounts
- * LayerApp with the new `parent` (same deferral as Vue 3, D3.6).
+ * Mount LayerView into document.body while `state.visible` is used for open.
+ * Platform attach lives in compat `createPlatformRoot` (`setup` / `mount` / `unmount`).
  */
 export function createLayerApp(options: {
   store: LayerInstanceStoreWithTemplate
   state: LayerAppState
   host: ShallowRef<LayerHost | null>
-  close: (payload?: LayerClosePayload) => void
+  onUpdateVisible: (value: boolean, payload?: LayerClosePayload) => void
 }): LayerAppHandle {
-  const { store, state, host, close } = options
+  const { store, state, host, onUpdateVisible } = options
 
   let el: HTMLElement | null = null
-  let vm: VueInstance | null = null
-  let LayerCtor: (new (options?: object) => VueInstance) | null = null
-  let bakedHost: LayerHost | null | undefined
-  let mountedHost: LayerHost | null | undefined
+  let platform: PlatformRootHandle | null = null
 
   const LayerApp = defineComponent({
     name: 'LayerApp',
     setup() {
+      platform!.setup()
       return () =>
         h(
           LayerView,
@@ -49,20 +50,12 @@ export function createLayerApp(options: {
             'onUpdate:visible': (value: boolean, payload?: LayerClosePayload) => {
               /* v8 ignore next -- @preserve */
               if (value) return
-              close(payload)
+              onUpdateVisible(false, payload)
             },
           }) as never,
         )
     },
   })
-
-  function ensureCtor(hostInstance: LayerHost | null) {
-    if (LayerCtor && bakedHost === hostInstance) return LayerCtor
-    const HostVue = resolveHostVue(hostInstance)
-    LayerCtor = HostVue.extend(LayerApp)
-    bakedHost = hostInstance
-    return LayerCtor
-  }
 
   function prepare() {
     el = document.createElement('div')
@@ -71,24 +64,19 @@ export function createLayerApp(options: {
 
   function mount() {
     if (!canUseDom()) return
-    if (mountedHost !== host.value) unmount()
-    if (vm) return
+    if (platform && platform.host !== host.value) unmount()
+    if (platform) return
     prepare()
-    const hostInstance = host.value
-    const Ctor = ensureCtor(hostInstance)
-    vm = new Ctor(hostInstance ? { parent: hostInstance } : {})
-    vm.$mount()
-    el!.appendChild(vm.$el)
-    mountedHost = hostInstance
+    platform = createPlatformRoot({ root: LayerApp, host: host.value })
+    platform.mount(el!)
   }
 
   function unmount() {
-    if (!vm) return
-    vm.$destroy()
-    vm = null
+    if (!platform) return
+    platform.unmount()
+    platform = null
     el?.remove()
     el = null
-    mountedHost = undefined
   }
 
   watch(
@@ -102,7 +90,7 @@ export function createLayerApp(options: {
 
   return {
     get mounted() {
-      return vm !== null
+      return platform !== null
     },
     unmount,
   }

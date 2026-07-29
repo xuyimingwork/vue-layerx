@@ -2,7 +2,7 @@ import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vu
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
-import { createLayerApp } from '@/compat'
+import { createLayerApp } from '@/runtime/create-layer-app'
 import { LayerHost } from '@/types/layer-host'
 import { Container } from '@tests/fixtures/components'
 import { withoutDom } from '@tests/helpers/dom'
@@ -18,7 +18,15 @@ function createTestApp() {
     void payload
     state.visible = false
   }
-  const layerApp = createLayerApp({ store, state, host, close })
+  const layerApp = createLayerApp({
+    store,
+    state,
+    host,
+    onUpdateVisible: (value, payload) => {
+      if (value) return
+      close(payload)
+    },
+  })
   return { state, host, layerApp, close }
 }
 
@@ -193,7 +201,8 @@ describe('createLayerApp / SSR', () => {
       store,
       state,
       host,
-      close: () => {
+      onUpdateVisible: (value) => {
+        if (value) return
         state.visible = false
       },
     })

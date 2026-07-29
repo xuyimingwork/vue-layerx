@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerApp } from '../create-layer-app'
 import type { LayerHost } from '@/compat/types'
-import { withoutDom } from '../../../../tests-vue2/helpers/dom'
-import { Container } from '../../../../tests-vue2/fixtures/components'
+import { withoutDom } from '../../../tests-vue2/helpers/dom'
+import { Container } from '../../../tests-vue2/fixtures/components'
 
 /**
  * Vue 2.7-only: main unit vitest (Vue 3) excludes this file.
@@ -22,7 +22,8 @@ function createTestApp() {
     store,
     state,
     host,
-    close: () => {
+    onUpdateVisible: (value) => {
+      if (value) return
       state.visible = false
     },
   })
@@ -40,7 +41,7 @@ describe('createLayerApp (Vue 2.7)', () => {
     expect(layerApp.mounted).toBe(false)
   })
 
-  it('should mount with null host via vueConstructor fallback', async () => {
+  it('should mount with null host via package Vue constructor fallback', async () => {
     const { state, layerApp } = createTestApp()
     state.visible = true
     await nextTick()

@@ -3,6 +3,13 @@ import type { VNode } from 'vue'
 /** Content-root mark for defineLayer (D0.10). Vue 3: Symbol on vnode.props. */
 const LAYER_CONTENT = Symbol('vue-layerx:layer-content')
 
+export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const
+
+/** Flat listener prop for container v-model (Vue 3): `onUpdate:${model}`. */
+export function toModelUpdateProp(model: string): string {
+  return `onUpdate:${model}`
+}
+
 /**
  * Vue 3: flat props are already h()-ready (identity).
  * Slots stay as a children object.
