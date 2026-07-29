@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, shallowRef, type Ref, type VNode } from 'vue'
 import { MinimalContainer } from '@tests/fixtures/components'
 import type { LayerBound } from '@/types'
-import { LayerNoContainer } from '@/runtime/layer-no-container'
+import { LayerNoContainer } from '@/shared/layer-no-container'
 import { useLayerViewRender } from '../use-layer-view-render'
 
 const StubContent = defineComponent({

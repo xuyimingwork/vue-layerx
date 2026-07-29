@@ -171,6 +171,6 @@ merge → adapt（可把 container.component 换成 LayerNoContainer）
 ## 参考
 
 - [DESIGN.md](../../DESIGN.md)
-- [`src/runtime/layer-no-container.ts`](../../src/runtime/layer-no-container.ts)
+- [`src/shared/layer-no-container.ts`](../../src/shared/layer-no-container.ts)
 - [`src/runtime/layer-view.ts`](../../src/runtime/layer-view.ts)
 - [ADR 0002](./0002-open-use-override-container-component.md)

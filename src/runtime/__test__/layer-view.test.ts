@@ -3,7 +3,7 @@ import { defineComponent, shallowRef, Teleport, type Ref, type VNode } from 'vue
 import { mount } from '@vue/test-utils'
 import { MinimalContainer } from '@tests/fixtures/components'
 import type { LayerBound } from '@/types'
-import { LayerNoContainer } from '../layer-no-container'
+import { LayerNoContainer } from '@/shared/layer-no-container'
 import { useLayerViewRender } from '@/compat/vue3/use-layer-view-render'
 
 const StubContent = defineComponent({

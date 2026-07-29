@@ -11,7 +11,7 @@ import {
 } from 'vue'
 import type { LayerBound, LayerBoundNode } from '@/types'
 import { toValue } from '@/compat/polyfill/to-value'
-import { LayerNoContainer } from '@/runtime/layer-no-container'
+import { LayerNoContainer } from '@/shared/layer-no-container'
 import { markLayerContent, toPlatformSlots, toPlatformVNodeData } from './platform-vnode'
 
 const { h, Teleport } = Vue

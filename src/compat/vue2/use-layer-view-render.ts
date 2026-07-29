@@ -1,6 +1,6 @@
 import { h, type Component, type Ref, type VNode } from 'vue'
 import type { LayerBound, LayerBoundNode } from '@/types'
-import { LayerNoContainer } from '@/runtime/layer-no-container'
+import { LayerNoContainer } from '@/shared/layer-no-container'
 import { markLayerContent, toPlatformSlots, toPlatformVNodeData } from './platform-vnode'
 
 /** Nested tree: container default holds content (D0.2). NoContainer → flat + full projection (D0.5). */
