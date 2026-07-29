@@ -1,11 +1,11 @@
 import type { ComputedRef, UnwrapNestedRefs, VNode } from 'vue'
-import type { MaybeRefOrGetter } from './maybe-ref'
 import type {
   LayerConfigFragment,
   LayerConfigFragmentCreate,
   LayerTemplateEntry,
 } from './config'
 import type { LayerConfigContainer } from './config-raw'
+import type { MaybeRefOrGetter } from './instance'
 
 export type TemplateSlotKey =
   | 'use:template.container'

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerApp } from '@/runtime/create-layer-app'
-import { LayerHost } from '@/types/layer-host'
+import type { LayerHost } from '@/types/instance'
 import { Container } from '@tests/fixtures/components'
 import { withoutDom } from '@tests/helpers/dom'
 

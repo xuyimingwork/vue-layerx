@@ -3,7 +3,7 @@ import Vue from 'vue'
 import { describe, expect, it } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerApp } from '../create-layer-app'
-import type { LayerHost } from '@/types/layer-host'
+import type { LayerHost } from '@/types/instance'
 import { withoutDom } from '../../../tests-vue2/helpers/dom'
 import { Container } from '../../../tests-vue2/fixtures/components'
 

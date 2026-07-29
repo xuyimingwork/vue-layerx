@@ -1,5 +1,5 @@
 import { isRef } from 'vue'
-import type { MaybeRefOrGetter } from '@/types/maybe-ref'
+import type { MaybeRefOrGetter } from '@/types/instance'
 
 export type { MaybeRefOrGetter }
 

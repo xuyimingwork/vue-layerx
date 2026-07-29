@@ -1,7 +1,15 @@
-import type { ComponentPublicInstance } from 'vue'
-import type { MaybeRefOrGetter } from './maybe-ref'
+import type { ComponentPublicInstance, Ref } from 'vue'
 import type { LayerConfigContent } from './config-raw'
 import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
+
+/** Local shim — Vue 2.7 has no MaybeRefOrGetter in its public types. */
+export type MaybeRefOrGetter<T> = T | Ref<T> | (() => T)
+
+/**
+ * Opaque setup host — Vue 3 internal instance / Vue 2.7 proxy.
+ * Do not expose appContext or other platform internals to business code.
+ */
+export type LayerHost = object
 
 /** Returned by defineLayer(); pass as LayerTemplate :to */
 export interface LayerDefine {

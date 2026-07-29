@@ -29,7 +29,12 @@ export type {
 
 export type { LayerBound, LayerBoundNode } from './bound'
 
-export type { LayerInstance, LayerDefine } from './instance'
+export type {
+  LayerInstance,
+  LayerDefine,
+  LayerHost,
+  MaybeRefOrGetter,
+} from './instance'
 
 export type {
   LayerConfirmSource,
@@ -37,10 +42,6 @@ export type {
   LayerCloseOptions,
   LayerClosePayload,
 } from './confirm'
-
-export type { LayerHost } from './layer-host'
-
-export type { MaybeRefOrGetter } from './maybe-ref'
 
 export type {
   TemplateSlotKey,

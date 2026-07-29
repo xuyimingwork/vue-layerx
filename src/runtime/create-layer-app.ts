@@ -6,7 +6,7 @@ import {
 } from 'vue'
 import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import type { LayerClosePayload } from '@/types/confirm'
-import type { LayerHost } from '@/types/layer-host'
+import type { LayerHost } from '@/types/instance'
 import { LayerView } from '@/runtime/layer-view'
 import {
   createPlatformRoot,

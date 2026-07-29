@@ -1,4 +1,4 @@
-import type { LayerHost } from '@/types/layer-host'
+import type { LayerHost } from '@/types/instance'
 
 export type { LayerHost }
 

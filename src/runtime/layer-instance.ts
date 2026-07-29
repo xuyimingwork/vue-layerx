@@ -30,7 +30,7 @@ import {
   toValue,
   type MaybeRefOrGetter,
 } from '@/compat'
-import type { LayerHost } from '@/types/layer-host'
+import type { LayerHost } from '@/types/instance'
 import { createLayerApp } from '@/runtime/create-layer-app'
 import { LayerConfirmError } from '@/shared/layer-confirm-error'
 import { warn } from '@/shared/warn'
