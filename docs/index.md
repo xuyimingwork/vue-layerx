@@ -32,4 +32,5 @@ features:
     link: /guide/vue2
   - icon: ✅
     title: 工程级保障
-    details: 测试覆盖 100%，支持 SSR；TypeScript 完整类型推导。---
+    details: 测试覆盖 100%，支持 SSR；TypeScript 完整类型推导。
+---
