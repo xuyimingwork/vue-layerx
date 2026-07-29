@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, ref, Teleport, type VNode } from 'vue'
+import { defineComponent, shallowRef, Teleport, type Ref, type VNode } from 'vue'
+import { mount } from '@vue/test-utils'
 import { MinimalContainer } from '@tests/fixtures/components'
+import type { LayerBound } from '@/types'
 import { LayerNoContainer } from '../layer-no-container'
-import { createLayerViewVNode } from '../layer-view'
+import { useLayerViewRender } from '@/compat/vue3/use-layer-view-render'
 
 const StubContent = defineComponent({
   name: 'StubContent',
@@ -11,35 +13,90 @@ const StubContent = defineComponent({
   },
 })
 
-function asArrayTree(
-  tree: ReturnType<typeof createLayerViewVNode>,
-): [VNode, VNode | null] {
+const OtherContainer = defineComponent({
+  name: 'OtherContainer',
+  setup(_, { slots }) {
+    return () => slots.default?.() ?? null
+  },
+})
+
+type RenderFn = ReturnType<typeof useLayerViewRender>
+
+function setupRender(
+  bound: Ref<LayerBound>,
+  visible: Ref<boolean> = shallowRef(true),
+): { render: RenderFn; unmount: () => void } {
+  let render!: RenderFn
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        render = useLayerViewRender(bound, visible)
+        return () => null
+      },
+    }),
+  )
+  return {
+    render,
+    unmount: () => wrapper.unmount(),
+  }
+}
+
+function asArrayTree(tree: ReturnType<RenderFn>): [VNode, VNode | null] {
   expect(Array.isArray(tree)).toBe(true)
   return tree as [VNode, VNode | null]
 }
 
-describe('createLayerViewVNode', () => {
-  it('should place a layer-content-to anchor and teleport marked content', () => {
-    const target = document.createElement('div')
-    const refContentTo = ref<HTMLUnknownElement | null>(target)
-    const [containerVNode, teleportVNode] = asArrayTree(
-      createLayerViewVNode({
-        container: {
-          component: MinimalContainer,
-          props: { modelValue: true },
-          slots: {},
-        },
-        content: {
-          component: StubContent,
-          props: { message: 'hello' },
-          slots: {},
-        },
-        openId: 1,
-        refContentTo,
-      }),
-    )
+function setAnchor(containerVNode: VNode, el: HTMLUnknownElement | null) {
+  const anchor = (
+    containerVNode.children as { default?: () => VNode }
+  ).default?.()
+  const anchorRef = anchor?.props?.ref as ((el: unknown) => void) | undefined
+  expect(anchorRef).toBeTypeOf('function')
+  anchorRef!(el)
+}
+
+describe('useLayerViewRender (Vue 3)', () => {
+  it('should omit teleport before the anchor is set', () => {
+    const bound = shallowRef({
+      container: {
+        component: MinimalContainer,
+        props: { modelValue: true },
+        slots: {},
+      },
+      content: {
+        component: StubContent,
+        props: { message: 'hello' },
+        slots: {},
+      },
+    } as LayerBound)
+    const { render, unmount } = setupRender(bound)
+    const [containerVNode, teleportVNode] = asArrayTree(render(1))
 
     expect(containerVNode.type).toBe(MinimalContainer)
+    expect(teleportVNode).toBeNull()
+    unmount()
+  })
+
+  it('should place a layer-content-to anchor and teleport marked content', () => {
+    const bound = shallowRef({
+      container: {
+        component: MinimalContainer,
+        props: { modelValue: true },
+        slots: {},
+      },
+      content: {
+        component: StubContent,
+        props: { message: 'hello' },
+        slots: {},
+      },
+    } as LayerBound)
+    const { render, unmount } = setupRender(bound)
+    const target = document.createElement('div')
+
+    const [containerBefore] = asArrayTree(render(1))
+    setAnchor(containerBefore, target)
+
+    const [containerVNode, teleportVNode] = asArrayTree(render(1))
     const anchor = (
       containerVNode.children as { default?: () => VNode }
     ).default?.()
@@ -59,107 +116,96 @@ describe('createLayerViewVNode', () => {
     expect(symbolKeys.some((key) => contentProps?.[key] === true)).toBe(true)
     expect(contentProps?.message).toBe('hello')
     expect(contentProps?.key).toBe(1)
+    unmount()
   })
 
-  it('should omit teleport when refContentTo is empty', () => {
-    const refContentTo = ref<HTMLUnknownElement | null>(null)
-    const [containerVNode, teleportVNode] = asArrayTree(
-      createLayerViewVNode({
-        container: {
-          component: MinimalContainer,
-          props: { modelValue: true },
-          slots: {},
-        },
-        content: {
-          component: StubContent,
-          props: { message: 'hello' },
-          slots: {},
-        },
-        openId: 1,
-        refContentTo,
-      }),
-    )
+  it('should teleport to parking when container changes before the new anchor mounts', () => {
+    const bound = shallowRef({
+      container: {
+        component: MinimalContainer,
+        props: { modelValue: true },
+        slots: {},
+      },
+      content: {
+        component: StubContent,
+        props: { message: 'hello' },
+        slots: {},
+      },
+    } as LayerBound)
+    const { render, unmount } = setupRender(bound)
+    const target = document.createElement('div')
 
-    expect(containerVNode.type).toBe(MinimalContainer)
-    expect(teleportVNode).toBeNull()
-  })
+    setAnchor(asArrayTree(render(1))[0], target)
 
-  it('should teleport to parking target when refContentTo is set to parking', () => {
-    const parking = document.createElement('layer-content-parking')
-    parking.style.display = 'none'
-    const refContentTo = ref<HTMLUnknownElement | null>(parking)
-    const [, teleportVNode] = asArrayTree(
-      createLayerViewVNode({
-        container: {
-          component: MinimalContainer,
-          props: { modelValue: true },
-          slots: {},
-        },
-        content: {
-          component: StubContent,
-          props: { message: 'hello' },
-          slots: {},
-        },
-        openId: 1,
-        refContentTo,
-      }),
-    )
+    bound.value = {
+      ...bound.value,
+      container: {
+        component: OtherContainer,
+        props: { modelValue: true },
+        slots: {},
+      },
+    }
+    setAnchor(asArrayTree(render(1))[0], null)
 
+    const [, teleportVNode] = asArrayTree(render(1))
     expect(teleportVNode?.type).toBe(Teleport)
-    expect(teleportVNode?.props?.to).toBe(parking)
+    expect((teleportVNode?.props?.to as HTMLElement)?.tagName).toBe(
+      'LAYER-CONTENT-PARKING',
+    )
     expect(teleportVNode?.props?.defer).toBeUndefined()
     expect((teleportVNode?.children as VNode[])?.[0]?.type).toBe(StubContent)
+    unmount()
   })
 
   it('should omit content branch when content is undefined', () => {
+    const bound = shallowRef({
+      container: {
+        component: MinimalContainer,
+        props: { modelValue: false },
+        slots: {},
+      },
+    } as LayerBound)
+    const { render, unmount } = setupRender(bound)
     const target = document.createElement('div')
-    const refContentTo = ref<HTMLUnknownElement | null>(target)
-    const [, teleportVNode] = asArrayTree(
-      createLayerViewVNode({
-        container: {
-          component: MinimalContainer,
-          props: { modelValue: false },
-          slots: {},
-        },
-        refContentTo,
-      }),
-    )
 
+    setAnchor(asArrayTree(render())[0], target)
+
+    const [, teleportVNode] = asArrayTree(render())
     expect(teleportVNode?.type).toBe(Teleport)
     expect((teleportVNode?.children as VNode[])?.[0]).toBeNull()
+    unmount()
   })
 
   it('should use Teleport tree for LayerNoContainer and project props onto content', () => {
     const contentRef = vi.fn()
     const onUpdate = vi.fn()
+    const bound = shallowRef({
+      container: {
+        component: LayerNoContainer,
+        props: {
+          modelValue: true,
+          'onUpdate:modelValue': onUpdate,
+          width: '480px',
+          title: 'from-container',
+        },
+        slots: {},
+      },
+      content: {
+        component: StubContent,
+        props: {
+          message: 'hello',
+          width: '720px',
+          ref: contentRef,
+        },
+        slots: {},
+      },
+    } as LayerBound)
+    const { render, unmount } = setupRender(bound)
     const target = document.createElement('div')
-    const refContentTo = ref<HTMLUnknownElement | null>(target)
-    const [containerVNode, teleportVNode] = asArrayTree(
-      createLayerViewVNode({
-        container: {
-          component: LayerNoContainer,
-          props: {
-            modelValue: true,
-            'onUpdate:modelValue': onUpdate,
-            width: '480px',
-            title: 'from-container',
-          },
-          slots: {},
-        },
-        content: {
-          component: StubContent,
-          props: {
-            message: 'hello',
-            width: '720px',
-            ref: contentRef,
-          },
-          slots: {},
-        },
-        openId: 2,
-        refContentTo,
-      }),
-    )
 
+    setAnchor(asArrayTree(render(2))[0], target)
+
+    const [containerVNode, teleportVNode] = asArrayTree(render(2))
     expect(containerVNode.type).toBe(LayerNoContainer)
     expect(containerVNode.props).toEqual({})
 
@@ -176,5 +222,6 @@ describe('createLayerViewVNode', () => {
 
     const symbolKeys = Object.getOwnPropertySymbols(props)
     expect(symbolKeys.some((key) => props[key] === true)).toBe(true)
+    unmount()
   })
 })

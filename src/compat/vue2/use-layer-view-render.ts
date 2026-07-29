@@ -1,21 +1,14 @@
-import { h, type Component, type VNode } from 'vue'
-import type { LayerBoundNode } from '@/types'
-import type { CreateLayerViewVNodeOptions } from '@/compat/types'
+import { h, type Component, type Ref, type VNode } from 'vue'
+import type { LayerBound, LayerBoundNode } from '@/types'
 import { LayerNoContainer } from '@/runtime/layer-no-container'
 import { markLayerContent, toPlatformSlots, toPlatformVNodeData } from './platform-vnode'
 
-export type { CreateLayerViewVNodeOptions }
-
-/**
- * Nested tree: container default slot holds content (D0.2).
- * LayerNoContainer → flat h(content) with full prop projection (D0.5).
- * No Teleport / parking — `refContentTo` is ignored (see Vue 3 counterpart).
- */
-export function createLayerViewVNode({
+/** Nested tree: container default holds content (D0.2). NoContainer → flat + full projection (D0.5). */
+function createLayerViewVNode({
   container,
   content,
   openId,
-}: CreateLayerViewVNodeOptions): VNode | null {
+}: LayerBound & { openId?: number }): VNode | null {
   const noContainer = container.component === LayerNoContainer
 
   if (noContainer) {
@@ -56,11 +49,26 @@ function createContentVNode({
     ...content.props,
     key,
   })
-  return h(
-    content.component as Component,
-    {
-      ...toPlatformVNodeData(flat),
-      ...toPlatformSlots(content.slots ?? {}),
-    },
-  )
+  return h(content.component as Component, {
+    ...toPlatformVNodeData(flat),
+    ...toPlatformSlots(content.slots ?? {}),
+  })
+}
+
+/**
+ * Setup-time: nested container/content tree (no Teleport / parking).
+ * Same signature as Vue 3 so `LayerView` calls one compat export.
+ */
+export function useLayerViewRender(
+  bound: Ref<LayerBound>,
+  _visible: Ref<boolean>,
+): (openId?: number) => VNode | null {
+  return (openId) => {
+    const { container, content } = bound.value
+    return createLayerViewVNode({
+      container,
+      content,
+      openId: content ? openId : undefined,
+    })
+  }
 }
