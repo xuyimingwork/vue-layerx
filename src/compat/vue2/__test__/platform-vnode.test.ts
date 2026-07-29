@@ -27,6 +27,12 @@ describe('toPlatformVNodeData', () => {
     })
   })
 
+  it('should keep malformed on* keys in props when event parse fails', () => {
+    expect(toPlatformVNodeData({ onfoo: 1 })).toEqual({
+      props: { onfoo: 1 },
+    })
+  })
+
   it('should lift key ref class style and layer-content mark out of props', () => {
     const data = toPlatformVNodeData(
       markLayerContent({

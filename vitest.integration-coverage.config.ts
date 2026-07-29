@@ -28,6 +28,7 @@ export default defineConfig({
       exclude: [
         'src/**/__test__/**',
         'src/**/types/**',
+        'src/compat/types.ts',
         'src/**/*.d.ts',
       ],
     },

@@ -21,7 +21,11 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests-vue2/setup.ts'],
-    include: ['./tests-vue2/integration/**/*.test.ts'],
+    include: [
+      './tests-vue2/integration/**/*.test.ts',
+      // Vue 2.7-only internals (excluded from main unit vitest)
+      './src/compat/vue2/__test__/create-layer-app.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage/integration-vue2',
@@ -30,6 +34,7 @@ export default defineConfig({
       exclude: [
         'src/**/__test__/**',
         'src/**/types/**',
+        'src/compat/types.ts',
         'src/**/*.d.ts',
       ],
     },

@@ -8,7 +8,7 @@ Tests follow a two-tier layout:
 |------|----------|---------|
 | Unit | `src/**/__test__/*.test.ts` | Test internal modules in isolation, co-located with source |
 | Integration (Vue 3) | `tests-vue3/integration/*.test.ts` | Public API as installed consumer of **`dist`** |
-| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` | Critical path + D0.19 smoke against **`dist`** |
+| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` | Critical-path gate against **`dist`**（按公开 API 分文件，覆盖面小于 vue3） |
 
 Root `tests/` holds unit-only helpers:
 
@@ -70,6 +70,19 @@ pnpm test:integration     # tests-vue3 → dist
 | File | API | describe 划分 |
 |------|-----|--------------|
 | `ssr.test.ts` | SSR 约束 | 平铺场景 |
+
+### Vue 2.7 (`tests-vue2/integration`)
+
+Same public-API file names as vue3 where covered; suite stays a **critical-path gate**, not full parity:
+
+| File | Covers |
+|------|--------|
+| `entry-smoke.test.ts` | D0.19 published entry under Vue 2.7 |
+| `use-layer.test.ts` | open / close / model / remount / outside setup |
+| `use-layer.host.test.ts` | Host `provide` / `inject` |
+| `define-layer.test.ts` | `defineLayer` on content root |
+| `layer-no-container.test.ts` | `LayerNoContainer` |
+| `ssr.test.ts` | no-`document` mount skip |
 
 ### Decision guide — where to add a new integration case
 
