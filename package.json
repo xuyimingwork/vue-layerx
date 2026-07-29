@@ -1,7 +1,7 @@
 {
   "name": "vue-layerx",
   "version": "1.1.0",
-  "description": "让弹窗组件通过命令方式调用",
+  "description": "像路由导航一样调度弹窗，像普通组件一样复用弹窗内容",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
