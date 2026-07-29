@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "element-ui": "^2.15.14",
+    "shiki": "^2.5.0",
     "vue": "^2.7.16",
     "vue-layerx": "workspace:*"
   },

@@ -1,4 +1,5 @@
 import type { DemoGroup } from './types'
+import { filesFor } from './sources'
 
 import BasicDemo from './01-basic/index.vue'
 import CrudDemo from './02-crud/index.vue'
@@ -31,6 +32,7 @@ export const demoGroups: DemoGroup[] = [
           '调用方仅 createLayer(Container) + useLayer(Content) + open()，全部默认参数；标题、closeOn、footer 由 content 内 defineLayer / LayerTemplate 声明。',
         tags: ['createLayer', 'useLayer', 'open()', 'defineLayer', 'LayerTemplate'],
         component: BasicDemo,
+        files: filesFor('01-basic'),
       },
       {
         id: 'crud',
@@ -40,6 +42,7 @@ export const demoGroups: DemoGroup[] = [
           '典型业务：open({ props }) 传入动态数据与 onSuccess 回调；调用方 LayerTemplate :to 注入 content #header。',
         tags: ['open(props)', 'closeOn', 'LayerTemplate :to', 'onSuccess'],
         component: CrudDemo,
+        files: filesFor('02-crud'),
       },
       {
         id: 'layer-no-container',
@@ -49,6 +52,7 @@ export const demoGroups: DemoGroup[] = [
           '同一 useLayer：adapter 对内嵌 Dialog 的 content 换成 LayerNoContainer（透明壳 + props 投影）；UserForm 仍走 ElDialog。也可 createLayer(LayerNoContainer)。',
         tags: ['LayerNoContainer', 'adapter', '渐进接入'],
         component: LayerNoContainerDemo,
+        files: filesFor('10-layer-no-container'),
       },
       {
         id: 'define-no-container',
@@ -58,6 +62,7 @@ export const demoGroups: DemoGroup[] = [
           '工厂仍是 createLayer(ElDialog)、无 adapter；单体 content 内 defineLayer({ component: LayerNoContainer }) 同构换壳（park，不 remount）。可与上一例对比。',
         tags: ['defineLayer', 'LayerNoContainer', 'component'],
         component: DefineNoContainerDemo,
+        files: filesFor('15-define-no-container'),
       },
     ],
   },
@@ -74,6 +79,7 @@ export const demoGroups: DemoGroup[] = [
           'LayerTemplate visible-outside + layer.exists：页内 footer 落表单下，弹层时通过 slot render fn 挂到 Dialog.footer。',
         tags: ['visible-outside', 'layer.exists', 'content 复用'],
         component: InlineReuseDemo,
+        files: filesFor('03-inline-reuse'),
       },
       {
         id: 'template-rebind',
@@ -83,6 +89,7 @@ export const demoGroups: DemoGroup[] = [
           '弹层打开后在 content 内切换 LayerTemplate 的 :name（header / footer）：visible 时 dispose 旧注册并重绑，绿标在 Dialog 插槽间移动。',
         tags: ['LayerTemplate', ':name', 'dispose', '重绑', 'content 内'],
         component: TemplateRebindDemo,
+        files: filesFor('14-template-rebind'),
       },
       {
         id: 'nested-self',
@@ -92,6 +99,7 @@ export const demoGroups: DemoGroup[] = [
           '页内 UserDetail → 点好友开弹层 → 弹层内再点好友叠一层。content 用 getCurrentInstance().type + useDialog(Self) 避开循环依赖，每层独立 instance。',
         tags: ['getCurrentInstance', 'useDialog(Self)', '嵌套 open', '页内复用'],
         component: NestedSelfDemo,
+        files: filesFor('13-nested-self'),
       },
     ],
   },
@@ -108,6 +116,7 @@ export const demoGroups: DemoGroup[] = [
           '同一 FilterContent 用 defineLayer 写跨容器 props，LayerTemplate name 共用 footer；调用方 useDialog / useDrawer 分工厂打开，各自 adapt 滤 props、对齐 slot。',
         tags: ['useDialog + useDrawer', 'defineLayer', 'adapt', 'closeOn'],
         component: DualLayerDemo,
+        files: filesFor('04-dual-layer'),
       },
       {
         id: 'open-swap-container',
@@ -117,6 +126,7 @@ export const demoGroups: DemoGroup[] = [
           'content 内 defineLayer(() => ({ component: expanded ? ElDrawer : ElDialog })) 换壳；草稿与 expanded 都在 content 本地。工厂 adapter 只按最终 component 滤 props / 对齐 slot。',
         tags: ['defineLayer', 'component', 'adapter', '全屏', 'Teleport'],
         component: OpenSwapContainerDemo,
+        files: filesFor('11-open-swap-container'),
       },
       {
         id: 'clone',
@@ -126,6 +136,7 @@ export const demoGroups: DemoGroup[] = [
           '从同一实例 clone({ container }) 派生 clone 默认配置，visible 独立，各实例 open / close 互不影响。',
         tags: ['clone()', 'clone tier', '独立 visible', 'container.props'],
         component: CloneDemo,
+        files: filesFor('05-clone'),
       },
       {
         id: 'clone-parallel',
@@ -135,6 +146,7 @@ export const demoGroups: DemoGroup[] = [
           '在 A 已打开时从 A footer 触发打开 B（clone）：每个实例独立 layerRuntime，并行 open 时 visible 与 DOM 一致，close 互不影响。',
         tags: ['clone()', 'layerRuntime', '并行 open', '独立挂载'],
         component: CloneParallelDemo,
+        files: filesFor('05-clone-parallel'),
       },
     ],
   },
@@ -151,6 +163,7 @@ export const demoGroups: DemoGroup[] = [
           'await dialog.confirm()；closeOn.confirmed 决定 resolve/reject；LayerConfirmError.code 为 close | busy；可用 close({ confirmed: true }) 主动结算。',
         tags: ['confirm()', 'closeOn.confirmed', 'LayerConfirmError', 'close(options)'],
         component: ConfirmDemo,
+        files: filesFor('12-confirm'),
       },
       {
         id: 'before-close',
@@ -160,6 +173,7 @@ export const demoGroups: DemoGroup[] = [
           'defineLayer 配置 beforeClose 透传至 ElDialog；有脏数据时 X / 遮罩关闭需二次确认。',
         tags: ['beforeClose', 'defineLayer', 'container.props', 'closeOn'],
         component: BeforeCloseDemo,
+        files: filesFor('06-before-close'),
       },
       {
         id: 'config-merge',
@@ -169,6 +183,7 @@ export const demoGroups: DemoGroup[] = [
           '四级优先级：createLayer(defaults) → defineLayer → useDialog → open()。对比默认与 open 覆盖的标题、宽度。',
         tags: ['mergeFragment', 'open > use > define > create'],
         component: ConfigMergeDemo,
+        files: filesFor('07-config-merge'),
       },
     ],
   },
@@ -185,6 +200,7 @@ export const demoGroups: DemoGroup[] = [
           'createLayer content.props 工厂默认；open 覆盖 props / container / closeOn；倒计时 close() 与 onUnmounted 清理。',
         tags: ['createLayer', 'content.props', 'open.closeOn', 'close()', 'onUnmounted'],
         component: LifecycleDemo,
+        files: filesFor('08-lifecycle'),
       },
     ],
   },
@@ -201,6 +217,7 @@ export const demoGroups: DemoGroup[] = [
           'ElConfigProvider 须在 bindHost 组件的祖先；Content inherit size / locale 与自定义 provide。模块单例同样需在 Provider 子树内 bindHost()。',
         tags: ['provide', 'inject', 'bindHost', 'ElConfigProvider', 'useGlobalConfig'],
         component: ProvideInjectDemo,
+        files: filesFor('09-provide-inject'),
       },
     ],
   },

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DemoGroup } from '../demos/types'
+import DemoSource from './DemoSource.vue'
 
 defineProps<{
   groups: DemoGroup[]
@@ -67,6 +68,7 @@ defineProps<{
             </header>
             <div class="demo-section__body">
               <component :is="item.component" />
+              <DemoSource :files="item.files" />
             </div>
           </article>
         </section>

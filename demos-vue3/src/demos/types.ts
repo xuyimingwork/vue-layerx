@@ -1,5 +1,10 @@
 import type { Component } from 'vue'
 
+export interface DemoFile {
+  name: string
+  code: string
+}
+
 export interface DemoItem {
   id: string
   level: number
@@ -7,6 +12,7 @@ export interface DemoItem {
   description: string
   tags: string[]
   component: Component
+  files: DemoFile[]
 }
 
 export interface DemoGroup {

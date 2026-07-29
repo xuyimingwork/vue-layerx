@@ -17,8 +17,8 @@ export default defineConfig({
   lang: 'zh-CN',
   base,
   cleanUrls: true,
-  // ADR 链到仓库根 DESIGN.md，不在 docs 站内
-  ignoreDeadLinks: [/DESIGN$/],
+  // ADR 链到仓库根 DESIGN / TESTING / README，不在 docs 站内
+  ignoreDeadLinks: [/DESIGN$/, /TESTING$/, /README$/],
   themeConfig: {
     nav: [
       { text: '指南', link: '/guide/introduction' },

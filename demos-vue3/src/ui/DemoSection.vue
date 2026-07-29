@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ElTag } from 'element-plus'
+import DemoSource from './DemoSource.vue'
+import type { DemoFile } from '../demos/types'
 
 defineProps<{
   id: string
@@ -7,6 +9,7 @@ defineProps<{
   title: string
   description: string
   tags: string[]
+  files: DemoFile[]
 }>()
 </script>
 
@@ -26,6 +29,7 @@ defineProps<{
     </header>
     <div class="demo-section__body">
       <slot />
+      <DemoSource :files="files" />
     </div>
   </section>
 </template>

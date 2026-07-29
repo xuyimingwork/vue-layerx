@@ -55,6 +55,7 @@ defineProps<{
             :title="item.title"
             :description="item.description"
             :tags="item.tags"
+            :files="item.files"
           >
             <component :is="item.component" />
           </DemoSection>
