@@ -1,17 +1,17 @@
 # vue-layerx
 
-> 弹窗编程新范式：像路由导航一样调度弹窗，像普通组件一样复用弹窗内容。
+> 弹窗编程新范式：像路由导航一样打开弹窗，像普通组件一样复用弹窗内容。
 
 vue-layerx 是一个 Vue 弹窗调度框架，用于将已有的 Dialog / Drawer / Popup 组件转换为可编程弹层。
 
 它不替代现有 UI 组件，而是在其之上提供统一的弹窗生命周期管理、动态渲染和业务调用方式。
 
-像这样，三行代码打开弹窗：
+使用简单，三行代码打开弹窗：
 
 ```ts
-const useDialog = createLayer(ElDialog)
-const dialog = useDialog(HelloWorld)
-dialog.open()
+const useDialog = createLayer(ElDialog)   // 任意已有弹窗容器
+const dialog = useDialog(HelloWorld)      // 普通组件做弹窗内容
+dialog.open()                             // 直接调用打开
 ```
 
 - 📚 文档：[官网](https://xuyimingwork.github.io/vue-layerx/) [![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/xuyimingwork/vue-layerx) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/xuyimingwork/vue-layerx)
@@ -20,17 +20,15 @@ dialog.open()
 
 ## 特性
 
-- 同一套 API，支持 Vue 3.3+ 与 Vue 2.7（同包）
-- 无需维护弹层显示变量
-- 无需在模板内编写弹层样板代码
-- 弹层参数响应式传递
-- 弹层插槽模板式编写
-- 零外部依赖，不依赖三方 npm 包
-- 使用 TypeScript 编写，提供完整的类型定义
-- 单元测试覆盖率 100%，提供稳定性保障
-- 支持服务端渲染
-
-详见 [TESTING.md](./TESTING.md)。
+- 像路由导航一样打开弹窗：无需定义变量，无需预埋模板，直接通过 API 调起
+- 弹窗内容即普通组件：无需依赖特殊封装，提升组件复用能力
+- 支持响应式参数传递：保持 Vue 原生响应式能力
+- 支持插槽投递：命令式打开弹窗时，仍可使用 Vue 插槽组合能力
+- 统一 API：同时支持 Vue 3.3+ 与 Vue 2.7
+- 零运行时依赖：不依赖任何第三方 npm 包
+- TypeScript 编写：提供完整类型定义
+- 单元测试覆盖率 100%：保障核心功能稳定性
+- 支持服务端渲染（SSR）
 
 ## 安装
 
