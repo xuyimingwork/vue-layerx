@@ -5,6 +5,7 @@
 | 遇到什么 | 看哪篇 |
 |----------|--------|
 | 同一内容既要嵌页面，又要 Dialog / Drawer | [复用内容组件](./content-reuse) |
+| 新建 / 编辑 / 详情 / 审批串在一起看 | [综合案例：用户域 CRUD + 审批](./form-workflow) |
 | 复杂列表选择后要拿回结果 | [等待弹层结果](/guide/confirm) |
 | 打开时才知道弹哪个内容 / 异步组件 | [动态指定内容组件](/guide/dynamic-content) |
 | 弹层里 inject / 主题丢了、模块单例 | [上下文与生命周期](/guide/context-lifecycle) |
