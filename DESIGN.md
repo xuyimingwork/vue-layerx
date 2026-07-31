@@ -878,7 +878,7 @@ content **自包含**：业务完成只 `emit`；vue-layerx 与普通父组件�
 | `closeOn`（语法糖） | bind 写入 `content.props.onXxx`（用户 handler 在前，按 `when` 决定是否 `close()`）；`when` 同步且 `=== true`；define / use / open 按 event patch |
 | `LayerInstance.close()` | 使用侧命令式关闭 |
 | layer 自带关闭 | 容器 UI 触发内部 `close()` |
-| `beforeClose` | 写在 `container.props`，经 merge/adapter **透传给底层 layer 组件**；属于容器自身行为，**框架不介入**，与 `closeOn` 无关 |
+| `beforeClose` | 写在 `container.props`，经 merge/adapter **透传给底层 layer 组件**；属于容器自身行为，**框架不介入**，与 `closeOn` 无关。不另提供 layer 级 `onBeforeClose`（[ADR 0010](docs/adr/0010-no-framework-before-close.md)） |
 | 校验失败 | 不 emit 对应事件，不触发 `closeOn` |
 
 ---

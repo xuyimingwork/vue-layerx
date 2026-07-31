@@ -5,9 +5,9 @@ import AppSource from '../../examples/nested-self/App.vue?raw'
 import DetailSource from '../../examples/nested-self/UserDetail.vue?raw'
 </script>
 
-# 内容组件嵌套弹层
+# 详情里再开同款详情
 
-弹层里再打开一层（组织树、关联单据、好友详情）。同一份 `UserDetail` 可页内嵌入、弹层打开、再叠一层——每层独立 instance，互不影响。
+好友详情、关联单据、组织树点进下一级——**同一份** `UserDetail`：页内嵌入、弹层打开、再叠一层同款。每层独立 instance，互不影响。
 
 <DemoBlock
   :demo="Demo"

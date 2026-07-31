@@ -119,7 +119,7 @@ defineLayer({
 
 ## 同一工厂混用单体与已拆分内容
 
-需要同一个 `createLayer(ElDialog)` 既开单体又开已拆分的 `UserForm` 时，可在 [adapter](/guide/adapter) 里按内容组件换成 `LayerNoContainer`——带 Demo 见 [未拆分内容/容器弹窗接入](/guide/cookbook/legacy)。
+需要同一个 `createLayer(ElDialog)` 既开单体又开已拆分的 `UserForm` 时，可在 [adapter](/guide/adapter#同一工厂通吃单体与已拆分内容) 里按内容组件换成 `LayerNoContainer`（该节含 Demo）。
 
 设计细节见 [ADR 0001](https://github.com/xuyimingwork/vue-layerx/blob/main/docs/adr/0001-legacy-monolith-progressive-adoption.md)。
 

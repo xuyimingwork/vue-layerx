@@ -11,7 +11,7 @@ import LayersSource from '../../examples/form-workflow/layers.ts?raw'
 
 # 综合案例：用户域 CRUD + 审批
 
-把前面几篇里分散的能力串进一个中后台场景：**新建 / 编辑 / 详情 / 审批**。对照可看：内容与容器拆分、`LayerTemplate` 投递、`defineLayer` / `closeOn`、按场景拆实例；异步用 [vue-asyncx](https://vue-asyncx.js.org/)。
+把前面几篇里分散的能力串进一个中后台场景：**新建 / 编辑 / 详情 / 审批**。约定见 [最佳实践](./)；对照可看：内容与容器拆分、`LayerTemplate` 投递、`defineLayer` / `closeOn`、按场景拆实例；异步用 [vue-asyncx](https://vue-asyncx.js.org/)。
 
 本例要点：
 

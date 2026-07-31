@@ -67,7 +67,7 @@ async function openHeavy() {
 |------|------|
 | 页面里就知道弹哪个 | `useDialog(UserForm)`（基础用法） |
 | 运行时才定、或同实例换不同内容 | `useDialog()` + `open({ component })` |
-| 同一内容既弹层又嵌页 | 见 [复用内容组件](/guide/cookbook/content-reuse) |
+| 同一内容既弹层又嵌页 | 见实践 [综合案例](/guide/cookbook/form-workflow) |
 
 未绑内容且本次 `open` 也未传 `component` 时，层没有业务体（空壳）；改标题、宽度请走 `container:`，见 [打开与关闭](/guide/open-close#可以不传内容组件)。
 

@@ -13,3 +13,4 @@
 | [0007](./0007-static-define-via-define-options.md) | 内容侧静态 define：`defineOptions` 优先于自研宏 / setup 内换 `LayerNoContainer` | Deferred（搁置） |
 | [0008](./0008-vue-2-7-adaptation.md) | Vue 2.7 适配（无 Teleport；compat 分端；D0.19–22；前置 0009） | Accepted（已实现） |
 | [0009](./0009-integration-tests-consume-dist.md) | Vue 3 集成迁独立包并只消费 dist | Accepted（已实现；0008 前置） |
+| [0010](./0010-no-framework-before-close.md) | 不提供框架级 `onBeforeClose`：离开确认归壳 `beforeClose` + 内容 emit 前处理 | Accepted（刻意不做） |

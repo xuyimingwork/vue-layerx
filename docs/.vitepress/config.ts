@@ -71,13 +71,10 @@ export default defineConfig({
         },
         {
           text: '实践',
-          collapsed: true,
           items: [
-            { text: '概览', link: '/guide/cookbook/' },
-            { text: '复用内容组件', link: '/guide/cookbook/content-reuse' },
+            { text: '最佳实践', link: '/guide/cookbook/' },
             { text: '综合案例：用户域 CRUD + 审批', link: '/guide/cookbook/form-workflow' },
-            { text: '未拆分内容/容器弹窗接入', link: '/guide/cookbook/legacy' },
-            { text: '内容组件嵌套弹层', link: '/guide/cookbook/nested-self' },
+            { text: '详情里再开同款详情', link: '/guide/cookbook/nested-self' },
           ],
         },
       ],

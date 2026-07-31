@@ -32,9 +32,15 @@ const emit = defineEmits(['ok'])
 
 `closeOn` 写在 `content` 下；顶层的 `props` 仍是给容器的，和上一章一样。
 
-> 或许会觉得：内容先 `emit`，再在 `defineLayer` 里声明「这个事件要关层」，有点绕——为什么不直接在内容里提供 `close()` 之类的 API？
->
-> 因为内容首先是普通组件（**props 进来，事件出去**）；`defineLayer` / `closeOn` 只是在这套行为上面补一层「放进弹层时」的适配。弹层和页内嵌入一样，都是内容的使用方。所以关层是「听到内容某个事件之后」的行为，而不是内容主动去关。
+## 怎么想：先内容，再弹层反应
+
+或许会觉得：内容先 `emit`，再在 `defineLayer` 里声明「这个事件要关层」，有点绕——为什么不直接在内容里提供 `close()` 之类的 API？
+
+先把内容当成**普通业务组件**来设计，再考虑它在弹层里的默认契约。`UserForm` + `defineLayer`（含 `closeOn`）大致相当于以前的 `UserDialog`：表单行为仍在内容里，弹层侧只是根据内容的**事件**决定关不关。
+
+因此不要用「内容如何控制弹窗」来想问题，而要用「弹窗如何基于内容的行为作出反应」。若弹层无法正确反应，优先检查是否**缺事件**或**事件数据不够**（例如该区分成功 / 失败却没带上 payload），而不是给内容注入 `close()`。
+
+`defineLayer` / `closeOn` 只是在 props in / emits out 上面补一层「放进弹层时」的适配；弹层和页内嵌入一样，都是内容的使用方。
 
 ## 按条件关层：when
 
@@ -69,6 +75,8 @@ defineLayer({
 | `'ok'` / `ok: true` / `{ when: 'always' }` | 该事件触发即关 |
 | `{ event: 'ok', when: fn }` / `ok: { when: fn }` | 返回 `true` 才关 |
 | `ok: false` / `{ when: 'none' }` | 不关（常用来盖掉内容默认） |
+
+`when` 表示：该事件**已经发生**后，是否根据事件参数决定关层。这是对事件值的**同步**判断（返回值须 `=== true`）。在此处做异步（例如再弹 MessageBox）没有意义——「要不要发出这次意图」应在 `emit` 之前处理；壳上的离开确认（X / 取消）走容器的 `beforeClose`，见 [最佳实践](/guide/cookbook/)、[综合案例](/guide/cookbook/form-workflow)。
 
 ## 覆盖 closeOn
 

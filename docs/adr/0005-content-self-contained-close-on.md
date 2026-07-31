@@ -46,6 +46,8 @@ content.emit('success')  →  closeOn 接线  →  LayerInstance.close()
 
 `closeOn` 声明「哪些 emit 触发 close」，在 bind 阶段写成 content 的 `onXxx`（见 DESIGN.md）。关层始终在 content **之外**完成。
 
+心智模型：先把 content 当普通组件（事件契约自洽），再声明弹层如何**依据事件反应**；`UserForm` + `defineLayer` ≈ 以前的 `UserDialog`。弹层反应不了时，优先补事件或事件数据，而不是给 content `close()`。`closeOn.when` 是事件发生后对载荷的**同步**判断（见用户指南 [用事件关闭弹层](../guide/close-on.md)）；异步离开确认不在此列（[ADR 0010](./0010-no-framework-before-close.md)）。
+
 ### 2. `defineLayer` 返回值不提供 `close`（及同类操作弹层的属性）
 
 若返回 `close`，content 就可以**不经外部交互**关掉弹层。那是在引导实现方把 content 写成 **弹层优先**——完成路径直接碰层生命周期。
