@@ -35,6 +35,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
+    "docs:bundle": "node scripts/bundle-guide-md.mjs",
     "site:build": "pnpm build && pnpm docs:build && DEMOS_BASE=\"${DEMOS_VUE3_BASE:-/demos/vue3/}\" pnpm --filter demos-vue3 build && DEMOS_BASE=\"${DEMOS_VUE2_BASE:-/demos/vue2/}\" pnpm --filter demos-vue2 build && rm -rf docs/.vitepress/dist/demos docs/.vitepress/dist/playground && mkdir -p docs/.vitepress/dist/demos && cp -R demos-vue3/dist docs/.vitepress/dist/demos/vue3 && cp -R demos-vue2/dist docs/.vitepress/dist/demos/vue2",
     "test:integration": "pnpm --filter tests-vue3 test",
     "test:integration:vue2": "pnpm --filter tests-vue2 test"

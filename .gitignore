@@ -4,6 +4,7 @@ coverage
 .pnpm-store
 docs/.vitepress/cache
 docs/.vitepress/dist
+docs/guide/_bundle.md
 smoke/node_modules
 smoke/dist
 smoke/pnpm-lock.yaml
