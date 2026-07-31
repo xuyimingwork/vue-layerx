@@ -7,6 +7,7 @@ import {
   ElIcon,
   ElInput,
   ElMessage,
+  ElMessageBox,
   ElTooltip,
 } from 'element-plus'
 import { WarningFilled } from '@element-plus/icons-vue'
@@ -32,21 +33,6 @@ const mode = computed(
   () => props.mode ?? (props.userId != null ? 'edit' : 'create'),
 )
 
-// 定义组件在弹层容器中的表现（响应式）
-const layer = defineLayer(() => ({
-  props: {
-    title:
-      mode.value === 'view'
-        ? '用户详情'
-        : mode.value === 'edit'
-          ? '编辑用户'
-          : '新增用户',
-  },
-  content: {
-    closeOn: ['createDone', 'updateDone'],
-  },
-}))
-
 const name = ref('')
 const title = ref('')
 
@@ -66,11 +52,46 @@ const { user, queryUserLoading } = useAsyncData(
   },
 )
 
-// 数据回填
+// 数据回填；脏检查基线直接对照 user（新建无 user 则相对空串）
 watch(user, (row) => {
   name.value = row?.name ?? ''
   title.value = row?.title ?? ''
 })
+
+const dirty = computed(
+  () =>
+    mode.value !== 'view' &&
+    (name.value !== (user.value?.name ?? '') ||
+      title.value !== (user.value?.title ?? '')),
+)
+
+// 壳 beforeClose：挡「取消」/ X / 遮罩。成功关层走 emit + closeOn，不经此钩子。
+const layer = defineLayer(() => ({
+  props: {
+    title:
+      mode.value === 'view'
+        ? '用户详情'
+        : mode.value === 'edit'
+          ? '编辑用户'
+          : '新增用户',
+    beforeClose: (done: (cancel?: boolean) => void) => {
+      if (!dirty.value) {
+        done()
+        return
+      }
+      ElMessageBox.confirm('内容未保存，确定关闭？', '提示', {
+        type: 'warning',
+        confirmButtonText: '放弃修改',
+        cancelButtonText: '继续编辑',
+      })
+        .then(() => done())
+        .catch(() => done(true))
+    },
+  },
+  content: {
+    closeOn: ['createDone', 'updateDone'],
+  },
+}))
 
 // 新增
 const { createUser, createUserLoading } = useAsync('createUser', () => {
