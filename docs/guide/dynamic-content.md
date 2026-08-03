@@ -71,6 +71,19 @@ async function openHeavy() {
 
 未绑内容且本次 `open` 也未传 `component` 时，层没有业务体（空壳）；改标题、宽度请走 `container:`，见 [打开与关闭](/guide/open-close#可以不传内容组件)。
 
+## 也可以换容器组件
+
+顶层 `component` 指**内容**；要换壳（例如当次用 Drawer）写在 `container` 里：
+
+```ts
+dialog.open({
+  props: { id: 1 },
+  container: { component: ElDrawer },
+})
+```
+
+`useDialog(Content, { container: { component } })` 同理。换壳后插槽名、`model` 等协议要自己对齐（或用 [adapter](/guide/adapter) 统一改）；换成「无外层容器」见 [容器与内容未拆分](/guide/no-container)。Vue 2.7 上打开后再换容器的差异见 [Vue 2.7 兼容](/guide/vue2)。
+
 ## 下一步
 
 `confirm` 等结果见 [等待弹层结果](/guide/confirm)。`bindHost` / Host 见 [上下文与生命周期](/guide/context-lifecycle)；`clone` 等见 [实例的更多能力](/guide/instance)。

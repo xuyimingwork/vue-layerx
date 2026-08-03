@@ -88,9 +88,9 @@ const { approveUser, approveUserLoading } = useAsync('approveUser', () =>
     :sub-title="`${result?.name} · ${result?.title}`"
   />
 
-  <!-- 页内复用时 visible-outside 就地渲染；弹层内仍投递到壳的 action -->
+  <!-- 弹层投进壳的 action；页内因 visible-outside 就地渲染。样式两边一致。 -->
   <LayerTemplate :to="layer" name="action" visible-outside>
-    <div :class="['action', { 'action--inline': !layer.exists }]">
+    <div class="action">
       <template v-if="phase === 'form'">
         <ElButton
           type="warning"
@@ -118,11 +118,6 @@ const { approveUser, approveUserLoading } = useAsync('approveUser', () =>
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
-
-.action--inline {
   margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--el-border-color-lighter);
 }
 </style>

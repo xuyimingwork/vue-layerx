@@ -51,6 +51,7 @@
 
 | 场景 | 篇目 |
 |------|------|
+| 操作区既投壳槽又要页内落点（同款 `visible-outside` / 外壳不同时复用内层） | [页内与弹层共用操作区](./action-dual-host) |
 | 新建 / 编辑 / 详情 / 审批，壳取消与 `beforeClose`，页内复用 | [综合案例：用户域 CRUD + 审批](./form-workflow) |
 | 同一详情组件叠多层、自引用 `useDialog` | [详情里再开同款详情](./nested-self) |
 

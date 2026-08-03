@@ -44,7 +44,7 @@ const layer = defineLayer({ props: { title: '…' } })
 layer.exists // true：弹层中；false：页内等普通使用
 ```
 
-只声明标题、宽度时用不到。需要「页内 / 弹层两套操作」时，见实践 [综合案例](/guide/cookbook/form-workflow)（`visible-outside` / `layer.exists`）。
+只声明标题、宽度时用不到。需要「页内 / 弹层两套操作区」时，见实践 [页内与弹层共用操作区](/guide/cookbook/action-dual-host)。
 
 ## 下一步
 

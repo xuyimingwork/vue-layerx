@@ -37,11 +37,13 @@ export const useDialog = createLayer(ElDialog, {
 })
 ```
 
-也可以在这里根据合并结果做改名、删字段等（例如把 `width` 挪成另一个容器的 `size`；或按屏宽换 Dialog / Drawer）。页内与弹层共用同一内容、用 `visible-outside` 适配操作区，见实践 [综合案例](/guide/cookbook/form-workflow)。
+也可以在这里根据合并结果做改名、删字段等（例如把 `width` 挪成另一个容器的 `size`；或按屏宽把 `container.component` 换成 Drawer）。
+
+当次 / 某实例只要换壳、不必走工厂约定时，也可直接 `open` / `use` 写 `container: { component }`，见 [动态指定内容组件 · 也可以换容器组件](/guide/dynamic-content#也可以换容器组件)。
 
 ## 和 open 里改配置怎么选
 
-- 只影响这一次 → `open({ … })` 或 `useDialog(内容, { … })`
+- 只影响这一次 → `open({ … })` 或 `useDialog(内容, { … })`（含换 `container.component`）
 - 没有人写时的默认 → `createLayer` 第二参的 `props`
 - 合并完仍要按项目约定改掉 → `adapter`
 

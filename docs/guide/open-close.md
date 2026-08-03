@@ -68,7 +68,7 @@ dialog.open({
 | `close()` | 关闭弹层 |
 | `visible` | 是否打开（只读 getter，直接读 `dialog.visible`） |
 
-`confirm` 见 [等待弹层结果](/guide/confirm)；`clone`、模块单例等见 [实例的更多能力](/guide/instance)。
+日常开合用上面三件即可。要从弹层拿回结果见 [等待弹层结果](/guide/confirm)；需要 `clone`、或打开后拿内容 / 容器组件实例，见进阶 [实例的更多能力](/guide/instance)。
 
 ## 可以不传内容组件
 

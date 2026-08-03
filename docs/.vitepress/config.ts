@@ -17,6 +17,8 @@ export default defineConfig({
   lang: 'zh-CN',
   base,
   cleanUrls: true,
+  // 指南合集由 docs:bundle 生成，不作为站内页面
+  srcExclude: ['**/guide/_bundle.md'],
   // ADR 链到仓库根 DESIGN / TESTING / README，不在 docs 站内
   ignoreDeadLinks: [/DESIGN$/, /TESTING$/, /README$/],
   themeConfig: {
@@ -73,6 +75,7 @@ export default defineConfig({
           text: '实践',
           items: [
             { text: '最佳实践', link: '/guide/cookbook/' },
+            { text: '页内与弹层共用操作区', link: '/guide/cookbook/action-dual-host' },
             { text: '综合案例：用户域 CRUD + 审批', link: '/guide/cookbook/form-workflow' },
             { text: '详情里再开同款详情', link: '/guide/cookbook/nested-self' },
           ],

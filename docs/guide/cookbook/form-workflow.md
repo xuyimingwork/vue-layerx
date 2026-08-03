@@ -19,7 +19,7 @@ import LayersSource from '../../examples/form-workflow/layers.ts?raw'
 - **壳统一 `action`**：`BaseDialog` 底栏（自带取消 + 业务按钮），`BaseDrawer` 标题右侧；内容一律 `LayerTemplate name="action"`。详情 `view` 仍投递带 tooltip 的警告图标，与壳上「取消」并存——内容补充外壳，不覆盖。
 - **离开确认走壳 `beforeClose`**：`UserForm` 在 `defineLayer` 里透传 ElDialog 的 `beforeClose`（脏数据二次确认）。`BaseDialog` 的「取消」调用 `handleClose()`，与点 X / 遮罩同一条路，才会进该钩子——不要直接 `emit(false)` 绕过。成功保存仍是内容 `emit` + `closeOn`，不经 `beforeClose`；不想关就别 `emit`。
 - **按场景拆实例（本例）**：`userCreate` / `userEdit` / `userDetail` / `userAudit`，`mode` 与回调写在 `use` 第二参。实际项目也可以只用一个 `UserForm` 实例，在 `open` 时传入 `mode`。
-- **审批可页内复用**：`UserAudit` 的 `action` 加 `visible-outside`，用 `layer.exists` 给操作区加页内样式；「平铺审核」直接嵌组件，不经 Drawer。布局更复杂时可用 [VueUse `createReusableTemplate`](https://vueuse.org/core/createreusabletemplate/) 复用多套外壳 markup。
+- **审批可页内复用**：`UserAudit` 的 `action` 加 `visible-outside`（同款操作区多一个落点）；「平铺审核」直接嵌组件，不经 Drawer。页内 / 弹层外壳不同时见上一篇 [页内与弹层共用操作区](./action-dual-host)。
 
 ```vue
 <LayerTemplate :to="layer" name="action">…</LayerTemplate>

@@ -56,6 +56,7 @@ const SECTIONS = [
     title: '实践',
     pages: [
       { title: '最佳实践', link: '/guide/cookbook/' },
+      { title: '页内与弹层共用操作区', link: '/guide/cookbook/action-dual-host' },
       { title: '综合案例：用户域 CRUD + 审批', link: '/guide/cookbook/form-workflow' },
       { title: '详情里再开同款详情', link: '/guide/cookbook/nested-self' },
     ],

@@ -65,6 +65,7 @@
     "@element-plus/icons-vue": "^2.3.2",
     "@vitest/coverage-v8": "^3.2.4",
     "@vue/test-utils": "^2.4.6",
+    "@vueuse/core": "^14.4.0",
     "element-plus": "^2.11.4",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-report": "^3.0.1",
