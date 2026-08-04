@@ -37,25 +37,35 @@ type VueBuiltinPropKeys =
 
 /**
  * Extract public props from a component definition.
- * Local shim for Vue 2.7 + Vue 3 (single package `.d.ts`, ADR 0008 D0.14).
+ * `[C] extends […]` is **non-distributive**: Vue / UI-lib `Component` unions
+ * must not become `PropsOf<A> | PropsOf<B>` (keyof that union is often `never`,
+ * which makes `LayerPropsInput` reject every real prop like `width`).
  * Falls back to a loose record when the shape cannot be inferred.
  */
-export type PropsOf<C> = C extends new (...args: any[]) => { $props: infer P }
-  ? Simplify<Omit<NonNullable<P>, VueBuiltinPropKeys>>
-  : C extends (props: infer P, ...args: any[]) => any
-    ? Simplify<Omit<NonNullable<P>, VueBuiltinPropKeys>>
-    : Record<string, unknown>
+export type PropsOf<C> = [C] extends [
+  new (...args: any[]) => { $props: infer P },
+]
+  ? NormalizeProps<Omit<NonNullable<P>, VueBuiltinPropKeys>>
+  : [C] extends [(props: infer P, ...args: any[]) => any]
+    ? NormalizeProps<Omit<NonNullable<P>, VueBuiltinPropKeys>>
+    : LooseProps
+
+/** Empty / unusable key sets → loose record (safe for Element UI etc.). */
+type NormalizeProps<P> = [keyof P & string] extends [never]
+  ? LooseProps
+  : Simplify<P>
 
 /**
  * User-facing props input for typed open / use / create configs.
- * Partial because defaults may already exist on lower merge tiers.
- * No open index signature — excess property checks must work.
+ *
+ * - Keys from `P` keep **precise** types (Vue 3: `onSuccess` payload etc.)
+ * - String index allows undeclared keys (Vue 2 emit listeners not on `$props`,
+ *   custom props, Element UI bags when PropsOf is loose)
  */
-export type LayerPropsInput<P = Record<string, unknown>> = Simplify<
-  Partial<P> & {
-    ref?: LayerRefCallback | Ref<unknown>
-  }
->
+export type LayerPropsInput<P = LooseProps> = Partial<P> & {
+  ref?: LayerRefCallback | Ref<unknown>
+  [extra: string]: unknown
+}
 
 /** Loose fallback when no Content / Container props are bound. */
 export type LooseProps = Record<string, unknown>

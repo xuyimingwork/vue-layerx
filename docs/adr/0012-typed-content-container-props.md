@@ -50,11 +50,11 @@
 
 ### 2. `PropsOf` / `LayerPropsInput` / `Simplify`（本地 shim）
 
-- `PropsOf`：构造器 `$props` → 函数组件首参 → 否则 `Record<string, unknown>`；并 `Omit` 掉 `key` / `ref` / `class` / `style` 等 Vue 内建键
+- `PropsOf`：`[C] extends […]` **非分布式**（避免 UI 库 `Component` 联合变成 `PropsOf` 联合 → `keyof` 为 `never` → `width` 等全被多余属性拒绝）；抽不出或空键集时回落 `Record<string, unknown>`
 - `createLayer` / `useLayer` 的组件参数约束为内部 `AnyComponent`（构造器 | 对象 | 函数），**不**用 Vue 的 `Component`——同包 `.d.ts` 下 2.7 / 3 的 `Component` 互不兼容（`SetupContext.listeners` vs `expose`）
 - `Simplify<T> = { [K in keyof T]: T[K] } & {}`：展平交叉类型，改善 IDE hover（等同 type-fest / Vue Prettify 惯用法）
 - **不**把 Vue 3-only utility 当作唯一路径
-- `LayerPropsInput<P> = Simplify<Partial<P> & { ref?: … }>`，**无**开放索引签名
+- `LayerPropsInput<P> = Partial<P> & { ref?; [extra: string]: unknown }`：已知键（含 Vue 3 emit → `onXxx`）保留精确类型；字符串索引允许未抽出的键（Vue 2 的 `onXxx`、自定义 props）
 - 保留 `LayerPropsRaw` 给宽松 / 内部 normalize 路径
 
 ### 3. 非目标（本版明确不做）

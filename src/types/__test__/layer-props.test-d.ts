@@ -22,6 +22,9 @@ const StubContent = defineComponent({
     mode: { type: String, required: true as const },
     recordId: Number,
   },
+  emits: {
+    success: (_name: string) => true,
+  },
   setup() {
     return () => null
   },
@@ -37,6 +40,14 @@ type _NoVnodeHooks = ContentProps extends { onVnodeMounted?: unknown }
 const _noVnodeHooks: _NoVnodeHooks = true
 void _noVnodeHooks
 
+// Uninferable / empty PropsOf → still accept arbitrary props
+type LooseInput = LayerPropsInput<{} | Record<string, unknown> | { [x: string]: any }>
+const looseContainerProps: LooseInput = {
+  width: '480px',
+  appendToBody: true,
+}
+void looseContainerProps
+
 // --- PropsOf / LayerPropsInput ---
 
 const propsOk: LayerPropsInput<ContentProps> = {
@@ -50,6 +61,26 @@ const propsBad = {
   mode: 1 as number,
 } satisfies LayerPropsInput<ContentProps>
 void propsBad
+
+// Vue 3: emit listener stays precise when present on $props
+const emitOk: LayerPropsInput<ContentProps> = {
+  onSuccess: (_name: string) => {},
+}
+void emitOk
+
+const emitBad = {
+  // @ts-expect-error — success payload is string, not number
+  onSuccess: (_name: number) => {},
+} satisfies LayerPropsInput<ContentProps>
+void emitBad
+
+// Undeclared keys allowed (Vue 2 onXxx / custom props)
+const extraOk: LayerPropsInput<ContentProps> = {
+  mode: 'edit',
+  customFlag: true,
+  onCancel: () => {},
+}
+void extraOk
 
 // --- createLayer + useLayer(Content) ---
 
@@ -81,7 +112,16 @@ dialog.$open({
   mode: 1,
 })
 
-// Hover / expand: single flat object, not Partial<P> & { ref?: … }
+dialog.$open({
+  mode: 'edit',
+  onSuccess: (_name: string) => {},
+})
+
+dialog.$open({
+  // @ts-expect-error — success payload is string
+  onSuccess: (_name: number) => {},
+})
+
 type OpenProps = NonNullable<Parameters<typeof dialog.$open>[0]>
 type _OpenPropsHasMode = OpenProps extends { mode?: string } ? true : false
 const _openPropsShape: _OpenPropsHasMode = true

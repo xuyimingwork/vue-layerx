@@ -8,7 +8,7 @@
 | `LayerConfigContainer` | `defineLayer` 配置（顶层 = container） |
 | `LayerConfigContent` | `use` / `open` / `clone`（顶层 = content） |
 | `PropsOf` | 从组件定义抽出 props（Vue 2.7 / 3 本地 shim；去掉 class/style/key 等内建键） |
-| `LayerPropsInput` | 当次传入的 props（`Partial` + 可选 `ref`；内部已展平） |
+| `LayerPropsInput` | `Partial<P>` 保留精确类型 + 字符串索引允许未抽出的键（Vue 2 `onXxx` / 自定义 props） |
 | `LayerConfigFragment` | Canonical 双侧分栏（写 `adapter` 时用） |
 | `LayerAdapter` | `(fragment) => fragment` |
 | `LayerDefine` | `defineLayer` 返回值（含 `exists`） |
