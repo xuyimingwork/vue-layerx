@@ -18,7 +18,7 @@ const editor = main.clone({ props: { mode: 'edit' } })
 日常优先用 props 进、`emit` + `closeOn` 出。若必须命令式调子组件方法（如 `validate()`），打开后可通过只读的 `content`、`container` 访问组件实例；关闭后为 `null`。
 
 ```ts
-dialog.open({ props: { id: 1 } })
+dialog.$open({ id: 1 })
 await nextTick()
 dialog.content?.validate?.()
 ```

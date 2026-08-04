@@ -838,29 +838,27 @@ onSuccess: (...args) => {
 
 ---
 
-## 类型提示（可选）
+## 类型提示
 
-框架**能**从 `createLayer` 推导 `container.props`、从 content 组件推导 `props` / `emits`（进而约束 `closeOn`）。  
-**不能**从 `UserForm` 自动读出有哪些 layer slot、content slot——与 Vue 父组件无法自省子组件 slot 开口一样。
+框架从 `createLayer(Container)` 推导 **container.props**，从 `useX(Content)` 推导 **content props**，并接到 `$open` / `$confirm` / `open` / `use` 配置。见 [ADR 0012](docs/adr/0012-typed-content-container-props.md)。
 
-`useX()` **未绑 Content** 时，layer 可正常 open/close；`open({ component })` 传入 content 后类型推导生效。`props` / `container.props` 等**推不出则回落 `any`**（不为此做复杂条件类型）。
-
-使用侧若写 `useDialog<UserFormLayer>(UserForm)`，其中的 `UserFormLayer` 只能是 **content 作者手写** 的辅助类型（文档 / IDE），框架运行时**不读取**：
-
-```ts
-/** 可选：仅用于 props / emits / closeOn 类型提示 */
-export interface UserFormLayer {
-  props: { mode?: 'create' | 'edit'; recordId?: number }
-  emits: 'success' | 'cancel'
-}
-```
+- **推荐日常入口**：`$open(props)` / `$confirm(props)`（仅内容 props，类型最直接）。
+- **完整配置**：仍用 `open` / `confirm`（`LayerConfigContent`）；其中 `props`、`container.props` 分别按 Content / Container 收紧；`slots` / `closeOn` / `component` **本版不收窄**。
+- **未绑 Content**（`useDialog()`）或组件 props **推不出**：回落 `Record<string, unknown>`，不为此做复杂条件类型。
+- **不能**从内容组件自动读出有哪些 layer / content slot——与 Vue 父组件无法自省子组件 slot 开口一样；`LayerTemplate` 的 `name` 无框架类型。
+- **Vue 2.7**：同包一份 `.d.ts`；提示质量弱于 Vue 3，但须可编译。逃逸：`as LayerInstance<MyProps, ContainerProps>`。
 
 ```ts
-const userDialog = useDialog<UserFormLayer>(UserForm, {
-  closeOn: ['success', 'cancel'],
+const useDialog = createLayer(ElDialog, {
+  props: { width: '480px' }, // Container props
 })
 
-userDialog.open({
+const dialog = useDialog(UserForm, {
+  props: { mode: 'edit' }, // Content props
+})
+
+dialog.$open({ mode: 'create', recordId: 1 })
+dialog.open({
   props: { mode: 'edit' },
   container: { props: { title: '编辑' } },
 })
@@ -868,10 +866,10 @@ userDialog.open({
 
 | 字段 | 类型来源 |
 |------|----------|
-| `props` | content 组件 / `UserFormLayer` |
-| `container.props` | `createLayer` 注册的 `MyDialog` props |
-| `closeOn` | `UserFormLayer.emits`（手写泛型时） |
-| `LayerTemplate` 的 `name` / `:to` | **无框架类型**；须对照 UserForm 模板与 MyDialog 文档，与 Vue 使用 slot 相同 |
+| `$open` / 顶层 `props` | Content 组件 `PropsOf`（未绑则宽松） |
+| `container.props` | `createLayer` 注册的 Container `PropsOf` |
+| `closeOn` | 本版不收窄（仍 `CloseOnRaw`） |
+| `LayerTemplate` 的 `name` / `:to` | **无框架类型** |
 
 ---
 

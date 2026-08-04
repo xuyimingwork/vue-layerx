@@ -1,5 +1,9 @@
 import type { ComponentPublicInstance, Ref } from 'vue'
-import type { LayerConfigContent, LayerPropsRaw } from './config-raw'
+import type {
+  LayerConfigContentOf,
+  LayerPropsInput,
+  LooseProps,
+} from './config-raw'
 import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
 
 /** Local shim — Vue 2.7 has no MaybeRefOrGetter in its public types. */
@@ -17,27 +21,38 @@ export interface LayerDefine {
   readonly exists: boolean
 }
 
-export interface LayerInstance {
+/**
+ * Layer instance. Generic params tighten content / container props on open paths.
+ * Defaults stay loose (`Record<string, unknown>`) for unbound or uninferable components.
+ */
+export interface LayerInstance<
+  ContentP = LooseProps,
+  ContainerP = LooseProps,
+> {
   /** Snapshot tier only — plain config, not MaybeRefOrGetter. */
-  open: (config?: LayerConfigContent) => void
+  open: (config?: LayerConfigContentOf<ContentP, ContainerP>) => void
   /**
    * Sugar for content props only: `$open(props)` ≡ `open({ props })`.
    * No-arg ≡ `open()`. Does not accept LayerConfigContent (use `open` for container/slots/…).
    */
-  $open: (props?: LayerPropsRaw) => void
+  $open: (props?: LayerPropsInput<ContentP>) => void
   /**
    * Open as a confirm session. Settles when the layer closes.
    * Rejects with LayerConfirmError (code: 'busy') if already open or confirming.
    */
-  confirm: (config?: LayerConfigContent) => Promise<LayerConfirmResult>
+  confirm: (
+    config?: LayerConfigContentOf<ContentP, ContainerP>,
+  ) => Promise<LayerConfirmResult>
   /**
    * Sugar for content props only: `$confirm(props)` ≡ `confirm({ props })`.
    * No-arg ≡ `confirm()`. Does not accept LayerConfigContent (use `confirm` for container/slots/…).
    */
-  $confirm: (props?: LayerPropsRaw) => Promise<LayerConfirmResult>
+  $confirm: (props?: LayerPropsInput<ContentP>) => Promise<LayerConfirmResult>
   close: (options?: LayerCloseOptions) => void
   unmount: () => void
-  clone: (config?: MaybeRefOrGetter<LayerConfigContent>) => LayerInstance
+  clone: (
+    config?: MaybeRefOrGetter<LayerConfigContentOf<ContentP, ContainerP>>,
+  ) => LayerInstance<ContentP, ContainerP>
   /** Read-only getter; track via `dialog.visible` / `watch(() => dialog.visible)`. */
   readonly visible: boolean
   /** Read-only getter; open → content component instance, closed → `null`. Not a Vue Ref. */

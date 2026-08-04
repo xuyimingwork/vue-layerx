@@ -19,12 +19,19 @@ export type {
   CloseOnPolicyObjectRaw,
   CloseOnRaw,
   LayerConfigContent,
+  LayerConfigContentOf,
   LayerConfigContainer,
+  LayerConfigContainerOf,
   LayerConfigCreate,
+  LayerConfigCreateOf,
   LayerConfigNodeContainerRaw,
   LayerConfigNodeContentRaw,
   LayerConfigNodeRaw,
+  LayerPropsInput,
   LayerPropsRaw,
+  LooseProps,
+  PropsOf,
+  Simplify,
 } from './config-raw'
 
 export type { LayerBound, LayerBoundNode } from './bound'

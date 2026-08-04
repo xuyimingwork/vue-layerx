@@ -48,6 +48,7 @@ const dialog = useDialog(HelloWorld)
 
 <template>
   <button @click="dialog.open()">打开弹层</button>
+  <!-- 传内容 props 时推荐 dialog.$open({ ... })，带类型提示 -->
 </template>
 ```
 

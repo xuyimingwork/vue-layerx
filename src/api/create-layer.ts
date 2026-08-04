@@ -1,9 +1,11 @@
 import { computed, type Component } from 'vue'
 import type {
-  LayerConfigCreate,
-  LayerConfigContent,
+  LayerConfigCreateOf,
+  LayerConfigContentOf,
   LayerConfigFragmentCreate,
   LayerInstance,
+  LooseProps,
+  PropsOf,
 } from '@/types'
 import {
   mergeFragment,
@@ -13,10 +15,14 @@ import {
 import { createLayerInstance } from '@/runtime/layer-instance'
 import { toValue, type MaybeRefOrGetter } from '@/compat'
 
-export function createLayer(
-  Container: Component,
-  config: MaybeRefOrGetter<LayerConfigCreate> = {},
+export function createLayer<CContainer extends Component>(
+  Container: CContainer,
+  config: MaybeRefOrGetter<
+    LayerConfigCreateOf<PropsOf<CContainer>>
+  > = {},
 ) {
+  type ContainerP = PropsOf<CContainer>
+
   const create = computed((): LayerConfigFragmentCreate => {
     const { adapter, ...containerConfig } = toValue(config)
     return {
@@ -28,16 +34,28 @@ export function createLayer(
     }
   })
 
-  return function useLayer(
+  function useLayer(
+    Content?: undefined,
+    useConfig?: MaybeRefOrGetter<LayerConfigContentOf<LooseProps, ContainerP>>,
+  ): LayerInstance<LooseProps, ContainerP>
+  function useLayer<CContent extends Component>(
+    Content: CContent,
+    useConfig?: MaybeRefOrGetter<
+      LayerConfigContentOf<PropsOf<CContent>, ContainerP>
+    >,
+  ): LayerInstance<PropsOf<CContent>, ContainerP>
+  function useLayer(
     Content?: Component,
-    useConfig: MaybeRefOrGetter<LayerConfigContent> = {},
-  ): LayerInstance {
+    useConfig: MaybeRefOrGetter<LayerConfigContentOf<any, ContainerP>> = {},
+  ): LayerInstance<any, ContainerP> {
     const use = computed(() =>
       mergeFragment(
         toFragmentFromContent(toValue(useConfig)),
         Content ? { content: { component: Content } } : undefined,
       ),
     )
-    return createLayerInstance({ create, use })
+    return createLayerInstance({ create, use }) as LayerInstance<any, ContainerP>
   }
+
+  return useLayer
 }

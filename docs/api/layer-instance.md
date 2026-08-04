@@ -7,7 +7,7 @@
 | 成员 | 说明 |
 |------|------|
 | `open(config?)` | 打开；`config` 为 plain 快照。关闭后再打开会重建 content；已打开时再次 open 更新配置。confirming 中忽略并 warn |
-| `$open(props?)` | 内容 props 糖：`$open(props)` ≡ `open({ props })`；无参 ≡ `open()`。不接受 `container` / `slots` 等（用 `open`） |
+| `$open(props?)` | 内容 props 糖：`$open(props)` ≡ `open({ props })`；无参 ≡ `open()`。不接受 `container` / `slots` 等（用 `open`）。绑 Content 时 props 有类型提示（[ADR 0012](/adr/0012-typed-content-container-props)） |
 | `confirm(config?)` | 打开并返回 `Promise<LayerConfirmResult>`。`closeOn.confirmed: true` 或 `close({ confirmed: true })` 时 resolve，否则 reject [`LayerConfirmError`](#layerconfirmerror)（`code: 'close'`）。已打开 / confirming 再调 → `code: 'busy'` |
 | `$confirm(props?)` | 内容 props 糖：`$confirm(props)` ≡ `confirm({ props })`；无参 ≡ `confirm()`。不接受完整 config（用 `confirm`） |
 | `close(options?)` | 关闭（不卸 DOM）。confirming 时可传 `{ confirmed?, args? }` |

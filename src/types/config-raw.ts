@@ -5,8 +5,15 @@ import type {
   LayerRefCallback,
   LayerSlotRender,
 } from './config'
+import type { LayerPropsInput, LooseProps, Simplify } from './component-props'
 
 export type { CloseOnWhen, LayerRefCallback }
+export type {
+  LayerPropsInput,
+  LooseProps,
+  PropsOf,
+  Simplify,
+} from './component-props'
 
 /** object 形：when 必填（禁止无 when 的 confirmed） */
 export type CloseOnPolicyObjectRaw = {
@@ -26,7 +33,10 @@ export type CloseOnRaw =
   | Array<string | CloseOnEntryRaw>
   | Record<string, boolean | CloseOnWhen | CloseOnPolicyObjectRaw>
 
-/** Public / Raw props — ref may be Ref or callback */
+/**
+ * Public / Raw props — ref may be Ref or callback.
+ * Loose path only; typed APIs use {@link LayerPropsInput} (no index signature).
+ */
 export interface LayerPropsRaw {
   ref?: LayerRefCallback | Ref<unknown>
   [key: string]: unknown
@@ -50,24 +60,56 @@ export interface LayerConfigNodeContentRaw extends LayerConfigNodeRaw {
 }
 
 /**
- * defineLayer / createLayer container-oriented flat config
- * 顶层为 container 配置属性
+ * useX / open / clone content-oriented flat config (typed).
+ * Top-level fields describe **content**; nested `container` describes the shell.
  */
-export interface LayerConfigContainer extends LayerConfigNodeContainerRaw {
-  content?: LayerConfigNodeContentRaw
-}
+export type LayerConfigContentOf<
+  ContentP = LooseProps,
+  ContainerP = LooseProps,
+> = Simplify<{
+  component?: Component
+  props?: LayerPropsInput<ContentP>
+  slots?: Record<string, LayerSlotRender>
+  closeOn?: CloseOnRaw
+  container?: Simplify<{
+    component?: Component
+    props?: LayerPropsInput<ContainerP>
+    slots?: Record<string, LayerSlotRender>
+    model?: string
+  }>
+}>
 
 /**
- * useX / open / clone content-oriented flat config
- * 顶层为 content 配置属性
+ * defineLayer / createLayer container-oriented flat config (typed).
+ * Top-level fields describe **container**; nested `content` is content defaults.
  */
-export interface LayerConfigContent extends LayerConfigNodeContentRaw {
-  container?: LayerConfigNodeContainerRaw
-}
+export type LayerConfigContainerOf<
+  ContainerP = LooseProps,
+  ContentP = LooseProps,
+> = Simplify<{
+  component?: Component
+  props?: LayerPropsInput<ContainerP>
+  slots?: Record<string, LayerSlotRender>
+  model?: string
+  content?: Simplify<{
+    component?: Component
+    props?: LayerPropsInput<ContentP>
+    slots?: Record<string, LayerSlotRender>
+    closeOn?: CloseOnRaw
+  }>
+}>
 
-/**
- * createLayer 的配置
- */
-export type LayerConfigCreate = LayerConfigContainer & {
-  adapter?: LayerAdapter
-}
+/** createLayer second argument (typed). */
+export type LayerConfigCreateOf<
+  ContainerP = LooseProps,
+  ContentP = LooseProps,
+> = Simplify<
+  LayerConfigContainerOf<ContainerP, ContentP> & {
+    adapter?: LayerAdapter
+  }
+>
+
+/** Untyped / default-loose aliases (backward compatible). */
+export type LayerConfigContent = LayerConfigContentOf
+export type LayerConfigContainer = LayerConfigContainerOf
+export type LayerConfigCreate = LayerConfigCreateOf

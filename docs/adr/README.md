@@ -15,3 +15,4 @@
 | [0009](./0009-integration-tests-consume-dist.md) | Vue 3 集成迁独立包并只消费 dist | Accepted（已实现；0008 前置） |
 | [0010](./0010-no-framework-before-close.md) | 不提供框架级 `onBeforeClose`：离开确认归壳 `beforeClose` + 内容 emit 前处理 | Accepted（刻意不做） |
 | [0011](./0011-dollar-open-content-props-sugar.md) | `$open` / `$confirm`：内容 props 快捷打开（不改 `open`） | Accepted（已实现） |
+| [0012](./0012-typed-content-container-props.md) | Content / Container props 类型推导 | Accepted（已实现） |

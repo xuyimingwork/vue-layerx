@@ -2,7 +2,7 @@
 
 - **状态**：Accepted（已实现）
 - **日期**：2026-07-31
-- **关联**：[DESIGN.md](../../DESIGN.md) `useX` / `open` 与 `LayerConfigContent`；[`LayerInstance`](../../src/types/instance.ts)
+- **关联**：[DESIGN.md](../../DESIGN.md) `useX` / `open` 与 `LayerConfigContent`；[`LayerInstance`](../../src/types/instance.ts)；[ADR 0012](./0012-typed-content-container-props.md)（props 泛型）
 
 ---
 
@@ -119,4 +119,4 @@ instance.$confirm(contentProps?)
 | 实现 | 委托为 `{ props }`；无新 merge 语义 |
 | `$open` 可否含 container/slots | **否** |
 | 改 `open` 重载 / 删 slots | **否** |
-| 状态 | 下版本实现 |
+| 状态 | Accepted（已实现） |
