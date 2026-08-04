@@ -46,6 +46,7 @@ shell.open({
 ## 与 open 的关系
 
 - 创建实例时的配置：可保持响应式  
-- `open(config?)`：当次 **普通对象快照**（不要传函数）；空 `open()` 使用当前实例默认配置  
+- `$open(props?)`：内容 props 糖（日常默认）；`$open(props)` ≡ `open({ props })`  
+- `open(config?)`：当次 **普通对象快照**（不要传函数）；空 `open()` / `$open()` 使用当前实例默认配置；改容器 / slots 等仍用 `open`  
 
 见 [指南：打开与关闭](/guide/open-close)。

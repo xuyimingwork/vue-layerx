@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`LayerInstance.$open` / `$confirm`** — content-props sugar：`$open(props)` ≡ `open({ props })`，`$confirm(props)` ≡ `confirm({ props })`；无参分别等同无参 `open` / `confirm`。不接受完整 `LayerConfigContent`（container / slots / closeOn 仍走 `open` / `confirm`）。见 [ADR 0011](./docs/adr/0011-dollar-open-content-props-sugar.md)
+
 ## [1.1.0] - 2026-07-29
 
 ### Added

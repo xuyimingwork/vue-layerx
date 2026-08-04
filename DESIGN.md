@@ -714,8 +714,12 @@ xxx.open({
 ```ts
 interface LayerInstance {
   open(config?: LayerConfigContent): void
+  /** Content-props sugar: `$open(props)` ≡ `open({ props })`; no-arg ≡ `open()`. */
+  $open(props?: LayerPropsRaw): void
   /** Confirm session: settles on close. Busy if already open/confirming. */
   confirm(config?: LayerConfigContent): Promise<LayerConfirmResult>
+  /** Content-props sugar: `$confirm(props)` ≡ `confirm({ props })`; no-arg ≡ `confirm()`. */
+  $confirm(props?: LayerPropsRaw): Promise<LayerConfirmResult>
   close(options?: LayerCloseOptions): void
   clone(config?: LayerConfigContent): LayerInstance
   readonly visible: boolean
@@ -725,9 +729,11 @@ interface LayerInstance {
 }
 ```
 
-`confirm()` 打开一层并返回 Promise：关层时若 `closeOn.confirmed === true`（或 `close({ confirmed: true })`）则 **resolve** `LayerConfirmResult`，否则 **reject** `LayerConfirmError`（`code: 'close'`，`result` 与 resolve 同形）。再入 `confirm` / 在已 `open` 时调 `confirm` → `code: 'busy'`。confirming 期间公开 `open` 忽略并 warn。`result.source` 为 `content` | `container` | `instance` | `unmount`；事件驱动时带 `event` / `args` / `data`（`data === args[0]`）。
+`$open` / `$confirm` 只接受内容 props，不接受 `container` / `slots` / `closeOn`（那些仍走 `open` / `confirm`）。见 [ADR 0011](docs/adr/0011-dollar-open-content-props-sugar.md)。
 
-`visible` / `content` / `container`：只读 **getter**（非 `ComputedRef`）。内部 `shallowRef` + `store.refs` 桶 `props.ref`；对外 `get content() { return visible ? target : null }`（`container` 同理）。属性访问即可追踪依赖；`watch` 用 `watch(() => dialog.visible)`。`close()` 后立即可见为 `null`。不提供 setter——开闭只走 `open` / `close` / `confirm`。
+`confirm()` 打开一层并返回 Promise：关层时若 `closeOn.confirmed === true`（或 `close({ confirmed: true })`）则 **resolve** `LayerConfirmResult`，否则 **reject** `LayerConfirmError`（`code: 'close'`，`result` 与 resolve 同形）。再入 `confirm` / 在已 `open` 时调 `confirm` → `code: 'busy'`。confirming 期间公开 `open` / `$open` 忽略并 warn。`result.source` 为 `content` | `container` | `instance` | `unmount`；事件驱动时带 `event` / `args` / `data`（`data === args[0]`）。
+
+`visible` / `content` / `container`：只读 **getter**（非 `ComputedRef`）。内部 `shallowRef` + `store.refs` 桶 `props.ref`；对外 `get content() { return visible ? target : null }`（`container` 同理）。属性访问即可追踪依赖；`watch` 用 `watch(() => dialog.visible)`。`close()` 后立即可见为 `null`。不提供 setter——开闭只走 `open` / `$open` / `close` / `confirm` / `$confirm`。
 
 ### `clone(config?)`
 

@@ -7,7 +7,9 @@
 | 成员 | 说明 |
 |------|------|
 | `open(config?)` | 打开；`config` 为 plain 快照。关闭后再打开会重建 content；已打开时再次 open 更新配置。confirming 中忽略并 warn |
+| `$open(props?)` | 内容 props 糖：`$open(props)` ≡ `open({ props })`；无参 ≡ `open()`。不接受 `container` / `slots` 等（用 `open`） |
 | `confirm(config?)` | 打开并返回 `Promise<LayerConfirmResult>`。`closeOn.confirmed: true` 或 `close({ confirmed: true })` 时 resolve，否则 reject [`LayerConfirmError`](#layerconfirmerror)（`code: 'close'`）。已打开 / confirming 再调 → `code: 'busy'` |
+| `$confirm(props?)` | 内容 props 糖：`$confirm(props)` ≡ `confirm({ props })`；无参 ≡ `confirm()`。不接受完整 config（用 `confirm`） |
 | `close(options?)` | 关闭（不卸 DOM）。confirming 时可传 `{ confirmed?, args? }` |
 | `unmount()` | 卸 portal DOM；confirming 时 reject `source: 'unmount'`；**不**清 layerHost |
 | `clone(config?)` | 独立实例；继承组合式函数默认与创建时配置（**不继承**父级 `props.ref`）；setup 内自动 `bindHost()`；`config` 可为响应式源 |
@@ -22,7 +24,7 @@
 import { LayerConfirmError } from 'vue-layerx'
 
 try {
-  await dialog.confirm({ props: { id: 1 } })
+  await dialog.$confirm({ id: 1 })
 } catch (e) {
   if (e instanceof LayerConfirmError) {
     // e.code: 'close' | 'busy'

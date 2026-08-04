@@ -1,5 +1,5 @@
 import type { ComponentPublicInstance, Ref } from 'vue'
-import type { LayerConfigContent } from './config-raw'
+import type { LayerConfigContent, LayerPropsRaw } from './config-raw'
 import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
 
 /** Local shim — Vue 2.7 has no MaybeRefOrGetter in its public types. */
@@ -21,10 +21,20 @@ export interface LayerInstance {
   /** Snapshot tier only — plain config, not MaybeRefOrGetter. */
   open: (config?: LayerConfigContent) => void
   /**
+   * Sugar for content props only: `$open(props)` ≡ `open({ props })`.
+   * No-arg ≡ `open()`. Does not accept LayerConfigContent (use `open` for container/slots/…).
+   */
+  $open: (props?: LayerPropsRaw) => void
+  /**
    * Open as a confirm session. Settles when the layer closes.
    * Rejects with LayerConfirmError (code: 'busy') if already open or confirming.
    */
   confirm: (config?: LayerConfigContent) => Promise<LayerConfirmResult>
+  /**
+   * Sugar for content props only: `$confirm(props)` ≡ `confirm({ props })`.
+   * No-arg ≡ `confirm()`. Does not accept LayerConfigContent (use `confirm` for container/slots/…).
+   */
+  $confirm: (props?: LayerPropsRaw) => Promise<LayerConfirmResult>
   close: (options?: LayerCloseOptions) => void
   unmount: () => void
   clone: (config?: MaybeRefOrGetter<LayerConfigContent>) => LayerInstance

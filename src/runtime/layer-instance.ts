@@ -150,7 +150,13 @@ export function createLayerInstance({
       }
       open(config)
     },
+    $open(props) {
+      instance.open(props === undefined ? undefined : { props })
+    },
     confirm,
+    $confirm(props) {
+      return instance.confirm(props === undefined ? undefined : { props })
+    },
     close(options?: LayerCloseOptions) {
       close({ ...options, source: 'instance' })
     },

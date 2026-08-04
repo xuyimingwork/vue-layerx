@@ -11,7 +11,7 @@ import { ElDialog } from 'element-plus'
 export const useDialog = createLayer(ElDialog)
 
 const dialog = useDialog(HelloWorld)
-dialog.open({ props: { id: 1 } })
+dialog.$open({ id: 1 })
 ```
 
 ## 导出一览
@@ -29,4 +29,4 @@ dialog.open({ props: { id: 1 } })
 
 ## 实例
 
-[`LayerInstance`](./layer-instance) — `open` / `close` / `confirm` / `clone` / `bindHost` / …
+[`LayerInstance`](./layer-instance) — `$open` / `open` / `close` / `$confirm` / `confirm` / `clone` / `bindHost` / …

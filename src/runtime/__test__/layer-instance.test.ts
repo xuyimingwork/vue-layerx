@@ -62,6 +62,68 @@ describe('createLayerInstance', () => {
     })
   })
 
+  describe('$open / $confirm', () => {
+    it('should open with content props equivalent to open({ props })', async () => {
+      const instance = makeInstance()
+      instance.$open({ message: 'via-dollar' })
+      await flushPromises()
+
+      expect(instance.visible).toBe(true)
+      expect(document.body.querySelector('.msg')?.textContent).toBe('via-dollar')
+      instance.unmount()
+    })
+
+    it('should open with no args equivalent to open()', async () => {
+      const instance = makeInstance()
+      instance.$open()
+      await flushPromises()
+
+      expect(instance.visible).toBe(true)
+      instance.unmount()
+    })
+
+    it('should confirm with content props equivalent to confirm({ props })', async () => {
+      const instance = makeInstance({
+        done: { when: 'always', confirmed: true },
+      })
+      const promise = instance.$confirm({ message: 'ask-dollar' })
+      await flushPromises()
+
+      expect(document.body.querySelector('.msg')?.textContent).toBe('ask-dollar')
+      ;(document.body.querySelector('.done') as HTMLButtonElement | null)?.click()
+      await flushPromises()
+
+      await expect(promise).resolves.toMatchObject({
+        source: 'content',
+        event: 'done',
+      })
+      instance.unmount()
+    })
+
+    it('should reject busy when $confirm while already open', async () => {
+      const instance = makeInstance()
+      instance.$open()
+      await expect(instance.$confirm()).rejects.toMatchObject({ code: 'busy' })
+      instance.unmount()
+    })
+
+    it('should ignore $open while confirming', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const instance = makeInstance()
+      const promise = instance.$confirm({ message: 'a' })
+      await flushPromises()
+
+      instance.$open({ message: 'b' })
+      expect(warn).toHaveBeenCalled()
+      expect(document.body.querySelector('.msg')?.textContent).toBe('a')
+
+      instance.close({ confirmed: true })
+      await promise
+      warn.mockRestore()
+      instance.unmount()
+    })
+  })
+
   describe('confirm', () => {
     it('should resolve when closeOn confirmed content emit fires', async () => {
       const instance = makeInstance({

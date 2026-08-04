@@ -18,7 +18,7 @@ import PickerSource from '../examples/confirm/MemberPicker.vue?raw'
 ```ts
 loading.value = true
 try {
-  const { data } = await picker.confirm({ props: { modelValue: ids } })
+  const { data } = await picker.$confirm({ modelValue: ids })
   // 使用 data …
 } catch {
   // 取消、点遮罩关闭等：按业务处理即可
@@ -27,9 +27,9 @@ try {
 }
 ```
 
-参数形态与 `open` 相同（当次 plain 快照）。
+`$confirm(props)` 等价于 `confirm({ props })`。需要当次改容器等再用完整 `confirm(config)`。
 
-> 通过 `confirm()` 打开后，在 `resolve` 前不能再 `open` / `confirm`：再 `open` 会被忽略并告警，再 `confirm` 会 reject `busy`。
+> 通过 `confirm()` / `$confirm()` 打开后，在 `resolve` 前不能再 `open` / `$open` / `confirm` / `$confirm`：再 `open` / `$open` 会被忽略并告警，再 `confirm` / `$confirm` 会 reject `busy`。
 
 ## 内容侧：标出确认路径
 
@@ -56,7 +56,7 @@ defineLayer({
 正在 `confirm()` 等待时，调用方也可以主动 `close` 来 resolve / reject，不必经过内容 `emit`：
 
 ```ts
-const pending = picker.confirm({ props: { modelValue: ids } })
+const pending = picker.$confirm({ modelValue: ids })
 
 picker.close({ confirmed: true, args: [selected] })
 // → pending resolve，data === selected
@@ -85,7 +85,7 @@ reject 时是 `LayerConfirmError`：`code: 'close'` 时 `e.result` 与上表同�
 import { LayerConfirmError } from 'vue-layerx'
 
 try {
-  const { data } = await picker.confirm({ props: { modelValue: ids } })
+  const { data } = await picker.$confirm({ modelValue: ids })
 } catch (e) {
   if (e instanceof LayerConfirmError) {
     // e.code === 'close'：按业务处理即可

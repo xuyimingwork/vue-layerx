@@ -1,6 +1,6 @@
 # ADR 0011：`$open` / `$confirm` — 内容 props 快捷打开（不改动 `open`）
 
-- **状态**：Accepted（**下个次要/补丁版本实现**；本文定 API，代码尚未落地）
+- **状态**：Accepted（已实现）
 - **日期**：2026-07-31
 - **关联**：[DESIGN.md](../../DESIGN.md) `useX` / `open` 与 `LayerConfigContent`；[`LayerInstance`](../../src/types/instance.ts)
 
@@ -104,9 +104,9 @@ instance.$confirm(contentProps?)
 
 ## 后果
 
-- **下版本实现清单**：`LayerInstance` 增加 `$open` / `$confirm`；运行时委托；测试（等价性、无参、与 `confirm` busy 行为一致）；指南 / API / 最佳实践改默认示例。
+- **下版本实现清单**：`LayerInstance` 增加 `$open` / `$confirm`；运行时委托；测试（等价性、无参、与 `confirm` busy 行为一致）；指南 / API / 最佳实践改默认示例。 → **已完成**
 - **API 审查**：若有人提议 `$open({ props, container })` 或让 `$open` 接受完整 config → 违背本决策。
-- **DESIGN.md**（落地时）：在 `LayerInstance` / `open` 节增补 `$open` / `$confirm` 一行等价说明。
+- **DESIGN.md**（落地时）：在 `LayerInstance` / `open` 节增补 `$open` / `$confirm` 一行等价说明。 → **已完成**
 
 ---
 
