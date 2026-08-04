@@ -8,6 +8,16 @@ import type { LayerRefCallback } from './config'
 export type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
 /**
+ * Component-like value for `createLayer` / `useLayer`.
+ * Not Vue's `Component`: under one package `.d.ts`, Vue 2.7 and Vue 3 `Component`
+ * are not mutually assignable (`SetupContext.listeners` vs `expose`).
+ */
+export type AnyComponent =
+  | (abstract new (...args: any) => any)
+  | Record<string, any>
+  | ((...args: any[]) => any)
+
+/**
  * Keys Vue puts on `$props` that are not component-declared props.
  * Local list so Vue 2.7 / 3 share one `.d.ts` (no VNodeProps import).
  */
@@ -18,6 +28,12 @@ type VueBuiltinPropKeys =
   | 'ref_key'
   | 'class'
   | 'style'
+  | 'onVnodeBeforeMount'
+  | 'onVnodeMounted'
+  | 'onVnodeBeforeUpdate'
+  | 'onVnodeUpdated'
+  | 'onVnodeBeforeUnmount'
+  | 'onVnodeUnmounted'
 
 /**
  * Extract public props from a component definition.

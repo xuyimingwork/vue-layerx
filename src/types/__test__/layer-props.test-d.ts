@@ -30,6 +30,13 @@ const StubContent = defineComponent({
 type ContentProps = PropsOf<typeof StubContent>
 type ContainerProps = PropsOf<typeof StubContainer>
 
+// Vue VNode hooks must not appear on extracted props
+type _NoVnodeHooks = ContentProps extends { onVnodeMounted?: unknown }
+  ? false
+  : true
+const _noVnodeHooks: _NoVnodeHooks = true
+void _noVnodeHooks
+
 // --- PropsOf / LayerPropsInput ---
 
 const propsOk: LayerPropsInput<ContentProps> = {

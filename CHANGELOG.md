@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`LayerInstance.$open` / `$confirm`** — content-props sugar：`$open(props)` ≡ `open({ props })`，`$confirm(props)` ≡ `confirm({ props })`；无参分别等同无参 `open` / `confirm`。不接受完整 `LayerConfigContent`（container / slots / closeOn 仍走 `open` / `confirm`）。见 [ADR 0011](./docs/adr/0011-dollar-open-content-props-sugar.md)
-- **Content / Container props 类型推导** — `createLayer(Container)` / `useX(Content)` 推导 props，收紧 `$open` / `$confirm` / `open.props` / `container.props`；公开导出 `PropsOf`、`LayerPropsInput`（`Simplify` / `LooseProps` / `LayerConfig*Of` 仅内部）。slots / `closeOn`↔emits 本版不收窄。见 [ADR 0012](./docs/adr/0012-typed-content-container-props.md)
+- **Content / Container props 类型推导** — `createLayer(Container)` / `useX(Content)` 推导 props，收紧 `$open` / `$confirm` / `open.props` / `container.props`；公开导出 `PropsOf`、`LayerPropsInput`（`Simplify` / `LooseProps` / `LayerConfig*Of` 仅内部）。`createLayer` 组件参数用内部 `AnyComponent` 约束，避免同包 `.d.ts` 下 Vue 2/3 `Component` 互不兼容。slots / `closeOn`↔emits 本版不收窄。见 [ADR 0012](./docs/adr/0012-typed-content-container-props.md)
 
 ## [1.1.0] - 2026-07-29
 

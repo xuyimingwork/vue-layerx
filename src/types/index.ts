@@ -32,6 +32,7 @@ export type {
   LooseProps,
   PropsOf,
   Simplify,
+  AnyComponent,
 } from './config-raw'
 
 export type { LayerBound, LayerBoundNode } from './bound'

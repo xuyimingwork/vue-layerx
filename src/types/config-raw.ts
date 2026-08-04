@@ -13,6 +13,7 @@ export type {
   LooseProps,
   PropsOf,
   Simplify,
+  AnyComponent,
 } from './component-props'
 
 /** object 形：when 必填（禁止无 when 的 confirmed） */
