@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-05
+
 ### Added
 
 - **`LayerInstance.$open` / `$confirm`** — content-props sugar：`$open(props)` ≡ `open({ props })`，`$confirm(props)` ≡ `confirm({ props })`；无参分别等同无参 `open` / `confirm`。不接受完整 `LayerConfigContent`（container / slots / closeOn 仍走 `open` / `confirm`）。见 [ADR 0011](./docs/adr/0011-dollar-open-content-props-sugar.md)
@@ -16,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **`createLayer` / `useLayer` 第二参不再接受同侧顶层 `component`**（仅类型）：容器 / 内容组件由首参绑定；未绑 Content 时在 `open` / `confirm` 写 `component`。`use` 的 `container.component`、`create` 的 `content.component`、以及 `open` / `confirm` / `clone` 顶层 `component` 不变。迁移：`useLayer(undefined, { component: A })` → `useLayer(A)`。
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.0` or `vue-layerx@latest`
+- Runtime compatible with 1.1.x; TypeScript callers using top-level `component` on create/use config need the migration above
 
 ## [1.1.0] - 2026-07-29
 
@@ -236,7 +243,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.0...v1.0.1
