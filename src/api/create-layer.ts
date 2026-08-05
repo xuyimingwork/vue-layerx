@@ -16,11 +16,29 @@ import {
 import { createLayerInstance } from '@/runtime/layer-instance'
 import { toValue, type MaybeRefOrGetter } from '@/compat'
 
-export function createLayer<CContainer extends AnyComponent>(
-  Container: CContainer,
-  config: MaybeRefOrGetter<LayerConfigCreateOf<PropsOf<CContainer>>> = {},
+/**
+ * Bind a container component (Dialog / Drawer / …) into a reusable `useLayer` factory.
+ *
+ * Top-level fields in `config` describe the **container**; optional `content` / `adapter`
+ * apply as create-tier defaults. `config` may be plain, ref, getter, or computed.
+ *
+ * @example
+ * ```ts
+ * export const useDialog = createLayer(ElDialog, {
+ *   props: { width: '480px', appendToBody: true },
+ * })
+ *
+ * const dialog = useDialog(HelloWorld)
+ * dialog.open()
+ * // or content props sugar:
+ * dialog.$open({ title: 'Hi' })
+ * ```
+ */
+export function createLayer<Container extends AnyComponent>(
+  Container: Container,
+  config: MaybeRefOrGetter<LayerConfigCreateOf<PropsOf<Container>>> = {},
 ) {
-  type ContainerP = PropsOf<CContainer>
+  type ContainerProps = PropsOf<Container>
 
   const create = computed((): LayerConfigFragmentCreate => {
     const { adapter, ...containerConfig } = toValue(config)
@@ -35,18 +53,18 @@ export function createLayer<CContainer extends AnyComponent>(
 
   function useLayer(
     Content?: undefined,
-    useConfig?: MaybeRefOrGetter<LayerConfigContentOf<LooseProps, ContainerP>>,
-  ): LayerInstance<LooseProps, ContainerP>
+    useConfig?: MaybeRefOrGetter<LayerConfigContentOf<LooseProps, ContainerProps>>,
+  ): LayerInstance<LooseProps, ContainerProps>
   function useLayer<CContent extends AnyComponent>(
     Content: CContent,
     useConfig?: MaybeRefOrGetter<
-      LayerConfigContentOf<PropsOf<CContent>, ContainerP>
+      LayerConfigContentOf<PropsOf<CContent>, ContainerProps>
     >,
-  ): LayerInstance<PropsOf<CContent>, ContainerP>
+  ): LayerInstance<PropsOf<CContent>, ContainerProps>
   function useLayer(
     Content?: AnyComponent,
-    useConfig: MaybeRefOrGetter<LayerConfigContentOf<any, ContainerP>> = {},
-  ): LayerInstance<any, ContainerP> {
+    useConfig: MaybeRefOrGetter<LayerConfigContentOf<any, ContainerProps>> = {},
+  ): LayerInstance<any, ContainerProps> {
     const use = computed(() =>
       mergeFragment(
         toFragmentFromContent(toValue(useConfig)),
@@ -57,7 +75,7 @@ export function createLayer<CContainer extends AnyComponent>(
     )
     return createLayerInstance({ create, use }) as LayerInstance<
       any,
-      ContainerP
+      ContainerProps
     >
   }
 

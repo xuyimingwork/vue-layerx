@@ -26,33 +26,33 @@ export interface LayerDefine {
  * Defaults stay loose (`Record<string, unknown>`) for unbound or uninferable components.
  */
 export interface LayerInstance<
-  ContentP = LooseProps,
-  ContainerP = LooseProps,
+  ContentProps = LooseProps,
+  ContainerProps = LooseProps,
 > {
   /** Snapshot tier only — plain config, not MaybeRefOrGetter. */
-  open: (config?: LayerConfigContentOf<ContentP, ContainerP>) => void
+  open: (config?: LayerConfigContentOf<ContentProps, ContainerProps>) => void
   /**
    * Sugar for content props only: `$open(props)` ≡ `open({ props })`.
    * No-arg ≡ `open()`. Does not accept LayerConfigContent (use `open` for container/slots/…).
    */
-  $open: (props?: LayerPropsInput<ContentP>) => void
+  $open: (props?: LayerPropsInput<ContentProps>) => void
   /**
    * Open as a confirm session. Settles when the layer closes.
    * Rejects with LayerConfirmError (code: 'busy') if already open or confirming.
    */
   confirm: (
-    config?: LayerConfigContentOf<ContentP, ContainerP>,
+    config?: LayerConfigContentOf<ContentProps, ContainerProps>,
   ) => Promise<LayerConfirmResult>
   /**
    * Sugar for content props only: `$confirm(props)` ≡ `confirm({ props })`.
    * No-arg ≡ `confirm()`. Does not accept LayerConfigContent (use `confirm` for container/slots/…).
    */
-  $confirm: (props?: LayerPropsInput<ContentP>) => Promise<LayerConfirmResult>
+  $confirm: (props?: LayerPropsInput<ContentProps>) => Promise<LayerConfirmResult>
   close: (options?: LayerCloseOptions) => void
   unmount: () => void
   clone: (
-    config?: MaybeRefOrGetter<LayerConfigContentOf<ContentP, ContainerP>>,
-  ) => LayerInstance<ContentP, ContainerP>
+    config?: MaybeRefOrGetter<LayerConfigContentOf<ContentProps, ContainerProps>>,
+  ) => LayerInstance<ContentProps, ContainerProps>
   /** Read-only getter; track via `dialog.visible` / `watch(() => dialog.visible)`. */
   readonly visible: boolean
   /** Read-only getter; open → content component instance, closed → `null`. Not a Vue Ref. */
