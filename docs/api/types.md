@@ -4,9 +4,10 @@
 
 | 类型 | 说明 |
 |------|------|
-| `LayerConfigCreate` | `createLayer` 第二参（Raw flat） |
+| `LayerConfigCreate` | `createLayer` 第二参（Raw flat；无顶层 `component`） |
 | `LayerConfigContainer` | `defineLayer` 配置（顶层 = container） |
-| `LayerConfigContent` | `use` / `open` / `clone`（顶层 = content） |
+| `LayerConfigUse` | `useLayer` 第二参（无顶层 `component`；`container.component` 仍可写） |
+| `LayerConfigContent` | `open` / `confirm` / `clone`（顶层 = content，可含 `component`） |
 | `PropsOf` | 从组件定义抽出 props（Vue 2.7 / 3 本地 shim；去掉 class/style/key 等内建键） |
 | `LayerPropsInput` | `Partial<P>` 保留精确类型 + 字符串索引允许未抽出的键（Vue 2 `onXxx` / 自定义 props） |
 | `LayerConfigFragment` | Canonical 双侧分栏（写 `adapter` 时用） |

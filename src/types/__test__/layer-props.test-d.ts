@@ -95,8 +95,28 @@ createLayer(StubContainer, {
   },
 })
 
+createLayer(StubContainer, {
+  // @ts-expect-error — container component is the first arg
+  component: StubContainer,
+})
+
 const dialog = useDialog(StubContent, {
   props: { mode: 'edit' },
+})
+
+// @ts-expect-error — content component is the first arg
+useDialog(StubContent, {
+  component: StubContent,
+})
+
+// @ts-expect-error — unbound: set component on open, not use config
+useDialog(undefined, {
+  component: StubContent,
+})
+
+// nested container.component still allowed on use
+useDialog(StubContent, {
+  container: { component: StubContainer },
 })
 
 dialog.$open({ mode: 'create', recordId: 2 })

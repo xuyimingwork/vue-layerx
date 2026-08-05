@@ -14,7 +14,7 @@ function createLayer(
 | `Container` | 容器组件（`v-model` 显隐 + 通常有 default slot） |
 | `config` | 该组合式函数的默认配置；可为 plain / ref / getter / computed |
 
-`LayerConfigCreate`：容器扁平字段 + 可选 `content` + 可选 `adapter`。顶层 `props` / `model` / `slots` 等描述**容器**。见 [配置](./config)。
+`LayerConfigCreate`：容器扁平字段 + 可选 `content` + 可选 `adapter`。顶层 `props` / `model` / `slots` 等描述**容器**；**不要**写顶层 `component`（由第一参 `Container` 绑定）。见 [配置](./config)。
 
 ## 返回值
 

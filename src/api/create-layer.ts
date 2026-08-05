@@ -2,8 +2,8 @@ import { computed, type Component } from 'vue'
 import type {
   AnyComponent,
   LayerConfigCreateOf,
-  LayerConfigContentOf,
   LayerConfigFragmentCreate,
+  LayerConfigUseOf,
   LayerInstance,
   LooseProps,
   PropsOf,
@@ -19,8 +19,9 @@ import { toValue, type MaybeRefOrGetter } from '@/compat'
 /**
  * Bind a container component (Dialog / Drawer / …) into a reusable `useLayer` factory.
  *
- * Top-level fields in `config` describe the **container**; optional `content` / `adapter`
- * apply as create-tier defaults. `config` may be plain, ref, getter, or computed.
+ * Top-level fields in `config` describe the **container** (no top-level `component` —
+ * that is the first argument). Optional `content` / `adapter` apply as create-tier
+ * defaults. `config` may be plain, ref, getter, or computed.
  *
  * @example
  * ```ts
@@ -53,17 +54,17 @@ export function createLayer<Container extends AnyComponent>(
 
   function useLayer(
     Content?: undefined,
-    useConfig?: MaybeRefOrGetter<LayerConfigContentOf<LooseProps, ContainerProps>>,
+    useConfig?: MaybeRefOrGetter<LayerConfigUseOf<LooseProps, ContainerProps>>,
   ): LayerInstance<LooseProps, ContainerProps>
   function useLayer<Content extends AnyComponent>(
     Content: Content,
     useConfig?: MaybeRefOrGetter<
-      LayerConfigContentOf<PropsOf<Content>, ContainerProps>
+      LayerConfigUseOf<PropsOf<Content>, ContainerProps>
     >,
   ): LayerInstance<PropsOf<Content>, ContainerProps>
   function useLayer(
     Content?: AnyComponent,
-    useConfig: MaybeRefOrGetter<LayerConfigContentOf<any, ContainerProps>> = {},
+    useConfig: MaybeRefOrGetter<LayerConfigUseOf<any, ContainerProps>> = {},
   ): LayerInstance<any, ContainerProps> {
     const use = computed(() =>
       mergeFragment(

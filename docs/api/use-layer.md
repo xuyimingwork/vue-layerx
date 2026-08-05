@@ -5,7 +5,7 @@
 ```ts
 function useLayer(
   Content?: Component,
-  config?: MaybeRefOrGetter<LayerConfigContent>,
+  config?: MaybeRefOrGetter<LayerConfigUse>,
 ): LayerInstance
 ```
 
@@ -14,7 +14,7 @@ function useLayer(
 | 参数 | 说明 |
 |------|------|
 | `Content` | 内容组件；**可省略**（只要容器、暂无业务体时） |
-| `config` | 创建实例时的默认配置；顶层 `props` 指**内容**；可为响应式源 |
+| `config` | 创建实例时的默认配置；顶层 `props` 指**内容**；可为响应式源；**无**顶层 `component`（由 `Content` 首参绑定，或留给 `open`） |
 
 ```ts
 const dialog = useDialog(UserForm, {

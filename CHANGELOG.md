@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`LayerInstance.$open` / `$confirm`** — content-props sugar：`$open(props)` ≡ `open({ props })`，`$confirm(props)` ≡ `confirm({ props })`；无参分别等同无参 `open` / `confirm`。不接受完整 `LayerConfigContent`（container / slots / closeOn 仍走 `open` / `confirm`）。见 [ADR 0011](./docs/adr/0011-dollar-open-content-props-sugar.md)
 - **Content / Container props 类型推导** — `createLayer(Container)` / `useX(Content)` 推导 props，收紧 `$open` / `$confirm` / `open.props` / `container.props`；公开导出 `PropsOf`、`LayerPropsInput`（`Simplify` / `LooseProps` / `LayerConfig*Of` 仅内部）。`createLayer` 组件参数用内部 `AnyComponent` 约束，避免同包 `.d.ts` 下 Vue 2/3 `Component` 互不兼容。slots / `closeOn`↔emits 本版不收窄。见 [ADR 0012](./docs/adr/0012-typed-content-container-props.md)
+- **`LayerConfigUse`** — `useLayer` 第二参类型（无顶层 `component`）；公开导出
+
+### Changed
+
+- **`createLayer` / `useLayer` 第二参不再接受同侧顶层 `component`**（仅类型）：容器 / 内容组件由首参绑定；未绑 Content 时在 `open` / `confirm` 写 `component`。`use` 的 `container.component`、`create` 的 `content.component`、以及 `open` / `confirm` / `clone` 顶层 `component` 不变。迁移：`useLayer(undefined, { component: A })` → `useLayer(A)`。
 
 ## [1.1.0] - 2026-07-29
 

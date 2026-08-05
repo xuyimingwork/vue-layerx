@@ -8,6 +8,7 @@ export type {
   LayerConfigContent,
   LayerConfigContainer,
   LayerConfigCreate,
+  LayerConfigUse,
   LayerPropsInput,
   PropsOf,
   CloseOnRaw,

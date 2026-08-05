@@ -24,6 +24,8 @@ export type {
   LayerConfigContainerOf,
   LayerConfigCreate,
   LayerConfigCreateOf,
+  LayerConfigUse,
+  LayerConfigUseOf,
   LayerConfigNodeContainerRaw,
   LayerConfigNodeContentRaw,
   LayerConfigNodeRaw,

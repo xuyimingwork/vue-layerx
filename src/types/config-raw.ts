@@ -63,6 +63,7 @@ export interface LayerConfigNodeContentRaw extends LayerConfigNodeRaw {
 /**
  * useX / open / clone content-oriented flat config (typed).
  * Top-level fields describe **content**; nested `container` describes the shell.
+ * Prefer {@link LayerConfigUseOf} for `useLayer`'s second argument (no top-level `component`).
  */
 export type LayerConfigContentOf<
   ContentP = LooseProps,
@@ -81,8 +82,9 @@ export type LayerConfigContentOf<
 }>
 
 /**
- * defineLayer / createLayer container-oriented flat config (typed).
+ * defineLayer container-oriented flat config (typed).
  * Top-level fields describe **container**; nested `content` is content defaults.
+ * `createLayer`'s second argument uses {@link LayerConfigCreateOf} (no top-level `component`).
  */
 export type LayerConfigContainerOf<
   ContainerP = LooseProps,
@@ -100,17 +102,32 @@ export type LayerConfigContainerOf<
   }>
 }>
 
-/** createLayer second argument (typed). */
+/**
+ * createLayer second argument (typed).
+ * Top-level `component` omitted — bind the container via the first argument.
+ * Nested `content.component` remains allowed as create-tier content defaults.
+ */
 export type LayerConfigCreateOf<
   ContainerP = LooseProps,
   ContentP = LooseProps,
 > = Simplify<
-  LayerConfigContainerOf<ContainerP, ContentP> & {
+  Omit<LayerConfigContainerOf<ContainerP, ContentP>, 'component'> & {
     adapter?: LayerAdapter
   }
 >
+
+/**
+ * useLayer second argument (typed).
+ * Top-level `component` omitted — pass Content as the first argument, or omit Content
+ * and set `component` on `open` / `confirm`. Nested `container.component` remains allowed.
+ */
+export type LayerConfigUseOf<
+  ContentP = LooseProps,
+  ContainerP = LooseProps,
+> = Simplify<Omit<LayerConfigContentOf<ContentP, ContainerP>, 'component'>>
 
 /** Untyped / default-loose aliases (backward compatible). */
 export type LayerConfigContent = LayerConfigContentOf
 export type LayerConfigContainer = LayerConfigContainerOf
 export type LayerConfigCreate = LayerConfigCreateOf
+export type LayerConfigUse = LayerConfigUseOf

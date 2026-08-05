@@ -13,9 +13,10 @@
 
 | 类型 | 用于 |
 |------|------|
-| `LayerConfigCreate` | `createLayer` 第二参 |
+| `LayerConfigCreate` | `createLayer` 第二参（无顶层 `component`；容器由首参绑定） |
 | `LayerConfigContainer` | `defineLayer` |
-| `LayerConfigContent` | `use` / `open` / `clone` |
+| `LayerConfigUse` | `useLayer` 第二参（无顶层 `component`；内容由首参绑定或留给 `open`） |
+| `LayerConfigContent` | `open` / `confirm` / `clone`（可含顶层 `component`） |
 
 ## Fragment / Adapter
 
