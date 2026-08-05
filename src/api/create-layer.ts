@@ -55,12 +55,12 @@ export function createLayer<Container extends AnyComponent>(
     Content?: undefined,
     useConfig?: MaybeRefOrGetter<LayerConfigContentOf<LooseProps, ContainerProps>>,
   ): LayerInstance<LooseProps, ContainerProps>
-  function useLayer<CContent extends AnyComponent>(
-    Content: CContent,
+  function useLayer<Content extends AnyComponent>(
+    Content: Content,
     useConfig?: MaybeRefOrGetter<
-      LayerConfigContentOf<PropsOf<CContent>, ContainerProps>
+      LayerConfigContentOf<PropsOf<Content>, ContainerProps>
     >,
-  ): LayerInstance<PropsOf<CContent>, ContainerProps>
+  ): LayerInstance<PropsOf<Content>, ContainerProps>
   function useLayer(
     Content?: AnyComponent,
     useConfig: MaybeRefOrGetter<LayerConfigContentOf<any, ContainerProps>> = {},

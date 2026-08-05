@@ -2,6 +2,11 @@ import type { LayerConfirmResult } from '@/types/confirm'
 
 export type LayerConfirmErrorCode = 'close' | 'busy'
 
+/**
+ * Thrown / rejected by `confirm()` / `$confirm()` when the session fails.
+ * - `busy`: layer already open or confirming
+ * - `close`: closed without `confirmed: true` (see `result.source`)
+ */
 export class LayerConfirmError extends Error {
   readonly code: LayerConfirmErrorCode
   readonly result?: LayerConfirmResult

@@ -15,21 +15,37 @@ export type MaybeRefOrGetter<T> = T | Ref<T> | (() => T)
  */
 export type LayerHost = object
 
-/** Returned by defineLayer(); pass as LayerTemplate :to */
+/**
+ * Returned by `defineLayer()`; pass as `LayerTemplate` `:to`.
+ * Not a layer controller — no `open` / `close`.
+ */
 export interface LayerDefine {
   /** Whether this define is backed by a live LayerView context (direct layer content). */
   readonly exists: boolean
 }
 
 /**
- * Layer instance. Generic params tighten content / container props on open paths.
+ * Layer instance from `useLayer` / `createLayer(…)(Content)`.
+ * Generic params tighten content / container props on open paths.
  * Defaults stay loose (`Record<string, unknown>`) for unbound or uninferable components.
+ *
+ * @example
+ * ```ts
+ * const dialog = useDialog(UserForm)
+ * dialog.$open({ userId: '1' })
+ * dialog.open({ props: { userId: '1' }, container: { props: { title: 'Edit' } } })
+ * await dialog.confirm({ props: { mode: 'delete' } })
+ * dialog.close()
+ * ```
  */
 export interface LayerInstance<
   ContentProps = LooseProps,
   ContainerProps = LooseProps,
 > {
-  /** Snapshot tier only — plain config, not MaybeRefOrGetter. */
+  /**
+   * Open with a plain config snapshot (not MaybeRefOrGetter).
+   * Empty `open()` uses current instance defaults. Prefer `$open` for content props only.
+   */
   open: (config?: LayerConfigContentOf<ContentProps, ContainerProps>) => void
   /**
    * Sugar for content props only: `$open(props)` ≡ `open({ props })`.
@@ -48,8 +64,14 @@ export interface LayerInstance<
    * No-arg ≡ `confirm()`. Does not accept LayerConfigContent (use `confirm` for container/slots/…).
    */
   $confirm: (props?: LayerPropsInput<ContentProps>) => Promise<LayerConfirmResult>
+  /** Close the layer; optional `confirmed` for confirm sessions. */
   close: (options?: LayerCloseOptions) => void
+  /** Tear down portal / host binding for this instance. */
   unmount: () => void
+  /**
+   * New instance sharing create-tier defaults; `config` merges as use-tier
+   * (may be reactive). Auto-binds host when called inside setup.
+   */
   clone: (
     config?: MaybeRefOrGetter<LayerConfigContentOf<ContentProps, ContainerProps>>,
   ) => LayerInstance<ContentProps, ContainerProps>

@@ -4,6 +4,25 @@ import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
 import { hasSetupContext, type MaybeRefOrGetter } from '@/compat'
 
+/**
+ * Configure the layer from inside a **content** component's `setup` (define tier).
+ *
+ * Top-level fields describe the **container**; put content-side fields under `content`
+ * (e.g. `closeOn`). Pass the return value to `LayerTemplate` `:to`. No `open` / `close`.
+ *
+ * @example
+ * ```ts
+ * const layer = defineLayer({
+ *   props: { title: 'Edit user', width: '480px' },
+ *   content: { closeOn: ['submit'] },
+ * })
+ *
+ * // live title
+ * defineLayer(() => ({
+ *   props: { title: `Confirm (${left.value}s)` },
+ * }))
+ * ```
+ */
 export function defineLayer(
   config: MaybeRefOrGetter<LayerConfigContainer> = {},
 ): LayerDefine {
