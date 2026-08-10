@@ -1,5 +1,7 @@
 # vue-layerx
 
+简体中文 | [English](./README.en.md)
+
 > 弹窗编程新范式：像路由导航一样打开弹窗，像普通组件一样复用弹窗内容。
 
 vue-layerx 是一个 Vue 弹窗调度框架，用于将已有的 Dialog / Drawer / Popup 组件转换为可编程弹层。
@@ -38,7 +40,7 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
-## 首个命令式弹层
+## 使用
 
 ### 获取组合式函数
 
