@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-08-13
+
+### Changed
+
+- **`"sideEffects": false`** — mark the package as side-effect free so bundlers can tree-shake unused named exports
+- **README** — 居中标题与徽章（npm / downloads / CI / coverage / bundlejs / Vue / license）；文档 / Playground 与 Ask Zread / DeepWiki 分行
+- **CI** — 合并 unit + 集成覆盖率并上传 [Codecov](https://codecov.io/gh/xuyimingwork/vue-layerx)；不设 100% threshold 卡关
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.1` or `vue-layerx@latest`
+- 无公开 API breaking
+
 ## [1.2.0] - 2026-08-05
 
 ### Added
@@ -243,7 +256,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.0.1...v1.0.2

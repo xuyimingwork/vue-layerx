@@ -1,6 +1,6 @@
 {
   "name": "vue-layerx",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "像路由导航一样调度弹窗，像普通组件一样复用弹窗内容",
   "type": "module",
   "sideEffects": false,
