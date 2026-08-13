@@ -5,7 +5,9 @@
 </p>
 
 <p align="center">
-  <b>A new paradigm for modal programming: open layers like route navigation, reuse content like ordinary components.</b>
+  <b>A new paradigm for modal programming</b><br />
+  Open layers like route navigation<br />
+  Reuse content like ordinary components
 </p>
 
 <p align="center">
