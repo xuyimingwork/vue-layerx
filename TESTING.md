@@ -157,7 +157,7 @@ pnpm test:coverage:merge                   # → coverage/
 pnpm test:coverage:all                     # 上面四步
 ```
 
-Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/`（vue2 趟另钉 `vue@2.7`）以便 V8 记到源码。CI **不**用 100% threshold 卡关。
+Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/`（vue2 趟另钉 `vue@2.7`）以便 V8 记到源码。CI 会跑 `pnpm test:coverage:all` 的等价步骤，把合并后的 `coverage/lcov.info` 上传到 Codecov；**不**用 100% threshold 卡关。
 
 ## Adding New Tests
 
