@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/vue-layerx"><img src="https://img.shields.io/npm/v/vue-layerx.svg" alt="npm version" /></a>
   <a href="https://www.npmjs.com/package/vue-layerx"><img src="https://img.shields.io/npm/dm/vue-layerx.svg" alt="npm downloads" /></a>
-  <a href="https://github.com/xuyimingwork/vue-layerx/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xuyimingwork/vue-layerx/ci.yml?branch=main&label=CI" alt="CI" /></a>
+  <a href="https://github.com/xuyimingwork/vue-layerx/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xuyimingwork/vue-layerx/ci.yml?branch=main&label=ci" alt="ci" /></a>
   <a href="https://codecov.io/gh/xuyimingwork/vue-layerx"><img src="https://codecov.io/gh/xuyimingwork/vue-layerx/graph/badge.svg" alt="codecov" /></a>
   <br />
   <a href="https://bundlejs.com/?q=vue-layerx&config=%7B%22esbuild%22%3A%7B%22external%22%3A%5B%22vue%22%5D%7D%7D"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdeno.bundlejs.com%2F%3Fq%3Dvue-layerx%26config%3D%257B%2522esbuild%2522%253A%257B%2522external%2522%253A%255B%2522vue%2522%255D%257D%257D&query=%24.size.compressedSize&label=minzip" alt="minzip" /></a>
@@ -66,57 +66,163 @@ npm install vue-layerx
 
 ## 使用
 
-### 获取组合式函数
+### 创建组合式函数
 
 任意弹层 **容器组件** 都可以通过 `createLayer` 生成对应的组合式函数。以 Dialog 为例：
 
 ```ts
-// dialog.ts
+// src/composables/dialog.ts
 import { createLayer } from 'vue-layerx'
 import { ElDialog } from 'element-plus'
 
-export const useDialog = createLayer(ElDialog)
+export const useDialog = createLayer(ElDialog, {
+  props: { width: '480px', appendToBody: true },
+})
 ```
 
 > 弹层：Dialog、Drawer、Popup 等弹出式交互形态的统称。
 
-### 获取弹层实例
+### 打开弹层
 
-有了 `useDialog` 后，传入 **内容组件** 即可得到弹层实例：
-
-```vue
-<!-- HelloWorld.vue -->
-<template>
-  <p>Hello World</p>
-</template>
-```
+传入 **内容组件** 得到弹层实例，再 `$open` 打开并传入内容参数：
 
 ```vue
-<!-- App.vue -->
 <script setup lang="ts">
-import HelloWorld from './HelloWorld.vue'
-import { useDialog } from './dialog'
+import UserForm from './UserForm.vue'
+import { useDialog } from '@/composables/dialog'
 
-const dialog = useDialog(HelloWorld)
-</script>
-```
-
-### 使用弹层实例
-
-调用 `open()` 打开弹层：
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-  /* ... */
+const dialog = useDialog(UserForm)
 </script>
 
 <template>
-  <button @click="dialog.open()">
-    打开弹层
-  </button>
+  <button @click="dialog.$open({ id: 1 })">编辑用户</button>
 </template>
 ```
+
+### 内容组件
+
+下面几个 `UserForm.vue` 都能被上面这段打开，只是内容侧逐步补上弹层契约。
+
+**1. 收下参数**
+
+内容就是普通组件，`$open` 的字段对上 `defineProps`：
+
+```vue
+<script setup lang="ts">
+defineProps<{ id: number }>()
+</script>
+
+<template>
+  <p>正在编辑用户 {{ id }}</p>
+</template>
+```
+
+**2. 声明标题**
+
+可以通过 `defineLayer` 配置内容组件在弹窗中的行为，例如标题：
+
+```vue
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
+
+defineProps<{ id: number }>()
+
+defineLayer({
+  props: { title: '编辑用户' }, // 给容器
+})
+</script>
+
+<template>
+  <p>正在编辑用户 {{ id }}</p>
+</template>
+```
+
+**3. 关闭弹窗**
+
+想让内容组件关闭弹窗时，用 `closeOn` 声明哪些事件要关层。内容只 `emit`，不要去调 `close()`：
+
+```vue
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
+
+const props = defineProps<{ id: number }>()
+const emit = defineEmits<{ success: [] }>()
+
+defineLayer({
+  props: { title: '编辑用户' },
+  content: { closeOn: ['success'] },
+})
+
+async function save() {
+  await updateUser(props.id) // 失败则抛错，不往下走
+  emit('success')
+}
+</script>
+
+<template>
+  <p>正在编辑用户 {{ id }}</p>
+  <button @click="save">保存</button>
+</template>
+```
+
+> defineLayer 定义的所有内容在具体使用时都可以再次覆盖，如：
+> 
+> ```ts
+> const dialog = useDialog(UserForm, {
+>   closeOn: { success: false },
+> })
+> ```
+
+**4. 插槽投递**
+
+想把保存按钮放到弹窗的 `footer` 插槽里，可以用 `LayerTemplate` 投递：
+
+```vue
+<script setup lang="ts">
+import { defineLayer, LayerTemplate } from 'vue-layerx'
+
+const layer = defineLayer({
+  props: { title: '编辑用户' },
+  content: { closeOn: ['success'] },
+})
+</script>
+
+<template>
+  <p>正在编辑用户 {{ id }}</p>
+  <LayerTemplate :to="layer" name="footer">
+    <button @click="save">保存</button>
+  </LayerTemplate>
+</template>
+```
+
+详细用法见[向弹层投递插槽](https://xuyimingwork.github.io/vue-layerx/guide/layer-template)。
+
+### 等待弹层结果
+
+只打开、不等返回值用 `$open`；需要从弹层拿回数据再继续时，用 `$confirm`：
+
+```ts
+try {
+  const { data } = await dialog.$confirm({ id: 1 })
+  // 使用 data
+} catch {
+  // 取消、点遮罩关闭
+}
+```
+
+想要 confirm 就必须指定能 confirm 的事件，可以这样表示：
+
+```ts
+defineLayer({
+  content: {
+    closeOn: {
+      success: { when: 'always', confirmed: true },
+    },
+  },
+})
+```
+
+完整说明见[等待弹层结果](https://xuyimingwork.github.io/vue-layerx/guide/confirm)。
 
 ## 文档
 

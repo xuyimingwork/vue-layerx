@@ -123,21 +123,16 @@ export function normalizeCloseOn(raw?: CloseOnRaw): CloseOn | undefined {
 export function mergeCloseOn(
   ...sources: (CloseOn | undefined)[]
 ): CloseOn | undefined {
-  const result: CloseOn = {}
-  let touched = false
 
-  for (const source of sources) {
-    if (!source) continue
-    touched = true
-    for (const [event, entry] of Object.entries(source)) {
-      if (entry.when === 'none') {
-        delete result[event]
-      } else {
-        result[event] = { ...entry }
-      }
+  const raw = sources.reduce((result, source): CloseOn => {
+    if (!source) return result!
+    return {
+      ...result,
+      ...source
     }
-  }
+  }, {} as CloseOn)!
 
-  if (!touched) return undefined
+  const result = Object.fromEntries(Object.entries(raw)
+    .filter(([_, entry]) => entry.when !== 'none'))
   return Object.keys(result).length > 0 ? result : undefined
 }

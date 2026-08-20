@@ -16,3 +16,4 @@
 | [0010](./0010-no-framework-before-close.md) | 不提供框架级 `onBeforeClose`：离开确认归壳 `beforeClose` + 内容 emit 前处理 | Accepted（刻意不做） |
 | [0011](./0011-dollar-open-content-props-sugar.md) | `$open` / `$confirm`：内容 props 快捷打开（不改 `open`） | Accepted（已实现） |
 | [0012](./0012-typed-content-container-props.md) | Content / Container props 类型推导 | Accepted（已实现） |
+| [0013](./0013-close-on-confirmed-sugar.md) | `closeOn` 对象形糖：`{ confirmed: true }` ≡ always；`{}` 非法；inherit 等反馈 | Deferred（暂不实现） |

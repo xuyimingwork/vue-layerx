@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/vue-layerx"><img src="https://img.shields.io/npm/v/vue-layerx.svg" alt="npm version" /></a>
   <a href="https://www.npmjs.com/package/vue-layerx"><img src="https://img.shields.io/npm/dm/vue-layerx.svg" alt="npm downloads" /></a>
-  <a href="https://github.com/xuyimingwork/vue-layerx/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xuyimingwork/vue-layerx/ci.yml?branch=main&label=CI" alt="CI" /></a>
+  <a href="https://github.com/xuyimingwork/vue-layerx/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xuyimingwork/vue-layerx/ci.yml?branch=main&label=ci" alt="ci" /></a>
   <a href="https://codecov.io/gh/xuyimingwork/vue-layerx"><img src="https://codecov.io/gh/xuyimingwork/vue-layerx/graph/badge.svg" alt="codecov" /></a>
   <br />
   <a href="https://bundlejs.com/?q=vue-layerx&config=%7B%22esbuild%22%3A%7B%22external%22%3A%5B%22vue%22%5D%7D%7D"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdeno.bundlejs.com%2F%3Fq%3Dvue-layerx%26config%3D%257B%2522esbuild%2522%253A%257B%2522external%2522%253A%255B%2522vue%2522%255D%257D%257D&query=%24.size.compressedSize&label=minzip" alt="minzip" /></a>
@@ -71,52 +71,158 @@ npm install vue-layerx
 Any layer **container component** can be turned into a composable with `createLayer`. For example, with a Dialog:
 
 ```ts
-// dialog.ts
+// src/composables/dialog.ts
 import { createLayer } from 'vue-layerx'
 import { ElDialog } from 'element-plus'
 
-export const useDialog = createLayer(ElDialog)
+export const useDialog = createLayer(ElDialog, {
+  props: { width: '480px', appendToBody: true },
+})
 ```
 
 > Layer: a general term for overlay UI such as Dialog, Drawer, Popup, and similar patterns.
 
-### Get a layer instance
+### Open a layer
 
-Pass a **content component** into `useDialog` to get a layer instance:
-
-```vue
-<!-- HelloWorld.vue -->
-<template>
-  <p>Hello World</p>
-</template>
-```
+Pass a **content component** to get a layer instance, then `$open` it with content props:
 
 ```vue
-<!-- App.vue -->
 <script setup lang="ts">
-import HelloWorld from './HelloWorld.vue'
-import { useDialog } from './dialog'
+import UserForm from './UserForm.vue'
+import { useDialog } from '@/composables/dialog'
 
-const dialog = useDialog(HelloWorld)
-</script>
-```
-
-### Use the layer instance
-
-Call `open()` to show the layer:
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-  /* ... */
+const dialog = useDialog(UserForm)
 </script>
 
 <template>
-  <button @click="dialog.open()">
-    Open Layer
-  </button>
+  <button @click="dialog.$open({ id: 1 })">Edit user</button>
 </template>
 ```
+
+### Content component
+
+Each of the following `UserForm.vue` examples can be opened by the snippet above. They only add layer contracts on the content side, step by step.
+
+**1. Receive props**
+
+Content is an ordinary component. Fields passed to `$open` map to `defineProps`:
+
+```vue
+<script setup lang="ts">
+defineProps<{ id: number }>()
+</script>
+
+<template>
+  <p>Editing user {{ id }}</p>
+</template>
+```
+
+**2. Declare a title**
+
+Use `defineLayer` to configure how the content behaves inside a dialog — the title, for example:
+
+```vue
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
+
+defineProps<{ id: number }>()
+
+defineLayer({
+  props: { title: 'Edit user' }, // for the container
+})
+</script>
+
+<template>
+  <p>Editing user {{ id }}</p>
+</template>
+```
+
+**3. Close the dialog**
+
+To let the content close the dialog, declare which events should close it with `closeOn`. Content only `emit`s — do not call `close()`:
+
+```vue
+<script setup lang="ts">
+import { defineLayer } from 'vue-layerx'
+
+const props = defineProps<{ id: number }>()
+const emit = defineEmits<{ success: [] }>()
+
+defineLayer({
+  props: { title: 'Edit user' },
+  content: { closeOn: ['success'] },
+})
+
+async function save() {
+  await updateUser(props.id) // throw on failure; do not emit
+  emit('success')
+}
+</script>
+
+<template>
+  <p>Editing user {{ id }}</p>
+  <button @click="save">Save</button>
+</template>
+```
+
+> Anything declared in `defineLayer` can be overridden at the call site, for example:
+>
+> ```ts
+> const dialog = useDialog(UserForm, {
+>   closeOn: { success: false },
+> })
+> ```
+
+**4. Slot delivery**
+
+To put the Save button in the dialog `footer` slot, deliver it with `LayerTemplate`:
+
+```vue
+<script setup lang="ts">
+import { defineLayer, LayerTemplate } from 'vue-layerx'
+
+const layer = defineLayer({
+  props: { title: 'Edit user' },
+  content: { closeOn: ['success'] },
+})
+</script>
+
+<template>
+  <p>Editing user {{ id }}</p>
+  <LayerTemplate :to="layer" name="footer">
+    <button @click="save">Save</button>
+  </LayerTemplate>
+</template>
+```
+
+See [Delivering slots to a layer](https://xuyimingwork.github.io/vue-layerx/guide/layer-template) for details.
+
+### Await a layer result
+
+Use `$open` when you only need to show the layer. Use `$confirm` when you need data back before continuing:
+
+```ts
+try {
+  const { data } = await dialog.$confirm({ id: 1 })
+  // use data
+} catch {
+  // canceled, or closed via the mask
+}
+```
+
+`$confirm` requires a confirmed close event, for example:
+
+```ts
+defineLayer({
+  content: {
+    closeOn: {
+      success: { when: 'always', confirmed: true },
+    },
+  },
+})
+```
+
+See [Awaiting a layer result](https://xuyimingwork.github.io/vue-layerx/guide/confirm) for details.
 
 ## Documentation
 
