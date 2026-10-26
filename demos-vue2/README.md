@@ -16,5 +16,6 @@ pnpm demos:vue2   # → http://localhost:5174
 | 三行打开 | `createLayer(Dialog, { model: 'visible' })` |
 | 列表 CRUD | `open({ props })` + 双向 `LayerTemplate` |
 | confirm() | Promise 确认框 |
+| $attrs 透传 | 外壳只声明部分 props，其余经 `$attrs` 转到内部 Dialog |
 
 站点部署路径：`/demos/vue2/`。完整 Vue 3 示例见 `demos-vue3/`。

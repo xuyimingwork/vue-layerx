@@ -3,6 +3,7 @@ import { filesFor } from './sources'
 import BasicDemo from './01-basic/index.vue'
 import CrudDemo from './02-crud/index.vue'
 import ConfirmDemo from './03-confirm/index.vue'
+import AttrsShellDemo from './04-attrs-shell/index.vue'
 
 export const demoGroups: DemoGroup[] = [
   {
@@ -36,6 +37,15 @@ export const demoGroups: DemoGroup[] = [
         tags: ['confirm()', 'LayerConfirmError'],
         component: ConfirmDemo,
         files: filesFor('03-confirm'),
+      },
+      {
+        id: 'attrs-shell',
+        title: '$attrs 透传',
+        description:
+          'ShellDialog 只声明 visible / title。width 与 customClass 经 $attrs 转到内部 el-dialog。',
+        tags: ['$attrs', '$listeners', 'model: visible'],
+        component: AttrsShellDemo,
+        files: filesFor('04-attrs-shell'),
       },
     ],
   },
