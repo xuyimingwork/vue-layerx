@@ -27,9 +27,9 @@ type PlatformData = {
  * Does NOT remap value→input (already expressed as onInput via D0.20).
  */
 export function toPlatformVNodeData(flat: Record<string | symbol, unknown>): PlatformData {
-  const props: Record<string, unknown> = {}
+  const attrs: Record<string, unknown> = {}
   const on: Record<string, unknown> = {}
-  const data: PlatformData = { props, on }
+  const data: PlatformData = { attrs, on }
   let hasOn = false
 
   for (const key of Reflect.ownKeys(flat)) {
@@ -62,11 +62,11 @@ export function toPlatformVNodeData(flat: Record<string | symbol, unknown>): Pla
         continue
       }
     }
-    props[key] = value
+    attrs[key] = value
   }
 
   if (!hasOn) delete data.on
-  if (Object.keys(props).length === 0) delete data.props
+  if (Object.keys(attrs).length === 0) delete data.attrs
   return data
 }
 

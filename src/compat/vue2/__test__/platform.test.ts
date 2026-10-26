@@ -19,7 +19,7 @@ describe('toPlatformVNodeData', () => {
         onInput: done,
       }),
     ).toEqual({
-      props: { title: 'Hi' },
+      attrs: { title: 'Hi' },
       on: {
         done,
         'update:modelValue': update,
@@ -28,13 +28,13 @@ describe('toPlatformVNodeData', () => {
     })
   })
 
-  it('should keep malformed on* keys in props when event parse fails', () => {
+  it('should keep malformed on* keys in attrs when event parse fails', () => {
     expect(toPlatformVNodeData({ onfoo: 1 })).toEqual({
-      props: { onfoo: 1 },
+      attrs: { onfoo: 1 },
     })
   })
 
-  it('should lift key ref class style and layer-content mark out of props', () => {
+  it('should lift key ref class style and layer-content mark out of attrs', () => {
     const data = toPlatformVNodeData(
       markLayerContent({
         key: 1,
@@ -48,7 +48,7 @@ describe('toPlatformVNodeData', () => {
     expect(data.ref).toBe('el')
     expect(data.class).toBe('x')
     expect(data.style).toEqual({ color: 'red' })
-    expect(data.props).toEqual({ width: 100 })
+    expect(data.attrs).toEqual({ width: 100 })
     expect(data[LAYER_CONTENT]).toBe(true)
     expect(data.on).toBeUndefined()
   })
@@ -57,7 +57,7 @@ describe('toPlatformVNodeData', () => {
     const sym = Symbol('x')
     const data = toPlatformVNodeData({ [sym]: 1, a: 2 })
     expect(data[sym]).toBe(1)
-    expect(data.props).toEqual({ a: 2 })
+    expect(data.attrs).toEqual({ a: 2 })
   })
 })
 

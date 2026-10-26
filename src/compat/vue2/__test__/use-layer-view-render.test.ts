@@ -15,7 +15,7 @@ const StubContent = defineComponent({
 /** Vue 2 `h` data shape as seen when the suite runs under Vue 3. */
 function vue2Data(vnode: VNode) {
   return vnode.props as {
-    props?: Record<string, unknown>
+    attrs?: Record<string, unknown>
     on?: Record<string, unknown>
     scopedSlots?: Record<string, () => VNode | null>
     key?: unknown
@@ -48,7 +48,7 @@ describe('useLayerViewRender (Vue 2.7 tree)', () => {
     expect(tree.type).toBe(MinimalContainer)
     const content = vue2Data(tree)?.scopedSlots?.default?.()
     expect(content?.type).toBe(StubContent)
-    expect(vue2Data(content!)?.props?.message).toBe('hello')
+    expect(vue2Data(content!)?.attrs?.message).toBe('hello')
     expect(vue2Data(content!)?.key).toBe(1)
   })
 
@@ -80,10 +80,10 @@ describe('useLayerViewRender (Vue 2.7 tree)', () => {
 
     expect(tree.type).toBe(StubContent)
     const data = vue2Data(tree)
-    expect(data?.props?.message).toBe('hello')
-    expect(data?.props?.modelValue).toBe(true)
-    expect(data?.props?.title).toBe('from-container')
-    expect(data?.props?.width).toBe('720px')
+    expect(data?.attrs?.message).toBe('hello')
+    expect(data?.attrs?.modelValue).toBe(true)
+    expect(data?.attrs?.title).toBe('from-container')
+    expect(data?.attrs?.width).toBe('720px')
     expect(data?.on?.['update:modelValue']).toBe(onUpdate)
     expect(data?.key).toBe(2)
   })

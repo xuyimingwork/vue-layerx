@@ -140,6 +140,71 @@ export function makeContent() {
   })
 }
 
+/**
+ * Inner dialog. Declares fields a shell usually does not, so they must arrive as attrs.
+ */
+export const InnerElDialog = defineComponent({
+  name: 'InnerElDialog',
+  props: {
+    width: String,
+    customClass: String,
+  },
+  setup(props, { emit, slots }) {
+    return () =>
+      h(
+        'motion-dialog',
+        {
+          attrs: {
+            'data-width': props.width,
+            'data-custom-class': props.customClass,
+          },
+        },
+        [
+          slots.default?.(undefined as never),
+          h(
+            'button',
+            {
+              class: 'emit-opened',
+              on: { click: () => emit('opened') },
+            },
+            'opened',
+          ),
+        ],
+      )
+  },
+})
+
+/**
+ * Shell that declares only `value` and `title`, then forwards the rest
+ * the way `v-bind="$attrs"` and `v-on="$listeners"` do.
+ * `inheritAttrs: false` so undeclared fields have to come from `$attrs`.
+ */
+export const ShellDialog = defineComponent({
+  name: 'ShellDialog',
+  inheritAttrs: false,
+  model: { prop: 'value', event: 'input' },
+  props: {
+    value: Boolean,
+    title: String,
+  },
+  setup(props, ctx) {
+    return () =>
+      props.value
+        ? h(
+            InnerElDialog,
+            {
+              attrs: {
+                ...ctx.attrs,
+                'data-title': props.title,
+              },
+              on: ctx.listeners,
+            },
+            ctx.slots.default?.(undefined as never),
+          )
+        : null
+  },
+})
+
 export function queryBodyDialog() {
   return document.body.querySelector('motion-dialog')
 }
