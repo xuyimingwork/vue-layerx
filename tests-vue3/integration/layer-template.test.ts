@@ -492,6 +492,98 @@ describe('LayerTemplate', () => {
         expect(footerSetups).toBe(1)
       })
 
+      it('should remount defineLayer slots footer when the layer closes and opens again', async () => {
+        const useLayer = createLayer(PersistentDialog)
+        let footerSetups = 0
+        const FooterWidget = defineComponent({
+          name: 'DefineSlotFooterWidget',
+          setup() {
+            footerSetups++
+            return () => h('button', { class: 'footer-btn' }, 'ok')
+          },
+        })
+        const Content = defineComponent({
+          name: 'PersistentDefineSlotContent',
+          setup() {
+            defineLayer({
+              slots: { footer: () => h(FooterWidget) },
+            })
+            return () => h('div', { class: 'content' }, 'body')
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () => h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(1)
+        expect(document.body.querySelector('.footer-btn')?.parentElement?.className).toBe(
+          'dialog-footer',
+        )
+
+        dialog.close()
+        await wrapper.vm.$nextTick()
+
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(2)
+        expect(document.body.querySelector('.footer-btn')?.parentElement?.className).toBe(
+          'dialog-footer',
+        )
+      })
+
+      it('should keep defineLayer slots footer mounted when open is called while visible', async () => {
+        const useLayer = createLayer(PersistentDialog)
+        let footerSetups = 0
+        const FooterWidget = defineComponent({
+          name: 'DefineSlotFooterWidget',
+          setup() {
+            footerSetups++
+            return () => h('button', { class: 'footer-btn' }, 'ok')
+          },
+        })
+        const Content = defineComponent({
+          name: 'PersistentDefineSlotContent',
+          setup() {
+            defineLayer({
+              slots: { footer: () => h(FooterWidget) },
+            })
+            return () => h('div', { class: 'content' }, 'body')
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () => h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+        expect(footerSetups).toBe(1)
+
+        dialog.open({ props: { message: 'again' } })
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(1)
+      })
+
       it('should keep caller container footer mounted when the layer closes and opens again', async () => {
         const useLayer = createLayer(PersistentDialog)
         let footerSetups = 0
