@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "lib": ["ES2020", "DOM"],
+    // dist/index.d.ts imports "vue" from the package root (Vue 3). Pin every
+    // resolution to this package's Vue 2.7 so h() and LayerTemplate share one Component type.
+    "paths": {
+      "vue": ["./node_modules/vue/types/index.d.ts"]
+    }
+  },
+  "include": [
+    "integration/**/*.ts",
+    "helpers/**/*.ts",
+    "fixtures/**/*.ts",
+    "setup.ts",
+    "typecheck/**/*.ts"
+  ]
+}

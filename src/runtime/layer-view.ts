@@ -21,6 +21,7 @@ import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import {
   getSetupInstance,
+  h,
   isLayerContent,
   toValue,
   useLayerViewRender,
@@ -83,8 +84,19 @@ function useOpenId(visible: ComputedRef<boolean>): Ref<number> {
   return openId
 }
 
+/** Keyed parent for one open. Renders the default slot as-is, so the DOM gains no element. */
+const LayerSlotFragment = defineComponent({
+  name: 'LayerSlotFragment',
+  setup(_, { slots }) {
+    return () => slots.default?.() ?? null
+  },
+})
+
 /** Inject bridge for defineLayer / creator LayerTemplate → defineStore. */
-function provideLayerViewBridge(defineStore: LayerViewStoreWithTemplate) {
+function provideLayerViewBridge(
+  defineStore: LayerViewStoreWithTemplate,
+  openId: ComputedRef<number>,
+) {
   provide(LAYER_VIEW_KEY, {
     getDefineContext() {
       const instance = getSetupInstance()
@@ -108,7 +120,7 @@ function provideLayerViewBridge(defineStore: LayerViewStoreWithTemplate) {
             name,
             entry: {
               render: (slotProps: Record<string, unknown> = {}) =>
-                render(slotProps),
+                h(LayerSlotFragment, { key: openId.value }, () => render(slotProps)),
             },
           })
         },
@@ -134,12 +146,16 @@ export const LayerView = defineComponent({
   },
   setup(props, { emit }) {
     const visible = computed(() => props.visible)
+    const openId = useOpenId(visible)
     const defineStore = createLayerStore({
       define: computed(() => ({})),
       'define:template': {},
     })
 
-    provideLayerViewBridge(defineStore)
+    provideLayerViewBridge(
+      defineStore,
+      computed(() => openId.value),
+    )
 
     const bound = useLayerBound({
       store: props.store,
@@ -147,8 +163,6 @@ export const LayerView = defineComponent({
       visible,
       onUpdateVisible: (value, payload) => emit('update:visible', value, payload),
     })
-
-    const openId = useOpenId(visible)
 
     const render = useLayerViewRender(bound, visible)
     return () => render(openId.value)

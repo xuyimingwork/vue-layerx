@@ -25,6 +25,22 @@ const ElementUiLikeDialog = Vue.extend({
   },
 })
 
+/**
+ * Stays mounted across close. `display` hides it so footer instances can survive
+ * a reopen unless the delivered slot is keyed.
+ */
+const PersistentDialog = Vue.extend({
+  name: 'PersistentDialog',
+  model: { prop: 'value', event: 'input' },
+  props: { value: Boolean },
+  render(h) {
+    return h('motion-dialog', { style: { display: this.value ? '' : 'none' } }, [
+      this.$slots.default,
+      h('div', { class: 'dialog-footer' }, this.$slots.footer),
+    ])
+  },
+})
+
 describe('LayerTemplate (Vue 2.7)', () => {
   it('should deliver footer when container gates on $slots.footer (Element UI)', async () => {
     let dialog!: ReturnType<ReturnType<typeof createLayer>>
@@ -53,6 +69,55 @@ describe('LayerTemplate (Vue 2.7)', () => {
     expect(document.body.querySelector('.body')).toBeTruthy()
     expect(document.body.querySelector('.dialog-footer .footer-btn')?.textContent).toBe(
       'ok',
+    )
+    host.destroy()
+  })
+
+  it('should remount defineLayer footer when the layer closes and opens again', async () => {
+    let dialog!: ReturnType<ReturnType<typeof createLayer>>
+    let footerSetups = 0
+
+    const FooterWidget = defineComponent({
+      name: 'FooterWidget',
+      setup() {
+        footerSetups++
+        return () => h('button', { class: 'footer-btn' }, 'ok')
+      },
+    })
+
+    const Content = defineComponent({
+      name: 'PersistentFooterContent',
+      setup() {
+        const layer = defineLayer()
+        return () =>
+          h('div', [
+            h('span', { class: 'body' }, 'body'),
+            h(LayerTemplate, { props: { to: layer, name: 'footer' } }, [h(FooterWidget)]),
+          ])
+      },
+    })
+
+    const host = mountSetup(() => {
+      dialog = createLayer(PersistentDialog)(Content)
+    })
+
+    dialog.open()
+    await flushPromises()
+
+    expect(footerSetups).toBe(1)
+    expect(document.body.querySelector('.footer-btn')?.parentElement?.className).toBe(
+      'dialog-footer',
+    )
+
+    dialog.close()
+    await flushPromises()
+
+    dialog.open()
+    await flushPromises()
+
+    expect(footerSetups).toBe(2)
+    expect(document.body.querySelector('.footer-btn')?.parentElement?.className).toBe(
+      'dialog-footer',
     )
     host.destroy()
   })

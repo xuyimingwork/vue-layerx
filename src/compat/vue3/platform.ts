@@ -1,6 +1,8 @@
 import type { VNode } from 'vue'
 import { LAYER_CONTENT } from '@/shared/layer-content'
 
+export { h } from 'vue'
+
 export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const
 
 /** Flat listener prop for container v-model (Vue 3): `onUpdate:${model}`. */

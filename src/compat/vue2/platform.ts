@@ -1,4 +1,4 @@
-import type { VNode } from 'vue'
+import { h as createElement, type Component, type VNode } from 'vue'
 import { LAYER_CONTENT } from '@/shared/layer-content'
 
 /** Aligns with Vue 3 `modelValue`: Vue 2.7 default v-model is `value` + `input`. */
@@ -79,6 +79,18 @@ function flatOnToVue2Event(key: string): string | null {
     return key[2]!.toLowerCase() + key.slice(3)
   }
   return null
+}
+
+/**
+ * `h(type, props, defaultSlot)`.
+ * Vue 2.7 only promotes a children array whose first item is a function into the default scoped slot.
+ */
+export function h(
+  type: Component,
+  props: object | null,
+  render: () => VNode | VNode[] | null,
+): VNode {
+  return createElement(type, props, [render] as never)
 }
 
 /** Vue 2.7: function-slot map → scopedSlots (omit when empty so h() data stays clean). */

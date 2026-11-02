@@ -1,4 +1,4 @@
-import { defineComponent, h, onMounted, ref } from 'vue'
+import { defineComponent, h, onMounted, ref, renderSlot, vShow, withDirectives } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import {
@@ -10,6 +10,28 @@ import {
 } from 'vue-layerx'
 import { flushPromises } from '../helpers/dom'
 import { Container, makeContent } from '../fixtures/components'
+
+/**
+ * Stays mounted across close. `v-show` hides it so footer instances can survive
+ * a reopen unless the delivered slot is keyed. `renderSlot` is the runtime
+ * outlet `<slot name="footer" />` compiles to.
+ */
+const PersistentDialog = defineComponent({
+  name: 'PersistentDialog',
+  props: { modelValue: Boolean },
+  setup(props, { slots }) {
+    return () =>
+      withDirectives(
+        h('motion-dialog', null, {
+          default: () => [
+            h('div', { class: 'dialog-body' }, renderSlot(slots, 'default')),
+            h('div', { class: 'dialog-footer' }, renderSlot(slots, 'footer')),
+          ],
+        }),
+        [[vShow, props.modelValue]],
+      )
+  },
+})
 
 const MultiSlotContainer = defineComponent({
   name: 'MultiSlotContainer',
@@ -374,6 +396,144 @@ describe('LayerTemplate', () => {
 
         expect(document.body.querySelector('.footer-btn')).toBeTruthy()
         expect(document.querySelector('.content .footer-btn')).toBeFalsy()
+      })
+
+      it('should remount defineLayer footer when the layer closes and opens again', async () => {
+        const useLayer = createLayer(PersistentDialog)
+        let footerSetups = 0
+        const FooterWidget = defineComponent({
+          name: 'FooterWidget',
+          setup() {
+            footerSetups++
+            return () => h('button', { class: 'footer-btn' }, 'ok')
+          },
+        })
+        const Content = defineComponent({
+          name: 'PersistentFooterContent',
+          setup() {
+            const layer = defineLayer()
+            return () =>
+              h('div', { class: 'content' }, [
+                h(LayerTemplate, { to: layer, name: 'footer' }, () => h(FooterWidget)),
+              ])
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () => h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(1)
+        expect(document.body.querySelector('.footer-btn')?.parentElement?.className).toBe(
+          'dialog-footer',
+        )
+
+        dialog.close()
+        await wrapper.vm.$nextTick()
+
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(2)
+        expect(document.body.querySelector('.footer-btn')?.parentElement?.className).toBe(
+          'dialog-footer',
+        )
+      })
+
+      it('should keep defineLayer footer mounted when open is called while visible', async () => {
+        const useLayer = createLayer(PersistentDialog)
+        let footerSetups = 0
+        const FooterWidget = defineComponent({
+          name: 'FooterWidget',
+          setup() {
+            footerSetups++
+            return () => h('button', { class: 'footer-btn' }, 'ok')
+          },
+        })
+        const Content = defineComponent({
+          name: 'PersistentFooterContent',
+          setup() {
+            const layer = defineLayer()
+            return () =>
+              h('div', { class: 'content' }, [
+                h(LayerTemplate, { to: layer, name: 'footer' }, () => h(FooterWidget)),
+              ])
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () => h('motion-host')
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+        expect(footerSetups).toBe(1)
+
+        dialog.open({ props: { message: 'again' } })
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(1)
+      })
+
+      it('should keep caller container footer mounted when the layer closes and opens again', async () => {
+        const useLayer = createLayer(PersistentDialog)
+        let footerSetups = 0
+        const FooterWidget = defineComponent({
+          name: 'CallerFooterWidget',
+          setup() {
+            footerSetups++
+            return () => h('button', { class: 'caller-btn' }, 'caller')
+          },
+        })
+        const Content = defineComponent({
+          name: 'PlainContent',
+          setup() {
+            return () => h('div', { class: 'content' }, 'body')
+          },
+        })
+
+        let dialog!: LayerInstance
+        const Host = defineComponent({
+          setup() {
+            dialog = useLayer(Content)
+            return () =>
+              h(LayerTemplate, { to: dialog, container: true, name: 'footer' }, () =>
+                h(FooterWidget),
+              )
+          },
+        })
+
+        const wrapper = mount(Host)
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+        expect(footerSetups).toBe(1)
+
+        dialog.close()
+        await wrapper.vm.$nextTick()
+
+        dialog.open()
+        await wrapper.vm.$nextTick()
+        await flushPromises()
+
+        expect(footerSetups).toBe(1)
       })
     })
 
