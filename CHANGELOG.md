@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-02
+
+### Fixed
+
+- **修复持久容器关闭后再打开时，层内具名插槽不重新挂载** — 容器关闭后仍保持挂载时，`LayerTemplate`（`to` 为 `defineLayer()`）和 `defineLayer({ slots })` 会沿用上一次的实例。再次打开现在会重新挂载。已经打开时再调 `open()` 不重挂；调用方挂在 layer 实例上的 `LayerTemplate` 仍保持原实例。Vue 2.7 与 Vue 3 行为一致。
+
+### Added
+
+- **Vue 2 demo** — Element UI 示例增加「`$attrs` 透传」：外壳只声明 `visible` / `title`，未声明的 `width`、`customClass` 经 `$attrs` 转到内部 `el-dialog`。
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.3` or `vue-layerx@latest`
+- 无公开 API breaking
+
 ## [1.2.2] - 2026-10-26
 
 ### Fixed
@@ -267,7 +282,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.3...HEAD
+[1.2.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/xuyimingwork/vue-layerx/compare/v1.1.0...v1.2.0
