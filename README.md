@@ -43,12 +43,15 @@ const dialog = useDialog(HelloWorld)
 dialog.$open()                             
 ```
 
+> 当项目里的弹窗超过 5 个，或者开始出现弹窗内容复用的需求时，
+不妨试试 vue-layerx
+
 ## 特性
 
 ### 核心能力
 
-- **容器与内容解耦**：内容可脱离弹窗，独立复用
 - **命令式调用**：不预埋模板，不维护变量，随时打开
+- **容器与内容解耦**：内容可脱离弹窗，独立复用
 - **适配现有组件**：Element Plus、Ant Design Vue、Vuetify 等均可直接使用
 - Promise 式调用：`await dialog.$confirm()`
 - 响应式参数传递：命令式打开参数也能响应式更新
