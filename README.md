@@ -32,29 +32,35 @@
   <a href="https://deepwiki.com/xuyimingwork/vue-layerx"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
-vue-layerx 是一个 Vue 弹窗调度框架，用于将已有的 Dialog / Drawer / Popup 组件转换为可编程弹层。
-
-它不替代现有 UI 组件，而是在其之上提供统一的弹窗生命周期管理、动态渲染和业务调用方式。
-
-使用简单，三行代码打开弹窗：
+三行代码上手：
 
 ```ts
-const useDialog = createLayer(ElDialog)   // 任意已有弹窗容器
-const dialog = useDialog(HelloWorld)      // 普通组件做弹窗内容
-dialog.open()                             // 直接调用打开
+// 1. 基于现有弹窗容器，创建弹窗 hook
+const useDialog = createLayer(ElDialog)   
+// 2. 使用普通组件创建弹窗实例
+const dialog = useDialog(HelloWorld)   
+// 3. 命令式打开弹窗
+dialog.$open()                             
 ```
 
 ## 特性
 
-- 像路由导航一样打开弹窗：无需定义变量，无需预埋模板，直接通过 API 调起
-- 弹窗内容即普通组件：无需依赖特殊封装，提升组件复用能力
-- 支持响应式参数传递：保持 Vue 原生响应式能力
-- 支持插槽投递：命令式打开弹窗时，仍可使用 Vue 插槽组合能力
-- 统一 API：同时支持 Vue 3.3+ 与 Vue 2.7
-- 零运行时依赖：不依赖任何第三方 npm 包
-- TypeScript 编写：提供完整类型定义
-- 单元测试覆盖率 100%：保障核心功能稳定性
+### 核心能力
+
+- **容器与内容解耦**：内容可脱离弹窗，独立复用
+- **命令式调用**：不预埋模板，不维护变量，随时打开
+- **适配现有组件**：Element Plus、Ant Design Vue、Vuetify 等均可直接使用
+- Promise 式调用：`await dialog.$confirm()`
+- 响应式参数传递：命令式打开参数也能响应式更新
+- 模板插槽投递：支持通过 模板 / JSX 投递插槽
+
+### 工程特性
+
+- 兼容 Vue 2.7 & Vue 3+
 - 支持服务端渲染（SSR）
+- 零第三方依赖
+- 完整 TypeScript 类型支持
+- 100% 测试覆盖
 
 ## 安装
 
