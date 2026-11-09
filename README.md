@@ -379,6 +379,181 @@ defineLayer({
 
 > 与 Vue 一致，如果目标组件内没有声明插槽时，会正常投递但不会渲染内容。
 
+## API
+
+### createLayer
+
+用弹窗容器组件创建专属组合式函数（即 `useLayer`，如 `useDialog`）。
+
+```ts
+function createLayer(Container, config?): useLayer
+```
+
+#### 参数
+
+| 参数名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `Container` | 弹窗容器组件，需支持通过 `v-model` 控制显隐 | `Component` | — |
+| `config` | 容器的默认配置，支持 ref / getter / computed | `MaybeRefOrGetter<LayerConfigCreate>` | `{}` |
+
+#### config
+
+| 属性名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `props` | 传给容器组件的 props | `object` | — |
+| `slots` | 投递给容器组件的插槽 | `Record<string, (props?) => VNode \| VNode[] \| null>` | — |
+| `model` | 容器控制显隐的 `v-model` 属性名 | `string` | Vue 3：`'modelValue'`；Vue 2.7：`'value'` |
+| `content` | 内容侧默认配置，可含 `component` / `props` / `slots` / `closeOn` | `object` | — |
+| `adapter` | 配置合并完成后、渲染前对配置做最后修改 | `(fragment: LayerConfigFragment) => LayerConfigFragment` | — |
+
+### useLayer
+
+`createLayer` 的返回值（非包导出），用内容组件创建弹窗实例。在 `setup` 内调用时会自动继承调用处上下文，所在组件卸载时弹窗随之卸载。
+
+```ts
+function useLayer(Content?, config?): LayerInstance
+```
+
+#### 参数
+
+| 参数名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `Content` | 弹窗内容组件；可省略，之后在 `open({ component })` 中指定 | `Component` | — |
+| `config` | 实例的默认配置，支持 ref / getter / computed | `MaybeRefOrGetter<LayerConfigUse>` | `{}` |
+
+#### config
+
+| 属性名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `props` | 传给内容组件的 props | `object` | — |
+| `slots` | 投递给内容组件的插槽 | `Record<string, (props?) => VNode \| VNode[] \| null>` | — |
+| `closeOn` | 内容组件触发哪些事件时关闭弹窗 | `CloseOnRaw` | — |
+| `container` | 容器侧配置，可含 `component` / `props` / `slots` / `model` | `object` | — |
+
+#### closeOn
+
+| 写法 | 说明 |
+| --- | --- |
+| `['cancel']` | 触发 `cancel` 时关闭 |
+| `[{ event: 'ok', when: 'always', confirmed: true }]` | 触发 `ok` 时关闭，并使 `$confirm` resolve |
+| `{ cancel: true }` | 同 `['cancel']` |
+| `{ cancel: false }` / `{ cancel: 'none' }` | 移除低优先级配置中的 `cancel` |
+| `{ ok: (...args) => boolean }` | 事件参数满足条件（返回 `true`）时关闭 |
+| `{ ok: { when, confirmed } }` | 对象形式，`when` 必填，`confirmed` 默认 `false` |
+
+> 多处配置的 `closeOn` 按事件名合并，而非整体替换
+
+### defineLayer
+
+在内容组件 `setup` 中同步调用，配置该内容在弹窗中的行为。仅当内容组件被弹窗实例使用时生效。
+
+```ts
+function defineLayer(config?): LayerDefine
+```
+
+#### 参数
+
+| 参数名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `config` | 弹窗配置，支持 ref / getter / computed | `MaybeRefOrGetter<LayerConfigContainer>` | `{}` |
+
+#### config
+
+| 属性名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `component` | 替换容器组件，如 `LayerNoContainer` | `Component` | — |
+| `props` | 传给容器组件的 props | `object` | — |
+| `slots` | 投递给容器组件的插槽 | `Record<string, (props?) => VNode \| VNode[] \| null>` | — |
+| `model` | 容器控制显隐的 `v-model` 属性名 | `string` | — |
+| `content` | 内容侧配置，可含 `props` / `slots` / `closeOn` | `object` | — |
+
+#### 返回值
+
+| 属性名 | 说明 | 类型 |
+| --- | --- | --- |
+| `exists` | 当前组件是否作为弹窗内容渲染 | `boolean` |
+
+> 返回值用作 `LayerTemplate` 的 `:to`，不提供 `open` / `close`
+
+### instance
+
+`useLayer` / `clone` 返回的弹窗实例（`LayerInstance`）。
+
+#### 属性
+
+| 属性名 | 说明 | 类型 |
+| --- | --- | --- |
+| `visible` | 弹窗是否打开，只读 | `boolean` |
+| `content` | 打开时为内容组件实例，否则为 `null`，只读 | `ComponentPublicInstance \| null` |
+| `container` | 打开时为容器组件实例，否则为 `null`，只读 | `ComponentPublicInstance \| null` |
+
+#### 方法
+
+| 方法名 | 说明 | 类型 |
+| --- | --- | --- |
+| `$open` | 打开弹窗并传递内容 props，`$open(props)` ≡ `open({ props })` | `(props?) => void` |
+| `open` | 打开弹窗；已打开时再次调用会更新配置。`config` 字段同 `useLayer` 的 config，另可传 `component` | `(config?: LayerConfigContent) => void` |
+| `$confirm` | Promise 式打开，`$confirm(props)` ≡ `confirm({ props })` | `(props?) => Promise<LayerConfirmResult>` |
+| `confirm` | Promise 式打开；以 `confirmed: true` 关闭时 resolve，否则 reject `LayerConfirmError` | `(config?: LayerConfigContent) => Promise<LayerConfirmResult>` |
+| `close` | 关闭弹窗；`confirmed` 决定 `confirm` 的结果，`args` 为携带的参数 | `(options?: { confirmed?: boolean, args?: unknown[] }) => void` |
+| `unmount` | 卸载弹窗 DOM；进行中的 `confirm` 会被 reject | `() => void` |
+| `clone` | 基于当前实例创建新实例，`config` 支持响应式 | `(config?) => LayerInstance` |
+| `bindHost` | 将实例绑定到当前 `setup` 所在组件，继承其 provide、`$router` 等上下文；用于模块级单例 | `() => void` |
+
+#### LayerConfirmResult
+
+`confirm` / `$confirm` resolve 的值，也是 `LayerConfirmError.result`。
+
+| 属性名 | 说明 | 类型 |
+| --- | --- | --- |
+| `source` | 关闭来源 | `'content' \| 'container' \| 'instance' \| 'unmount'` |
+| `event` | 触发关闭的事件名；手动 `close` / `unmount` 时无 | `string` |
+| `args` | 关闭时携带的参数列表 | `unknown[]` |
+| `data` | 即 `args[0]` | `unknown` |
+
+#### LayerConfirmError
+
+`confirm` / `$confirm` reject 的错误，可从 `vue-layerx` 导入用于 `instanceof` 判断。
+
+| 属性名 | 说明 | 类型 |
+| --- | --- | --- |
+| `code` | `close`：未以 `confirmed: true` 关闭；`busy`：弹窗已打开或确认中 | `'close' \| 'busy'` |
+| `message` | 错误消息 | `string` |
+| `result` | 关闭结果，仅 `code` 为 `'close'` 时有 | `LayerConfirmResult` |
+
+### LayerTemplate
+
+通过模板向弹窗容器或内容投递具名插槽。
+
+#### 属性
+
+| 属性名 | 说明 | 类型 | 默认值 |
+| --- | --- | --- | --- |
+| `to` | 投递目标：调用方传弹窗实例，内容组件内传 `defineLayer()` 返回值 | `LayerInstance \| LayerDefine` | — |
+| `name` | 目标插槽名 | `string` | — |
+| `container` | 仅 `to` 为弹窗实例时有效，投递给容器而非内容 | `boolean` | `false` |
+| `visible-outside` | 在原位置同时渲染 | `boolean` | `false` |
+
+#### 插槽
+
+| 插槽名 | 说明 | 作用域参数 |
+| --- | --- | --- |
+| `default` | 投递的内容 | 目标插槽的作用域参数 |
+
+#### 投递目标
+
+| 写法 | 目标 |
+| --- | --- |
+| 调用方 `:to="dialog"` | 内容组件的同名插槽 |
+| 调用方 `:to="dialog" container` | 容器组件的同名插槽 |
+| 内容组件内 `:to="layer"` | 容器组件的同名插槽 |
+
+### LayerNoContainer
+
+透明容器标记组件，用于容器与内容尚未拆分的存量弹窗：在内容组件内 `defineLayer({ component: LayerNoContainer })`，外层不再包裹弹窗容器。
+
+更多说明见 [文档](https://xuyimingwork.github.io/vue-layerx/api/)。
+
 ## License
 
 MIT
