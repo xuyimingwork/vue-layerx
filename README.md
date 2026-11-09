@@ -35,9 +35,9 @@
 三行代码上手：
 
 ```ts
-// 1. 基于现有弹窗容器，创建弹窗 hook
+// 1. 用弹窗组件创建组合式函数
 const useDialog = createLayer(ElDialog)   
-// 2. 使用普通组件创建弹窗实例
+// 2. 用普通组件创建弹窗实例
 const dialog = useDialog(HelloWorld)   
 // 3. 命令式打开弹窗
 dialog.$open()                             
@@ -57,7 +57,7 @@ dialog.$open()
 
 ### 工程特性
 
-- 兼容 Vue 2.7 & Vue 3+
+- 兼容 Vue 2.7 & Vue 3.3+
 - 支持服务端渲染（SSR）
 - 支持 Vue DevTools 查看
 - 零第三方依赖
@@ -74,172 +74,310 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
-## 使用
+## 示例
 
-### 创建组合式函数
+### 基本用法
 
-任意弹层 **容器组件** 都可以通过 `createLayer` 生成对应的组合式函数。以 Dialog 为例：
+1. 用弹窗组件创建专属组合式函数
 
 ```ts
 // src/composables/dialog.ts
+import { ref } from 'vue'
 import { createLayer } from 'vue-layerx'
 import { ElDialog } from 'element-plus'
 
+export const useDialog = createLayer(ElDialog)
+
+// 可以给弹窗组件传递参数
 export const useDialog = createLayer(ElDialog, {
   props: { width: '480px', appendToBody: true },
 })
+
+// 也支持响应式参数
+const width = ref('480px')
+export const useDialog = createLayer(ElDialog, () => ({
+  props: { width: width.value, appendToBody: true },
+}))
 ```
 
-> 弹层：Dialog、Drawer、Popup 等弹出式交互形态的统称。
+2. 使用弹窗组合式函数创建弹窗实例
 
-### 打开弹层
+```ts
+// src/views/UserList.vue setup
+import { useDialog } from 'src/composables/dialog'
+import UserForm from './UserForm.vue'
+import { ref } from 'vue'
 
-传入 **内容组件** 得到弹层实例，再 `$open` 打开并传入内容参数：
+// 传入普通组件做弹窗内容，得到弹窗实例
+const dialog = useDialog(UserForm)
+
+// 可以给内容组件传递参数
+const dialog = useDialog(UserForm, {
+  props: { mode: 'edit' },
+})
+
+// 支持响应式参数
+const mode = ref('edit')
+const dialog = useDialog(UserForm, () => ({
+  props: { mode: mode.value },
+}))
+```
+
+3. 在任意场景调用实例方法
+
+```ts
+// src/views/UserList.vue setup 或 template
+
+// 打开弹窗并向内容组件传递参数
+dialog.$open({ id: 1 })
+// 或者用 open，$open(props) ≡ open({ props })
+dialog.open({ props: { id: 1 } })
+
+// 关闭弹窗
+dialog.close()
+```
+
+> dialog 打开状态下再次 `dialog.$open({ id: 2 })`，内容组件的 props 会响应式更新
+
+### 关闭弹窗
+
+除了 `dialog.close()`，可以配置内容组件的某些事件发生时关闭弹窗：
+
+```ts
+const dialog = useDialog(UserForm, {
+  closeOn: ['cancel'],
+})
+```
+
+> `useDialog` 所在的组件卸载时，弹窗会自动卸载并关闭
+
+### Promise 式打开弹窗并等待结果
+
+支持 `await dialog.$confirm({ mode: "create" })`
+
+此时，弹窗的“打开-关闭”会变成 `promise` 的 “`pending`-`settled`”
+
+默认情况下，弹窗的所有关闭行为都会导致 `promise` 状态变为 `reject`，需要配置：
+
+```ts
+const dialog = useDialog(UserForm, {
+  closeOn: ['cancel', { 
+    event: 'ok', // 任意需要触发 resolve 的事件
+    when: 'always',
+    confirmed: true
+  }],
+})
+
+// 手动调用时可以这样
+dialog.close({ confirmed: true })
+// 支持传递参数
+dialog.close({ confirmed: true, args: ['任意参数'] })
+```
+
+配置后就可以：
+
+```ts
+const {
+  data // 携带参数列表的首位：args?.[0]
+  // ...其它参数见文档
+} = await dialog.$confirm({ mode: "create" })
+if (data === '任意参数') {
+  // ...
+}
+```
+
+如果还需要处理除了 `confirmed` 外的其它关闭场景：
+
+```ts
+try {
+  const { data } = await dialog.$confirm({ mode: "create" })
+  // ...
+} catch (e) {
+  // e.code 'close' | 'busy'
+  // e.message 错误消息
+  // e.result 错误数据，仅 code 为 'close' 时有
+  // e.result?.data 携带参数列表的首位：args?.[0]
+  // ... e.result 的其它属性
+}
+```
+
+> 通过 `$confirm` 开启的弹窗，开启过程中不能调用 `$confirm` 或 `$open` 再次打开
+
+### 内容组件配置
+
+使用时配置内容组件的关闭事件有些繁琐，还可以在内容组件内直接配置：
+
+```ts
+// src/views/UserForm.vue setup
+import { defineLayer } from 'vue-layerx'
+
+defineEmits(['ok', 'cancel'])
+
+// 通过 defineLayer 配置内容在弹窗内时的行为
+defineLayer({
+  content: {  // 注意这边要包在 content 内
+    closeOn: ['cancel', {
+      event: 'ok',
+      when: 'always',
+      confirmed: true,
+    }],
+  },
+})
+```
+
+> `defineLayer` 的配置只在 `UserForm` 被 `useDialog` 使用时生效
+
+`defineLayer` 还支持给弹窗容器组件传递参数：
+
+```ts
+defineLayer({
+  props: { title: '编辑用户' },
+})
+```
+
+也可以响应式地处理 props
+
+```ts
+const props = defineProps<{ mode?: 'create' | 'edit' }>()
+
+// 支持响应式参数
+defineLayer(() => ({
+  props: {
+    title: props.mode === 'edit' ? '编辑用户' : '新建用户',
+  },
+}))
+``` 
+
+通过 `defineLayer` 可以将内容在弹窗内的使用方式集中配置。调用处只创建实例并打开：
+
+```ts
+// src/views/UserList.vue setup
+import { useDialog } from 'src/composables/dialog'
+import UserForm from './UserForm.vue'
+
+const dialog = useDialog(UserForm)
+
+// 标题随 mode 变化，关闭事件已在 UserForm 里配好
+dialog.$open({ mode: 'edit' })
+dialog.$open({ mode: 'create' })
+```
+
+### 插槽投递
+
+不论是通过模板投递还是通过 JSX 投递，vue-layerx 都支持。按使用场景划分如下：
+
+#### 调用方投给弹窗容器
+
+模板投递需要使用 `LayerTemplate` 组件：
 
 ```vue
+<!-- src/views/UserList.vue -->
 <script setup lang="ts">
+import { LayerTemplate } from 'vue-layerx'
+import { useDialog } from 'src/composables/dialog'
 import UserForm from './UserForm.vue'
-import { useDialog } from '@/composables/dialog'
 
 const dialog = useDialog(UserForm)
 </script>
 
 <template>
-  <button @click="dialog.$open({ id: 1 })">编辑用户</button>
-</template>
-```
+  <button @click="dialog.$open()">编辑</button>
 
-### 内容组件
-
-下面几个 `UserForm.vue` 都能被上面这段打开，只是内容侧逐步补上弹层契约。
-
-**1. 收下参数**
-
-内容就是普通组件，`$open` 的字段对上 `defineProps`：
-
-```vue
-<script setup lang="ts">
-defineProps<{ id: number }>()
-</script>
-
-<template>
-  <p>正在编辑用户 {{ id }}</p>
-</template>
-```
-
-**2. 声明标题**
-
-可以通过 `defineLayer` 配置内容组件在弹窗中的行为，例如标题：
-
-```vue
-<script setup lang="ts">
-import { defineLayer } from 'vue-layerx'
-
-defineProps<{ id: number }>()
-
-defineLayer({
-  props: { title: '编辑用户' }, // 给容器
-})
-</script>
-
-<template>
-  <p>正在编辑用户 {{ id }}</p>
-</template>
-```
-
-**3. 关闭弹窗**
-
-想让内容组件关闭弹窗时，用 `closeOn` 声明哪些事件要关层。内容只 `emit`，不要去调 `close()`：
-
-```vue
-<script setup lang="ts">
-import { defineLayer } from 'vue-layerx'
-
-const props = defineProps<{ id: number }>()
-const emit = defineEmits<{ success: [] }>()
-
-defineLayer({
-  props: { title: '编辑用户' },
-  content: { closeOn: ['success'] },
-})
-
-async function save() {
-  await updateUser(props.id) // 失败则抛错，不往下走
-  emit('success')
-}
-</script>
-
-<template>
-  <p>正在编辑用户 {{ id }}</p>
-  <button @click="save">保存</button>
-</template>
-```
-
-> defineLayer 定义的所有内容在具体使用时都可以再次覆盖，如：
-> 
-> ```ts
-> const dialog = useDialog(UserForm, {
->   closeOn: { success: false },
-> })
-> ```
-
-**4. 插槽投递**
-
-想把保存按钮放到弹窗的 `footer` 插槽里，可以用 `LayerTemplate` 投递：
-
-```vue
-<script setup lang="ts">
-import { defineLayer, LayerTemplate } from 'vue-layerx'
-
-const layer = defineLayer({
-  props: { title: '编辑用户' },
-  content: { closeOn: ['success'] },
-})
-</script>
-
-<template>
-  <p>正在编辑用户 {{ id }}</p>
-  <LayerTemplate :to="layer" name="footer">
-    <button @click="save">保存</button>
+  <!-- container 表示投递给弹窗容器 -->
+  <LayerTemplate :to="dialog" container name="footer">
+    <button @click="dialog.close()">关闭</button>
   </LayerTemplate>
 </template>
 ```
 
-详细用法见[向弹层投递插槽](https://xuyimingwork.github.io/vue-layerx/guide/layer-template)。
+也可以通过 `useDialog` 传入 JSX 配置：
 
-### 等待弹层结果
-
-只打开、不等返回值用 `$open`；需要从弹层拿回数据再继续时，用 `$confirm`：
-
-```ts
-try {
-  const { data } = await dialog.$confirm({ id: 1 })
-  // 使用 data
-} catch {
-  // 取消、点遮罩关闭
-}
-```
-
-想要 confirm 就必须指定能 confirm 的事件，可以这样表示：
-
-```ts
-defineLayer({
-  content: {
-    closeOn: {
-      success: { when: 'always', confirmed: true },
+```tsx
+const dialog = useDialog(UserForm, {
+  container: {
+    slots: {
+      footer: () => <button onClick={() => dialog.close()}>关闭</button>,
     },
   },
 })
 ```
 
-完整说明见[等待弹层结果](https://xuyimingwork.github.io/vue-layerx/guide/confirm)。
+#### 调用方投给弹窗内容
 
-## 文档
+不加 `container` 时，投递给弹窗内容组件：
 
-完整用法、进阶能力与 API 见文档站：
+```vue
+<!-- src/views/UserList.vue -->
+<LayerTemplate :to="dialog" name="extra">
+  <span>仅这次附带的说明</span>
+</LayerTemplate>
+```
 
-- [指南](https://xuyimingwork.github.io/vue-layerx/guide/introduction)
-- [API](https://xuyimingwork.github.io/vue-layerx/api/)
+弹窗内容组件里需要声明插槽
+
+```vue
+<!-- src/views/UserForm.vue -->
+<template>
+  <ElForm />
+  <slot name="extra" />
+</template>
+```
+
+`useDialog` 内的写法：
+
+```tsx
+const dialog = useDialog(UserForm, {
+  slots: {
+    extra: () => <span>仅这次附带的说明</span>,
+  },
+})
+```
+
+#### 弹窗内容投给弹窗容器
+
+弹窗内容里使用 `LayerTemplate` 时，`:to` 用 `defineLayer()` 的返回值：
+
+```vue
+<!-- src/views/UserForm.vue -->
+<script setup lang="ts">
+import { defineLayer, LayerTemplate } from 'vue-layerx'
+
+const emit = defineEmits(['ok', 'cancel'])
+
+const layer = defineLayer({
+  props: { title: '编辑用户' },
+})
+</script>
+
+<template>
+  <ElForm />
+
+  <LayerTemplate :to="layer" name="footer">
+    <button @click="emit('ok')">确定</button>
+    <button @click="emit('cancel')">取消</button>
+  </LayerTemplate>
+</template>
+```
+
+也可以通过 `defineLayer` 传入 JSX 配置：
+
+```tsx
+const emit = defineEmits(['ok', 'cancel'])
+
+defineLayer({
+  props: { title: '编辑用户' },
+  slots: {
+    footer: () => (
+      <>
+        <button onClick={() => emit('ok')}>确定</button>
+        <button onClick={() => emit('cancel')}>取消</button>
+      </>
+    ),
+  },
+})
+```
+
+> 与 Vue 一致，如果目标组件内没有声明插槽时，会正常投递但不会渲染内容。
 
 ## License
 
