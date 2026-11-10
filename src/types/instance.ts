@@ -1,8 +1,11 @@
 import type { ComponentPublicInstance, Ref } from 'vue'
 import type {
+  AnyComponent,
   LayerConfigContentOf,
+  LayerConfigUseOf,
   LayerPropsInput,
   LooseProps,
+  PropsOf,
 } from './config-raw'
 import type { LayerCloseOptions, LayerConfirmResult } from './confirm'
 
@@ -87,4 +90,27 @@ export interface LayerInstance<
    * `useLayer` / `clone` auto-bind during create (silent if no setup host).
    */
   bindHost: () => void
+}
+
+/**
+ * Returned by `createLayer(Container)`; call with an optional Content component
+ * to get a {@link LayerInstance}. Content props are inferred from `Content`.
+ *
+ * @example
+ * ```ts
+ * export const useDialog: LayerHook<PropsOf<typeof ElDialog>> = createLayer(ElDialog)
+ * const dialog = useDialog(UserForm)
+ * ```
+ */
+export interface LayerHook<ContainerProps = LooseProps> {
+  (
+    Content?: undefined,
+    useConfig?: MaybeRefOrGetter<LayerConfigUseOf<LooseProps, ContainerProps>>,
+  ): LayerInstance<LooseProps, ContainerProps>
+  <Content extends AnyComponent>(
+    Content: Content,
+    useConfig?: MaybeRefOrGetter<
+      LayerConfigUseOf<PropsOf<Content>, ContainerProps>
+    >,
+  ): LayerInstance<PropsOf<Content>, ContainerProps>
 }

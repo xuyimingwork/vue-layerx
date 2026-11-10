@@ -41,6 +41,7 @@ export type { LayerBound, LayerBoundNode } from './bound'
 
 export type {
   LayerInstance,
+  LayerHook,
   LayerDefine,
   LayerHost,
   MaybeRefOrGetter,

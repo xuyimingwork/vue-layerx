@@ -4,8 +4,8 @@ import type {
   LayerConfigCreateOf,
   LayerConfigFragmentCreate,
   LayerConfigUseOf,
+  LayerHook,
   LayerInstance,
-  LooseProps,
   PropsOf,
 } from '@/types'
 import {
@@ -38,7 +38,7 @@ import { toValue, type MaybeRefOrGetter } from '@/compat'
 export function createLayer<Container extends AnyComponent>(
   Container: Container,
   config: MaybeRefOrGetter<LayerConfigCreateOf<PropsOf<Container>>> = {},
-) {
+): LayerHook<PropsOf<Container>> {
   type ContainerProps = PropsOf<Container>
 
   const create = computed((): LayerConfigFragmentCreate => {
@@ -52,17 +52,7 @@ export function createLayer<Container extends AnyComponent>(
     }
   })
 
-  function useLayer(
-    Content?: undefined,
-    useConfig?: MaybeRefOrGetter<LayerConfigUseOf<LooseProps, ContainerProps>>,
-  ): LayerInstance<LooseProps, ContainerProps>
-  function useLayer<Content extends AnyComponent>(
-    Content: Content,
-    useConfig?: MaybeRefOrGetter<
-      LayerConfigUseOf<PropsOf<Content>, ContainerProps>
-    >,
-  ): LayerInstance<PropsOf<Content>, ContainerProps>
-  function useLayer(
+  const useLayer: LayerHook<ContainerProps> = function useLayer(
     Content?: AnyComponent,
     useConfig: MaybeRefOrGetter<LayerConfigUseOf<any, ContainerProps>> = {},
   ): LayerInstance<any, ContainerProps> {

@@ -14,6 +14,7 @@
 | `LayerAdapter` | `(fragment) => fragment` |
 | `LayerDefine` | `defineLayer` 返回值（含 `exists`） |
 | `LayerInstance` | 实例接口（可选 `ContentP` / `ContainerP` 泛型） |
+| `LayerHook` | `createLayer` 返回值，即 `useX(Content?, config?)`（可选 `ContainerP` 泛型） |
 | `CloseOnRaw` | 用户侧 `closeOn` 配置（数组糖 / Record） |
 | `LayerConfirmResult` / `LayerConfirmSource` | `confirm()` |
 | `LayerCloseOptions` | `close(options?)` |

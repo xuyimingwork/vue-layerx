@@ -4,6 +4,7 @@ export type {
   LayerAdapter,
   LayerConfigFragment,
   LayerInstance,
+  LayerHook,
   LayerDefine,
   LayerConfigContent,
   LayerConfigContainer,
