@@ -282,6 +282,7 @@ defineLayer({
 
 ```ts
 defineLayer({
+  // 传给弹窗容器
   props: { title: '编辑用户' },
 })
 ```
