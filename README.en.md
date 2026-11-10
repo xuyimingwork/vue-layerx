@@ -32,29 +32,39 @@
   <a href="https://deepwiki.com/xuyimingwork/vue-layerx"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" /></a>
 </p>
 
-vue-layerx is a Vue layer orchestration framework that turns existing Dialog / Drawer / Popup components into programmable overlays.
-
-It does not replace your UI components. Instead, it sits on top of them and provides unified lifecycle management, dynamic rendering, and a business-friendly calling style.
-
-Open a layer with three lines of code:
+Get started in three lines:
 
 ```ts
-const useDialog = createLayer(ElDialog)   // any existing overlay container
-const dialog = useDialog(HelloWorld)      // ordinary component as layer content
-dialog.open()                             // open imperatively
+// 1. Create a composable from a layer container component
+const useDialog = createLayer(ElDialog)   
+// 2. Create a layer instance from an ordinary component
+const dialog = useDialog(HelloWorld)   
+// 3. Open the layer imperatively
+dialog.$open()                             
 ```
 
 ## Features
 
-- Open layers like route navigation: no local state, no pre-mounted templates — call an API and go
-- Layer content is just a normal component: no special wrappers required, better reuse
-- Reactive props: keeps Vue’s native reactivity
-- Slot delivery: still use Vue slots when opening layers imperatively
-- Unified API for Vue 3.3+ and Vue 2.7
-- Zero runtime dependencies: no third-party npm packages
-- Written in TypeScript with full type definitions
-- 100% unit test coverage for core stability
+### Core capabilities
+
+- **Imperative calls**: no pre-mounted templates, no state variables to maintain — open anytime
+- **Container and content decoupled**: content can live outside the layer and be reused independently
+- **Works with existing components**: Element Plus, Ant Design Vue, Vuetify, and more work out of the box
+- Promise-style calls: `await dialog.$confirm()`
+- Reactive props: props passed when opening imperatively still update reactively
+- Slot delivery: deliver slots via templates / JSX
+- Context inheritance: automatically inherits provide, `$router`, etc. from the call site
+
+### Engineering
+
+- Compatible with Vue 2.7 & Vue 3.3+
 - Server-side rendering (SSR) support
+- Inspectable in Vue DevTools
+- Zero third-party dependencies
+- Full TypeScript type support
+- 100% test coverage
+
+> Once your project has more than 5 dialogs, or you start needing to reuse dialog content, give vue-layerx a try
 
 ## Install
 
@@ -64,172 +74,739 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
-## Usage
+## Examples
 
-### Create a composable
+### Basic usage
 
-Any layer **container component** can be turned into a composable with `createLayer`. For example, with a Dialog:
+#### 1. Create a dedicated composable from a layer component
 
 ```ts
 // src/composables/dialog.ts
 import { createLayer } from 'vue-layerx'
 import { ElDialog } from 'element-plus'
 
-export const useDialog = createLayer(ElDialog, {
-  props: { width: '480px', appendToBody: true },
+export const useDialog = createLayer(ElDialog)
+```
+
+You can pass config to `ElDialog`:
+
+```ts
+export const useDialog = createLayer(ElDialog, { 
+  // props are passed to ElDialog as-is
+  props: { width: '480px', appendToBody: true } 
 })
 ```
 
-> Layer: a general term for overlay UI such as Dialog, Drawer, Popup, and similar patterns.
+Config can be reactive:
 
-### Open a layer
+```ts
+const width = ref('480px')
+export const useDialog = createLayer(ElDialog, () => ({ 
+  props: { width: width.value, appendToBody: true } 
+}))
+```
 
-Pass a **content component** to get a layer instance, then `$open` it with content props:
+#### 2. Create a layer instance with the composable
+
+```ts
+// src/views/UserList.vue setup
+import { useDialog } from '@/composables/dialog'
+import UserForm from './UserForm.vue'
+
+const dialog = useDialog(UserForm)
+```
+
+You can likewise pass config to UserForm:
+
+```ts
+const dialog = useDialog(UserForm, {
+  // props are passed to UserForm as-is
+  props: { mode: 'edit' }
+})
+```
+
+Reactivity is supported:
+
+```ts
+const mode = ref('edit')
+const dialog = useDialog(UserForm, () => ({
+  props: { mode: mode.value }
+}))
+```
+
+#### 3. Call instance methods anywhere
+
+```ts
+// src/views/UserList.vue setup or template
+
+// Open the layer
+dialog.$open()
+// Open the layer and pass props to UserForm
+dialog.$open({ id: 1 })
+// Equivalent to open({ props }), i.e. $open(props) ≡ open({ props })
+dialog.open({ props: { id: 1 } })
+
+// Close the layer
+dialog.close()
+```
+
+> Calling `$open` / `open` again while the layer is open **fully replaces** the previous open config: after `$open({ id: 1 })`, calling `$open({ mode: 'create' })` drops the `id` prop.
+
+Related API: [createLayer](#createlayer) · [useLayer](#uselayer) · [LayerInstance](#layerinstance)
+
+### Config layering and priority
+
+A quick look at how vue-layerx config is designed will make the rest easier to follow.
+
+In one sentence: vue-layerx splits a layer into a **layer container** and **layer content**, and configures them in **layers** that follow the usage steps.
+
+Each layer of config has a different focus, but the overall structure is the same, as shown below:
+
+<table>
+<tr>
+<th>Priority</th>
+<th>Container-focused</th>
+<th>Content-focused</th>
+</tr>
+<tr>
+<td>
+Top to bottom<br />low to high
+</td>
+<td>
+
+```js
+{
+  component, // container component
+  props,     // container props
+  slots,     // container slots (JSX)
+  model,     // container v-model prop name
+  content: {
+    component, // content component
+    props,     // content props
+    slots,     // content slots (JSX)
+    closeOn,   // content events that close the layer
+  },
+}
+```
+
+</td>
+<td>
+
+```js
+{
+  component, // content component
+  props,     // content props
+  slots,     // content slots (JSX)
+  closeOn,   // content events that close the layer
+  container: {
+    component, // container component
+    props,     // container props
+    slots,     // container slots (JSX)
+    model,     // container v-model prop name
+  },
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>Container component, global</td>
+<td><code>createLayer(component, { ... })</code>
+</td>
+<td></td>
+</tr>
+<tr>
+<td>Inside the content component</td>
+<td><code>defineLayer({ ... })</code></td>
+<td></td>
+</tr>
+<tr>
+<td>A specific layer instance</td>
+<td></td>
+<td><code>useDialog(component, { ... })</code></td>
+</tr>
+<tr>
+<td>A specific open call</td>
+<td></td>
+<td><code>open({ ... })</code><br /><code>confirm({ ... })</code></td>
+</tr>
+</table>
+
+The vue-layerx config system is carefully designed to be intuitive:
+
+- The closer to the caller and to a specific open call, the higher the priority
+- For the same option, higher priority overrides lower priority
+- Config from different places is merged together
+
+<table>
+<tr>
+<th>Same option: override</th>
+<th>Different options: merge</th>
+</tr>
+<tr>
+<td>
+
+```js
+createLayer(ElDialog, {
+  props: { title: 'Default title' },
+})
+
+const dialog = useDialog(UserForm, {
+  container: { props: { title: 'User form' } },
+})
+
+dialog.open({
+  component: UserDetail,
+  container: { props: { title: 'Edit user' } },
+})
+```
+
+</td>
+<td>
+
+```js
+createLayer(ElDialog, {
+  props: { width: '500px' },
+})
+
+const dialog = useDialog(UserForm, {
+  props: { mode: 'detail' },
+  container: { props: { title: 'User form' } },
+})
+
+dialog.open({
+  props: { id: 1 },
+})
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```js
+{
+  container: {
+    component: ElDialog,
+    props: { title: 'Edit user' },
+  },
+  content: {
+    component: UserDetail,
+  },
+}
+```
+
+</td>
+<td>
+
+```js
+{
+  container: {
+    component: ElDialog,
+    props: { width: '500px', title: 'User form' },
+  },
+  content: {
+    component: UserForm,
+    props: { id: 1, mode: 'detail' },
+  },
+}
+```
+
+</td>
+</tr>
+</table>
+
+> `createLayer` also supports an `adapter` to transform the final config, typically used for `AOP` programming and globally enforced config
+
+Related API: [LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
+
+### Closing the layer
+
+Besides `dialog.close()`, you can configure the layer to close when certain events fire on the content component:
+
+```ts
+const dialog = useDialog(UserForm, {
+  closeOn: ['cancel'],
+})
+```
+
+> If `useDialog` runs inside a component's setup, the layer instance is automatically unmounted and closed when that component unmounts
+
+Related API: [CloseOnRaw](#closeonraw)
+
+### Open with a Promise and await the result
+
+`await dialog.$confirm({ mode: "create" })` is supported.
+
+The layer's "open → close" then becomes the promise's "`pending` → `settled`".
+
+By default, every way of closing the layer makes the `promise` `reject`. To resolve it, configure:
+
+```ts
+const dialog = useDialog(UserForm, {
+  closeOn: ['cancel', { 
+    event: 'ok', // any event that should trigger resolve
+    when: 'always',
+    confirmed: true
+  }],
+})
+
+// When calling manually
+dialog.close({ confirmed: true })
+// Arguments are supported
+dialog.close({ confirmed: true, args: ['any value'] })
+```
+
+With that in place:
+
+```ts
+const {
+  data // first item of the args list: args[0], typed as unknown
+  // ...other fields: see API LayerConfirmResult
+} = await dialog.$confirm({ mode: "create" })
+if (data === 'any value') {
+  // ...
+}
+```
+
+To also handle close scenarios other than `confirmed` (cancel, the container's close button, component unmount, etc.):
+
+```ts
+import { LayerConfirmError } from 'vue-layerx'
+
+try {
+  const { data } = await dialog.$confirm({ mode: "create" })
+  // ...
+} catch (e) {
+  // only for TS type narrowing
+  if (!(e instanceof LayerConfirmError)) throw e
+  // e.code 'close' | 'busy'
+  // e.result close result, only present when code is 'close'
+  // e.result?.data first item of the args list: args[0]
+}
+```
+
+> - Calling `confirm` / `$confirm` on a layer that is already open rejects immediately (`code: 'busy'`);
+> - Calling `open` / `$open` on a layer opened via `confirm` / `$confirm` is ignored;
+
+Related API: [LayerConfirmResult](#layerconfirmresult) · [LayerConfirmError](#layerconfirmerror) · [LayerCloseOptions](#layercloseoptions)
+
+### Content component config
+
+Close behavior, the title, and similar logic belong to the content component, so they can be configured inside it:
+
+```ts
+// src/views/UserForm.vue setup
+import { defineLayer } from 'vue-layerx'
+
+defineEmits(['ok', 'cancel'])
+
+// Use defineLayer to configure how the content behaves inside a layer
+defineLayer({
+  content: {  // note: this must be wrapped in content
+    closeOn: ['cancel', {
+      event: 'ok',
+      when: 'always',
+      confirmed: true,
+    }],
+  },
+})
+```
+
+`defineLayer` can also pass props to the layer container component:
+
+```ts
+defineLayer({
+  props: { title: 'Edit user' },
+})
+```
+
+Props can also be handled reactively:
+
+```ts
+const props = defineProps<{ mode?: 'create' | 'edit' }>()
+
+// reactive config is supported
+defineLayer(() => ({
+  props: {
+    title: props.mode === 'edit' ? 'Edit user' : 'New user',
+  },
+}))
+``` 
+
+With `defineLayer`, how the content is used inside a layer is configured in one place. The call site only creates the instance and opens it:
+
+```ts
+// src/views/UserList.vue setup
+import { useDialog } from '@/composables/dialog'
+import UserForm from './UserForm.vue'
+
+const dialog = useDialog(UserForm)
+
+// The title follows mode; close events are already configured in UserForm
+dialog.$open({ mode: 'edit' })
+dialog.$open({ mode: 'create' })
+```
+
+> - `defineLayer` must be called synchronously inside `setup`;
+> - `defineLayer` config only takes effect when `UserForm` is used **directly as** the layer content; it has no effect when `UserForm` is used as an ordinary component (e.g. nested inside another layer content component)
+
+Related API: [defineLayer](#definelayer)
+
+### Slot delivery
+
+vue-layerx supports delivering slots via both templates and JSX. By scenario:
+
+#### From the caller to the layer container
+
+Template delivery uses the `LayerTemplate` component:
 
 ```vue
+<!-- src/views/UserList.vue -->
 <script setup lang="ts">
-import UserForm from './UserForm.vue'
+import { LayerTemplate } from 'vue-layerx'
 import { useDialog } from '@/composables/dialog'
+import UserForm from './UserForm.vue'
 
 const dialog = useDialog(UserForm)
 </script>
 
 <template>
-  <button @click="dialog.$open({ id: 1 })">Edit user</button>
-</template>
-```
+  <button @click="dialog.$open()">Edit</button>
 
-### Content component
-
-Each of the following `UserForm.vue` examples can be opened by the snippet above. They only add layer contracts on the content side, step by step.
-
-**1. Receive props**
-
-Content is an ordinary component. Fields passed to `$open` map to `defineProps`:
-
-```vue
-<script setup lang="ts">
-defineProps<{ id: number }>()
-</script>
-
-<template>
-  <p>Editing user {{ id }}</p>
-</template>
-```
-
-**2. Declare a title**
-
-Use `defineLayer` to configure how the content behaves inside a dialog — the title, for example:
-
-```vue
-<script setup lang="ts">
-import { defineLayer } from 'vue-layerx'
-
-defineProps<{ id: number }>()
-
-defineLayer({
-  props: { title: 'Edit user' }, // for the container
-})
-</script>
-
-<template>
-  <p>Editing user {{ id }}</p>
-</template>
-```
-
-**3. Close the dialog**
-
-To let the content close the dialog, declare which events should close it with `closeOn`. Content only `emit`s — do not call `close()`:
-
-```vue
-<script setup lang="ts">
-import { defineLayer } from 'vue-layerx'
-
-const props = defineProps<{ id: number }>()
-const emit = defineEmits<{ success: [] }>()
-
-defineLayer({
-  props: { title: 'Edit user' },
-  content: { closeOn: ['success'] },
-})
-
-async function save() {
-  await updateUser(props.id) // throw on failure; do not emit
-  emit('success')
-}
-</script>
-
-<template>
-  <p>Editing user {{ id }}</p>
-  <button @click="save">Save</button>
-</template>
-```
-
-> Anything declared in `defineLayer` can be overridden at the call site, for example:
->
-> ```ts
-> const dialog = useDialog(UserForm, {
->   closeOn: { success: false },
-> })
-> ```
-
-**4. Slot delivery**
-
-To put the Save button in the dialog `footer` slot, deliver it with `LayerTemplate`:
-
-```vue
-<script setup lang="ts">
-import { defineLayer, LayerTemplate } from 'vue-layerx'
-
-const layer = defineLayer({
-  props: { title: 'Edit user' },
-  content: { closeOn: ['success'] },
-})
-</script>
-
-<template>
-  <p>Editing user {{ id }}</p>
-  <LayerTemplate :to="layer" name="footer">
-    <button @click="save">Save</button>
+  <!-- container means deliver to the layer container -->
+  <LayerTemplate :to="dialog" container name="footer">
+    <button @click="dialog.close()">Close</button>
   </LayerTemplate>
 </template>
 ```
 
-See [Delivering slots to a layer](https://xuyimingwork.github.io/vue-layerx/guide/layer-template) for details.
+You can also pass JSX config via `useDialog`:
 
-### Await a layer result
-
-Use `$open` when you only need to show the layer. Use `$confirm` when you need data back before continuing:
-
-```ts
-try {
-  const { data } = await dialog.$confirm({ id: 1 })
-  // use data
-} catch {
-  // canceled, or closed via the mask
-}
-```
-
-`$confirm` requires a confirmed close event, for example:
-
-```ts
-defineLayer({
-  content: {
-    closeOn: {
-      success: { when: 'always', confirmed: true },
+```tsx
+const dialog = useDialog(UserForm, {
+  container: {
+    slots: {
+      footer: () => <button onClick={() => dialog.close()}>Close</button>,
     },
   },
 })
 ```
 
-See [Awaiting a layer result](https://xuyimingwork.github.io/vue-layerx/guide/confirm) for details.
+#### From the caller to the layer content
 
-## Documentation
+Without `container`, slots are delivered to the layer content component:
 
-Full usage, advanced features, and API reference:
+```vue
+<!-- src/views/UserList.vue -->
+<LayerTemplate :to="dialog" name="extra">
+  <span>A note attached only this time</span>
+</LayerTemplate>
+```
 
-- [Guide](https://xuyimingwork.github.io/vue-layerx/guide/introduction)
-- [API](https://xuyimingwork.github.io/vue-layerx/api/)
+The layer content component must declare the slot:
+
+```vue
+<!-- src/views/UserForm.vue -->
+<template>
+  <ElForm />
+  <slot name="extra" />
+</template>
+```
+
+Inside `useDialog`:
+
+```tsx
+const dialog = useDialog(UserForm, {
+  slots: {
+    extra: () => <span>A note attached only this time</span>,
+  },
+})
+```
+
+#### From the layer content to the layer container
+
+When using `LayerTemplate` inside layer content, set `:to` to the return value of `defineLayer()`:
+
+```vue
+<!-- src/views/UserForm.vue -->
+<script setup lang="ts">
+import { defineLayer, LayerTemplate } from 'vue-layerx'
+
+const emit = defineEmits(['ok', 'cancel'])
+
+const layer = defineLayer({
+  props: { title: 'Edit user' },
+})
+</script>
+
+<template>
+  <ElForm />
+
+  <LayerTemplate :to="layer" name="footer">
+    <button @click="emit('ok')">OK</button>
+    <button @click="emit('cancel')">Cancel</button>
+  </LayerTemplate>
+</template>
+```
+
+> Templates wrapped in LayerTemplate only take effect when UserForm is the layer content
+
+You can also pass JSX config via `defineLayer`:
+
+```tsx
+const emit = defineEmits(['ok', 'cancel'])
+
+defineLayer({
+  props: { title: 'Edit user' },
+  slots: {
+    footer: () => (
+      <>
+        <button onClick={() => emit('ok')}>OK</button>
+        <button onClick={() => emit('cancel')}>Cancel</button>
+      </>
+    ),
+  },
+})
+```
+
+> As in Vue, if the target component does not declare the slot, delivery still happens but nothing is rendered.
+
+Related API: [LayerTemplate](#layertemplate) · [defineLayer](#definelayer)
+
+## API
+
+### createLayer
+
+Creates a dedicated composable (i.e. `useLayer`, such as `useDialog`) from a layer container component.
+
+```ts
+function createLayer(Container, config?): LayerHook
+```
+
+#### createLayer parameters
+
+| Name | Description | Type | Default |
+| --- | --- | --- | --- |
+| `Container` | Layer container component; must support toggling visibility via `v-model` | `Component` | — |
+| `config` | Default container config; supports ref / getter / computed. See [LayerConfigCreate](#layerconfigcreate) | `MaybeRefOrGetter<LayerConfigCreate>` | `{}` |
+
+#### createLayer return value
+
+Returns a `LayerHook`, i.e. [useLayer](#uselayer) below. Use `LayerHook<PropsOf<typeof ElDialog>>` to annotate the exported type explicitly.
+
+### useLayer
+
+The return value of `createLayer` (such as `useDialog`); creates a layer instance from a content component.
+- When called inside `setup`, it automatically inherits the call-site context, and the layer is unmounted along with the host component;
+- When called outside `setup` (e.g. as a module-level singleton), you can later call `instance.bindHost()` inside some component's `setup` to bind that component's context.
+
+```ts
+function useLayer(Content?, config?): LayerInstance
+```
+
+#### useLayer parameters
+
+| Name | Description | Type | Default |
+| --- | --- | --- | --- |
+| `Content` | Layer content component; may be omitted and specified later via `open({ component })` | `Component` | — |
+| `config` | Default instance config; supports ref / getter / computed. See [LayerConfigUse](#layerconfiguse) | `MaybeRefOrGetter<LayerConfigUse>` | `{}` |
+
+#### useLayer return value
+
+Returns a layer instance. See [LayerInstance](#layerinstance).
+
+### defineLayer
+
+Called synchronously in the content component's `setup` (throws otherwise) to configure how the content behaves inside a layer. Only takes effect when the content component is used by a layer instance. Top-level fields refer to the **container**; content-side config (such as `closeOn`) goes inside `content`.
+
+```ts
+function defineLayer(config?): LayerDefine
+```
+
+#### defineLayer parameters
+
+| Name | Description | Type | Default |
+| --- | --- | --- | --- |
+| `config` | Layer config; supports ref / getter / computed. See [LayerConfigContainer](#layerconfigcontainer) | `MaybeRefOrGetter<LayerConfigContainer>` | `{}` |
+
+#### defineLayer return value
+
+Returns a `LayerDefine`:
+
+| Property | Description | Type |
+| --- | --- | --- |
+| `exists` | Whether a layer container exists for the current component | `boolean` |
+
+> The return value is used as `:to` for `LayerTemplate`; it does not provide `open` / `close`
+
+### LayerInstance
+
+The layer instance returned by `useLayer` / `clone`.
+
+#### LayerInstance properties
+
+| Property | Description | Type |
+| --- | --- | --- |
+| `visible` | Whether the layer is open; read-only | `boolean` |
+| `content` | The content component instance while open, otherwise `null`; read-only | `ComponentPublicInstance \| null` |
+| `container` | The container component instance while open, otherwise `null`; read-only | `ComponentPublicInstance \| null` |
+
+> All properties above are reactive getters (not `Ref`s). Use them directly in templates or `computed`, or `watch` them via a getter: `watch(() => dialog.visible, (visible) => ...)`
+
+#### LayerInstance methods
+
+| Method | Description | Type |
+| --- | --- | --- |
+| `$open` | Opens the layer and passes content props; `$open(props)` ≡ `open({ props })` | `(props?: LayerPropsInput) => void` |
+| `open` | Opens the layer (config is a plain-object snapshot, not reactive); calling again while open fully replaces the previous open config; ignored while a `confirm` is pending. `config` fields match `useLayer`'s config, plus `component` | `(config?: LayerConfigContent) => void` |
+| `$confirm` | Promise-style open; `$confirm(props)` ≡ `confirm({ props })` | `(props?: LayerPropsInput) => Promise<LayerConfirmResult>` |
+| `confirm` | Promise-style open; resolves when closed with `confirmed: true`, otherwise rejects with `LayerConfirmError`; rejects with `busy` if already open or confirming. See [LayerConfirmResult](#layerconfirmresult), [LayerConfirmError](#layerconfirmerror) | `(config?: LayerConfigContent) => Promise<LayerConfirmResult>` |
+| `close` | Closes the layer; `confirmed` decides the `confirm` result and `args` are the carried arguments. See [LayerCloseOptions](#layercloseoptions) | `(options?: LayerCloseOptions) => void` |
+| `unmount` | Unmounts the layer DOM; a pending `confirm` is rejected | `() => void` |
+| `clone` | Creates a new instance from the current one: shares the `createLayer` config, inherits the `useLayer` config (excluding `ref`) and merges `config`; `config` may be reactive | `(config?: MaybeRefOrGetter<LayerConfigContent>) => LayerInstance` |
+| `bindHost` | Binds the instance to the component whose `setup` is currently running, inheriting its provide, `$router`, and other context; intended for module-level singletons. `useLayer` / `clone` bind automatically when called inside `setup`; binding the same component again has no side effects | `() => void` |
+
+### LayerTemplate
+
+Delivers named slots to the layer container or content via templates.
+
+#### LayerTemplate props
+
+| Prop | Description | Type | Default |
+| --- | --- | --- | --- |
+| `to` | Delivery target (required): a layer instance at the call site, or the return value of `defineLayer()` inside a content component | `LayerInstance \| LayerDefine` | — |
+| `name` | Target slot name (required) | `string` | — |
+| `container` | Only valid when `to` is a layer instance; delivers to the container instead of the content | `boolean` | `false` |
+| `visible-outside` | Render outside the layer: still renders when the content component is used as an ordinary component (not inside a layer) | `boolean` | `false` |
+
+#### LayerTemplate slots
+
+| Slot | Description | Scoped props |
+| --- | --- | --- |
+| `default` | The delivered content | The target slot's scoped props |
+
+#### LayerTemplate delivery targets
+
+| Usage | Target |
+| --- | --- |
+| Call site `:to="dialog"` | Same-named slot of the content component |
+| Call site `:to="dialog" container` | Same-named slot of the container component |
+| Inside content component `:to="layer"` | Same-named slot of the container component |
+
+### LayerNoContainer
+
+A transparent container marker component for legacy dialogs where container and content have not been split (e.g. `<el-dialog>` + a form in one file): call `defineLayer({ component: LayerNoContainer })` inside that component, no outer layer container is wrapped around it, and callers use it just like an ordinary content component. The visibility prop (per `model`, default `modelValue`) is projected onto the component; the inner dialog's visibility field must share the `model` name, otherwise align them with `defineLayer({ component: LayerNoContainer, model: 'visible' })`.
+
+### Types
+
+#### LayerConfigCreate
+
+Config for `createLayer`.
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `props` | Props passed to the container component, typed from `Container`; may include `ref` | `LayerPropsInput` | — |
+| `slots` | Slots delivered to the container component | `Record<string, (props?) => VNode \| VNode[] \| null>` | — |
+| `model` | The `v-model` prop name the container uses to control visibility | `string` | Vue 3: `'modelValue'`; Vue 2.7: `'value'` |
+| `content` | Default content-side config; may include `component` / `props` / `slots` / `closeOn` | `object` | — |
+| `adapter` | Makes final changes to the config after merging and before rendering | `LayerAdapter`, i.e. `(fragment: LayerConfigFragment) => LayerConfigFragment` | — |
+
+> `LayerConfigCreate` has no top-level `component` (it is given by `Container`)
+
+#### LayerConfigUse
+
+Config for `useLayer`.
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `props` | Props passed to the content component, typed from `Content`; may include `ref` | `LayerPropsInput` | — |
+| `slots` | Slots delivered to the content component | `Record<string, (props?) => VNode \| VNode[] \| null>` | — |
+| `closeOn` | Which content component events close the layer. See [CloseOnRaw](#closeonraw) | `CloseOnRaw` | — |
+| `container` | Container-side config; may include `component` / `props` / `slots` / `model`; `props` is typed from `Container` | `object` | — |
+
+> `LayerConfigUse` has no top-level `component` (it is given by `Content`)
+
+#### LayerConfigContainer
+
+Config for `defineLayer`.
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `component` | Replaces the container component, e.g. `LayerNoContainer` | `Component` | — |
+| `props` | Props passed to the container component | `object` | — |
+| `slots` | Slots delivered to the container component | `Record<string, (props?) => VNode \| VNode[] \| null>` | — |
+| `model` | The `v-model` prop name the container uses to control visibility | `string` | — |
+| `content` | Content-side config; may include `props` / `slots` / `closeOn` | `object` | — |
+
+#### CloseOnRaw
+
+`closeOn` consists of rules, each with three properties:
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `event` | Which content component event to listen to | `string` | — |
+| `when` | When to close: `'always'` always closes; `'none'` never closes (used to remove a same-named rule from lower-priority config); a function receives the event arguments and closes when it returns `true` | `'always' \| 'none' \| (...args) => boolean` | — |
+| `confirmed` | Whether closing counts as confirmation: when `true`, `confirm()` resolves, otherwise it rejects; always `false` when `when` is `'none'` | `boolean` | `false` |
+
+The full rule each shorthand is equivalent to:
+
+| Shorthand | Equivalent to |
+| --- | --- |
+| `['ok']` | `{ event: 'ok', when: 'always', confirmed: false }` |
+| `[{ event: 'ok', when, confirmed }]` | Used as-is; `when` is required |
+| `{ ok: true }` / `{ ok: 'always' }` | `{ event: 'ok', when: 'always', confirmed: false }` |
+| `{ ok: false }` / `{ ok: 'none' }` | `{ event: 'ok', when: 'none', confirmed: false }` |
+| `{ ok: (...args) => boolean }` | `{ event: 'ok', when: fn, confirmed: false }` |
+| `{ ok: { when, confirmed } }` | `{ event: 'ok', when, confirmed }`; `when` is required |
+
+> Strings in an array are always event names; `['none']` listens to an event named `none`
+
+`closeOn` from multiple places is merged by event name:
+- Rules with different event names are all kept;
+- A rule with the same event name is fully replaced by the higher-priority one
+- If the replacing rule's `when` is `'none'`, the event is removed.
+
+```ts
+// Lower priority (e.g. defined in `defineLayer`)
+{ ok: { when: 'always', confirmed: true }, cancel: true }
+// Higher priority (e.g. defined in `useLayer`)
+{ ok: (value) => !!value, cancel: false, close: true }
+// Result: ok is fully replaced (confirmed falls back to false); cancel is removed; close is added
+{ ok: { when: (value) => !!value, confirmed: false }, close: { when: 'always', confirmed: false } }
+```
+
+#### LayerCloseOptions
+
+Options for `close`.
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| `confirmed` | When `true`, a pending `confirm` resolves; otherwise it rejects | `boolean` | — |
+| `args` | Arguments carried on close, written to `LayerConfirmResult.args` | `unknown[]` | `[]` |
+
+#### LayerConfirmResult
+
+The value `confirm` / `$confirm` resolves with; also `LayerConfirmError.result`.
+
+| Property | Description | Type |
+| --- | --- | --- |
+| `source` | Where the close came from | `'content' \| 'container' \| 'instance' \| 'unmount'` |
+| `event` | The event name that triggered the close; absent for manual `close` / `unmount` | `string` |
+| `args` | The list of arguments carried on close | `unknown[]` |
+| `data` | Same as `args[0]` | `unknown` |
+
+#### LayerConfirmError
+
+The error `confirm` / `$confirm` rejects with; import it from `vue-layerx` for `instanceof` checks.
+
+| Property | Description | Type |
+| --- | --- | --- |
+| `code` | `close`: not closed with `confirmed: true`; `busy`: the layer is already open or confirming | `'close' \| 'busy'` |
+| `message` | Error message | `string` |
+| `result` | Close result; only present when `code` is `'close'` | `LayerConfirmResult` |
+
+See the [docs](https://xuyimingwork.github.io/vue-layerx/api/) for more details.
 
 ## License
 
