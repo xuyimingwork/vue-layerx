@@ -1,0 +1,6 @@
+#!/bin/sh
+staged=$(git diff --cached --name-only --diff-filter=ACM -- README.md README.en.md)
+[ -z "$staged" ] && exit 0
+
+node scripts/gen-readme-toc.mjs || exit 1
+git add $staged

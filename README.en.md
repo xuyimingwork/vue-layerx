@@ -74,9 +74,37 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
+## Table of Contents
+
+<!-- toc -->
+
+- [Examples](#examples)
+  - [Basic usage](#basic-usage)
+  - [Closing the layer](#closing-the-layer)
+  - [Open with a Promise and await the result](#open-with-a-promise-and-await-the-result)
+  - [Content component config](#content-component-config)
+  - [Slot delivery](#slot-delivery)
+  - [Config layering and priority](#config-layering-and-priority)
+- [Comparison](#comparison)
+  - [vs. the traditional approach](#vs-the-traditional-approach)
+  - [vs. other imperative solutions](#vs-other-imperative-solutions)
+- [API](#api)
+  - [createLayer](#createlayer)
+  - [useLayer](#uselayer)
+  - [defineLayer](#definelayer)
+  - [LayerInstance](#layerinstance)
+  - [LayerTemplate](#layertemplate)
+  - [LayerNoContainer](#layernocontainer)
+  - [Types](#types)
+- [License](#license)
+
+<!-- tocstop -->
+
 ## Examples
 
 ### Basic usage
+
+vue-layerx splits a layer into two parts: the **layer container** (e.g. `ElDialog`) and the **layer content** (e.g. `UserForm`). The three steps below bind the container, bind the content, and open the layer; each step accepts its own config.
 
 #### 1. Create a dedicated composable from a layer component
 
@@ -152,173 +180,9 @@ dialog.close()
 
 > Calling `$open` / `open` again while the layer is open **fully replaces** the previous open config: after `$open({ id: 1 })`, calling `$open({ mode: 'create' })` drops the `id` prop.
 
+> `createLayer` config focuses on the layer container, while `useDialog` / `open` config focuses on the layer content. See [Config layering and priority](#config-layering-and-priority) for the full rules.
+
 Related API: [createLayer](#createlayer) · [useLayer](#uselayer) · [LayerInstance](#layerinstance)
-
-### Config layering and priority
-
-A quick look at how vue-layerx config is designed will make the rest easier to follow.
-
-In one sentence: vue-layerx splits a layer into a **layer container** and **layer content**, and configures them in **layers** that follow the usage steps.
-
-Each layer of config has a different focus, but the overall structure is the same, as shown below:
-
-<table>
-<tr>
-<th>Priority</th>
-<th>Container-focused</th>
-<th>Content-focused</th>
-</tr>
-<tr>
-<td>
-Top to bottom<br />low to high
-</td>
-<td>
-
-```js
-{
-  component, // container component
-  props,     // container props
-  slots,     // container slots (JSX)
-  model,     // container v-model prop name
-  content: {
-    component, // content component
-    props,     // content props
-    slots,     // content slots (JSX)
-    closeOn,   // content events that close the layer
-  },
-}
-```
-
-</td>
-<td>
-
-```js
-{
-  component, // content component
-  props,     // content props
-  slots,     // content slots (JSX)
-  closeOn,   // content events that close the layer
-  container: {
-    component, // container component
-    props,     // container props
-    slots,     // container slots (JSX)
-    model,     // container v-model prop name
-  },
-}
-```
-
-</td>
-</tr>
-<tr>
-<td>Container component, global</td>
-<td><code>createLayer(component, { ... })</code>
-</td>
-<td></td>
-</tr>
-<tr>
-<td>Inside the content component</td>
-<td><code>defineLayer({ ... })</code></td>
-<td></td>
-</tr>
-<tr>
-<td>A specific layer instance</td>
-<td></td>
-<td><code>useDialog(component, { ... })</code></td>
-</tr>
-<tr>
-<td>A specific open call</td>
-<td></td>
-<td><code>open({ ... })</code><br /><code>confirm({ ... })</code></td>
-</tr>
-</table>
-
-The vue-layerx config system is carefully designed to be intuitive:
-
-- The closer to the caller and to a specific open call, the higher the priority
-- For the same option, higher priority overrides lower priority
-- Config from different places is merged together
-
-<table>
-<tr>
-<th>Same option: override</th>
-<th>Different options: merge</th>
-</tr>
-<tr>
-<td>
-
-```js
-createLayer(ElDialog, {
-  props: { title: 'Default title' },
-})
-
-const dialog = useDialog(UserForm, {
-  container: { props: { title: 'User form' } },
-})
-
-dialog.open({
-  component: UserDetail,
-  container: { props: { title: 'Edit user' } },
-})
-```
-
-</td>
-<td>
-
-```js
-createLayer(ElDialog, {
-  props: { width: '500px' },
-})
-
-const dialog = useDialog(UserForm, {
-  props: { mode: 'detail' },
-  container: { props: { title: 'User form' } },
-})
-
-dialog.open({
-  props: { id: 1 },
-})
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-```js
-{
-  container: {
-    component: ElDialog,
-    props: { title: 'Edit user' },
-  },
-  content: {
-    component: UserDetail,
-  },
-}
-```
-
-</td>
-<td>
-
-```js
-{
-  container: {
-    component: ElDialog,
-    props: { width: '500px', title: 'User form' },
-  },
-  content: {
-    component: UserForm,
-    props: { id: 1, mode: 'detail' },
-  },
-}
-```
-
-</td>
-</tr>
-</table>
-
-> `createLayer` also supports an `adapter` to transform the final config, typically used for `AOP` programming and globally enforced config
-
-Related API: [LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
 
 ### Closing the layer
 
@@ -388,6 +252,7 @@ try {
 
 > - Calling `confirm` / `$confirm` on a layer that is already open rejects immediately (`code: 'busy'`);
 > - Calling `open` / `$open` on a layer opened via `confirm` / `$confirm` is ignored;
+> - `confirmed` only takes effect when the layer closes; the promise cannot resolve while the layer stays open. For example, if a `when` function returns `false`, the layer stays open and the promise remains `pending`;
 
 Related API: [LayerConfirmResult](#layerconfirmresult) · [LayerConfirmError](#layerconfirmerror) · [LayerCloseOptions](#layercloseoptions)
 
@@ -573,6 +438,277 @@ defineLayer({
 > As in Vue, if the target component does not declare the slot, delivery still happens but nothing is rendered.
 
 Related API: [LayerTemplate](#layertemplate) · [defineLayer](#definelayer)
+
+### Config layering and priority
+
+Recap from [Basic usage](#basic-usage): vue-layerx splits a layer into a **layer container** and **layer content**, and configures them in **layers** that follow the usage steps.
+
+Each layer of config has a different focus, but the overall structure is the same, as shown below:
+
+<table>
+<tr>
+<th>Priority</th>
+<th>Container-focused</th>
+<th>Content-focused</th>
+</tr>
+<tr>
+<td>
+Top to bottom<br />low to high
+</td>
+<td>
+
+```js
+{
+  component, // container component
+  props,     // container props
+  slots,     // container slots (JSX)
+  model,     // container v-model prop name
+  content: {
+    component, // content component
+    props,     // content props
+    slots,     // content slots (JSX)
+    closeOn,   // content events that close the layer
+  },
+}
+```
+
+</td>
+<td>
+
+```js
+{
+  component, // content component
+  props,     // content props
+  slots,     // content slots (JSX)
+  closeOn,   // content events that close the layer
+  container: {
+    component, // container component
+    props,     // container props
+    slots,     // container slots (JSX)
+    model,     // container v-model prop name
+  },
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>Container component, global</td>
+<td><code>createLayer(component, { ... })</code>
+</td>
+<td></td>
+</tr>
+<tr>
+<td>Inside the content component</td>
+<td><code>defineLayer({ ... })</code></td>
+<td></td>
+</tr>
+<tr>
+<td>A specific layer instance</td>
+<td></td>
+<td><code>useDialog(component, { ... })</code></td>
+</tr>
+<tr>
+<td>A specific open call</td>
+<td></td>
+<td><code>open({ ... })</code><br /><code>confirm({ ... })</code></td>
+</tr>
+</table>
+
+Config follows the proximity principle: the closer to a specific layer instance or a specific open call, the higher the priority.
+
+- For the same option, higher priority overrides lower priority
+- Config from different places is merged together
+
+<table>
+<tr>
+<th>Same key: override</th>
+<th>Different keys: merge</th>
+</tr>
+<tr>
+<td>
+
+```js
+createLayer(ElDialog, {
+  props: { title: 'Default title' },
+})
+
+const dialog = useDialog(UserForm, {
+  container: { props: { title: 'User form' } },
+})
+
+dialog.open({
+  component: UserDetail,
+  container: { props: { title: 'Edit user' } },
+})
+```
+
+</td>
+<td>
+
+```js
+createLayer(ElDialog, {
+  props: { width: '500px' },
+})
+
+const dialog = useDialog(UserForm, {
+  props: { mode: 'detail' },
+  container: { props: { title: 'User form' } },
+})
+
+dialog.open({
+  props: { id: 1 },
+})
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```js
+{
+  container: {
+    component: ElDialog,
+    props: { title: 'Edit user' },
+  },
+  content: {
+    component: UserDetail,
+  },
+}
+```
+
+</td>
+<td>
+
+```js
+{
+  container: {
+    component: ElDialog,
+    props: { width: '500px', title: 'User form' },
+  },
+  content: {
+    component: UserForm,
+    props: { id: 1, mode: 'detail' },
+  },
+}
+```
+
+</td>
+</tr>
+</table>
+
+> `createLayer` also supports an `adapter` to transform the final config, typically used for `AOP` programming and globally enforced config
+
+Related API: [LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
+
+## Comparison
+
+### vs. the traditional approach
+
+The traditional approach usually wraps the dialog and its content into a `UserDialog`: the component has to forward dialog attributes manually, the caller pre-mounts the component, maintains a `visible` state, and passes arguments through intermediate variables. Content and dialog are bound together, so switching to a different dialog or reusing the content outside a dialog means splitting it apart again. With vue-layerx, content is just an ordinary component, and dialog attributes go straight to the container:
+
+<table>
+<tr>
+<th>Traditional</th>
+<th>vue-layerx</th>
+</tr>
+<tr>
+<td>
+
+```vue
+<!-- UserDialog.vue -->
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
+const visible = defineModel<boolean>()
+defineProps<{ id?: number }>()
+</script>
+
+<template>
+  <!-- forward dialog attributes such as width -->
+  <ElDialog
+    v-bind="$attrs"
+    v-model="visible"
+    title="Edit user"
+  >
+    <ElForm />
+  </ElDialog>
+</template>
+```
+
+</td>
+<td>
+
+```vue
+<!-- UserForm.vue -->
+<script setup lang="ts">
+defineProps<{ id?: number }>()
+defineLayer({ props: { title: 'Edit user' } })
+</script>
+
+<template>
+  <ElForm />
+</template>
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```vue
+<!-- UserList.vue -->
+<script setup lang="ts">
+const visible = ref(false)
+const currentId = ref<number>()
+
+function edit(id: number) {
+  currentId.value = id
+  visible.value = true
+}
+</script>
+
+<template>
+  <UserDialog
+    v-model="visible"
+    :id="currentId"
+    width="600px"
+  />
+</template>
+```
+
+</td>
+<td>
+
+```vue
+<!-- UserList.vue -->
+<script setup lang="ts">
+const dialog = useDialog(UserForm, {
+  container: { props: { width: '600px' } },
+})
+
+function edit(id: number) {
+  dialog.$open({ id })
+}
+</script>
+```
+
+</td>
+</tr>
+</table>
+
+### vs. other imperative solutions
+
+Common imperative dialog solutions mostly mount components dynamically via `render`, which often disconnects them from the call-site context. vue-layerx also mounts independently, but bridges the call-site component context and manages the container and content separately:
+
+| Aspect | Traditional | Common imperative solutions | vue-layerx |
+| --- | --- | --- | --- |
+| Imperative open | ❌ | ✅ | ✅ |
+| Container / content split | ❌ Content lives in the dialog template | ⚠️ Container is usually built in | ✅ Container and content defined and reused independently |
+| Works with existing dialogs | ✅ | ⚠️ Mostly built-in dialogs, or require re-wrapping | ✅ Pass ElDialog and similar components directly |
+| Template slots | ✅ | ❌ Usually render functions only | ✅ Templates / JSX both work |
+| Context inheritance | ✅ | ⚠️ Component-level provide is lost; plugins often need re-registering | ✅ Automatically inherits provide, `$router`, etc. from the call site |
+| DevTools | ✅ | ⚠️ Support varies | ✅ Inspectable in Vue DevTools |
 
 ## API
 

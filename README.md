@@ -47,7 +47,7 @@ dialog.$open()
 
 ### 核心能力
 
-- **命令式调用**：不预埋模板，不维护变量，随时打开
+- **命令式调用**：不预埋模板，不维护显隐状态，随时打开
 - **容器与内容解耦**：内容可脱离弹窗，独立复用
 - **适配现有组件**：Element Plus、Ant Design Vue、Vuetify 等均可直接使用
 - Promise 式调用：`await dialog.$confirm()`
@@ -74,9 +74,37 @@ pnpm add vue-layerx
 npm install vue-layerx
 ```
 
+## 目录
+
+<!-- toc -->
+
+- [示例](#示例)
+  - [基本用法](#基本用法)
+  - [关闭弹窗](#关闭弹窗)
+  - [Promise 式打开弹窗并等待结果](#promise-式打开弹窗并等待结果)
+  - [内容组件配置](#内容组件配置)
+  - [插槽投递](#插槽投递)
+  - [配置逻辑与优先级](#配置逻辑与优先级)
+- [对比](#对比)
+  - [与传统写法](#与传统写法)
+  - [与其它命令式方案](#与其它命令式方案)
+- [API](#api)
+  - [createLayer](#createlayer)
+  - [useLayer](#uselayer)
+  - [defineLayer](#definelayer)
+  - [LayerInstance](#layerinstance)
+  - [LayerTemplate](#layertemplate)
+  - [LayerNoContainer](#layernocontainer)
+  - [类型](#类型)
+- [License](#license)
+
+<!-- tocstop -->
+
 ## 示例
 
 ### 基本用法
+
+vue-layerx 将弹窗拆成两部分：**弹窗容器**（如 `ElDialog`）和 **弹窗内容**（如 `UserForm`）。下面三步依次绑定容器、绑定内容、打开弹窗，每一步都可以传入配置。
 
 #### 1. 用弹窗组件创建专属组合式函数
 
@@ -152,173 +180,9 @@ dialog.close()
 
 > 打开状态下再次 `$open` / `open` 会**整体替换**上一次的 open 配置：`$open({ id: 1 })` 后 `$open({ mode: 'create' })`，`id` 参数会被覆盖。
 
+> `createLayer` 的配置侧重弹窗容器，`useDialog` / `open` 的配置侧重弹窗内容，完整规则见 [配置逻辑与优先级](#配置逻辑与优先级)。
+
 相关 API：[createLayer](#createlayer) · [useLayer](#uselayer) · [LayerInstance](#layerinstance)
-
-### 配置逻辑与优先级
-
-快速认识 vue-layerx 的配置设计，有助于后续理解。
-
-一句话概括：vue-layerx 将弹窗拆成 **弹窗容器** 和 **弹窗内容**，并按使用步骤 **分层** 配置。
-
-不同分层的配置有不同侧重，但大体结构是一致的，如表格：
-
-<table>
-<tr>
-<th>优先级</th>
-<th>侧重容器</th>
-<th>侧重内容</th>
-</tr>
-<tr>
-<td>
-从上到下<br />从低到高
-</td>
-<td>
-
-```js
-{
-  component, // 容器组件
-  props,     // 容器 props
-  slots,     // 容器插槽 JSX
-  model,     // 容器 v-model 的 prop 名
-  content: {
-    component, // 内容组件
-    props,     // 内容 props
-    slots,     // 内容插槽 JSX
-    closeOn,   // 触发关闭的内容事件
-  },
-}
-```
-
-</td>
-<td>
-
-```js
-{
-  component, // 内容组件
-  props,     // 内容 props
-  slots,     // 内容插槽 JSX
-  closeOn,   // 触发关闭的内容事件
-  container: {
-    component, // 容器组件
-    props,     // 容器 props
-    slots,     // 容器插槽 JSX
-    model,     // 容器 v-model 的 prop 名
-  },
-}
-```
-
-</td>
-</tr>
-<tr>
-<td>容器组件全局</td>
-<td><code>createLayer(component, { ... })</code>
-</td>
-<td></td>
-</tr>
-<tr>
-<td>内容组件内</td>
-<td><code>defineLayer({ ... })</code></td>
-<td></td>
-</tr>
-<tr>
-<td>具体弹窗实例</td>
-<td></td>
-<td><code>useDialog(component, { ... })</code></td>
-</tr>
-<tr>
-<td>具体某次打开</td>
-<td></td>
-<td><code>open({ ... })</code><br /><code>confirm({ ... })</code></td>
-</tr>
-</table>
-
-vue-layerx 的配置系统经过精心设计并符合直觉
-
-- 越靠近使用者、调用方，越靠近某次具体 open，优先级越高
-- 同一个配置，优先级高会覆盖优先级低的
-- 不同位置的配置间会相互合并
-
-<table>
-<tr>
-<th>同位置：覆盖</th>
-<th>不同位置：合并</th>
-</tr>
-<tr>
-<td>
-
-```js
-createLayer(ElDialog, {
-  props: { title: '默认标题' },
-})
-
-const dialog = useDialog(UserForm, {
-  container: { props: { title: '用户表单' } },
-})
-
-dialog.open({
-  component: UserDetail,
-  container: { props: { title: '编辑用户' } },
-})
-```
-
-</td>
-<td>
-
-```js
-createLayer(ElDialog, {
-  props: { width: '500px' },
-})
-
-const dialog = useDialog(UserForm, {
-  props: { mode: 'detail' },
-  container: { props: { title: '用户表单' } },
-})
-
-dialog.open({
-  props: { id: 1 },
-})
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-```js
-{
-  container: {
-    component: ElDialog,
-    props: { title: '编辑用户' },
-  },
-  content: {
-    component: UserDetail,
-  },
-}
-```
-
-</td>
-<td>
-
-```js
-{
-  container: {
-    component: ElDialog,
-    props: { width: '500px', title: '用户表单' },
-  },
-  content: {
-    component: UserForm,
-    props: { id: 1, mode: 'detail' },
-  },
-}
-```
-
-</td>
-</tr>
-</table>
-
-> `createLayer` 还支持 `adapter` 用于转换最终配置，通常在 `AOP` 编程和全局强控配置时使用
-
-相关 API：[LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
 
 ### 关闭弹窗
 
@@ -388,6 +252,7 @@ try {
 
 > - 打开状态的弹窗，调用 `confirm` / `$confirm` 会直接 reject（`code: 'busy'`）；
 > - 处于 `confirm` / `$confirm` 打开中的弹窗，调用 `open` / `$open` 会被忽略；
+> - `confirmed` 只在关闭弹窗时生效，无法在弹窗保持打开时 resolve；例如 `when` 函数返回 `false` 时弹窗不关闭，`promise` 也继续 `pending`；
 
 相关 API：[LayerConfirmResult](#layerconfirmresult) · [LayerConfirmError](#layerconfirmerror) · [LayerCloseOptions](#layercloseoptions)
 
@@ -573,6 +438,277 @@ defineLayer({
 > 与 Vue 一致，如果目标组件内没有声明插槽时，会正常投递但不会渲染内容。
 
 相关 API：[LayerTemplate](#layertemplate) · [defineLayer](#definelayer)
+
+### 配置逻辑与优先级
+
+回顾 [基本用法](#基本用法)：vue-layerx 将弹窗拆成 **弹窗容器** 和 **弹窗内容**，并按使用步骤 **分层** 配置。
+
+不同分层的配置有不同侧重，但大体结构是一致的，如表格：
+
+<table>
+<tr>
+<th>优先级</th>
+<th>侧重容器</th>
+<th>侧重内容</th>
+</tr>
+<tr>
+<td>
+从上到下<br />从低到高
+</td>
+<td>
+
+```js
+{
+  component, // 容器组件
+  props,     // 容器 props
+  slots,     // 容器插槽 JSX
+  model,     // 容器 v-model 的 prop 名
+  content: {
+    component, // 内容组件
+    props,     // 内容 props
+    slots,     // 内容插槽 JSX
+    closeOn,   // 触发关闭的内容事件
+  },
+}
+```
+
+</td>
+<td>
+
+```js
+{
+  component, // 内容组件
+  props,     // 内容 props
+  slots,     // 内容插槽 JSX
+  closeOn,   // 触发关闭的内容事件
+  container: {
+    component, // 容器组件
+    props,     // 容器 props
+    slots,     // 容器插槽 JSX
+    model,     // 容器 v-model 的 prop 名
+  },
+}
+```
+
+</td>
+</tr>
+<tr>
+<td>容器组件全局</td>
+<td><code>createLayer(component, { ... })</code>
+</td>
+<td></td>
+</tr>
+<tr>
+<td>内容组件内</td>
+<td><code>defineLayer({ ... })</code></td>
+<td></td>
+</tr>
+<tr>
+<td>具体弹窗实例</td>
+<td></td>
+<td><code>useDialog(component, { ... })</code></td>
+</tr>
+<tr>
+<td>具体某次打开</td>
+<td></td>
+<td><code>open({ ... })</code><br /><code>confirm({ ... })</code></td>
+</tr>
+</table>
+
+配置遵循就近原则：越接近具体弹窗实例或某次打开操作，优先级越高。
+
+- 同一个配置，优先级高会覆盖优先级低的
+- 不同位置的配置间会相互合并
+
+<table>
+<tr>
+<th>同位置：覆盖</th>
+<th>不同位置：合并</th>
+</tr>
+<tr>
+<td>
+
+```js
+createLayer(ElDialog, {
+  props: { title: '默认标题' },
+})
+
+const dialog = useDialog(UserForm, {
+  container: { props: { title: '用户表单' } },
+})
+
+dialog.open({
+  component: UserDetail,
+  container: { props: { title: '编辑用户' } },
+})
+```
+
+</td>
+<td>
+
+```js
+createLayer(ElDialog, {
+  props: { width: '500px' },
+})
+
+const dialog = useDialog(UserForm, {
+  props: { mode: 'detail' },
+  container: { props: { title: '用户表单' } },
+})
+
+dialog.open({
+  props: { id: 1 },
+})
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```js
+{
+  container: {
+    component: ElDialog,
+    props: { title: '编辑用户' },
+  },
+  content: {
+    component: UserDetail,
+  },
+}
+```
+
+</td>
+<td>
+
+```js
+{
+  container: {
+    component: ElDialog,
+    props: { width: '500px', title: '用户表单' },
+  },
+  content: {
+    component: UserForm,
+    props: { id: 1, mode: 'detail' },
+  },
+}
+```
+
+</td>
+</tr>
+</table>
+
+> `createLayer` 还支持 `adapter` 用于转换最终配置，通常在 `AOP` 编程和全局强控配置时使用
+
+相关 API：[LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
+
+## 对比
+
+### 与传统写法
+
+传统写法通常把弹窗和内容封装成 `UserDialog`，组件内要手动透传弹窗属性，调用方预埋组件、维护 `visible` 状态，并通过中间变量传参；内容与弹窗绑定在一起，想换个弹窗或脱离弹窗复用时只能再拆一次。vue-layerx 下，内容就是普通组件，弹窗属性直接交给容器：
+
+<table>
+<tr>
+<th>传统写法</th>
+<th>vue-layerx</th>
+</tr>
+<tr>
+<td>
+
+```vue
+<!-- UserDialog.vue -->
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
+const visible = defineModel<boolean>()
+defineProps<{ id?: number }>()
+</script>
+
+<template>
+  <!-- 透传 width 等弹窗属性 -->
+  <ElDialog
+    v-bind="$attrs"
+    v-model="visible"
+    title="编辑用户"
+  >
+    <ElForm />
+  </ElDialog>
+</template>
+```
+
+</td>
+<td>
+
+```vue
+<!-- UserForm.vue -->
+<script setup lang="ts">
+defineProps<{ id?: number }>()
+defineLayer({ props: { title: '编辑用户' } })
+</script>
+
+<template>
+  <ElForm />
+</template>
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+```vue
+<!-- UserList.vue -->
+<script setup lang="ts">
+const visible = ref(false)
+const currentId = ref<number>()
+
+function edit(id: number) {
+  currentId.value = id
+  visible.value = true
+}
+</script>
+
+<template>
+  <UserDialog
+    v-model="visible"
+    :id="currentId"
+    width="600px"
+  />
+</template>
+```
+
+</td>
+<td>
+
+```vue
+<!-- UserList.vue -->
+<script setup lang="ts">
+const dialog = useDialog(UserForm, {
+  container: { props: { width: '600px' } },
+})
+
+function edit(id: number) {
+  dialog.$open({ id })
+}
+</script>
+```
+
+</td>
+</tr>
+</table>
+
+### 与其它命令式方案
+
+常见的命令式弹窗方案多基于 `render` 动态挂载渲染组件，往往与调用处的上下文脱节。vue-layerx 同样独立挂载，但会桥接调用处的组件上下文，并把容器与内容拆开管理：
+
+| 对比项 | 传统写法 | 常见命令式方案 | vue-layerx |
+| --- | --- | --- | --- |
+| 命令式打开 | ❌ | ✅ | ✅ |
+| 容器与内容拆分 | ❌ 内容写在弹窗模板内 | ⚠️ 容器通常内置 | ✅ 容器、内容独立定义与复用 |
+| 适配项目已有弹窗 | ✅ | ⚠️ 多为内置弹窗，或需二次封装 | ✅ 直接传入 ElDialog 等组件 |
+| 模板插槽 | ✅ | ❌ 通常只能写渲染函数 | ✅ 模板 / JSX 均可 |
+| 上下文继承 | ✅ | ⚠️ 丢失组件级 provide，常需重新注册插件 | ✅ 自动继承调用处的 provide、$router 等 |
+| 开发者工具 | ✅ | ⚠️ 支持程度不一 | ✅ 可在 Vue DevTools 中查看 |
 
 ## API
 
