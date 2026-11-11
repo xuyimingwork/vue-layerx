@@ -609,7 +609,13 @@ Related API: [LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerc
 
 ### vs. the traditional approach
 
-The traditional approach usually wraps the dialog and its content into a `UserDialog`: the component has to forward dialog attributes manually, the caller pre-mounts the component, maintains a `visible` state, and passes arguments through intermediate variables. Content and dialog are bound together, so switching to a different dialog or reusing the content outside a dialog means splitting it apart again. With vue-layerx, content is just an ordinary component, and dialog attributes go straight to the container:
+The traditional approach usually wraps the dialog and its content into a `UserDialog`, which brings a few problems:
+
+- **Manual forwarding**: the component has to forward dialog attributes by hand
+- **Verbose calls**: the caller pre-mounts the component, maintains a `visible` state, and passes arguments through intermediate variables
+- **Hard to reuse**: content is bound to the dialog, so switching dialogs or reusing the content outside one means splitting it apart again
+
+vue-layerx decouples the two, dialog attributes are configured on the container, while the content component focuses purely on business logic:
 
 <table>
 <tr>
