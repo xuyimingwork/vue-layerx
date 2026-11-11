@@ -153,6 +153,27 @@ describe('createLayerApp', () => {
   })
 })
 
+describe('createLayerApp / name', () => {
+  it('should give each LayerApp a distinct auto-increment name', async () => {
+    const first = createTestApp()
+    const second = createTestApp()
+    first.state.visible = true
+    second.state.visible = true
+    await nextTick()
+
+    const names = [...document.body.querySelectorAll('div')]
+      .map((node) => (node as { __vue_app__?: { _component: { name: string } } }).__vue_app__)
+      .filter((app) => app)
+      .map((app) => app!._component.name)
+    expect(names).toHaveLength(2)
+    for (const name of names) expect(name).toMatch(/^LayerApp\d+$/)
+    expect(names[0]).not.toBe(names[1])
+
+    first.layerApp.unmount()
+    second.layerApp.unmount()
+  })
+})
+
 describe('createLayerApp / SSR', () => {
   it('should not throw and stay unmounted when visible becomes true without DOM', () => {
     withoutDom(() => {

@@ -83,6 +83,15 @@ describe('createLayerApp (Vue 2.7)', () => {
     second.$destroy()
   })
 
+  it('should name root vm with an auto-increment LayerApp name', async () => {
+    const { state, layerApp } = createTestApp()
+    state.visible = true
+    await nextTick()
+    const vm = (document.body.querySelector('motion-dialog') as any).__vue__.$root
+    expect(vm.$options.name).toMatch(/^LayerApp\d+$/)
+    layerApp.unmount()
+  })
+
   it('should stay unmounted when visible without DOM', () => {
     withoutDom(() => {
       const { state, layerApp } = createTestApp()

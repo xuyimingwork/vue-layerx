@@ -27,6 +27,8 @@ function canUseDom(): boolean {
   return typeof document !== 'undefined'
 }
 
+let uid = 0
+
 /**
  * Mount LayerView into document.body while `state.visible` is used for open.
  * Platform attach lives in compat `createPlatformRoot` (`setup` / `mount` / `unmount`).
@@ -43,7 +45,7 @@ export function createLayerApp(options: {
   let platform: PlatformRootHandle | null = null
 
   const LayerApp = defineComponent({
-    name: 'LayerApp',
+    name: `LayerApp${++uid}`,
     setup() {
       platform!.setup()
       return () =>
