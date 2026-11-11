@@ -86,7 +86,7 @@ npm install vue-layerx
   - [Open with a Promise and await the result](#open-with-a-promise-and-await-the-result)
   - [Content component config](#content-component-config)
   - [Slot delivery](#slot-delivery)
-  - [Config layering and priority](#config-layering-and-priority)
+  - [Config stages and priority](#config-stages-and-priority)
 - [Comparison](#comparison)
   - [vs. the traditional approach](#vs-the-traditional-approach)
   - [vs. other imperative solutions](#vs-other-imperative-solutions)
@@ -182,7 +182,7 @@ dialog.close()
 
 > Calling `$open` / `open` again while the layer is open **fully replaces** the previous open config: after `$open({ id: 1 })`, calling `$open({ mode: 'create' })` drops the `id` prop.
 
-> `createLayer` config focuses on the layer container, while `useDialog` / `open` config focuses on the layer content. See [Config layering and priority](#config-layering-and-priority) for the full rules.
+> `createLayer` config focuses on the layer container, while `useDialog` / `open` config focuses on the layer content. See [Config stages and priority](#config-stages-and-priority) for the full rules.
 
 Related API: [createLayer](#createlayer) · [useLayer](#uselayer) · [LayerInstance](#layerinstance)
 
@@ -442,11 +442,11 @@ defineLayer({
 
 Related API: [LayerTemplate](#layertemplate) · [defineLayer](#definelayer)
 
-### Config layering and priority
+### Config stages and priority
 
-Recap from [Basic usage](#basic-usage): vue-layerx splits a layer into a **layer container** and **layer content**, and configures them in **layers** that follow the usage steps.
+Recap from [Basic usage](#basic-usage): vue-layerx splits a layer into a **layer container** and **layer content**, and configures them in **stages** that follow the usage steps.
 
-Each layer of config has a different focus, but the overall structure is the same, as shown below:
+Each stage of config has a different focus, but the overall structure is the same, as shown below:
 
 <table>
 <tr>
