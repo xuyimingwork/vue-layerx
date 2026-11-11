@@ -196,6 +196,19 @@ const dialog = useDialog(UserForm, {
 })
 ```
 
+A string entry closes the layer whenever the event fires. To close conditionally, use the object form and specify the condition with `when`:
+
+```ts
+const dialog = useDialog(UserForm, {
+  closeOn: ['cancel', {
+    event: 'ok', // the event that triggers closing the layer
+    when: (valid) => valid === true, // receives the ok event's arguments; closes the layer only when it returns true
+  }],
+})
+```
+
+> `when: 'always'` closes unconditionally; `['cancel']` is equivalent to `[{ event: 'cancel', when: 'always' }]`
+
 > If `useDialog` runs inside a component's setup, the layer instance is automatically unmounted and closed when that component unmounts
 
 Related API: [CloseOnRaw](#closeonraw)

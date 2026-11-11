@@ -196,7 +196,20 @@ const dialog = useDialog(UserForm, {
 })
 ```
 
-> 如果 `useDialog` 在组件的 setup 内执行，当组件卸载时，对应的弹窗实例会自动卸载并关闭
+字符串写法表示事件触发即关闭。如果需要按条件关闭，可以改用对象写法，通过 `when` 指定关闭条件：
+
+```ts
+const dialog = useDialog(UserForm, {
+  closeOn: ['cancel', {
+    event: 'ok', // 触发关闭弹窗行为的事件
+    when: (valid) => valid === true, // 接收 ok 事件的参数，返回 true 时才关闭弹窗
+  }],
+})
+```
+
+> `when` 必须是同步函数
+
+> 此外，如果 `useDialog` 在组件的 setup 内执行，当组件卸载时，创建的弹窗实例会自动关闭并卸载
 
 相关 API：[CloseOnRaw](#closeonraw)
 
