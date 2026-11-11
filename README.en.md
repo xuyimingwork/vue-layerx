@@ -66,7 +66,7 @@ dialog.$open()
 
 > Once your project has more than 5 dialogs, or you start needing to reuse dialog content, give vue-layerx a try
 
-*With the examples and API reference below, you can master vue-layerx in just 5–8 minutes.*
+*With the examples and API reference below, you can master vue-layerx in just 8–12 minutes.*
 
 ## Install
 
@@ -87,6 +87,7 @@ npm install vue-layerx
   - [Content component config](#content-component-config)
   - [Slot delivery](#slot-delivery)
   - [Config stages and priority](#config-stages-and-priority)
+  - [Progressive migration](#progressive-migration)
 - [Comparison](#comparison)
   - [vs. the traditional approach](#vs-the-traditional-approach)
   - [vs. other imperative solutions](#vs-other-imperative-solutions)
@@ -207,9 +208,9 @@ const dialog = useDialog(UserForm, {
 })
 ```
 
-> `when: 'always'` closes unconditionally; `['cancel']` is equivalent to `[{ event: 'cancel', when: 'always' }]`
+> `when` must be a synchronous function
 
-> If `useDialog` runs inside a component's setup, the layer instance is automatically unmounted and closed when that component unmounts
+> In addition, if `useDialog` runs inside a component's setup, the layer instance is automatically closed and unmounted when that component unmounts
 
 Related API: [CloseOnRaw](#closeonraw)
 
@@ -618,6 +619,56 @@ dialog.open({
 
 Related API: [LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
 
+### Progressive migration
+
+Existing projects often have components like `UserDialog` that put `<el-dialog>` and a form in a single file; callers have to pre-mount the component and maintain a `visible` state.
+
+If you can't split it yet, just declare `LayerNoContainer` inside the component (no outer layer container is wrapped around it), and it can be opened imperatively like any ordinary content component:
+
+```vue
+<!-- src/views/UserDialog.vue -->
+<script setup lang="ts">
+import { defineLayer, LayerNoContainer } from 'vue-layerx'
+
+defineProps<{ modelValue?: boolean }>()
+const emit = defineEmits(['update:modelValue', 'success'])
+
+defineLayer({
+  component: LayerNoContainer, // no outer layer container is wrapped around it
+  content: { closeOn: ['success'] },
+})
+</script>
+
+<template>
+  <!-- the original el-dialog + form, unchanged -->
+  <el-dialog
+    :model-value="modelValue"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
+    <el-form><!-- original logic --></el-form>
+  </el-dialog>
+</template>
+```
+
+Callers no longer pre-mount the component or maintain `visible`; they just open it:
+
+```ts
+// src/views/UserList.vue setup
+import { useDialog } from '@/composables/dialog'
+import UserDialog from './UserDialog.vue'
+
+const dialog = useDialog(UserDialog)
+
+dialog.open({ props: { id: 1 } })
+```
+
+When you later split it into a pure form, just remove `LayerNoContainer` and the outer `el-dialog`; callers need no changes.
+
+> - The visibility prop (per `model`, default `modelValue`) is projected onto the content component; the inner dialog's visibility field must share the `model` name, otherwise align them with `defineLayer({ component: LayerNoContainer, model: 'visible' })`;
+> - If you have many such all-in-one components, you can also create a dedicated composable with `createLayer(LayerNoContainer)`, or specify it per instance with `useDialog(UserDialog, { container: { component: LayerNoContainer } })`
+
+Related API: [LayerNoContainer](#layernocontainer) · [defineLayer](#definelayer)
+
 ## Comparison
 
 ### vs. the traditional approach
@@ -854,7 +905,20 @@ Delivers named slots to the layer container or content via templates.
 
 ### LayerNoContainer
 
-A transparent container marker component for legacy dialogs where container and content have not been split (e.g. `<el-dialog>` + a form in one file): call `defineLayer({ component: LayerNoContainer })` inside that component, no outer layer container is wrapped around it, and callers use it just like an ordinary content component. The visibility prop (per `model`, default `modelValue`) is projected onto the component; the inner dialog's visibility field must share the `model` name, otherwise align them with `defineLayer({ component: LayerNoContainer, model: 'visible' })`.
+A transparent container: when used as the container component, it renders no wrapper and only renders the content component. Intended for content components that ship their own dialog UI (such as `UserDialog`); see [Progressive migration](#progressive-migration) for an example.
+
+| Where | Usage | Best for |
+| --- | --- | --- |
+| Container component, global | `createLayer(LayerNoContainer)` | Many components of this kind; use a dedicated composable for all of them |
+| Inside the content component | `defineLayer({ component: LayerNoContainer })` | Transparent to callers; used like an ordinary content component |
+| A specific layer instance | `useDialog(C, { container: { component: LayerNoContainer } })` | One-off cases |
+| A specific open call | `open({ container: { component: LayerNoContainer } })` | A single open |
+
+After switching to `LayerNoContainer`:
+
+- Container props (including the visibility `model` and the default props from `createLayer`) are merged into the content component's props, with content props taking precedence on conflicts. The inner dialog's visibility field must share the `model` name; otherwise align them via the `model` config, e.g. `defineLayer({ component: LayerNoContainer, model: 'visible' })`;
+- With no outer container to host them, container slots (`slots` and `LayerTemplate`s delivered to the container) are not rendered; slots the caller delivers to the content component are unaffected;
+- When specified in `defineLayer`, since `defineLayer` takes effect during setup, opening first renders the container already determined by outer config and then switches to `LayerNoContainer` (unnoticeable in most cases)
 
 ### Types
 

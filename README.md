@@ -66,7 +66,7 @@ dialog.$open()
 
 > 当项目里的弹窗超过 5 个，或者开始出现弹窗内容复用的需求时，不妨试试 vue-layerx
 
-*结合后续的示例与 API 说明，只需 5 - 8 分钟即可成为 vue-layerx 高手。*
+*结合后续的示例与 API 说明，只需 8 - 12 分钟即可成为 vue-layerx 高手。*
 
 ## 安装
 
@@ -87,6 +87,7 @@ npm install vue-layerx
   - [内容组件配置](#内容组件配置)
   - [插槽投递](#插槽投递)
   - [配置逻辑与优先级](#配置逻辑与优先级)
+  - [渐进式迁移](#渐进式迁移)
 - [对比](#对比)
   - [与传统写法](#与传统写法)
   - [与其它命令式方案](#与其它命令式方案)
@@ -618,6 +619,56 @@ dialog.open({
 
 相关 API：[LayerConfigCreate](#layerconfigcreate) · [LayerConfigUse](#layerconfiguse) · [LayerConfigContainer](#layerconfigcontainer)
 
+### 渐进式迁移
+
+存量项目里常见 `UserDialog` 这类「一个文件里 `<el-dialog>` + 表单」的组件，调用方需要预埋组件并维护 `visible` 状态。
+
+如果暂时无法拆分，只需在组件内声明 `LayerNoContainer`（外层不再包裹弹窗容器），就能像普通内容组件一样命令式打开：
+
+```vue
+<!-- src/views/UserDialog.vue -->
+<script setup lang="ts">
+import { defineLayer, LayerNoContainer } from 'vue-layerx'
+
+defineProps<{ modelValue?: boolean }>()
+const emit = defineEmits(['update:modelValue', 'success'])
+
+defineLayer({
+  component: LayerNoContainer, // 外层不再包裹弹窗容器
+  content: { closeOn: ['success'] },
+})
+</script>
+
+<template>
+  <!-- 原 el-dialog + 表单，不变 -->
+  <el-dialog
+    :model-value="modelValue"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
+    <el-form><!-- 原逻辑 --></el-form>
+  </el-dialog>
+</template>
+```
+
+调用方不再预埋组件、维护 `visible`，直接打开：
+
+```ts
+// src/views/UserList.vue setup
+import { useDialog } from '@/composables/dialog'
+import UserDialog from './UserDialog.vue'
+
+const dialog = useDialog(UserDialog)
+
+dialog.open({ props: { id: 1 } })
+```
+
+日后拆成纯表单时，去掉 `LayerNoContainer` 与外层 `el-dialog` 即可，调用方无需改动。
+
+> - 显隐 props（按 `model`，默认 `modelValue`）会投影到内容组件上，内部弹窗的显隐字段需与 `model` 同名，否则用 `defineLayer({ component: LayerNoContainer, model: 'visible' })` 对齐；
+> - 同类单体较多时，也可以创建专属组合式函数 `createLayer(LayerNoContainer)`，或在实例上指定 `useDialog(UserDialog, { container: { component: LayerNoContainer } })`
+
+相关 API：[LayerNoContainer](#layernocontainer) · [defineLayer](#definelayer)
+
 ## 对比
 
 ### 与传统写法
@@ -854,7 +905,20 @@ function defineLayer(config?): LayerDefine
 
 ### LayerNoContainer
 
-透明容器标记组件，用于容器与内容尚未拆分的存量弹窗（如一个文件里 `<el-dialog>` + 表单）：在该组件内 `defineLayer({ component: LayerNoContainer })`，外层不再包裹弹窗容器，调用方用法与普通内容组件一致。显隐 props（按 `model`，默认 `modelValue`）会投影到该组件上，内部弹窗的显隐字段需与 `model` 同名，否则用 `defineLayer({ component: LayerNoContainer, model: 'visible' })` 对齐。
+透明容器：作为容器组件使用时不渲染任何外壳，只渲染内容组件。用于自带弹窗 UI 的内容组件（如 `UserDialog`），示例见 [渐进式迁移](#渐进式迁移)。
+
+| 指定位置 | 写法 | 适用 |
+| --- | --- | --- |
+| 容器组件全局 | `createLayer(LayerNoContainer)` | 同类组件较多，统一用专属组合式函数 |
+| 内容组件内 | `defineLayer({ component: LayerNoContainer })` | 调用方无感知，按普通内容组件使用 |
+| 具体弹窗实例 | `useDialog(C, { container: { component: LayerNoContainer } })` | 个例 |
+| 具体某次打开 | `open({ container: { component: LayerNoContainer } })` | 单次 |
+
+替换为 `LayerNoContainer` 后：
+
+- 容器 props（含显隐 `model` 及 `createLayer` 的默认 props）合并到内容组件 props 上，同名时内容 props 优先。内部弹窗的显隐字段需与 `model` 同名，否则通过 `model` 配置对齐，如 `defineLayer({ component: LayerNoContainer, model: 'visible' })`；
+- 没有外层容器可承载，容器插槽（`slots` 及投给容器的 `LayerTemplate`）不会渲染；调用方投给内容组件的插槽不受影响；
+- 在 `defineLayer` 中指定时，由于 `defineLayer` 在 setup 时生效，打开时会先渲染外层已定的容器再切换为 `LayerNoContainer`（多数情况下无感知）
 
 ### 类型
 
