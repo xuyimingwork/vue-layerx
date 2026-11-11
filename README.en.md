@@ -66,6 +66,8 @@ dialog.$open()
 
 > Once your project has more than 5 dialogs, or you start needing to reuse dialog content, give vue-layerx a try
 
+*With the examples and API reference below, you can master vue-layerx in just 5–8 minutes.*
+
 ## Install
 
 ```bash
@@ -282,6 +284,7 @@ defineLayer({
 
 ```ts
 defineLayer({
+  // passed to the layer container
   props: { title: 'Edit user' },
 })
 ```

@@ -41,6 +41,7 @@
     "docs:preview": "vitepress preview docs",
     "docs:bundle": "node scripts/bundle-guide-md.mjs",
     "readme:toc": "node scripts/gen-readme-toc.mjs",
+    "source:bundle": "repomix --include \"src/**/*.ts\" --ignore \"**/__test__/**\" --style markdown --no-file-summary -o dist/source-bundle.md",
     "site:build": "pnpm build && pnpm docs:build && DEMOS_BASE=\"${DEMOS_VUE3_BASE:-/demos/vue3/}\" pnpm --filter demos-vue3 build && DEMOS_BASE=\"${DEMOS_VUE2_BASE:-/demos/vue2/}\" pnpm --filter demos-vue2 build && rm -rf docs/.vitepress/dist/demos docs/.vitepress/dist/playground && mkdir -p docs/.vitepress/dist/demos && cp -R demos-vue3/dist docs/.vitepress/dist/demos/vue3 && cp -R demos-vue2/dist docs/.vitepress/dist/demos/vue2",
     "test:integration": "pnpm --filter tests-vue3 test",
     "test:integration:vue2": "pnpm --filter tests-vue2 test"
@@ -76,6 +77,7 @@
     "istanbul-lib-report": "^3.0.1",
     "istanbul-reports": "^3.1.7",
     "jsdom": "^26.1.0",
+    "repomix": "^1.19.0",
     "shiki": "^2.5.0",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
