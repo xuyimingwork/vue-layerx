@@ -210,10 +210,10 @@ const dialog = useDialog(UserForm, {
 
 ```ts
 const dialog = useDialog(UserForm, {
-  closeOn: ['cancel', { 
-    event: 'ok', // 任意需要触发 resolve 的事件
-    when: 'always',
-    confirmed: true
+  closeOn: ['cancel', { // cancel 事件关闭弹窗但 reject
+    event: 'ok', // 触发关闭弹窗行为的事件
+    when: 'always',  // 接收到 ok 事件时无条件关闭弹窗
+    confirmed: true  // 关闭弹窗的同时 resolve 弹窗
   }],
 })
 
@@ -252,7 +252,7 @@ try {
 }
 ```
 
-> - 打开状态的弹窗，调用 `confirm` / `$confirm` 会直接 reject（`code: 'busy'`）；
+> - 打开状态的弹窗，调用 `confirm` / `$confirm` 会直接 **reject**（`code: 'busy'`）；
 > - 处于 `confirm` / `$confirm` 打开中的弹窗，调用 `open` / `$open` 会被忽略；
 > - `confirmed` 只在关闭弹窗时生效，无法在弹窗保持打开时 resolve；例如 `when` 函数返回 `false` 时弹窗不关闭，`promise` 也继续 `pending`；
 

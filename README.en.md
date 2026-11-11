@@ -210,10 +210,10 @@ By default, every way of closing the layer makes the `promise` `reject`. To reso
 
 ```ts
 const dialog = useDialog(UserForm, {
-  closeOn: ['cancel', { 
-    event: 'ok', // any event that should trigger resolve
-    when: 'always',
-    confirmed: true
+  closeOn: ['cancel', { // the cancel event closes the layer but rejects
+    event: 'ok', // the event that triggers closing the layer
+    when: 'always',  // close the layer unconditionally when the ok event is received
+    confirmed: true  // resolve as the layer closes
   }],
 })
 
@@ -252,7 +252,7 @@ try {
 }
 ```
 
-> - Calling `confirm` / `$confirm` on a layer that is already open rejects immediately (`code: 'busy'`);
+> - Calling `confirm` / `$confirm` on a layer that is already open **rejects** immediately (`code: 'busy'`);
 > - Calling `open` / `$open` on a layer opened via `confirm` / `$confirm` is ignored;
 > - `confirmed` only takes effect when the layer closes; the promise cannot resolve while the layer stays open. For example, if a `when` function returns `false`, the layer stays open and the promise remains `pending`;
 
@@ -372,7 +372,7 @@ Without `container`, slots are delivered to the layer content component:
 </LayerTemplate>
 ```
 
-The layer content component must declare the slot:
+Declare the slot in the layer content component:
 
 ```vue
 <!-- src/views/UserForm.vue -->
