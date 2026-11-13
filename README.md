@@ -99,6 +99,7 @@ npm install vue-layerx
   - [LayerTemplate](#layertemplate)
   - [LayerNoContainer](#layernocontainer)
   - [类型](#类型)
+- [贡献](#贡献)
 - [License](#license)
 
 <!-- tocstop -->
@@ -1029,6 +1030,10 @@ function defineLayer(config?): LayerDefine
 | `result` | 关闭结果，仅 `code` 为 `'close'` 时有 | `LayerConfirmResult` |
 
 更多说明见 [文档](https://xuyimingwork.github.io/vue-layerx/api/)。
+
+## 贡献
+
+欢迎提交 Issue 与 PR，开始之前请阅读 [贡献指南](./CONTRIBUTING.md)。
 
 ## License
 

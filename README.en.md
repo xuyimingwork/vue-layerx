@@ -99,6 +99,7 @@ npm install vue-layerx
   - [LayerTemplate](#layertemplate)
   - [LayerNoContainer](#layernocontainer)
   - [Types](#types)
+- [Contributing](#contributing)
 - [License](#license)
 
 <!-- tocstop -->
@@ -1029,6 +1030,10 @@ The error `confirm` / `$confirm` rejects with; import it from `vue-layerx` for `
 | `result` | Close result; only present when `code` is `'close'` | `LayerConfirmResult` |
 
 See the [docs](https://xuyimingwork.github.io/vue-layerx/api/) for more details.
+
+## Contributing
+
+Issues and PRs are welcome. Please read the [Contributing Guide](./CONTRIBUTING.en.md) before you start.
 
 ## License
 
