@@ -23,6 +23,7 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:types": "vitest run --typecheck.only",
     "test:coverage": "vitest run --coverage",
     "test:coverage:integration": "vitest run --config vitest.integration-coverage.config.ts --coverage",
     "test:coverage:merge": "node scripts/merge-coverage.mjs",

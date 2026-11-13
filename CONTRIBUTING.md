@@ -36,7 +36,8 @@ pnpm install   # 同时启用 .githooks：提交 README 时自动更新目录
 ## 常用脚本
 
 ```bash
-pnpm test                    # 单元测试（源码）
+pnpm test                    # 单元测试 + 类型测试（源码）
+pnpm test:types              # 仅类型测试（src/**/__test__/*.test-d.ts）
 pnpm typecheck               # 类型检查
 pnpm build                   # 构建 dist/
 pnpm test:integration        # Vue 3 集成测试（消费 dist，需先 build）

@@ -17,6 +17,11 @@ export default defineConfig({
     include: ['src/**/__test__/**/*.test.ts'],
     // Vue 2.7 LayerApp needs vue@2.7 — covered by vitest.vue2-coverage.config.ts
     exclude: ['src/runtime/__test__/create-layer-app.vue2.test.ts'],
+    typecheck: {
+      enabled: true,
+      include: ['src/**/__test__/**/*.test-d.ts'],
+      tsconfig: './tsconfig.typecheck.json',
+    },
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage/unit',

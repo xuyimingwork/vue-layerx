@@ -16,5 +16,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./setup.ts'],
     include: ['./integration/**/*.test.ts'],
+    typecheck: {
+      enabled: true,
+      include: ['./typecheck/**/*.test-d.ts'],
+      tsconfig: './tsconfig.json',
+    },
   },
 })

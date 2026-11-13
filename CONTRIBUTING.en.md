@@ -36,7 +36,8 @@ There is no ESLint or Prettier setup, so match the surrounding code: 2-space ind
 ## Scripts
 
 ```bash
-pnpm test                    # unit tests (source)
+pnpm test                    # unit + type tests (source)
+pnpm test:types              # type tests only (src/**/__test__/*.test-d.ts)
 pnpm typecheck               # type check
 pnpm build                   # build dist/
 pnpm test:integration        # Vue 3 integration tests (consume dist; build first)
