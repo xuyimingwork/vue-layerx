@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-11-18
+
+### Added
+
+- **`LayerHook`** — `createLayer` 返回值类型；可显式标注 `export const useDialog: LayerHook<PropsOf<typeof ElDialog>> = createLayer(ElDialog)`。公开导出；runtime 行为不变。
+
+### Changed
+
+- **LayerApp DevTools name** — 每个 portal 使用自增名（`LayerApp1`、`LayerApp2`…），避免多个层在 Vue DevTools 里同名难辨。
+- **README** — 中英首页与 API 补全（含 TOC、`closeOn.when`、`LayerNoContainer` 等）；新增 [CONTRIBUTING](./CONTRIBUTING.md) / [CONTRIBUTING.en.md](./CONTRIBUTING.en.md)。
+- **Release** — tag 推送时用 GitHub Actions 生成 release notes。
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.4` or `vue-layerx@latest`
+- 无公开 API breaking
+
 ## [1.2.3] - 2026-11-02
 
 ### Fixed
@@ -282,7 +299,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.3...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.4...HEAD
+[1.2.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.0...v1.2.1
