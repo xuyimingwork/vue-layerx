@@ -434,6 +434,8 @@ const layer = defineLayer({
 ```
 
 > LayerTemplate 包裹的模板仅在 UserForm 作为弹窗内容时才有效
+>
+> 兼容性：Vue 2 不支持 Fragment，多个根节点（如上例两个按钮）会自动包一层 `display: contents` 的 `<layer-fragment>`，不影响布局。
 
 也可以通过 `defineLayer` 传入 JSX 配置：
 

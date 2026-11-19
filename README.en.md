@@ -434,6 +434,8 @@ const layer = defineLayer({
 ```
 
 > Templates wrapped in LayerTemplate only take effect when UserForm is the layer content
+>
+> Compatibility: Vue 2 does not support Fragments; multiple roots (like the two buttons above) are wrapped in a `<layer-fragment>` with `display: contents`, so layout is unaffected.
 
 You can also pass JSX config via `defineLayer`:
 
