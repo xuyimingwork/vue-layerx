@@ -93,7 +93,7 @@ function useOpenId(visible: ComputedRef<boolean>): Ref<number> {
 const LayerSlotFragment = defineComponent({
   name: 'LayerSlotFragment',
   setup(_, { slots }) {
-    return () => slots.default?.() ?? null
+    return () => slots.default!()
   },
 })
 

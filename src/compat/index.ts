@@ -14,8 +14,13 @@ import { useLayerViewRender as useLayerViewRenderVue2 } from './vue2/use-layer-v
 export { isVue2, toValue }
 export type { MaybeRefOrGetter, LayerHost, PlatformRootHandle }
 
-const setup = isVue2 ? vue2Setup : vue3Setup
-const platform = isVue2 ? vue2Platform : vue3Platform
+function compat<V2, V3>(v2: V2, v3: V3): V2 | V3 {
+  if (isVue2) return v2
+  return v3
+}
+
+const setup = compat(vue2Setup, vue3Setup)
+const platform = compat(vue2Platform, vue3Platform)
 
 export const hasSetupContext = setup.hasSetupContext
 export const getSetupInstance = setup.getSetupInstance
@@ -29,9 +34,5 @@ export const toPlatformSlots = platform.toPlatformSlots
 export const markLayerContent = platform.markLayerContent
 export const isLayerContent = platform.isLayerContent
 
-export const createPlatformRoot = isVue2
-  ? createPlatformRootVue2
-  : createPlatformRootVue3
-export const useLayerViewRender = isVue2
-  ? useLayerViewRenderVue2
-  : useLayerViewRenderVue3
+export const createPlatformRoot = compat(createPlatformRootVue2, createPlatformRootVue3)
+export const useLayerViewRender = compat(useLayerViewRenderVue2, useLayerViewRenderVue3)

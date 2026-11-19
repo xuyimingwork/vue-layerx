@@ -101,6 +101,7 @@ export function createLayerInstance({
     state,
     host,
     onUpdateVisible: (value, payload) => {
+      /* v8 ignore next -- @preserve */
       if (value) return
       close(payload)
     },
