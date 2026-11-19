@@ -1,8 +1,24 @@
+import * as VueNS from 'vue'
 import { h as createElement, type Component, type VNode } from 'vue'
 import { LAYER_CONTENT } from '@/shared/layer-content'
 
 /** Aligns with Vue 3 `modelValue`: Vue 2.7 default v-model is `value` + `input`. */
 export const DEFAULT_CONTAINER_MODEL = 'value' as const
+
+/** Multi-child shell tag; keep Vue from treating it as an unknown component. */
+const LAYER_FRAGMENT_TAG = 'layer-fragment'
+
+function ensureIgnoredElements(): void {
+  const mod = VueNS as unknown as {
+    default?: { config?: { ignoredElements?: (string | RegExp)[] } }
+    config?: { ignoredElements?: (string | RegExp)[] }
+  }
+  const config = (mod.default ?? mod).config
+  if (!config) return
+  const ignored = config.ignoredElements ?? (config.ignoredElements = [])
+  if (ignored.includes(LAYER_FRAGMENT_TAG)) return
+  ignored.push(LAYER_FRAGMENT_TAG)
+}
 
 /**
  * Flat listener prop for container v-model (Vue 2.7).
@@ -91,6 +107,22 @@ export function h(
   render: () => VNode | VNode[] | null,
 ): VNode {
   return createElement(type, props, [render] as never)
+}
+
+/**
+ * Component render must be a single root on Vue 2 (no Fragment).
+ * Multiple slot children → `<layer-fragment style="display:contents">`
+ * (same custom-element + contents pattern as Vue 3 `layer-content-to`).
+ */
+export function toComponentRoot(
+  nodes: VNode | VNode[] | null | undefined,
+): VNode | null {
+  if (nodes == null) return null
+  if (!Array.isArray(nodes)) return nodes
+  if (nodes.length === 0) return null
+  if (nodes.length === 1) return nodes[0] ?? null
+  ensureIgnoredElements()
+  return createElement(LAYER_FRAGMENT_TAG, { style: { display: 'contents' } }, nodes)
 }
 
 /** Vue 2.7: function-slot map → scopedSlots (omit when empty so h() data stays clean). */

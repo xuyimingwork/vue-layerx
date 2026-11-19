@@ -24,6 +24,7 @@ import type {
 import { createLayerStore } from '@/shared/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import {
+  toComponentRoot,
   getSetupInstance,
   h,
   isLayerContent,
@@ -92,11 +93,14 @@ function useOpenId(
   return computed(() => openId.value)
 }
 
-/** Keyed parent for one open. Renders the default slot as-is, so the DOM gains no element. */
+/**
+ * Keyed parent for one open. Passthrough default slot; Vue 2 multi-child gets a
+ * `<layer-fragment>` shell via `toComponentRoot` (no Fragment).
+ */
 const LayerSlotFragment = defineComponent({
   name: 'LayerSlotFragment',
   setup(_, { slots }) {
-    return () => slots.default!()
+    return () => toComponentRoot(slots.default?.() ?? null)
   },
 })
 

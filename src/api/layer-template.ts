@@ -7,6 +7,7 @@ import {
   type SlotsType,
   type VNode,
 } from 'vue'
+import { toComponentRoot } from '@/compat'
 import {
   renderless,
   resolveTemplateTo,
@@ -85,6 +86,7 @@ export const LayerTemplate = defineComponent({
 
     onBeforeUnmount(() => content.value.dispose())
 
-    return () => (props.visibleOutside ? content.value.render() : null)
+    return () =>
+      props.visibleOutside ? toComponentRoot(content.value.render()) : null
   },
 })

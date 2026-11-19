@@ -19,7 +19,8 @@ const layer = defineLayer({
     </p>
 
     <LayerTemplate :to="layer" name="footer">
-      <el-button type="primary" @click="emit('close')">关闭</el-button>
+      <el-button @click="emit('close')">关闭</el-button>
+      <el-button type="primary" @click="emit('close')">确定</el-button>
     </LayerTemplate>
   </div>
 </template>

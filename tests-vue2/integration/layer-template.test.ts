@@ -1,7 +1,7 @@
 import Vue, { defineComponent, h } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, LayerTemplate } from 'vue-layerx'
-import { flushPromises, mountSetup } from '../helpers/dom'
+import { flushPromises, mountComponent, mountSetup } from '../helpers/dom'
 
 /**
  * Options API + `$slots.footer` — same gate as Element UI Dialog template.
@@ -258,6 +258,75 @@ describe('LayerTemplate (Vue 2.7)', () => {
     await flushPromises()
 
     expect(footerSetups).toBe(1)
+    host.destroy()
+  })
+
+  /**
+   * Vue 2 has no Fragment: multi-child default slots are wrapped in `<layer-fragment>`.
+   */
+  it('should deliver multiple LayerTemplate footer children when the layer is open', async () => {
+    let dialog!: ReturnType<ReturnType<typeof createLayer>>
+
+    const Content = defineComponent({
+      name: 'MultiNodeFooterContent',
+      setup() {
+        const layer = defineLayer({ props: { title: 'MultiFooter' } })
+        return () =>
+          h('div', [
+            h('span', { class: 'body' }, 'body'),
+            h(LayerTemplate, { props: { to: layer, name: 'footer' } }, [
+              h('button', { class: 'footer-cancel' }, 'cancel'),
+              h('button', { class: 'footer-ok' }, 'ok'),
+            ]),
+          ])
+      },
+    })
+
+    const host = mountSetup(() => {
+      dialog = createLayer(ElementUiLikeDialog)(Content)
+    })
+
+    dialog.open()
+    await flushPromises()
+
+    const fragment = document.body.querySelector('.dialog-footer > layer-fragment')
+    expect(fragment).toBeTruthy()
+    expect(fragment?.querySelector('.footer-cancel')?.textContent).toBe('cancel')
+    expect(fragment?.querySelector('.footer-ok')?.textContent).toBe('ok')
+    host.destroy()
+  })
+
+  /**
+   * Page-local visible-outside uses the same `toComponentRoot` shell when multi-child.
+   */
+  it('should render multiple LayerTemplate children on the page with visible-outside', () => {
+    let layer!: ReturnType<typeof defineLayer>
+
+    const Page = defineComponent({
+      name: 'MultiNodeVisibleOutsidePage',
+      setup() {
+        layer = defineLayer()
+        return () =>
+          h('div', { class: 'page' }, [
+            h(
+              LayerTemplate,
+              { props: { to: layer, name: 'footer', visibleOutside: true } },
+              [
+                h('button', { class: 'footer-cancel' }, 'cancel'),
+                h('button', { class: 'footer-ok' }, 'ok'),
+              ],
+            ),
+          ])
+      },
+    })
+
+    const host = mountComponent(Page)
+
+    expect(layer.exists).toBe(false)
+    const fragment = document.body.querySelector('.page > layer-fragment')
+    expect(fragment).toBeTruthy()
+    expect(fragment?.querySelector('.footer-cancel')?.textContent).toBe('cancel')
+    expect(fragment?.querySelector('.footer-ok')?.textContent).toBe('ok')
     host.destroy()
   })
 })

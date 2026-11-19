@@ -29,6 +29,7 @@ export const DEFAULT_CONTAINER_MODEL = platform.DEFAULT_CONTAINER_MODEL
 export const toModelUpdateProp = platform.toModelUpdateProp
 
 export const h = platform.h
+export const toComponentRoot = platform.toComponentRoot
 export const toPlatformVNodeData = platform.toPlatformVNodeData
 export const toPlatformSlots = platform.toPlatformSlots
 export const markLayerContent = platform.markLayerContent

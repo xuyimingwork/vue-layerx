@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { LAYER_CONTENT } from '@/shared/layer-content'
+import { h } from 'vue'
 import {
+  toComponentRoot,
   isLayerContent,
   markLayerContent,
   toPlatformSlots,
@@ -84,5 +86,36 @@ describe('isLayerContent', () => {
     expect(isLayerContent(null)).toBe(false)
     expect(isLayerContent({ $vnode: { data: { [LAYER_CONTENT]: true } } })).toBe(true)
     expect(isLayerContent({ $vnode: { data: {} } })).toBe(false)
+  })
+})
+
+describe('toComponentRoot', () => {
+  it('should return null for empty input', () => {
+    expect(toComponentRoot(null)).toBeNull()
+    expect(toComponentRoot(undefined)).toBeNull()
+    expect(toComponentRoot([])).toBeNull()
+  })
+
+  it('should passthrough a single vnode', () => {
+    const node = h('button', { class: 'one' }, 'ok')
+    expect(toComponentRoot(node)).toBe(node)
+    expect(toComponentRoot([node])).toBe(node)
+  })
+
+  it('should wrap multiple vnodes in a display:contents layer-fragment', () => {
+    const a = h('button', { class: 'a' }, 'a')
+    const b = h('button', { class: 'b' }, 'b')
+    const root = toComponentRoot([a, b]) as {
+      tag?: string
+      type?: unknown
+      data?: { style?: unknown }
+      props?: { style?: unknown }
+      children?: unknown
+    } | null
+    expect(root).toBeTruthy()
+    // Root vitest resolves `vue` to 3 (type/props); vue2-coverage uses 2.7 (tag/data).
+    expect(root!.tag ?? root!.type).toBe('layer-fragment')
+    expect(root!.data?.style ?? root!.props?.style).toEqual({ display: 'contents' })
+    expect(root!.children).toEqual([a, b])
   })
 })

@@ -5,6 +5,13 @@ export { h } from 'vue'
 
 export const DEFAULT_CONTAINER_MODEL = 'modelValue' as const
 
+/** Vue 3 allows Fragment roots; passthrough as-is. */
+export function toComponentRoot(
+  nodes: VNode | VNode[] | null | undefined,
+): VNode | VNode[] | null {
+  return nodes ?? null
+}
+
 /** Flat listener prop for container v-model (Vue 3): `onUpdate:${model}`. */
 export function toModelUpdateProp(model: string): string {
   return `onUpdate:${model}`
