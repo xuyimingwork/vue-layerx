@@ -6,7 +6,6 @@ import {
   watch,
   type ComputedRef,
   type PropType,
-  type Ref,
   type VNode,
 } from 'vue'
 import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
@@ -76,7 +75,7 @@ function useLayerBound({
 }
 
 /** Increment on each false→true open so content remounts with a fresh key. */
-function useOpenId(visible: ComputedRef<boolean>): Ref<number> {
+function useOpenId(visible: ComputedRef<boolean>): ComputedRef<number> {
   const openId = ref(0)
   watch(
     visible,
@@ -86,7 +85,7 @@ function useOpenId(visible: ComputedRef<boolean>): Ref<number> {
     },
     { immediate: true },
   )
-  return openId
+  return computed(() => openId.value)
 }
 
 /** Keyed parent for one open. Renders the default slot as-is, so the DOM gains no element. */
@@ -103,10 +102,13 @@ function provideLayerViewBridge(
   openId: ComputedRef<number>,
 ) {
   const toRender = (
+    name: string,
     render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null,
   ): LayerSlotRender =>
     (slotProps = {}) =>
-      h(LayerSlotFragment, { key: openId.value }, () => render(slotProps))
+      h(LayerSlotFragment, { key: `slot:${name}:${openId.value}` }, () =>
+        render(slotProps),
+      )
 
   /** defineLayer top-level slots are container slots. Content slots remount with content. */
   const toFragment = (source: LayerConfigContainer): LayerConfigFragment => {
@@ -115,7 +117,7 @@ function provideLayerViewBridge(
     if (!slots) return fragment
     const rendered: Record<string, LayerSlotRender> = {}
     for (const [name, render] of Object.entries(slots)) {
-      rendered[name] = toRender(render)
+      rendered[name] = toRender(name, render)
     }
     return {
       ...fragment,
@@ -142,7 +144,7 @@ function provideLayerViewBridge(
           return defineStore.template({
             key: 'define:template.container',
             name,
-            entry: { render: toRender(render) },
+            entry: { render: toRender(name, render) },
           })
         },
       }
@@ -173,7 +175,7 @@ export const LayerView = defineComponent({
       'define:template': {},
     })
 
-    provideLayerViewBridge(defineStore, openId as any)
+    provideLayerViewBridge(defineStore, openId)
 
     const bound = useLayerBound({
       store: props.store,
