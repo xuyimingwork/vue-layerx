@@ -1,4 +1,4 @@
-import { defineComponent, h, onMounted } from 'vue'
+import { defineComponent, getCurrentInstance, h, inject, onMounted, type InjectionKey } from 'vue'
 import { defineLayer, LayerTemplate, createLayer } from 'vue-layerx'
 import type { LayerConfigContainer } from 'vue-layerx'
 import type { LayerInstance } from 'vue-layerx'
@@ -17,6 +17,73 @@ export const Container = defineComponent({
         : null
   },
 })
+
+/** Container that surfaces host inject for bindHost context tests. */
+export function makeInjectProbeContainer(key: InjectionKey<string> | string, markerClass = 'container-inject') {
+  return defineComponent({
+    name: 'InjectProbeContainer',
+    props: { modelValue: Boolean },
+    emits: ['update:modelValue'],
+    setup(props, { slots }) {
+      const value = inject(key, 'missing')
+      return () =>
+        props.modelValue
+          ? h('motion-dialog', {}, [
+              h('span', { class: markerClass }, value),
+              slots.default?.(),
+              slots.footer?.(),
+            ])
+          : null
+    },
+  })
+}
+
+/** Container that surfaces host `$router` for bindHost context tests. */
+export function makeRouterProbeContainer(markerClass = 'container-router') {
+  return defineComponent({
+    name: 'RouterProbeContainer',
+    props: { modelValue: Boolean },
+    emits: ['update:modelValue'],
+    setup(props, { slots }) {
+      const router = getCurrentInstance()?.appContext.config.globalProperties.$router as
+        | { currentRoute?: { path?: string } }
+        | undefined
+      const path = router?.currentRoute?.path ?? 'missing'
+      return () =>
+        props.modelValue
+          ? h('motion-dialog', {}, [
+              h('span', { class: markerClass }, path),
+              slots.default?.(),
+              slots.footer?.(),
+            ])
+          : null
+    },
+  })
+}
+
+/** Footer child used inside LayerTemplate for bindHost context probes. */
+export function makeInjectProbeWidget(key: InjectionKey<string> | string, markerClass = 'template-inject') {
+  return defineComponent({
+    name: 'InjectProbeWidget',
+    setup() {
+      const value = inject(key, 'missing')
+      return () => h('span', { class: markerClass }, value)
+    },
+  })
+}
+
+export function makeRouterProbeWidget(markerClass = 'template-router') {
+  return defineComponent({
+    name: 'RouterProbeWidget',
+    setup() {
+      const router = getCurrentInstance()?.appContext.config.globalProperties.$router as
+        | { currentRoute?: { path?: string } }
+        | undefined
+      const path = router?.currentRoute?.path ?? 'missing'
+      return () => h('span', { class: markerClass }, path)
+    },
+  })
+}
 
 /**
  * Shell stays open while `showDefault` toggles the default slot.

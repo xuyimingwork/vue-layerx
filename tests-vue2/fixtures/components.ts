@@ -32,6 +32,78 @@ export const Container = defineComponent({
   },
 })
 
+/** Container that surfaces host inject for bindHost context tests. */
+export function makeInjectProbeContainer(key: string, markerClass = 'container-inject') {
+  return defineComponent({
+    name: 'InjectProbeContainer',
+    model: { prop: 'value', event: 'input' },
+    props: { value: Boolean },
+    inject: {
+      probe: { from: key, default: 'missing' },
+    },
+    render(h) {
+      const self = this as unknown as {
+        value: boolean
+        probe: string
+        $slots: { default?: unknown; footer?: unknown }
+      }
+      if (!self.value) return null as never
+      return h('motion-dialog', [
+        h('span', { class: markerClass }, self.probe),
+        self.$slots.default,
+        self.$slots.footer,
+      ])
+    },
+  })
+}
+
+/** Container that surfaces host `$router` for bindHost context tests. */
+export function makeRouterProbeContainer(markerClass = 'container-router') {
+  return defineComponent({
+    name: 'RouterProbeContainer',
+    model: { prop: 'value', event: 'input' },
+    props: { value: Boolean },
+    render(h) {
+      const self = this as unknown as {
+        value: boolean
+        $router?: { currentRoute?: { path?: string } }
+        $slots: { default?: unknown; footer?: unknown }
+      }
+      if (!self.value) return null as never
+      const path = self.$router?.currentRoute?.path ?? 'missing'
+      return h('motion-dialog', [
+        h('span', { class: markerClass }, path),
+        self.$slots.default,
+        self.$slots.footer,
+      ])
+    },
+  })
+}
+
+export function makeInjectProbeWidget(key: string, markerClass = 'template-inject') {
+  return defineComponent({
+    name: 'InjectProbeWidget',
+    inject: {
+      probe: { from: key, default: 'missing' },
+    },
+    render(h) {
+      return h('span', { class: markerClass }, (this as unknown as { probe: string }).probe)
+    },
+  })
+}
+
+export function makeRouterProbeWidget(markerClass = 'template-router') {
+  return defineComponent({
+    name: 'RouterProbeWidget',
+    render(h) {
+      const path =
+        (this as unknown as { $router?: { currentRoute?: { path?: string } } }).$router
+          ?.currentRoute?.path ?? 'missing'
+      return h('span', { class: markerClass }, path)
+    },
+  })
+}
+
 /** Custom container model `visible` + `update:visible` (covers non-default toModelUpdateProp). */
 export const VisibleModelContainer = defineComponent({
   name: 'VisibleModelContainer',
