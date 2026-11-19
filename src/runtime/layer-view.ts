@@ -75,12 +75,16 @@ function useLayerBound({
 }
 
 /** Increment on each false→true open so content remounts with a fresh key. */
-function useOpenId(visible: ComputedRef<boolean>): ComputedRef<number> {
+function useOpenId(
+  visible: ComputedRef<boolean>,
+  options?: { before?: () => void },
+): ComputedRef<number> {
   const openId = ref(0)
   watch(
     visible,
     (next, prev) => {
       if (!next || prev) return
+      options?.before?.()
       openId.value++
     },
     { immediate: true },
@@ -169,10 +173,16 @@ export const LayerView = defineComponent({
   },
   setup(props, { emit }) {
     const visible = computed(() => props.visible)
-    const openId = useOpenId(visible)
     const defineStore = createLayerStore({
       define: computed(() => ({})),
       'define:template': {},
+    })
+    // Drop prior-open define:template before remount so Vue 2's
+    // mount-new-then-destroy-old order does not false-warn as duplicate.
+    const openId = useOpenId(visible, {
+      before: () => {
+        defineStore['define:template'] = {}
+      },
     })
 
     provideLayerViewBridge(defineStore, openId)
