@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, type VNode } from 'vue'
 
 /** Vue 2.7 shell: default model is `value` + `input` (aligned with Vue 3 modelValue). */
 export const Container = defineComponent({
@@ -45,10 +45,10 @@ export function makeInjectProbeContainer(key: string, markerClass = 'container-i
       const self = this as unknown as {
         value: boolean
         probe: string
-        $slots: { default?: unknown; footer?: unknown }
+        $slots: { default?: VNode[]; footer?: VNode[] }
       }
       if (!self.value) return null as never
-      return h('motion-dialog', [
+      return h('motion-dialog', {}, [
         h('span', { class: markerClass }, self.probe),
         self.$slots.default,
         self.$slots.footer,
@@ -67,11 +67,11 @@ export function makeRouterProbeContainer(markerClass = 'container-router') {
       const self = this as unknown as {
         value: boolean
         $router?: { currentRoute?: { path?: string } }
-        $slots: { default?: unknown; footer?: unknown }
+        $slots: { default?: VNode[]; footer?: VNode[] }
       }
       if (!self.value) return null as never
       const path = self.$router?.currentRoute?.path ?? 'missing'
-      return h('motion-dialog', [
+      return h('motion-dialog', {}, [
         h('span', { class: markerClass }, path),
         self.$slots.default,
         self.$slots.footer,
