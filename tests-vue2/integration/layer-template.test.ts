@@ -122,6 +122,61 @@ describe('LayerTemplate (Vue 2.7)', () => {
     host.destroy()
   })
 
+  /**
+   * Regression: content key and footer LayerSlotFragment used to share numeric
+   * `openId`, so Vue 2 reused the wrong sibling under a persistent (v-show)
+   * dialog and dropped DOM click listeners on the second open.
+   */
+  it('should keep LayerTemplate footer closeOn click working after close and reopen', async () => {
+    let dialog!: ReturnType<ReturnType<typeof createLayer>>
+
+    const Content = defineComponent({
+      name: 'PersistentCloseOnFooterContent',
+      emits: ['close'],
+      setup(_, { emit }) {
+        const layer = defineLayer({
+          content: { closeOn: ['close'] },
+        })
+        return () =>
+          h('div', [
+            h('span', { class: 'body' }, 'body'),
+            h(LayerTemplate, { props: { to: layer, name: 'footer' } }, [
+              h(
+                'button',
+                {
+                  class: 'footer-close',
+                  on: { click: () => emit('close') },
+                },
+                'close',
+              ),
+            ]),
+          ])
+      },
+    })
+
+    const host = mountSetup(() => {
+      dialog = createLayer(PersistentDialog)(Content)
+    })
+
+    dialog.open()
+    await flushPromises()
+    expect(dialog.visible).toBe(true)
+
+    document.body.querySelector<HTMLButtonElement>('.footer-close')?.click()
+    await flushPromises()
+    expect(dialog.visible).toBe(false)
+
+    dialog.open()
+    await flushPromises()
+    expect(dialog.visible).toBe(true)
+
+    document.body.querySelector<HTMLButtonElement>('.footer-close')?.click()
+    await flushPromises()
+    expect(dialog.visible).toBe(false)
+
+    host.destroy()
+  })
+
   it('should remount defineLayer slots footer when the layer closes and opens again', async () => {
     let dialog!: ReturnType<ReturnType<typeof createLayer>>
     let footerSetups = 0
