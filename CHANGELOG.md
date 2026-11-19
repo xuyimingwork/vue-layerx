@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-11-19
+
+### Fixed
+
+- **Vue 2 `LayerTemplate` 多根节点** — Vue 2 无 Fragment 时，多个子节点（如 footer 两个按钮）会自动包一层 `display: contents` 的 `<layer-fragment>`，布局不受影响；Vue 3 行为不变。
+- **同级容器插槽与内容 `openId` key 冲突** — 内容与容器具名插槽同级渲染时曾共用数字 `openId` 作 key；slot 根节点改为 `slot:${name}:${openId}`。
+- **持久容器二次打开后 footer DOM 事件失效** — 上述 key 冲突导致 Vue 2 在持久（v-show）容器下错误复用兄弟节点，footer 等插槽上的点击等 DOM 事件在第二次打开后丢失。
+- **再次打开时误报 duplicate template** — `openId` 递增前清空上一轮 `define:template`，避免 Vue 2「先挂新再卸旧」顺序下误报重复注册。
+
+### Changed
+
+- **README** — 中英补充 Vue 2 `LayerTemplate` 多根节点兼容说明。
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.5` or `vue-layerx@latest`
+- 无公开 API breaking
+
 ## [1.2.4] - 2026-11-18
 
 ### Added
@@ -299,7 +317,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.4...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.5...HEAD
+[1.2.5]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.1...v1.2.2
