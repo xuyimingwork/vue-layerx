@@ -3,14 +3,18 @@ name: Publish
 on:
   workflow_dispatch:
 
-# Trusted Publisher (OIDC) 需要此权限生成短期 token
-permissions:
-  contents: read
-  id-token: write
+# 默认最小权限；各 job 再按需提升
+permissions: {}
 
 jobs:
-  publish:
+  resolve:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+      npm_tag: ${{ steps.version.outputs.npm_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -18,36 +22,49 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Setup Latest Tag
-        id: latest_tag
+      - name: Resolve tag and version
+        id: version
         run: |
           LATEST_TAG=$(git describe --tags --abbrev=0 main 2>/dev/null || git tag -l 'v*' --merged main | sort -V | tail -1)
           if [ -z "$LATEST_TAG" ] || [[ ! "$LATEST_TAG" =~ ^v ]]; then
             echo "No valid v tag found on main branch"
             exit 1
           fi
-          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-          echo "Latest tag on main: $LATEST_TAG"
 
-      - name: Setup Version
-        id: version
-        run: |
-          LATEST_TAG="${{ steps.latest_tag.outputs.tag }}"
-          TAG="${LATEST_TAG#v}"
+          # 以 tag 指向的 commit 为准（tag 可能被挪过）
+          git checkout --quiet "$LATEST_TAG"
+
+          VERSION="${LATEST_TAG#v}"
           PKG_VERSION=$(node -p "require('./package.json').version")
-          if [ "$TAG" != "$PKG_VERSION" ]; then
-            echo "Tag version ($TAG) does not match package.json version ($PKG_VERSION)"
+          if [ "$VERSION" != "$PKG_VERSION" ]; then
+            echo "Tag version ($VERSION) does not match package.json version ($PKG_VERSION) at $LATEST_TAG"
             exit 1
           fi
-          echo "Version match: $PKG_VERSION"
+
           # 预发布版本使用对应 dist-tag，避免污染 latest
           if [[ "$PKG_VERSION" =~ -(alpha|beta|rc)(\.[0-9]+)?$ ]]; then
             NPM_TAG="${BASH_REMATCH[1]}"
           else
             NPM_TAG="latest"
           fi
+
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "npm_tag=$NPM_TAG" >> $GITHUB_OUTPUT
-          echo "Publishing to npm dist-tag: $NPM_TAG"
+          echo "Resolved $LATEST_TAG (package.json=$PKG_VERSION, npm dist-tag=$NPM_TAG)"
+
+  publish-npm:
+    needs: resolve
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      # Trusted Publisher (OIDC) 需要此权限生成短期 token
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
 
       - uses: pnpm/action-setup@v6
         with:
@@ -70,4 +87,32 @@ jobs:
       # --provenance: 生成供应链溯源证明
       # --tag: 预发布打 beta/alpha/rc，正式版打 latest
       - name: Publish To NPM
-        run: npm publish --provenance --access public --tag ${{ steps.version.outputs.npm_tag }}
+        run: npm publish --provenance --access public --tag ${{ needs.resolve.outputs.npm_tag }}
+
+  github-release:
+    needs: [resolve, publish-npm]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ needs.resolve.outputs.tag }}"
+          VERSION="${{ needs.resolve.outputs.version }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping"
+            exit 0
+          fi
+          node scripts/release-notes.mjs "$VERSION" > release-notes.md
+          FLAGS=()
+          if [[ "$VERSION" == *-* ]]; then
+            FLAGS+=(--prerelease)
+          fi
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file release-notes.md "${FLAGS[@]}"

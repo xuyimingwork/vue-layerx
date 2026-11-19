@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Release workflow** — `tag.yml` 只打 git tag；GitHub Release（含 notes）改到手动 `publish.yml`，与 npm 发布同一次完成，并按 tag commit 校验/发布。
+
 ## [1.2.5] - 2026-11-19
 
 ### Fixed
