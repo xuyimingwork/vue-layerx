@@ -6,7 +6,7 @@ const root = fileURLToPath(new URL('.', import.meta.url))
 
 /**
  * Coverage-only: run tests-vue3 cases with vue-layerx → src so hits land on source.
- * Dist/integration gate remains `pnpm test:integration` (tests-vue3/vitest.config.ts).
+ * Dist/integration gate remains `pnpm test:integration:vue3` (tests-vue3/vitest.config.ts).
  */
 export default defineConfig({
   resolve: {

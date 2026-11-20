@@ -92,18 +92,19 @@ demos-vue3/                 # 照旧
 - **不**把现行集成用例挪到 `src/api/__test__/`（见上「取 D」）。
 - 迁移完成后：**删除**根下 `tests/integration/`（以及仅被集成使用、且已迁走的 fixture/helper）；根 `tests/` 只保留 setup、纯 helpers、unit 用薄 fixture。
 
-### 4. 流水线：unit → build → integration
+### 4. 流水线：集成腿自带 build；CI / prepublish 可并行
 
-集成依赖已构建的 `dist`；unit 测源码、不依赖 dist，故先跑 unit 以尽早失败：
+集成依赖已构建的 `dist`；unit / coverage 测源码、不依赖 dist。本地推荐顺序：
 
 ```text
-pnpm test                          # 根：unit（源码）
+pnpm test:unit                     # 根：unit（源码；短名 test）
 pnpm build                         # 产出 dist
 pnpm --filter <tests-vue3> test    # 集成（dist）
 ```
 
-- 调整 `prepublishOnly` / CI（含 `.github/workflows/ci.yml`）：改为 **unit → build → integration**，禁止「未 build 就跑集成」。
-- 现行 `prepublishOnly: test && build` 与现行 CI「先 test 后 build」在迁移后必须改掉，否则会测到空/旧 dist，或根本不跑集成。
+- `test:integration:all` **内嵌** `pnpm build`，禁止「未 build 就跑集成」。
+- `prepublishOnly`：`run-p test:unit test:integration:all`（并行；集成腿自带 build）。
+- CI：`pnpm test:ci` → `run-p typecheck test:integration:all test:coverage:all`（并行；unit 覆盖由 coverage 腿承担，避免与 `test:unit` 双跑）。
 
 ### 5. Coverage：集成用例可双跑（src alias），不替代 dist 门禁
 
@@ -112,17 +113,17 @@ pnpm --filter <tests-vue3> test    # 集成（dist）
 - `vue-layerx` → `src/index.ts`
 - `@` → `src/`
 
-配置见根目录 `vitest.integration-coverage.config.ts`。合并：
+配置见根目录 `vitest.vue3-coverage.config.ts`。合并：
 
 ```text
-pnpm test:coverage                 # → coverage/unit
-pnpm test:coverage:integration     # → coverage/integration（alias，非 dist）
-pnpm test:coverage:merge           # → coverage/（istanbul merge）
+pnpm test:coverage:unit                # → coverage/unit
+pnpm test:coverage:integration:vue3    # → coverage/integration（alias，非 dist；短名 test:coverage:integration）
+pnpm test:coverage:merge               # → coverage/（istanbul merge）
 ```
 
 约束：
 
-- **禁止**把 alias 覆盖率跑当成「已测发布面」；dist 门禁仍是 `pnpm build && pnpm test:integration`。
+- **禁止**把 alias 覆盖率跑当成「已测发布面」；dist 门禁仍是 `pnpm build && pnpm test:integration:vue3`。
 - **禁止**在同一 Vitest 进程里混用 dist 与 src。
 - CI **不**设置 100% coverage threshold（本地可用合并报告追缺口）。
 
@@ -132,7 +133,7 @@ pnpm test:coverage:merge           # → coverage/（istanbul merge）
 
 - [TESTING.md](../../TESTING.md)：路径改为 `tests-vue3`；import 规则改为 `vue-layerx`；写明 fixture 划分、「集成前须 build」、coverage 双跑。
 - [DESIGN.md](../../DESIGN.md)：测试布局与目录说明同步。
-- [README.md](../../README.md)（及贡献说明若有）：「集成消费 dist」与推荐命令（unit → build → integration）。
+- [README.md](../../README.md)（及贡献说明若有）：「集成消费 dist」与推荐命令（集成前须 build；CI/`prepublishOnly` 可并行）。
 
 ### 7. 与 ADR 0008 的边界与顺序
 
@@ -172,8 +173,8 @@ pnpm test:coverage:merge           # → coverage/（istanbul merge）
 - [x] 全部集成用例 `from 'vue-layerx'`，无 `@/index` / 无指向 `src` 的库 alias（**dist 门禁配置**）
 - [x] 依赖库的 fixture/helper 仅在 `tests-vue3`；根侧无「共享且 import 库」的 fixture 被 unit 与集成共用
 - [x] 根下 `tests/integration/` 已删除（未迁入 `src/api/__test__`）
-- [x] 流水线为 **unit → build → integration**（CI、`prepublishOnly`、本地文档命令一致）
+- [x] 集成腿自带 build；CI / `prepublishOnly` 并行且不「未 build 就跑集成」
 - [x] coverage：unit + 集成 alias 趟可合并；CI 无 100% threshold
-- [x] 根 `pnpm test` 仅 unit 且仍绿
+- [x] 根 `pnpm test` / `pnpm test:unit` 仅 unit 且仍绿
 - [x] `pnpm --filter <tests-vue3> test` 在 build 后全绿
 - [x] `TESTING.md` / `DESIGN.md` / `README.md` 已按上列决策改完

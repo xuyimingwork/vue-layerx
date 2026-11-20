@@ -36,18 +36,20 @@ There is no ESLint or Prettier setup, so match the surrounding code: 2-space ind
 ## Scripts
 
 ```bash
-pnpm test                    # unit + type tests (source)
-pnpm test:types              # type tests only (src/**/__test__/*.test-d.ts)
-pnpm typecheck               # type check
+pnpm test                    # short for test:unit
+pnpm test:unit               # unit + full-library typecheck (source)
+pnpm typecheck               # library source tsc only (already in test:unit)
 pnpm build                   # build dist/
-pnpm test:integration        # Vue 3 integration tests (consume dist; build first)
+pnpm test:integration:vue3   # Vue 3 integration tests (consume dist; build first; short: test:integration)
 pnpm test:integration:vue2   # Vue 2.7 integration tests (consume dist; build first)
-pnpm demos:vue3              # Vue 3 + Element Plus demos
+pnpm test:integration:all    # build, then vue3 + vue2 in parallel
+pnpm test:ci                 # same gate as CI: typecheck ∥ integration:all ∥ coverage:all
+pnpm demos:vue3              # Vue 3 + Element Plus demos (short: demos)
 pnpm demos:vue2              # Vue 2.7 + Element UI demos
 pnpm docs:dev                # docs site
 ```
 
-Before opening a PR, make sure the tests above and `pnpm readme:toc --check` pass. These match CI.
+Before opening a PR, make sure `pnpm test:ci` and `pnpm readme:toc --check` pass.
 
 ## Project Structure
 

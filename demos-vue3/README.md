@@ -23,7 +23,7 @@ src/
 ## 运行
 
 ```bash
-pnpm demos          # 或 pnpm demos:vue3 → http://localhost:5173
+pnpm demos:vue3     # 或短名 pnpm demos → http://localhost:5173
 ```
 
 站点部署路径：`/demos/vue3/`（见根目录 `pnpm site:build`）。Vue 2 示例见 `demos-vue2/`。

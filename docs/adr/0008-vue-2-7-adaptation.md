@@ -253,7 +253,7 @@ h(container, /* 经 toPlatformVNodeData 后的 data */, {
 - **前置**：ADR 0009 已合并（`tests-vue3` 存在且集成只 `import from 'vue-layerx'`）。本篇实现 **不**负责把现行 `tests/integration` 迁出根包。
 - **否决**根包同时安装 `vue@2` + `vue@3`、或靠 npm alias / Vitest 全局改写 `vue` 解析跑双端（易串版）。
 - `tests-vue2` **不**追求与 `tests-vue3` 全量对等；覆盖 mount / Host / 换容器自然 remount / bind·model（默认 `value`）/ `defineLayer` 内容根 + D0.19 入口冒烟即可。
-- 流水线：`pnpm build` → 根 unit → `tests-vue3` → `tests-vue2`（后两步均依赖 dist）。
+- 流水线：集成腿自带 `pnpm build`；`tests-vue3` / `tests-vue2` 均消费 dist；CI / `prepublishOnly` 可与 unit/coverage 并行。
 - Coverage：`unit` + vue3-alias + vue2-alias → merge；CI **不**设 100% threshold。
 - 用例按 `@vue/test-utils@1` API **新写**；不要指望把 Vue 3 集成原样改 alias 就能绿。
 

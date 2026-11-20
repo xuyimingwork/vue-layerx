@@ -36,18 +36,20 @@ pnpm install   # 同时启用 .githooks：提交 README 时自动更新目录
 ## 常用脚本
 
 ```bash
-pnpm test                    # 单元测试 + 类型测试（源码）
-pnpm test:types              # 仅类型测试（src/**/__test__/*.test-d.ts）
-pnpm typecheck               # 类型检查
+pnpm test                    # 单元测试短名（→ test:unit）
+pnpm test:unit               # 单元测试 + 整库 typecheck（源码）
+pnpm typecheck               # 仅库源码 tsc（test:unit 已包含）
 pnpm build                   # 构建 dist/
-pnpm test:integration        # Vue 3 集成测试（消费 dist，需先 build）
+pnpm test:integration:vue3   # Vue 3 集成测试（消费 dist，需先 build；短名 test:integration）
 pnpm test:integration:vue2   # Vue 2.7 集成测试（消费 dist，需先 build）
-pnpm demos:vue3              # Vue 3 + Element Plus 示例
+pnpm test:integration:all    # 先 build，再并行 vue3 + vue2
+pnpm test:ci                 # 与 CI 同门禁：typecheck ∥ integration:all ∥ coverage:all
+pnpm demos:vue3              # Vue 3 + Element Plus 示例（短名 demos）
 pnpm demos:vue2              # Vue 2.7 + Element UI 示例
 pnpm docs:dev                # 文档站
 ```
 
-提 PR 前请确保以上测试与 `pnpm readme:toc --check` 通过，它们与 CI 一致。
+提 PR 前请确保 `pnpm test:ci` 与 `pnpm readme:toc --check` 通过。
 
 ## 项目结构
 

@@ -32,7 +32,7 @@ Do **not** share fixtures/helpers that import the library across unit / vue3 / v
 | `tests-vue2/` | `vue-layerx`, local helpers/fixtures, `vue@2.7`（原生挂载；无 VTU） |
 | `src/**/__test__/` | The module under test, internals, `@tests/*`, `vue@3`, `@vue/test-utils@2` |
 
-Dist-gate configs must not alias `vue-layerx` / `@` to repository `src/`. Coverage-only configs (`vitest.integration-coverage.config.ts`, `vitest.vue2-coverage.config.ts`) may alias for src attribution. If a scenario needs an internal API, it belongs in unit tests.
+Dist-gate configs must not alias `vue-layerx` / `@` to repository `src/`. Coverage-only configs (`vitest.vue3-coverage.config.ts`, `vitest.vue2-coverage.config.ts`) may alias for src attribution. If a scenario needs an internal API, it belongs in unit tests.
 
 ## Integration Tests — User Perspective
 
@@ -41,9 +41,10 @@ Integration files map to **public API exports**. Use nested `describe` blocks fo
 Run integration only after a fresh build:
 
 ```bash
-pnpm test                 # unit (source)
+pnpm test:unit                # unit (source；短名 test)
 pnpm build
-pnpm test:integration     # tests-vue3 → dist
+pnpm test:integration:vue3    # tests-vue3 → dist（短名 test:integration）
+pnpm test:integration:all     # 内嵌 build，再并行 vue3 + vue2
 ```
 
 ### Content author
@@ -144,20 +145,23 @@ it('should pass empty flat slot props when Content is mounted on page with visib
 ## Running Tests
 
 ```bash
-pnpm test                      # unit only（源码）
-pnpm test:watch
-pnpm build && pnpm test:integration        # Vue 3 dist 门禁
+pnpm test:unit                 # unit + typecheck（源码；短名 test）
+pnpm test:unit:watch
+pnpm typecheck                 # 仅库源码 tsc（test:unit 已包含）
+pnpm build && pnpm test:integration:vue3   # Vue 3 dist 门禁（短名 test:integration）
 pnpm build && pnpm test:integration:vue2   # Vue 2.7 dist 门禁
+pnpm test:integration:all                  # 内嵌 build，再并行 vue3 + vue2
+pnpm test:ci                               # 与 CI 同：typecheck ∥ integration:all ∥ coverage:all
 
 # Coverage（与 dist 门禁分离）
-pnpm test:coverage                         # → coverage/unit
-pnpm test:coverage:integration             # vue3-alias → coverage/integration
+pnpm test:coverage:unit                    # → coverage/unit
+pnpm test:coverage:integration:vue3        # vue3-alias → coverage/integration（短名 test:coverage:integration）
 pnpm test:coverage:integration:vue2        # vue2-alias → coverage/integration-vue2
 pnpm test:coverage:merge                   # → coverage/
 pnpm test:coverage:all                     # 上面四步
 ```
 
-Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/`（vue2 趟另钉 `vue@2.7`）以便 V8 记到源码。CI 会跑 `pnpm test:coverage:all` 的等价步骤，把合并后的 `coverage/lcov.info` 上传到 Codecov；**不**用 100% threshold 卡关。
+Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/`（vue2 趟另钉 `vue@2.7`）以便 V8 记到源码。CI 经 `pnpm test:ci` 跑完整门禁（含 `test:coverage:all`），把合并后的 `coverage/lcov.info` 上传到 Codecov；**不**用 100% threshold 卡关。
 
 ## Adding New Tests
 
