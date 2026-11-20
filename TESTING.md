@@ -8,7 +8,7 @@ Tests follow a two-tier layout:
 |------|----------|---------|
 | Unit | `src/**/__test__/*.{test,test-d}.ts` | Internal modules + type helpers (source); Element Plus type regressions |
 | Integration (Vue 3) | `tests-vue3/integration/*.test.ts` + `typecheck/*.test-d.ts` | Public API as installed consumer of **`dist`** (runtime + types) |
-| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` + `typecheck/*.test-d.ts` | Critical-path gate against **`dist`**（覆盖面小于 vue3） |
+| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` + `typecheck/*.test-d.ts` | Public-API critical-path gate against **`dist`**（不与 vue3 全量对等；共享逻辑靠 unit + vue3） |
 
 Root `tests/` holds unit-only helpers:
 
@@ -80,14 +80,19 @@ pnpm test:integration:all     # 内嵌 build，再并行 vue3 + vue2
 
 ### Vue 2.7 (`tests-vue2/integration`)
 
-Same public-API file names as vue3 where covered; suite stays a **critical-path gate**, not full parity:
+Same public-API file names as vue3 where covered; suite is a **public-API critical-path gate**, not full parity with vue3:
 
 | File | Covers |
 |------|--------|
 | `entry-smoke.test.ts` | D0.19 published entry under Vue 2.7 |
 | `use-layer.test.ts` | open / close / model / remount / outside setup |
+| `use-layer.confirm.test.ts` | `$confirm` / `confirm` resolve & reject |
 | `use-layer.host.test.ts` | Host `provide` / `inject` |
+| `layer-config.close-on.test.ts` | `closeOn` happy path |
+| `reactive-config.test.ts` | live content / container props while open |
 | `define-layer.test.ts` | `defineLayer` on content root |
+| `layer-template.test.ts` | `LayerTemplate` / slots / remount |
+| `container-attrs.test.ts` | Vue 2 `$attrs` / `$listeners` passthrough |
 | `layer-no-container.test.ts` | `LayerNoContainer` |
 | `ssr.test.ts` | no-`document` mount skip |
 

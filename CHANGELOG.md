@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Release workflow** — `tag.yml` 只打 git tag；GitHub Release（含 notes）改到手动 `publish.yml`，与 npm 发布同一次完成，并按 tag commit 校验/发布。
+- **Vue 2.7 对外表述** — 文档将 Vue 2.7 定位为正式运行时目标（同包同 API、CI 关键路径门禁）；EOL 维护年限说明移至兼容页「维护策略」。首页 / 简介 / 测试页 / `TESTING.md` / README 同步调整。
+
+### Added
+
+- **`tests-vue2` 关键路径** — 增补 `confirm`、`closeOn`、响应式配置集成用例，支撑「公开 API 关键路径可放心使用」的表述。
 
 ## [1.2.5] - 2026-11-19
 
