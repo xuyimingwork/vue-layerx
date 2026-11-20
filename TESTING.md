@@ -159,6 +159,10 @@ pnpm test:coverage:integration:vue3        # vue3-alias → coverage/integration
 pnpm test:coverage:integration:vue2        # vue2-alias → coverage/integration-vue2
 pnpm test:coverage:merge                   # → coverage/
 pnpm test:coverage:all                     # 上面四步
+
+# Docs site stats（Deploy Pages / site:build 前置）
+pnpm docs:stats                            # 实测 unit+vue3+vue2 用例数与合并覆盖率 → docs/data/test-stats.json
+pnpm docs:stats:ensure                     # 仅在缺文件时写占位，供本地 docs:dev / docs:build
 ```
 
 Coverage 的集成趟**不是**包消费验证：仅把 `vue-layerx` alias 到 `src/`（vue2 趟另钉 `vue@2.7`）以便 V8 记到源码。CI 经 `pnpm test:ci` 跑完整门禁（含 `test:coverage:all`），把合并后的 `coverage/lcov.info` 上传到 Codecov；**不**用 100% threshold 卡关。

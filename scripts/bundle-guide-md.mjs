@@ -25,6 +25,7 @@ const SECTIONS = [
       { title: '简介', link: '/guide/introduction' },
       { title: '快速上手', link: '/guide/quick-start' },
       { title: 'Vue 2.7 兼容', link: '/guide/vue2' },
+      { title: '测试与覆盖率', link: '/guide/testing' },
     ],
   },
   {

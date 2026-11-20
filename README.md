@@ -62,7 +62,7 @@ dialog.$open()
 - 支持 Vue DevTools 查看
 - 零第三方依赖
 - 完整 TypeScript 类型支持
-- 100% 测试覆盖
+- [100% 测试覆盖](https://xuyimingwork.github.io/vue-layerx/guide/testing)
 
 > 当项目里的弹窗超过 5 个，或者开始出现弹窗内容复用的需求时，不妨试试 vue-layerx
 

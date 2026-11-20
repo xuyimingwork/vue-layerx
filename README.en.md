@@ -62,7 +62,7 @@ dialog.$open()
 - Inspectable in Vue DevTools
 - Zero third-party dependencies
 - Full TypeScript type support
-- 100% test coverage
+- [100% test coverage](https://xuyimingwork.github.io/vue-layerx/guide/testing)
 
 > Once your project has more than 5 dialogs, or you start needing to reuse dialog content, give vue-layerx a try
 

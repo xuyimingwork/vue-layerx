@@ -44,6 +44,7 @@ export default defineConfig({
             { text: '简介', link: '/guide/introduction' },
             { text: '快速上手', link: '/guide/quick-start' },
             { text: 'Vue 2.7 兼容', link: '/guide/vue2' },
+            { text: '测试与覆盖率', link: '/guide/testing' },
           ],
         },
         {
