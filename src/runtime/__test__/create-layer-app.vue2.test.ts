@@ -8,7 +8,7 @@ import { withoutDom } from '../../../tests-vue2/helpers/dom'
 import { Container } from '../../../tests-vue2/fixtures/components'
 
 /**
- * Vue 2.7-only: main unit vitest (Vue 3) excludes this file.
+ * Vue 2.7-only (`*.vue2.test.ts`): excluded from main unit vitest (Vue 3).
  * Runs via vitest.vue2-coverage.config.ts.
  */
 function createTestApp() {
