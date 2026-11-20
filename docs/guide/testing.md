@@ -32,7 +32,7 @@ vue-layerx 通过不同层级合计 **{{ stats.total }}** 个测试用例，保�
 1. **单元测试**——对着源码测内部模块（含类型测试）。
 2. **集成测试**——先 `build` 出产物（`dist`），再以 Vue 3、Vue 2.7 各自的**独立项目**模拟真实用户，只通过公开 API 消费该产物（含类型测试）。
 
-覆盖率不是只看单元：CI 会把「单元级」和「对外接口级」（同一套集成用例，归因回源码）的报告合并上报 [Codecov](https://codecov.io/gh/xuyimingwork/vue-layerx)。本页数字在文档站构建时重新实测（`pnpm docs:stats`），口径与发布前的 `prepublishOnly` 一致。
+本页数字在文档站构建时重新实测（`pnpm docs:stats`），口径与发布前的 `prepublishOnly` 一致。
 
 <p v-if="stats.placeholder" class="stats-placeholder">
   本地若尚未跑过 <code>pnpm docs:stats</code>，这里是占位数据。正式站点由
@@ -53,7 +53,7 @@ vue-layerx 通过不同层级合计 **{{ stats.total }}** 个测试用例，保�
 
 ## 覆盖率
 
-合并单元 + Vue 3 / Vue 2.7 源码归因趟之后的 Istanbul 报告：
+合并后的源码覆盖率（上报 [Codecov](https://codecov.io/gh/xuyimingwork/vue-layerx)）：
 
 | 指标 | 覆盖率 |
 |------|-------:|
