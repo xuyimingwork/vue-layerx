@@ -19,12 +19,20 @@ const reportsDir = join(root, 'reports/test-stats')
 
 const placeholder = process.argv.includes('--placeholder')
 
+function emptyTier() {
+  return { runtime: 0, types: 0 }
+}
+
 function emptyStats(isPlaceholder) {
   return {
     generatedAt: null,
     placeholder: isPlaceholder,
     total: 0,
-    suites: { unit: 0, vue3: 0, vue2: 0 },
+    suites: {
+      unit: emptyTier(),
+      vue3: emptyTier(),
+      vue2: emptyTier(),
+    },
     coverage: { lines: 0, statements: 0, functions: 0, branches: 0 },
   }
 }
@@ -56,6 +64,11 @@ function run(label, command, args) {
   }
 }
 
+function isTypeTestFile(filePath) {
+  return /\.test-d\.[cm]?[jt]sx?$/.test(filePath ?? '')
+}
+
+/** Split Vitest JSON into runtime vs typecheck (`.test-d.ts`) counts. */
 function readVitestJson(file) {
   if (!existsSync(file)) {
     console.error(`[collect-test-stats] missing report ${relative(root, file)}`)
@@ -70,7 +83,18 @@ function readVitestJson(file) {
     )
     process.exit(1)
   }
-  return total
+
+  let types = 0
+  for (const suite of report.testResults ?? []) {
+    if (!isTypeTestFile(suite.name)) continue
+    types += Array.isArray(suite.assertionResults) ? suite.assertionResults.length : 0
+  }
+
+  return { runtime: total - types, types }
+}
+
+function tierTotal(tier) {
+  return tier.runtime + tier.types
 }
 
 function readCoverage() {
@@ -144,12 +168,16 @@ const suites = {
 const stats = {
   generatedAt: new Date().toISOString(),
   placeholder: false,
-  total: suites.unit + suites.vue3 + suites.vue2,
+  total: tierTotal(suites.unit) + tierTotal(suites.vue3) + tierTotal(suites.vue2),
   suites,
   coverage: readCoverage(),
 }
 
 writeStats(stats)
 console.log(
-  `[collect-test-stats] total=${stats.total} (unit=${suites.unit}, vue3=${suites.vue3}, vue2=${suites.vue2}); lines=${stats.coverage.lines}%`,
+  `[collect-test-stats] total=${stats.total}` +
+    ` (unit=${suites.unit.runtime}+${suites.unit.types}` +
+    `, vue3=${suites.vue3.runtime}+${suites.vue3.types}` +
+    `, vue2=${suites.vue2.runtime}+${suites.vue2.types})` +
+    `; lines=${stats.coverage.lines}%`,
 )

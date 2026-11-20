@@ -81,7 +81,7 @@
 ## 后果
 
 - 公开导出：`PropsOf`、`LayerPropsInput`（以及既有 `LayerConfigContent` / `Container` / `Create` 等）。`Simplify`、`LooseProps`、`LayerConfig*Of` **不**从包导出（内部实现）。
-- 类型测：主包 Vue3 `*.test-d.ts`；`tests-vue2` 轻量 `tsc` smoke
+- 类型测：`tests-vue3/typecheck` 消费 `dist`（公开 API）；主包 `src/types/__test__` 留内部 / Element Plus；`tests-vue2/typecheck` 轻量 smoke
 - 文档默认示范倾向 `$open`；完整 `open` 仍述同构配置
 
 ---

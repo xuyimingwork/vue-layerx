@@ -1,3 +1,7 @@
+/**
+ * Unit type gate for PropsOf edge cases + Element Plus.
+ * Dist consumer PropsOf happy path lives in tests-vue3/typecheck.
+ */
 import { describe, expectTypeOf, test } from 'vitest'
 import { defineComponent, type Component } from 'vue'
 import { ElDialog, ElDrawer } from 'element-plus'

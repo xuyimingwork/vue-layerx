@@ -6,9 +6,9 @@ Tests follow a two-tier layout:
 
 | Tier | Location | Purpose |
 |------|----------|---------|
-| Unit | `src/**/__test__/*.test.ts` | Test internal modules in isolation, co-located with source |
-| Integration (Vue 3) | `tests-vue3/integration/*.test.ts` | Public API as installed consumer of **`dist`** |
-| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` | Critical-path gate against **`dist`**（按公开 API 分文件，覆盖面小于 vue3） |
+| Unit | `src/**/__test__/*.{test,test-d}.ts` | Internal modules + type helpers (source); Element Plus type regressions |
+| Integration (Vue 3) | `tests-vue3/integration/*.test.ts` + `typecheck/*.test-d.ts` | Public API as installed consumer of **`dist`** (runtime + types) |
+| Integration (Vue 2.7) | `tests-vue2/integration/*.test.ts` + `typecheck/*.test-d.ts` | Critical-path gate against **`dist`**（覆盖面小于 vue3） |
 
 Root `tests/` holds unit-only helpers:
 
@@ -19,7 +19,11 @@ tests/
   fixtures/components.ts   # thin unit fixtures (may import @/ source)
 
 tests-vue3/                # workspace; vue@3 + vue-layerx: workspace:*
+  integration/             # runtime against dist
+  typecheck/               # .test-d.ts against published .d.ts
 tests-vue2/                # workspace; vue@2.7 + vue-layerx: workspace:*
+  integration/             # critical-path runtime
+  typecheck/               # light .test-d.ts smoke
 ```
 
 Do **not** share fixtures/helpers that import the library across unit / vue3 / vue2 (src vs dist, or Vue major mismatch). Pure DOM helpers may be duplicated.
@@ -31,6 +35,8 @@ Do **not** share fixtures/helpers that import the library across unit / vue3 / v
 | `tests-vue3/` | `vue-layerx` (values + types), local helpers/fixtures, `vue@3`, `@vue/test-utils@2` |
 | `tests-vue2/` | `vue-layerx`, local helpers/fixtures, `vue@2.7`（原生挂载；无 VTU） |
 | `src/**/__test__/` | The module under test, internals, `@tests/*`, `vue@3`, `@vue/test-utils@2` |
+
+Public API **type** cases (`.test-d.ts`) that import `vue-layerx` belong in `tests-vue3/typecheck` / `tests-vue2/typecheck`. Unit typecheck keeps helpers that need non-exported types (`LooseProps`) or root-only deps (`element-plus`).
 
 Dist-gate configs must not alias `vue-layerx` / `@` to repository `src/`. Coverage-only configs (`vitest.vue3-coverage.config.ts`, `vitest.vue2-coverage.config.ts`) may alias for src attribution. If a scenario needs an internal API, it belongs in unit tests.
 
