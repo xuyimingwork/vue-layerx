@@ -77,16 +77,33 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      - run: pnpm install --frozen-lockfile
+      # 仅当 registry 明确返回该 version 时才 skip；查不到 / 网络失败则继续发布
+      - name: Check if version already on npm
+        id: npm_check
+        run: |
+          VERSION="${{ needs.resolve.outputs.version }}"
+          NAME=$(node -p "require('./package.json').name")
+          if PUBLISHED=$(npm view "${NAME}@${VERSION}" version 2>/dev/null) && [ "$PUBLISHED" = "$VERSION" ]; then
+            echo "Package ${NAME}@${VERSION} already published, skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Package ${NAME}@${VERSION} not found on npm, will publish"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - if: steps.npm_check.outputs.skip != 'true'
+        run: pnpm install --frozen-lockfile
 
       # Trusted Publisher 要求 npm CLI 11.5.1+
       - name: Setup NPM
+        if: steps.npm_check.outputs.skip != 'true'
         run: npm install -g npm@latest
 
       # prepublishOnly: unit → build → tests-vue3 → tests-vue2（集成消费 dist）
       # --provenance: 生成供应链溯源证明
       # --tag: 预发布打 beta/alpha/rc，正式版打 latest
       - name: Publish To NPM
+        if: steps.npm_check.outputs.skip != 'true'
         run: npm publish --provenance --access public --tag ${{ needs.resolve.outputs.npm_tag }}
 
   github-release:
