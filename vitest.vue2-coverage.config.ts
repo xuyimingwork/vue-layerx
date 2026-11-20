@@ -14,6 +14,7 @@ export default defineConfig({
     alias: {
       'vue-layerx': path.resolve(root, 'src/index.ts'),
       '@': path.resolve(root, 'src'),
+      '@tests-vue2': path.resolve(root, 'tests-vue2'),
       vue: vue2,
     },
     dedupe: ['vue'],

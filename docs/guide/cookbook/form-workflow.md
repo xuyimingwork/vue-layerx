@@ -1,12 +1,12 @@
 <script setup>
-import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../../examples/form-workflow/App.vue'
-import AppSource from '../../examples/form-workflow/App.vue?raw'
-import FormSource from '../../examples/form-workflow/UserForm.vue?raw'
-import AuditSource from '../../examples/form-workflow/UserAudit.vue?raw'
-import DialogSource from '../../examples/form-workflow/BaseDialog.vue?raw'
-import DrawerSource from '../../examples/form-workflow/BaseDrawer.vue?raw'
-import LayersSource from '../../examples/form-workflow/layers.ts?raw'
+import DemoBlock from '@docs/.vitepress/theme/components/DemoBlock.vue'
+import Demo from '@docs/examples/form-workflow/App.vue'
+import AppSource from '@docs/examples/form-workflow/App.vue?raw'
+import FormSource from '@docs/examples/form-workflow/UserForm.vue?raw'
+import AuditSource from '@docs/examples/form-workflow/UserAudit.vue?raw'
+import DialogSource from '@docs/examples/form-workflow/BaseDialog.vue?raw'
+import DrawerSource from '@docs/examples/form-workflow/BaseDrawer.vue?raw'
+import LayersSource from '@docs/examples/form-workflow/layers.ts?raw'
 </script>
 
 # 综合案例：用户域 CRUD + 审批

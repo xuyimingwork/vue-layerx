@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElTag } from 'element-plus'
-import { useDialog, useDrawer } from '../../core/layers'
+import { useDialog, useDrawer } from '@/core/layers'
 import FilterContent from './FilterContent.vue'
 
 const activeFilters = ref<string[]>(['active'])

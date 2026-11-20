@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, provide, ref } from 'vue'
 import { ElAlert, ElButton, ElRadioButton, ElRadioGroup } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import { DEMOS_SCOPE_KEY, type DemoScope } from './context'
 import { moduleScopeDialog } from './module-dialog'
 import ScopeContent from './ScopeContent.vue'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 import { ElButton, ElTag } from 'element-plus'
-import { useAlertDialog } from '../../core/layers'
+import { useAlertDialog } from '@/core/layers'
 import AlertContent from './AlertContent.vue'
 
 const AUTO_CLOSE_SECONDS = 5

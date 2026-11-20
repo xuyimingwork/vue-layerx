@@ -10,6 +10,7 @@ export default defineConfig({
   base,
   resolve: {
     alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
       // Pin Vue 2.7 (same as tests-vue2) — avoid root workspace Vue 3.
       vue: fileURLToPath(
         new URL('./node_modules/vue/dist/vue.runtime.esm.js', import.meta.url),

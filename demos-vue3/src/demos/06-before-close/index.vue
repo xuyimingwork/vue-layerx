@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElMessage } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import DraftContent from './DraftContent.vue'
 
 const savedDraft = ref('欢迎使用 vue-layerx')

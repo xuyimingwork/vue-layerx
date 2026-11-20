@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { LayerTemplate } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import UserForm from './UserForm.vue'
 
 interface User {

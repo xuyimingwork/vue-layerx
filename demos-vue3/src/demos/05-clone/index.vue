@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElMessage } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import DetailContent from './DetailContent.vue'
 
 const user = {

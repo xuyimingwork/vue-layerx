@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElButton, ElMessage } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import UserForm from '../02-crud/UserForm.vue'
 
 const lastSaved = ref('')

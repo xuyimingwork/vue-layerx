@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElTag } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import UserDetail from './UserDetail.vue'
 
 /** 页面侧也可直接打开详情弹层（与「页内点好友」殊途同归） */

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { ElButton, ElMessage, ElTag } from 'element-plus'
 import { LayerConfirmError } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import ConfirmContent from './ConfirmContent.vue'
 
 const dialog = useDialog(ConfirmContent)

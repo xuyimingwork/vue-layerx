@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ElButton, ElTag } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import PanelContent from './PanelContent.vue'
 
 const instanceA = useDialog(PanelContent, { closeOn: ['close'] })

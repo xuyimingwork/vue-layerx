@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import PanelContent from './PanelContent.vue'
 
 const dialog = useDialog(PanelContent)

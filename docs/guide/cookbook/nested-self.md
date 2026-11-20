@@ -1,8 +1,8 @@
 <script setup>
-import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../../examples/nested-self/App.vue'
-import AppSource from '../../examples/nested-self/App.vue?raw'
-import DetailSource from '../../examples/nested-self/UserDetail.vue?raw'
+import DemoBlock from '@docs/.vitepress/theme/components/DemoBlock.vue'
+import Demo from '@docs/examples/nested-self/App.vue'
+import AppSource from '@docs/examples/nested-self/App.vue?raw'
+import DetailSource from '@docs/examples/nested-self/UserDetail.vue?raw'
 </script>
 
 # 详情里再开同款详情

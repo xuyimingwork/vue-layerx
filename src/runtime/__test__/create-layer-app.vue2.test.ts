@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerApp } from '../create-layer-app'
 import type { LayerHost } from '@/types/instance'
-import { withoutDom } from '../../../tests-vue2/helpers/dom'
-import { Container } from '../../../tests-vue2/fixtures/components'
+import { withoutDom } from '@tests-vue2/helpers/dom'
+import { Container } from '@tests-vue2/fixtures/components'
 
 /**
  * Vue 2.7-only (`*.vue2.test.ts`): excluded from main unit vitest (Vue 3).

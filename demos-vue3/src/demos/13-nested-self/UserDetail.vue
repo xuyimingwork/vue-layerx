@@ -2,7 +2,7 @@
 import { computed, getCurrentInstance, type Component } from 'vue'
 import { ElButton, ElTag } from 'element-plus'
 import { defineLayer, LayerTemplate } from 'vue-layerx'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import { getUser, type UserId } from './users'
 
 const props = withDefaults(

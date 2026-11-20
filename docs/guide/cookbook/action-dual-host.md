@@ -1,11 +1,11 @@
 <script setup>
-import DemoBlock from '../../.vitepress/theme/components/DemoBlock.vue'
-import Demo from '../../examples/action-dual-host/App.vue'
-import AppSource from '../../examples/action-dual-host/App.vue?raw'
-import PanelSource from '../../examples/action-dual-host/NotePanel.vue?raw'
-import NestedDemo from '../../examples/action-dual-host/NestedApp.vue'
-import NestedAppSource from '../../examples/action-dual-host/NestedApp.vue?raw'
-import ReviewSource from '../../examples/action-dual-host/ReviewPanel.vue?raw'
+import DemoBlock from '@docs/.vitepress/theme/components/DemoBlock.vue'
+import Demo from '@docs/examples/action-dual-host/App.vue'
+import AppSource from '@docs/examples/action-dual-host/App.vue?raw'
+import PanelSource from '@docs/examples/action-dual-host/NotePanel.vue?raw'
+import NestedDemo from '@docs/examples/action-dual-host/NestedApp.vue'
+import NestedAppSource from '@docs/examples/action-dual-host/NestedApp.vue?raw'
+import ReviewSource from '@docs/examples/action-dual-host/ReviewPanel.vue?raw'
 </script>
 
 # 页内与弹层共用操作区

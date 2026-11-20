@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton } from 'element-plus'
-import { useDialog } from '../../core/layers'
+import { useDialog } from '@/core/layers'
 import UserForm from '../02-crud/UserForm.vue'
 
 const mergeDialog = useDialog(UserForm, {
