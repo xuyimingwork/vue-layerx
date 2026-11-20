@@ -62,6 +62,9 @@ importers:
       vue-asyncx:
         specifier: ^1.11.3
         version: 1.11.3(vue@3.5.34)
+      vue2:
+        specifier: npm:vue@^2.7.16
+        version: /vue@2.7.16
 
   demos-vue2:
     dependencies:

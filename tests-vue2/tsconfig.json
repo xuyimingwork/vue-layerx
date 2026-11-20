@@ -10,8 +10,10 @@
     "lib": ["ES2020", "DOM"],
     // dist/index.d.ts imports "vue" from the package root (Vue 3). Pin every
     // resolution to this package's Vue 2.7 so h() and LayerTemplate share one Component type.
+    // Root uses npm alias `vue2` for Vue 2 constructor types; map it back here.
     "paths": {
-      "vue": ["./node_modules/vue/types/index.d.ts"]
+      "vue": ["./node_modules/vue/types/index.d.ts"],
+      "vue2": ["./node_modules/vue/types/index.d.ts"]
     }
   },
   "include": [

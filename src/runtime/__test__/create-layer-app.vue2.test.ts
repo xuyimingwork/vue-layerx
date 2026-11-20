@@ -1,5 +1,5 @@
-import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vue'
-import Vue from 'vue'
+import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vue2'
+import Vue from 'vue2'
 import { describe, expect, it } from 'vitest'
 import { createLayerInstanceStore } from '@/runtime/layer-instance'
 import { createLayerApp } from '../create-layer-app'

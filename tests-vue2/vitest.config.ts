@@ -8,9 +8,11 @@ const pkgRoot = fileURLToPath(new URL('.', import.meta.url))
 export default defineConfig({
   resolve: {
     alias: {
+      // Root `vue2` npm alias → this package's vue@2.7 (same file as `vue`)
       vue: path.resolve(pkgRoot, 'node_modules/vue/dist/vue.runtime.esm.js'),
+      vue2: path.resolve(pkgRoot, 'node_modules/vue/dist/vue.runtime.esm.js'),
     },
-    dedupe: ['vue'],
+    dedupe: ['vue', 'vue2'],
   },
   test: {
     environment: 'jsdom',

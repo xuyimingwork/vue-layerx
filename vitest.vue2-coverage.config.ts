@@ -15,9 +15,11 @@ export default defineConfig({
       'vue-layerx': path.resolve(root, 'src/index.ts'),
       '@': path.resolve(root, 'src'),
       '@tests-vue2': path.resolve(root, 'tests-vue2'),
+      // Same physical 2.7 for both ids — avoid dual Vue copies
       vue: vue2,
+      vue2,
     },
-    dedupe: ['vue'],
+    dedupe: ['vue', 'vue2'],
   },
   test: {
     environment: 'jsdom',

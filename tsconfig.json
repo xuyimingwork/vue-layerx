@@ -3,7 +3,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@tests/*": ["./tests/*"],
-      "@tests-vue2/*": ["./tests-vue2/*"]
+      "@tests-vue2/*": ["./tests-vue2/*"],
+      "vue2": ["./node_modules/vue2/types/index.d.ts"]
     },
     "target": "ES2020",
     "module": "ESNext",
