@@ -14,14 +14,17 @@ export function bindCloseOn(
     const prev = contentProps[key] as ((...args: unknown[]) => unknown) | undefined
     const { when, confirmed } = entry
     listeners[key] = (...args: unknown[]) => {
-      prev?.(...args)
-      if (when === 'always' || when(...args) === true) {
-        close({
-          confirmed,
-          source: 'content',
-          event,
-          args,
-        })
+      try {
+        prev?.(...args)
+      } finally {
+        if (when === 'always' || when(...args) === true) {
+          close({
+            confirmed,
+            source: 'content',
+            event,
+            args,
+          })
+        }
       }
     }
   }

@@ -163,4 +163,47 @@ describe('bindCloseOn', () => {
     )
     expect(bound.onSubmit).toBeUndefined()
   })
+
+  it('should still close when prev throws and rethrow the error', () => {
+    const hide = vi.fn()
+    const err = new Error('prev failed')
+    const bound = bindCloseOn(
+      {
+        onDone: () => {
+          throw err
+        },
+      },
+      { done: always() },
+      hide,
+    )
+
+    expect(() =>
+      (bound.onDone as ((...args: unknown[]) => void) | undefined)?.('payload'),
+    ).toThrow(err)
+    expect(hide).toHaveBeenCalledWith({
+      confirmed: false,
+      source: 'content',
+      event: 'done',
+      args: ['payload'],
+    })
+  })
+
+  it('should still skip close when when is false even if prev throws', () => {
+    const hide = vi.fn()
+    const err = new Error('prev failed')
+    const bound = bindCloseOn(
+      {
+        onSubmit: () => {
+          throw err
+        },
+      },
+      { submit: { when: () => false, confirmed: false } },
+      hide,
+    )
+
+    expect(() =>
+      (bound.onSubmit as ((...args: unknown[]) => void) | undefined)?.(),
+    ).toThrow(err)
+    expect(hide).not.toHaveBeenCalled()
+  })
 })

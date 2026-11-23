@@ -22,14 +22,17 @@ export function bindContainerModel(
     ...containerProps,
     [model]: visible,
     [updateEvent]: (...args: unknown[]) => {
-      prev?.(...args)
-      const value = args[0]
-      if (value === false || value === undefined) {
-        close({
-          source: 'container',
-          event,
-          args,
-        })
+      try {
+        prev?.(...args)
+      } finally {
+        const value = args[0]
+        if (value === false || value === undefined) {
+          close({
+            source: 'container',
+            event,
+            args,
+          })
+        }
       }
     },
   }

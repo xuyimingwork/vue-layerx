@@ -818,13 +818,16 @@ useDialog(UserForm, { closeOn: ['success', 'cancel'] })
 
 即 **`closeOn: ['success']` → `onSuccess: () => close({ source:'content', event, args, confirmed })`**（emit 名按 Vue 惯例转为 `on` + PascalCase）。Canonical 中 `when: 'always'` 表示无条件关；`when` 为函数时仅当返回值 **`=== true`** 才 `close()`（同步，不 await）。**`confirmed`**：bind **已读**；仅当 `confirmed === true` 时 `confirm()` Promise **resolve**，否则（含数组糖默认 `false`）走 reject `code:'close'`。要用 `confirm()` 做「确认成功」须写 object 形，例如 `closeOn: { confirm: { when: 'always', confirmed: true } }`。跨 tier 删除某 event：`closeOn: { submit: false }` 或 `{ event: 'submit', when: 'none' }`（数组 string `'none'` 表示事件名，不是 tombstone）。
 
-content 的 `onXxx` 由 vue-layerx 在 bind 阶段**统一写入** `bound.content.props`。若 `open` / `useX` 的 `props` 与 `closeOn` 同名（如 `onSuccess`），bind 时合并为单一 wrapper：**先调用用户 handler，再按 `when` 决定是否 `close()`**。
+content 的 `onXxx` 由 vue-layerx 在 bind 阶段**统一写入** `bound.content.props`。若 `open` / `useX` 的 `props` 与 `closeOn` 同名（如 `onSuccess`），bind 时合并为单一 wrapper：**先调用用户 handler，再按 `when` 决定是否 `close()`**。用户 handler 同步抛错时仍按 `when` 关层（`try/finally`），错误继续冒泡；`bindContainerModel` 对用户 `onUpdate:*` 同理。条件关层仍用 `when`，不要靠抛错否决。
 
 ```ts
 // bind 后示意（when: 'always'）
 onSuccess: (...args) => {
-  userFn?.(...args)
-  close()
+  try {
+    userFn?.(...args)
+  } finally {
+    close()
+  }
 }
 ```
 
@@ -879,7 +882,7 @@ content **自包含**：业务完成只 `emit`；vue-layerx 与普通父组件�
 
 | 触发方式 | 行为 |
 |----------|------|
-| `closeOn`（语法糖） | bind 写入 `content.props.onXxx`（用户 handler 在前，按 `when` 决定是否 `close()`）；`when` 同步且 `=== true`；define / use / open 按 event patch |
+| `closeOn`（语法糖） | bind 写入 `content.props.onXxx`（用户 handler 在前，按 `when` 决定是否 `close()`；handler 抛错仍关层）；`when` 同步且 `=== true`；define / use / open 按 event patch |
 | `LayerInstance.close()` | 使用侧命令式关闭 |
 | layer 自带关闭 | 容器 UI 触发内部 `close()` |
 | `beforeClose` | 写在 `container.props`，经 merge/adapter **透传给底层 layer 组件**；属于容器自身行为，**框架不介入**，与 `closeOn` 无关。不另提供 layer 级 `onBeforeClose`（[ADR 0010](docs/adr/0010-no-framework-before-close.md)） |
@@ -1061,7 +1064,7 @@ const filterDrawer = useDrawer(FilterForm, { closeOn: ['apply'] })
 9. **细粒度扩展**用 Vue `<slot>`；`LayerTemplate :to` 在弹层下填充同名 content slot。
 10. **`to` 分流**：`:to="layer"`（LayerDefine）→ define:template.container；`:to="instance"` → use:template.content；`:to="instance" container` → use:template.container。
 11. **`defineLayer`** 全局 inject key；`LayerTemplate` 为 layer 插槽主路径；`createLayer(layer, config?)` 两参；不导出 `useLayer`。
-12. **`clone`**：`open > clone > use > define > create`；`closeOn` 按 event patch；与用户 `onXxx` 合并为 wrapper（用户先，再按 `when` 决定 `close()`）。
+12. **`clone`**：`open > clone > use > define > create`；`closeOn` 按 event patch；与用户 `onXxx` 合并为 wrapper（用户先，再按 `when` 决定 `close()`；handler 抛错仍关层）。
 13. **`model`**：container v-model prop 名，默认由 compat 按大版本注入（3→`modelValue`，2.7→`value`）；adapter 可改；`bindLayer` 在 bind 写入。
 14. 同名 `LayerTemplate` 重复注册：**warning + 后者覆盖**（各注册域内）。
 15. **`useX()` 可无 Content**；**SSR 兼容**（客户端 `open()`）。

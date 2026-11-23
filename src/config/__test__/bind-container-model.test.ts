@@ -100,6 +100,50 @@ describe('bindContainerModel', () => {
       args: [false, 'extra'],
     })
   })
+
+  it('should still close when prev throws and rethrow the error', () => {
+    const close = vi.fn()
+    const err = new Error('prev failed')
+    const result = bindContainerModel(
+      {
+        'onUpdate:modelValue': () => {
+          throw err
+        },
+      },
+      true,
+      'modelValue',
+      close,
+    )
+
+    expect(() =>
+      (result['onUpdate:modelValue'] as UpdateFn | undefined)?.(false),
+    ).toThrow(err)
+    expect(close).toHaveBeenCalledWith({
+      source: 'container',
+      event: 'update:modelValue',
+      args: [false],
+    })
+  })
+
+  it('should still skip close when value stays true even if prev throws', () => {
+    const close = vi.fn()
+    const err = new Error('prev failed')
+    const result = bindContainerModel(
+      {
+        'onUpdate:modelValue': () => {
+          throw err
+        },
+      },
+      true,
+      'modelValue',
+      close,
+    )
+
+    expect(() =>
+      (result['onUpdate:modelValue'] as UpdateFn | undefined)?.(true),
+    ).toThrow(err)
+    expect(close).not.toHaveBeenCalled()
+  })
 })
 
 describe('DEFAULT_CONTAINER_MODEL', () => {

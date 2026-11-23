@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`bindCloseOn` / `bindContainerModel`** — 修复用户侧同名监听器同步抛错时弹层不再关闭的问题；现仍按 `closeOn` / model 规则关层（`try/finally`），错误继续冒泡。
+
 ### Changed
 
 - **Release workflow** — `tag.yml` 只打 git tag；GitHub Release（含 notes）改到手动 `publish.yml`，与 npm 发布同一次完成，并按 tag commit 校验/发布。
