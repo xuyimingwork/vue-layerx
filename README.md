@@ -190,7 +190,13 @@ dialog.close()
 
 ### 关闭弹窗
 
-除了 `dialog.close()`，可以配置在内容组件的某些事件发生时关闭弹窗：
+关闭弹窗有三种方式：
+
+1. **手动关闭**：调用 `dialog.close()`
+2. **卸载时自动关闭**：若 `useDialog` 在组件的 setup 内执行，组件卸载时创建的弹窗实例会自动关闭并卸载
+3. **配置关闭**：通过 `closeOn` 在内容组件的某些事件发生时关闭弹窗
+
+字符串写法表示事件触发即关闭：
 
 ```ts
 const dialog = useDialog(UserForm, {
@@ -198,7 +204,7 @@ const dialog = useDialog(UserForm, {
 })
 ```
 
-字符串写法表示事件触发即关闭。如果需要按条件关闭，可以改用对象写法，通过 `when` 指定关闭条件：
+如果需要按条件关闭，可以改用对象写法，通过 `when` 指定关闭条件：
 
 ```ts
 const dialog = useDialog(UserForm, {
@@ -211,7 +217,16 @@ const dialog = useDialog(UserForm, {
 
 > `when` 必须是同步函数
 
-> 此外，如果 `useDialog` 在组件的 setup 内执行，当组件卸载时，创建的弹窗实例会自动关闭并卸载
+`closeOn` 不会覆盖 `props` 里的同名监听，两者可同时使用——先触发你传入的回调，再按规则关闭：
+
+```ts
+useDialog(UserForm, {
+  props: { onCancel },
+  closeOn: ['cancel'],
+})
+```
+
+监听函数（`onCancel`）报错不会影响弹窗关闭。若需要自行控制是否关闭，可不配置该事件的 `closeOn`，在监听函数内（`onCancel`）手动调用实例的 `close`。
 
 相关 API：[CloseOnRaw](#closeonraw)
 

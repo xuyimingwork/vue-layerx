@@ -190,7 +190,13 @@ Related API: [createLayer](#createlayer) · [useLayer](#uselayer) · [LayerInsta
 
 ### Closing the layer
 
-Besides `dialog.close()`, you can configure the layer to close when certain events fire on the content component:
+There are three ways to close a layer:
+
+1. **Manually**: call `dialog.close()`
+2. **Automatically on unmount**: if `useDialog` runs inside a component's setup, the layer instance is automatically closed and unmounted when that component unmounts
+3. **Configured close**: use `closeOn` to close the layer when certain events fire on the content component
+
+A string entry closes the layer whenever the event fires:
 
 ```ts
 const dialog = useDialog(UserForm, {
@@ -198,7 +204,7 @@ const dialog = useDialog(UserForm, {
 })
 ```
 
-A string entry closes the layer whenever the event fires. To close conditionally, use the object form and specify the condition with `when`:
+To close conditionally, use the object form and specify the condition with `when`:
 
 ```ts
 const dialog = useDialog(UserForm, {
@@ -211,7 +217,16 @@ const dialog = useDialog(UserForm, {
 
 > `when` must be a synchronous function
 
-> In addition, if `useDialog` runs inside a component's setup, the layer instance is automatically closed and unmounted when that component unmounts
+`closeOn` does not override same-named listeners in `props`; both can be used together — your callback runs first, then the layer closes according to the rule:
+
+```ts
+useDialog(UserForm, {
+  props: { onCancel },
+  closeOn: ['cancel'],
+})
+```
+
+Errors thrown by the listener (`onCancel`) do not prevent the layer from closing. If you need to control whether it closes, omit `closeOn` for that event and call the instance's `close` inside the listener (`onCancel`).
 
 Related API: [CloseOnRaw](#closeonraw)
 
