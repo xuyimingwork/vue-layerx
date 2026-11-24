@@ -177,6 +177,83 @@ describe('defineLayer', () => {
     })
   })
 
+  describe('content swap clears define', () => {
+    const CompA = defineComponent({
+      name: 'CompAWithDefine',
+      setup() {
+        defineLayer({
+          props: { title: 'A的标题', width: '800px' },
+        })
+        return () => h('div', { class: 'content-a' }, 'A')
+      },
+    })
+
+    const CompB = defineComponent({
+      name: 'CompBWithoutDefine',
+      setup() {
+        return () => h('div', { class: 'content-b' }, 'B')
+      },
+    })
+
+    it('should drop defineLayer container props when open swaps content while visible', async () => {
+      const useLayer = createLayer(Container)
+      let dialog!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer()
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      dialog.open({ component: CompA })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('.content-a')).toBeTruthy()
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('A的标题')
+      expect(queryBodyDialog()?.getAttribute('data-width')).toBe('800px')
+
+      dialog.open({ component: CompB })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('.content-b')).toBeTruthy()
+      expect(document.body.querySelector('.content-a')).toBeFalsy()
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBeFalsy()
+      expect(queryBodyDialog()?.getAttribute('data-width')).toBeFalsy()
+    })
+
+    it('should drop defineLayer container props when reopen with content that has no defineLayer', async () => {
+      const useLayer = createLayer(Container)
+      let dialog!: LayerInstance
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer()
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      dialog.open({ component: CompA })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      dialog.close()
+      await wrapper.vm.$nextTick()
+
+      dialog.open({ component: CompB })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(document.body.querySelector('.content-b')).toBeTruthy()
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBeFalsy()
+      expect(queryBodyDialog()?.getAttribute('data-width')).toBeFalsy()
+    })
+  })
+
   describe('misuse', () => {
     it('should throw when called outside setup', () => {
       expect(() => defineLayer()).toThrow(
