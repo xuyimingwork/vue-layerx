@@ -51,7 +51,7 @@ function createLayerViewContentVNode({
   key,
   content,
 }: {
-  key: number | undefined
+  key: string | undefined
   content: LayerBoundNode | undefined
 }) {
   if (!content) return null
@@ -70,10 +70,10 @@ function createLayerViewContentVNode({
 function createLayerViewVNode({
   container,
   content,
-  openId,
+  contentId,
   refContentTo,
 }: LayerBound & {
-  openId?: number
+  contentId?: string
   refContentTo?: Ref<HTMLUnknownElement | undefined | null>
 }): VNode | (VNode | null)[] | null {
   const noContainer = container.component === LayerNoContainer
@@ -99,7 +99,7 @@ function createLayerViewVNode({
     refContentTo?.value
       ? h(Teleport as never, { to: refContentTo.value }, [
           createLayerViewContentVNode({
-            key: openId,
+            key: contentId,
             content:
               noContainer && content
                 ? {
@@ -122,14 +122,14 @@ function createLayerViewVNode({
 export function useLayerViewRender(
   bound: Ref<LayerBound>,
   visible: Ref<boolean>,
-): (openId?: number) => VNode | (VNode | null)[] | null {
+): (contentId?: string) => VNode | (VNode | null)[] | null {
   const refContentTo = useContentPlacement(bound, visible)
-  return (openId) => {
+  return (contentId) => {
     const { container, content } = bound.value
     return createLayerViewVNode({
       container,
       content,
-      openId: content ? openId : undefined,
+      contentId: content ? contentId : undefined,
       refContentTo,
     })
   }

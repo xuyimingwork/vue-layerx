@@ -23,9 +23,9 @@ function vue2Data(vnode: VNode) {
 }
 
 describe('useLayerViewRender (Vue 2.7 tree)', () => {
-  function renderBound(bound: Ref<LayerBound>, openId?: number) {
+  function renderBound(bound: Ref<LayerBound>, contentId?: number) {
     // Vue 2 path has no setup-only parking; safe to call outside setup.
-    return useLayerViewRender(bound, shallowRef(true))(openId)
+    return useLayerViewRender(bound, shallowRef(true))(contentId)
   }
 
   it('should nest content in the container default slot', () => {

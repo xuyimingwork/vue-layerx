@@ -7,14 +7,14 @@ import { markLayerContent, toPlatformSlots, toPlatformVNodeData } from './platfo
 function createLayerViewVNode({
   container,
   content,
-  openId,
-}: LayerBound & { openId?: number }): VNode | null {
+  contentId,
+}: LayerBound & { contentId?: string }): VNode | null {
   const noContainer = container.component === LayerNoContainer
 
   if (noContainer) {
     if (!content) return null
     return createContentVNode({
-      key: openId,
+      key: contentId,
       content: {
         ...content,
         props: {
@@ -26,7 +26,7 @@ function createLayerViewVNode({
   }
 
   const contentVNode = content
-    ? createContentVNode({ key: openId, content })
+    ? createContentVNode({ key: contentId, content })
     : null
 
   return h(container.component as Component, {
@@ -42,7 +42,7 @@ function createContentVNode({
   key,
   content,
 }: {
-  key: number | undefined
+  key: string | undefined
   content: LayerBoundNode
 }) {
   const flat = markLayerContent({
@@ -62,13 +62,13 @@ function createContentVNode({
 export function useLayerViewRender(
   bound: Ref<LayerBound>,
   _visible: Ref<boolean>,
-): (openId?: number) => VNode | null {
-  return (openId) => {
+): (contentId?: string) => VNode | null {
+  return (contentId) => {
     const { container, content } = bound.value
     return createLayerViewVNode({
       container,
       content,
-      openId: content ? openId : undefined,
+      contentId: content ? contentId : undefined,
     })
   }
 }
