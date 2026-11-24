@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **换内容 / 再打开时 `defineLayer` 容器配置残留** — `open({ component })` 在 visible 下换内容，或关闭后再打开无 `defineLayer` 的内容时，上一内容的 title/width 等不再留在容器上。换内容或再打开前就地清掉上一轮 `define` 和 `define:template` slots，不替换 fragment 对象（避免 Vue 2 持久容器 footer 点击失效）。
 - **`bindCloseOn` / `bindContainerModel`** — 修复用户侧同名监听器同步抛错时弹层不再关闭的问题；现仍按 `closeOn` / model 规则关层（`try/finally`），错误继续冒泡。
 
 ### Changed
 
+- **内容身份 `contentId`** — content key 与内容注册的容器插槽 key 改为跟随「打开」或「已打开时 `content.component` 变化」。关掉再开、或已打开时换组件，会换新的 content 实例并清掉上一轮 `define`；已打开时只改 props 不拆。插槽 key 为 `${contentId}:slot:${name}`。
 - **Release workflow** — `tag.yml` 只打 git tag；GitHub Release（含 notes）改到手动 `publish.yml`，与 npm 发布同一次完成，并按 tag commit 校验/发布。
 - **Vue 2.7 对外表述** — 文档将 Vue 2.7 定位为正式运行时目标（同包同 API、CI 关键路径门禁）；EOL 维护年限说明移至兼容页「维护策略」。首页 / 简介 / 测试页 / `TESTING.md` / README 同步调整。
 

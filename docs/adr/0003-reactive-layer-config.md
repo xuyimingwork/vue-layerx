@@ -51,8 +51,8 @@ MaybeRefOrGetter
 ```
 
 - **不**用 `watch` + 赋值同步；依赖收集由 computed 承担。
-- 热更新只重 merge / 更 props；**不**因配置变化 bump `openId`（倒计时 title 不拆 content）。
-- `component` 等字段随整包 `toValue` 更新，语义对齐「已打开再 `open` 只更配置」；不单独做换组件强制 remount。
+- 热更新只重 merge / 更 props；**不**因配置变化 bump `contentId`（倒计时 title 不拆 content）。
+- `component` 字段随整包 `toValue` 更新。已打开时组件身份变了会 bump `contentId` 并重建 content；其它字段仍对齐「已打开再 `open` 只更配置」。
 
 #### Store 桶形态
 
@@ -170,7 +170,7 @@ const adapted = adapter ? adapter(fragment) : fragment
 | `adapter` | 写入 `store.create`，merge 后取出再 adapt；不单独传 prop |
 | `*:template` 桶 | 保持 plain 可变 |
 | clone 对父 `use` | live fold；clone source 可 live；strip 父 `props.ref` |
-| 配置变化与 content remount | 不 bump `openId` |
+| 配置变化与 content remount | 不 bump `contentId`；组件身份变化会 bump |
 
 ---
 

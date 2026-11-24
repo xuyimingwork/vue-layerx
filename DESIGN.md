@@ -56,7 +56,7 @@ UserDialog = MyDialog + UserForm
 - **adapt**：在 **LayerConfigFragment** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
 - **refs**：`store.refs` 桶在 adapter 之后合并；`props.ref` 链式 compose，internal 先于各 tier 用户 ref。
 - **bind**：把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + 更新监听（Vue 3 默认 `onUpdate:modelValue`；Vue 2.7 默认 `onInput`）；产出 `LayerBound`。
-- **render**：`compat.useLayerViewRender` 产出 vnode 树；**close 后再 open** 时 `openId` 递增 remount content；已打开时再次 `open()` 只更新 merge/props。
+- **render**：`compat.useLayerViewRender` 产出 vnode 树；**close 后再 open**，或已打开时 `content.component` 变化，`contentId` 递增并 remount content。已打开时再次 `open()` 且组件不变，只更新 merge/props。
 
 使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域 fragment**；**bind 产出 LayerBound**（可直接 `h()`）。
 
@@ -191,8 +191,9 @@ LayerView → useLayerViewRender                    runtime/ + compat/
 
 UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而由 vue-layerx 在 `render` 阶段 `h(content, …)` 托管。
 
-- **`close()` 后再 `open()`**：强制重建 content 子树（内部 `openId` 递增作为 content `key`），content `setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。
-- **已打开时再次 `open(config?)`**：只更新 `store.open` tier 并下发新 props，**不** remount content。
+- **`close()` 后再 `open()`**：强制重建 content 子树（`contentId` 递增作为 content `key`），content `setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。
+- **已打开时换 `content.component`**：同样递增 `contentId`。content 与内容注册的容器插槽一起换新实例。
+- **已打开时再次 `open(config?)` 且组件不变**：只更新 `store.open` tier 并下发新 props，**不** remount content。
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
 首次 `visible=true` 才挂载 portal（`createLayerApp` 内 `watch`）；`close()` 设 `visible=false` 并通过 container `model` 投影关闭，**不卸载**挂载点；bind 点 `onUnmounted` 时卸该 instance 的 portal。

@@ -24,7 +24,7 @@
 |----|------|------|
 | D0.1 | 计划支持 Vue 2.7，状态 **待适配** | 未实现前不改 `peerDependencies`、不宣称可用 |
 | D0.2 | **不做 Teleport**（不自研 portal、不引 `portal-vue`） | `h(container, …, { default: () => h(content) })` |
-| D0.3 | **换容器后 content 会丢**（相对 Vue 3 park） | **不是**另做 remount API：嵌套树下 `container.component` 一变，Vue 2 diff 自然拆掉子树；`openId` 策略与 Vue 3 相同（D2.2 / D2.3） |
+| D0.3 | **换容器后 content 会丢**（相对 Vue 3 park） | **不是**另做 remount API：嵌套树下 `container.component` 一变，Vue 2 diff 自然拆掉子树；`contentId` 策略与 Vue 3 相同（D2.2 / D2.3） |
 | D0.4 | Vue 3 主线 **不**为 2.7 削弱 Teleport / park | 双端行为允许分叉 |
 | D0.5 | `LayerNoContainer` 在 2.7 **不**维持同构 Teleport 树；**props 全投影**（D2.1-A） | 扁平 `h(content)`，但 container props→content 与 Vue 3 同语义 |
 | D0.6 | **容器 model / 更新事件按大版本**（D4.1 / D4.2） | 见下表；**默认 model 与 flat 更新键由 compat 注入**（D0.20），非在 bind 内写 `isVue2` |
@@ -360,18 +360,18 @@ Vue 3：NoContainer 仍走 Teleport 树，把 `container.props`（含 model）�
 
 - **决策**：**D**（澄清 **D0.3**）— 不引入单独的「换容器 remount 策略」。行为差只来自树形：Vue 3 Teleport 可 park content；Vue 2.7 嵌套则 diff 连带刷 content。触发面 = 任何使容器 vnode type 变化的 `container.component` 更新（与现在改 component 的时机相同）。
 
-#### D2.3 `openId` / key 策略
+#### D2.3 `contentId` / key 策略
 
-Vue 3：`openId` 在 `visible` false→true 时递增，作 content 的 `key`；换容器靠 Teleport park，**不**另涨 key。
+Vue 3：`contentId` 在打开（`visible` false→true）或已打开时 `content.component` 变化时递增，作 content 的 `key`。props / 配置变化不递增。换容器靠 Teleport park，**不**另涨 key。
 
 | 选项 | 内容 |
 |------|------|
-| A | 2.7：`key = openId` 只在 visible false→true 递增；换容器另用 `containerKey` 迫使整树重建 |
+| A | 2.7：`key = contentId` 只在 visible false→true 递增；换容器另用 `containerKey` 迫使整树重建 |
 | B | 换容器与重新 open 共用同一 key 空间（任一变化都 ++） |
 | C | 不做稳定 key，依赖 Vue 2 默认原地 patch（**不推荐**，换容器可能状态错乱） |
-| D | **与 Vue 3 相同**：仅 `openId`（false→true ++）；**不**为换容器加 `containerKey`——换容器重刷靠父组件 type 变化的自然 diff |
+| D | **与 Vue 3 相同**：仅 `contentId`（打开，或已打开时组件身份变化，才 ++）；**不**为换容器加 `containerKey`——换容器重刷靠父组件 type 变化的自然 diff |
 
-- **决策**：**D**（与现行一致）— `watch(visible)` 逻辑对齐 `layer-view.ts`；不为 2.7 单独发明 key 空间。
+- **决策**：**D**（与现行一致）— `contentId` 逻辑对齐 `layer-view.ts`；不为 2.7 单独发明 key 空间。
 
 #### D2.4 容器 `default` 插槽被 UI 库吃掉 / 不渲染
 
@@ -622,7 +622,7 @@ Vue 3：vnode.props 上挂 `LAYER_CONTENT` Symbol。2.7 VNode 是 `data` / `comp
 ```js
 // 创建（Vue 2 h data 形态）
 h(content.component, {
-  key: openId,
+  key: contentId,
   props: { ...contentProps },
   [LAYER_CONTENT]: true, // 落在 data，非 props
 })
@@ -808,7 +808,7 @@ D1.5 D（D0.17：一篇 Vue 2 兼容说明；无 playground）
 D1.6 A（D0.17：best-effort / 最大努力，无 SLA）
 D2.1 A（D0.5：NoContainer 全投影，与 Vue 3 语义一致）
 D2.2 D（与 Vue 3 同语义；无 Teleport → 换 container 自然 remount）
-D2.3 D（openId 同 Vue 3：仅 false→true ++；无 containerKey）
+D2.3 D（contentId 同 Vue 3：打开或已打开时组件身份变化才 ++；无 containerKey）
 D2.4 与 Vue 3 相同（D0.16：无 fallback；假定容器渲染 default）
 D2.5 A（D0.18：无额外 wrapper）
 D2.6 A（D0.18：对外 VNode 函数；compat 侧转 slots）

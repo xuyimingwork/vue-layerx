@@ -77,20 +77,21 @@ function useLayerBound({
 
 /** Increment on each false→true open so content remounts with a fresh key. */
 function useOpenId(
-  visible: ComputedRef<boolean>,
-  options?: { before?: () => void },
-): ComputedRef<number> {
+  visible: ComputedRef<boolean>
+): ComputedRef<string> {
   const openId = ref(0)
   watch(
     visible,
-    (next, prev) => {
-      if (!next || prev) return
-      options?.before?.()
+    (current, prev) => {
+      if (!current || prev) return
       openId.value++
     },
-    { immediate: true },
+    { 
+      flush: 'sync',
+      immediate: true
+    },
   )
-  return computed(() => openId.value)
+  return computed(() => `${openId.value}`)
 }
 
 /**
@@ -107,14 +108,14 @@ const LayerSlotFragment = defineComponent({
 /** Inject bridge for defineLayer / creator LayerTemplate → defineStore. */
 function provideLayerViewBridge(
   defineStore: LayerViewStoreWithTemplate,
-  openId: ComputedRef<number>,
+  contentId: ComputedRef<string>,
 ) {
   const toRender = (
     name: string,
     render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null,
   ): LayerSlotRender =>
     (slotProps = {}) =>
-      h(LayerSlotFragment, { key: `slot:${name}:${openId.value}` }, () =>
+      h(LayerSlotFragment, { key: `${contentId.value}:slot:${name}` }, () =>
         render(slotProps),
       )
 
@@ -181,13 +182,8 @@ export const LayerView = defineComponent({
       define: computed(() => ({})),
       'define:template': {},
     })
-    // Drop prior-open define:template before remount so Vue 2's
-    // mount-new-then-destroy-old order does not false-warn as duplicate.
-    const openId = useOpenId(visible, {
-      before: () => {
-        defineStore['define:template'] = {}
-      },
-    })
+
+    const openId = useOpenId(visible)
 
     provideLayerViewBridge(defineStore, openId)
 
