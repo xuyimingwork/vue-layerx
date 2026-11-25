@@ -90,6 +90,7 @@ describe('createLayerStore', () => {
 
   it('should drop a slot only when the disposing render is still the one stored', () => {
     const store = createLayerStore({})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { template } = store.setup('use', computed(() => ({})))
     const disposeFirst = template({
       name: 'footer',
@@ -104,6 +105,7 @@ describe('createLayerStore', () => {
 
     disposeFirst()
     expect(store['use:template'].container?.slots?.footer).toBeTypeOf('function')
+    warn.mockRestore()
   })
 
   it('should noop a template write after a newer setup overwrites the pair', () => {

@@ -1,4 +1,12 @@
-import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vue2'
+import {
+  computed,
+  defineComponent,
+  h,
+  markRaw,
+  nextTick,
+  reactive,
+  shallowRef,
+} from 'vue2'
 import Vue from 'vue2'
 import { describe, expect, it } from 'vitest'
 import { createLayerStore } from '@/runtime/layer-store'
@@ -13,7 +21,9 @@ import { Container } from '@tests-vue2/fixtures/components'
  */
 function createTestApp() {
   const store = createLayerStore({
-    create: computed(() => ({ container: { component: Container } })),
+    create: computed(() => ({
+      container: { component: markRaw(Container) },
+    })),
     open: {},
   })
   store.setup(

@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, markRaw } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import { flushPromises, withoutDom } from '@tests/helpers/dom'
 import { Container, makeContent } from '@tests/fixtures/components'
@@ -8,10 +8,12 @@ import { createLayerInstance } from '../layer-instance'
 
 function makeInstance(closeOn?: Record<string, unknown>) {
   return createLayerInstance({
-    create: computed(() => ({ container: { component: Container } })),
+    create: computed(() => ({
+      container: { component: markRaw(Container) },
+    })),
     use: computed(() => ({
       content: {
-        component: makeContent(),
+        component: markRaw(makeContent()),
         ...(closeOn ? { closeOn: closeOn as never } : {}),
       },
     })),

@@ -1,4 +1,12 @@
-import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vue'
+import {
+  computed,
+  defineComponent,
+  h,
+  markRaw,
+  nextTick,
+  reactive,
+  shallowRef,
+} from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { createLayerStore } from '@/runtime/layer-store'
@@ -9,7 +17,9 @@ import { withoutDom } from '@tests/helpers/dom'
 
 function createTestApp() {
   const store = createLayerStore({
-    create: computed(() => ({ container: { component: Container } })),
+    create: computed(() => ({
+      container: { component: markRaw(Container) },
+    })),
     open: {},
   })
   store.setup(
@@ -217,7 +227,9 @@ describe('createLayerApp / SSR', () => {
 
   it('should mount on create when visible and DOM are both available', () => {
     const store = createLayerStore({
-      create: computed(() => ({ container: { component: Container } })),
+      create: computed(() => ({
+        container: { component: markRaw(Container) },
+      })),
       open: {},
     })
     store.setup(
