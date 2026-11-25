@@ -26,6 +26,14 @@ describe('normalizeCloseOn', () => {
     })
   })
 
+  it('should ignore empty event names in array and record forms', () => {
+    expect(normalizeCloseOn([''])).toBeUndefined()
+    expect(normalizeCloseOn({ '': true })).toBeUndefined()
+    expect(normalizeCloseOn({ '': true, done: true })).toEqual({
+      done: always(),
+    })
+  })
+
   it('should expand record true / false / when sugars', () => {
     const when = (ok: unknown) => ok === true
     expect(

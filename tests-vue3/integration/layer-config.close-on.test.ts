@@ -647,8 +647,7 @@ describe('layer config closeOn', () => {
       warn.mockRestore()
     })
 
-    it('should warn and ignore array entry with empty event while keeping string events', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    it('should ignore array entry with empty event while keeping string events', async () => {
       const { wrapper } = await mountOpenLayer(createLayer(Container), {
         Content: SubmitContent,
         useConfig: {
@@ -657,16 +656,11 @@ describe('layer config closeOn', () => {
         open: (dialog) => dialog.open({ props: { message: 'hi' } }),
       })
 
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringContaining('array entry missing event'),
-      )
-
       await clickAndFlush(wrapper, 'done')
       expect(queryBodyDialog()).toBeTruthy()
 
       await clickAndFlush(wrapper, 'cancel')
       expect(queryBodyDialog()).toBeFalsy()
-      warn.mockRestore()
     })
 
     it('should warn and ignore invalid array entries while keeping string events', async () => {

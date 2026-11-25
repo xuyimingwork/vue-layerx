@@ -72,10 +72,7 @@ export function normalizeCloseOn(raw?: CloseOnRaw): CloseOn | undefined {
       if (item && typeof item === 'object' && 'event' in item) {
         const entryRaw = item as CloseOnEntryRaw
         const { event } = entryRaw
-        if (typeof event !== 'string' || !event) {
-          warn('closeOn array entry missing event; ignored')
-          continue
-        }
+        if (typeof event !== 'string' || !event) continue
         const entry = normalizePolicyObject(entryRaw, `event "${event}"`)
         applyEvent(result, event, entry)
         continue
