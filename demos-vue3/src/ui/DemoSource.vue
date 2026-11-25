@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, ref, useSlots, watch, watchEffect } from 'vue'
 import { codeToHtml } from 'shiki'
 import type { DemoFile } from '../demos/types'
 
 const props = defineProps<{
   files: DemoFile[]
 }>()
+
+const slots = useSlots()
 
 const visible = ref(false)
 const activeIndex = ref(0)
@@ -54,14 +56,22 @@ function escapeHtml(text: string) {
 </script>
 
 <template>
-  <div v-if="files.length" class="demo-source">
+  <div v-if="files.length || slots['actions-end']" class="demo-source">
     <div class="demo-source__actions">
-      <button type="button" class="demo-source__btn" @click="visible = !visible">
+      <button
+        v-if="files.length"
+        type="button"
+        class="demo-source__btn"
+        @click="visible = !visible"
+      >
         {{ visible ? '隐藏源码' : '展开源码' }}
       </button>
+      <div v-if="slots['actions-end']" class="demo-source__actions-end">
+        <slot name="actions-end" />
+      </div>
     </div>
 
-    <div v-show="visible" class="demo-source__panel">
+    <div v-show="visible && files.length" class="demo-source__panel">
       <div v-if="files.length > 1" class="demo-source__tabs" role="tablist">
         <button
           v-for="(file, index) in files"
@@ -92,13 +102,22 @@ function escapeHtml(text: string) {
 <style scoped>
 .demo-source__actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--el-border-color-lighter, #e4e7ed);
 }
 
-.demo-source__btn {
+.demo-source__actions-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.demo-source__btn,
+.demo-source__actions-end :slotted(button) {
   padding: 4px 12px;
   border: 1px solid var(--el-border-color, #dcdfe6);
   border-radius: 4px;
@@ -109,7 +128,8 @@ function escapeHtml(text: string) {
   transition: color 0.15s, border-color 0.15s;
 }
 
-.demo-source__btn:hover {
+.demo-source__btn:hover,
+.demo-source__actions-end :slotted(button):hover {
   color: var(--el-color-primary, #409eff);
   border-color: var(--el-color-primary, #409eff);
 }

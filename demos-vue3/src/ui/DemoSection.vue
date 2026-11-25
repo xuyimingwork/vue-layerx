@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { defineComponent, h, ref } from 'vue'
+import { useReload } from 'vue-reload'
 import { ElTag } from 'element-plus'
 import DemoSource from './DemoSource.vue'
 import type { DemoFile } from '../demos/types'
@@ -11,6 +13,17 @@ defineProps<{
   tags: string[]
   files: DemoFile[]
 }>()
+
+/** Real root so remount tears down slot content (transparent return of slots would not). */
+const DemoReloadHost = defineComponent({
+  name: 'DemoReloadHost',
+  setup(_, { slots }) {
+    return () => h('div', { class: 'demo-reload-host' }, slots.default?.())
+  },
+})
+
+const panelRef = ref<InstanceType<typeof DemoReloadHost>>()
+const reloadPanel = useReload(panelRef)
 </script>
 
 <template>
@@ -28,8 +41,20 @@ defineProps<{
       </div>
     </header>
     <div class="demo-section__body">
-      <slot />
-      <DemoSource :files="files" />
+      <DemoReloadHost ref="panelRef">
+        <slot />
+      </DemoReloadHost>
+      <DemoSource :files="files">
+        <template #actions-end>
+          <button
+            type="button"
+            title="重新挂载本 demo，清理由其创建的 layer 实例"
+            @click="reloadPanel()"
+          >
+            刷新
+          </button>
+        </template>
+      </DemoSource>
     </div>
   </section>
 </template>
