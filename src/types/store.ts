@@ -58,9 +58,11 @@ export type LayerInstanceStoreWithTemplate = UnwrapNestedRefs<LayerInstanceStore
 export type LayerViewStoreWithTemplate = UnwrapNestedRefs<LayerViewStore> &
   LayerStoreMethods
 
-/** Delivery channel for defineLayer when called on content root (setup-only). */
+/**
+ * Result of LayerViewBridge.define() on the marked content root (setup-only).
+ * Registers define-tier config; template() writes container slots for that setup generation.
+ */
 export type LayerDefineContext = {
-  config: (source: MaybeRefOrGetter<LayerConfigContainer>) => void
   template: (opts: {
     name: string
     render: LayerSlotRender
@@ -68,9 +70,11 @@ export type LayerDefineContext = {
 }
 
 /**
- * Injected by LayerView. getDefineContext() is setup-only and returns a context
- * only for the marked content root; otherwise null.
+ * Injected by LayerView. define() is setup-only: content root gets a context,
+ * otherwise null. Config is applied in the same call; template comes from the return.
  */
 export type LayerViewBridge = {
-  getDefineContext: () => LayerDefineContext | null
+  define: (
+    source: MaybeRefOrGetter<LayerConfigContainer>,
+  ) => LayerDefineContext | null
 }

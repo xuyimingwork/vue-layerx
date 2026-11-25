@@ -153,7 +153,9 @@ export function markLayerContent(
   return { ...props, [LAYER_CONTENT]: true }
 }
 
-export function isLayerContent(instance: object | null | undefined): boolean {
+export function isLayerContent(
+  instance: object | null | undefined,
+): instance is object {
   if (!instance) return false
   // Expect setup proxy (getSetupInstance) or Options `this` — both expose $vnode.
   const data = (instance as { $vnode?: { data?: Record<PropertyKey, unknown> } }).$vnode

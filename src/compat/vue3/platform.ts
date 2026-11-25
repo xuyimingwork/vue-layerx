@@ -39,7 +39,9 @@ export function markLayerContent(
   return { ...props, [LAYER_CONTENT]: true }
 }
 
-export function isLayerContent(instance: object | null | undefined): boolean {
+export function isLayerContent(
+  instance: object | null | undefined,
+): instance is object {
   if (!instance) return false
   const vnodeProps = (instance as { vnode?: { props?: Record<PropertyKey, unknown> } }).vnode
     ?.props

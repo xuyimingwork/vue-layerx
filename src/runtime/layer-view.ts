@@ -13,12 +13,11 @@ import type { LayerBound, LayerConfigContainer } from '@/types'
 import type { LayerClosePayload } from '@/types/confirm'
 import type {
   LayerInstanceStoreWithTemplate,
-  LayerStoreTemplate,
   LayerViewStoreWithTemplate,
 } from '@/types/store'
 import { createLayerStore } from '@/runtime/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
-import { noop } from '@/shared/noop'
+import { warn } from '@/shared/warn'
 import {
   getSetupInstance,
   isLayerContent,
@@ -92,22 +91,29 @@ function useOpenId(visible: ComputedRef<boolean>): ComputedRef<string> {
 
 /** Inject bridge for defineLayer / creator LayerTemplate → defineStore. */
 function provideLayerViewBridge(defineStore: LayerViewStoreWithTemplate) {
+  const defined = new WeakSet<object>()
+
   provide(LAYER_VIEW_KEY, {
-    getDefineContext() {
+    define(source: MaybeRefOrGetter<LayerConfigContainer>) {
       const instance = getSetupInstance()
       if (!isLayerContent(instance)) return null
 
-      let template: LayerStoreTemplate | undefined
+      if (defined.has(instance)) {
+        warn(
+          'defineLayer() called more than once in the same setup; latter wins',
+        )
+      } else {
+        defined.add(instance)
+      }
+
+      // Slot keying / LayerSlotFragment lives in store.setup (generation id).
+      const { template } = defineStore.setup(
+        'define',
+        computed(() => toFragmentFromContainer(toValue(source))),
+      )
+
       return {
-        config(source: MaybeRefOrGetter<LayerConfigContainer>) {
-          // Slot keying / LayerSlotFragment lives in store.setup (generation id).
-          template = defineStore.setup(
-            'define',
-            computed(() => toFragmentFromContainer(toValue(source))),
-          ).template
-        },
         template({ name, render }) {
-          if (!template) return noop
           return template({
             name,
             side: 'container',

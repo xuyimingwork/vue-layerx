@@ -1,7 +1,13 @@
 import { defineComponent, h, onMounted, type Component } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import { createLayer, defineLayer, type LayerDefine, type LayerInstance } from 'vue-layerx'
+import {
+  createLayer,
+  defineLayer,
+  LayerTemplate,
+  type LayerDefine,
+  type LayerInstance,
+} from 'vue-layerx'
 import { flushPromises } from '../helpers/dom'
 import {
   Container,
@@ -284,6 +290,130 @@ describe('defineLayer', () => {
       expect((caught as Error).message).toBe(
         '[vue-layerx] defineLayer() must be called synchronously inside setup().',
       )
+    })
+
+    it('should warn when defineLayer is called twice in the same setup', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const Content = defineComponent({
+        name: 'DoubleDefineLayer',
+        setup() {
+          defineLayer({ props: { title: 'First' } })
+          defineLayer({ props: { title: 'Second', width: '400px' } })
+          return () => h('div', { class: 'double-define' })
+        },
+      })
+
+      await openLayer(Content)
+
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Second')
+      expect(queryBodyDialog()?.getAttribute('data-width')).toBe('400px')
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'defineLayer() called more than once in the same setup; latter wins',
+        ),
+      )
+      warn.mockRestore()
+    })
+
+    it('should ignore LayerTemplate :to from a superseded defineLayer return value', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const Content = defineComponent({
+        name: 'StaleDefineLayerTo',
+        setup() {
+          const stale = defineLayer({ props: { title: 'First' } })
+          defineLayer({ props: { title: 'Second', width: '400px' } })
+          return () =>
+            h(LayerTemplate, { to: stale, name: 'footer' }, () =>
+              h('span', { class: 'stale-footer' }, 'stale'),
+            )
+        },
+      })
+
+      await openLayer(Content)
+
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Second')
+      expect(queryBodyDialog()?.getAttribute('data-width')).toBe('400px')
+      expect(document.body.querySelector('.stale-footer')).toBeFalsy()
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'defineLayer() called more than once in the same setup; latter wins',
+        ),
+      )
+      warn.mockRestore()
+    })
+
+    it('should honor LayerTemplate :to from the latter defineLayer return value', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const Content = defineComponent({
+        name: 'LatterDefineLayerTo',
+        setup() {
+          defineLayer({ props: { title: 'First' } })
+          const layer = defineLayer({ props: { title: 'Second' } })
+          return () =>
+            h(LayerTemplate, { to: layer, name: 'footer' }, () =>
+              h('span', { class: 'live-footer' }, 'live'),
+            )
+        },
+      })
+
+      await openLayer(Content)
+
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('Second')
+      expect(document.body.querySelector('.live-footer')?.textContent).toBe('live')
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'defineLayer() called more than once in the same setup; latter wins',
+        ),
+      )
+      warn.mockRestore()
+    })
+
+    it('should not warn when different contents each call defineLayer once', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const useLayer = createLayer(Container)
+      let dialog!: LayerInstance
+
+      const CompA = defineComponent({
+        name: 'DefineOnceA',
+        setup() {
+          defineLayer({ props: { title: 'A' } })
+          return () => h('div', { class: 'content-a' }, 'A')
+        },
+      })
+      const CompB = defineComponent({
+        name: 'DefineOnceB',
+        setup() {
+          defineLayer({ props: { title: 'B' } })
+          return () => h('div', { class: 'content-b' }, 'B')
+        },
+      })
+
+      const Host = defineComponent({
+        setup() {
+          dialog = useLayer()
+          return () => h('motion-host')
+        },
+      })
+
+      const wrapper = mount(Host)
+      dialog.open({ component: CompA })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      dialog.open({ component: CompB })
+      await wrapper.vm.$nextTick()
+      await flushPromises()
+
+      expect(queryBodyDialog()?.getAttribute('data-title')).toBe('B')
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining(
+          'defineLayer() called more than once in the same setup',
+        ),
+      )
+      warn.mockRestore()
     })
   })
 })

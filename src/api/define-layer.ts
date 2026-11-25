@@ -33,10 +33,8 @@ export function defineLayer(
     )
   }
 
-  const ctx = inject(LAYER_VIEW_KEY, null)?.getDefineContext() ?? null
+  const ctx = inject(LAYER_VIEW_KEY, null)?.define(config) ?? null
   const exists = !!ctx
-
-  ctx?.config(config)
 
   return withTemplateTo({ exists }, {
     template({ name, render }) {

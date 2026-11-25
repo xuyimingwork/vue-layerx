@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`defineLayer` 重复调用 dev warn** — 同一 content `setup` 内多次 `defineLayer` 时提示 latter wins（挂在 LayerView bridge；换内容各调一次不告警）。
+
 ## [1.2.6] - 2026-11-25
 
 ### Fixed
