@@ -117,7 +117,7 @@ function escapeHtml(text: string) {
 }
 
 .demo-source__btn,
-.demo-source__actions-end :slotted(button) {
+.demo-source__actions-end :deep(button) {
   padding: 4px 12px;
   border: 1px solid var(--el-border-color, #dcdfe6);
   border-radius: 4px;
@@ -129,7 +129,7 @@ function escapeHtml(text: string) {
 }
 
 .demo-source__btn:hover,
-.demo-source__actions-end :slotted(button):hover {
+.demo-source__actions-end :deep(button:hover) {
   color: var(--el-color-primary, #409eff);
   border-color: var(--el-color-primary, #409eff);
 }
