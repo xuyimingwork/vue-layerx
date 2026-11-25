@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-11-25
+
 ### Fixed
 
 - **换内容 / 再打开时 `defineLayer` 容器配置残留** — `open({ component })` 在 visible 下换内容，或关闭后再打开无 `defineLayer` 的内容时，上一内容的 title/width 等不再留在容器上。`use` / `define` 各只留一份活跃记录；旧内容后卸载时，若活跃 id 已不是自己就不动新记录，否则清空。容器插槽 key 跟 setup 代际 id（`${id}:slot:${name}`），与 content 的 `contentId` 分离。
@@ -21,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`tests-vue2` 关键路径** — 增补 `confirm`、`closeOn`、响应式配置集成用例，支撑「公开 API 关键路径可放心使用」的表述。
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.6` or `vue-layerx@latest`
+- 轻微行为差异（影响面很小）：配置了 `closeOn`（或容器 model 关层），并对同一事件挂了用户监听器，且此前依赖该监听器**同步抛错**来阻止关层时——1.2.6 起关层不再被该抛错打断（错误仍会冒泡）。其它用法不受影响。
 
 ## [1.2.5] - 2026-11-19
 
@@ -332,7 +339,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.5...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.6...HEAD
+[1.2.6]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.2...v1.2.3
