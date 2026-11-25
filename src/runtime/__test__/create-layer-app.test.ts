@@ -1,7 +1,6 @@
 import {
   computed,
   defineComponent,
-  h,
   markRaw,
   nextTick,
   reactive,
@@ -9,6 +8,7 @@ import {
 } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+import * as compat from '@/compat'
 import { createLayerStore } from '@/runtime/layer-store'
 import { createLayerApp } from '@/runtime/create-layer-app'
 import type { LayerHost } from '@/types/instance'
@@ -76,6 +76,29 @@ describe('createLayerApp', () => {
   it('should not throw when unmount is called before first mount', () => {
     const { layerApp } = createTestApp()
     expect(() => layerApp.unmount()).not.toThrow()
+  })
+
+  it('should remove prepared el when createPlatformRoot throws', async () => {
+    const spy = vi
+      .spyOn(compat, 'createPlatformRoot')
+      .mockImplementation(() => {
+        throw new Error('platform fail')
+      })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const before = document.body.childElementCount
+    const { state, layerApp } = createTestApp()
+
+    state.visible = true
+    await nextTick()
+
+    expect(document.body.childElementCount).toBe(before)
+    expect(layerApp.mounted).toBe(false)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('createLayerApp: mount failed'),
+    )
+
+    spy.mockRestore()
+    warn.mockRestore()
   })
 
   it('should warn when visible but adapter drops container.component', async () => {

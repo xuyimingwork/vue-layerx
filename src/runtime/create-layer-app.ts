@@ -8,6 +8,7 @@ import type { LayerInstanceStoreWithTemplate } from '@/types/store'
 import type { LayerClosePayload } from '@/types/confirm'
 import type { LayerHost } from '@/types/instance'
 import { LayerView } from '@/runtime/layer-view'
+import { warn } from '@/shared/warn'
 import {
   createPlatformRoot,
   toPlatformVNodeData,
@@ -74,13 +75,22 @@ export function createLayerApp(options: {
     if (platform && platform.host !== host.value) unmount()
     if (platform) return
     prepare()
-    platform = createPlatformRoot({ root: LayerApp, host: host.value })
-    platform.mount(el!)
+    try {
+      // Assign before mount: LayerApp setup() reads `platform` synchronously.
+      platform = createPlatformRoot({ root: LayerApp, host: host.value })
+      platform.mount(el!)
+    } catch (err) {
+      unmount()
+      warn(
+        `createLayerApp: mount failed${
+          err instanceof Error ? `: ${err.message}` : ''
+        }`,
+      )
+    }
   }
 
   function unmount() {
-    if (!platform) return
-    platform.unmount()
+    platform?.unmount()
     platform = null
     el?.remove()
     el = null
