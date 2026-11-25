@@ -123,9 +123,11 @@ describe('LayerTemplate (Vue 2.7)', () => {
   })
 
   /**
-   * Regression: content key and footer LayerSlotFragment used to share numeric
-   * `openId`, so Vue 2 reused the wrong sibling under a persistent (v-show)
-   * dialog and dropped DOM click listeners on the second open.
+   * Regression: under a persistent (v-show) Vue 2 dialog, content and container
+   * named slots are siblings. When both key spaces shared the same open counter,
+   * Vue 2 reused the wrong sibling on reopen and dropped footer DOM listeners.
+   * Content key is contentId (LayerView currently passes openId); slot roots use
+   * setup-generation keys (`${id}:slot:${name}`) in the store — separate spaces.
    */
   it('should keep LayerTemplate footer closeOn click working after close and reopen', async () => {
     let dialog!: ReturnType<ReturnType<typeof createLayer>>

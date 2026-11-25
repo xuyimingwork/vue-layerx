@@ -46,23 +46,23 @@ plain object = 常量源（computed 无依赖或依赖不变），行为与今�
 ```text
 MaybeRefOrGetter
   → computed(() => toFragment*(toValue(source)) …)  // create 桶可附带 adapter
-  → 放入 store.use / store.create / defineStore.define
-  → LayerView 读 store.* → merge → 取出 adapter → adapt → bind → h()
+  → create 直接放入 store；use / define 经 setup(key, computed) 成为该 key 的活跃记录
+  → LayerView 读 store.* getter → merge → 取出 adapter → adapt → bind → h()
 ```
 
 - **不**用 `watch` + 赋值同步；依赖收集由 computed 承担。
-- 热更新只重 merge / 更 props；**不**因配置变化 bump `contentId`（倒计时 title 不拆 content）。
-- `component` 字段随整包 `toValue` 更新。已打开时组件身份变了会 bump `contentId` 并重建 content；其它字段仍对齐「已打开再 `open` 只更配置」。
+- 热更新只重 merge / 更 props；**不**因配置变化 bump content key（倒计时 title 不拆 content）。
+- `component` 字段随整包 `toValue` 更新。已打开时组件身份变了靠 vnode 类型 remount content（当前不涨 `openId`）；其它字段仍对齐「已打开再 `open` 只更配置」。`contentId`（render 侧 content `key`）与 `openId`（打开计数）是两套概念；LayerView 目前把 `openId` 当作 `contentId` 传入。
 
 #### Store 桶形态
 
 | 桶 | 形态 | 原因 |
 |----|------|------|
 | `create` | `ComputedRef<LayerConfigFragmentCreate>` | 与其它 create 字段同一源；`adapter` 仅此桶携带 |
-| `use` / `define` | `ComputedRef<LayerConfigFragment>` | 绑定 MaybeRefOrGetter |
+| `use` / `define` | getter，返回当前活跃 source 解包后的 fragment | `setup(key, source)` 换代；不赋值。没有活跃记录时是稳定的空对象 |
 | `open` | plain，赋值替换 | 快照 API |
 | `refs` | plain | 框架 internal |
-| `use:template` / `define:template` | **plain 可变** | `store.template()` 原地写 slots；禁止改 computed 缓存对象 |
+| `use:template` / `define:template` | getter，指向这一代的 reactive slots fragment | `template()` 只写本代 slots；依赖 reactive 追踪写/删。旧 teardown 对不上活跃 id 则不动新记录 |
 
 ### 3. `clone`：父 `use` live fold + clone source
 
@@ -168,9 +168,9 @@ const adapted = adapter ? adapter(fragment) : fragment
 | `open` | 仅 plain 快照 |
 | 实现 | store 挂 computed，一路派生，无 watch 写回 |
 | `adapter` | 写入 `store.create`，merge 后取出再 adapt；不单独传 prop |
-| `*:template` 桶 | 保持 plain 可变 |
+| `*:template` 桶 | 每代一份 plain slots，经 `setup()` 挂到 getter；不整体赋值 |
 | clone 对父 `use` | live fold；clone source 可 live；strip 父 `props.ref` |
-| 配置变化与 content remount | 不 bump `contentId`；组件身份变化会 bump |
+| 配置变化与 content remount | 不 bump content key；组件身份变化靠类型 remount；`openId` 仅 false→true |
 
 ---
 

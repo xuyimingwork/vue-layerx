@@ -1,4 +1,4 @@
-import type { LayerConfigFragment } from '@/types/config'
+import type { LayerAdapter, LayerConfigFragment } from '@/types/config'
 import type {
   LayerConfigContent,
   LayerConfigContainer,
@@ -25,35 +25,25 @@ function toFragment(
   const nested = from === 'container' ? 'content' : 'container'
   const { [nested]: nestedNode, ...primary } = config as Record<string, unknown>
 
-  let containerRaw: LayerConfigNodeContainerRaw | undefined
-  let contentRaw: LayerConfigNodeContentRaw | undefined
+  let container: LayerConfigNodeContainerRaw | undefined
+  let content: LayerConfigNodeContentRaw | undefined
 
   if (Object.keys(primary).length > 0) {
     if (from === 'container') {
-      containerRaw = primary as LayerConfigNodeContainerRaw
+      container = primary as LayerConfigNodeContainerRaw
     } else {
-      contentRaw = primary as LayerConfigNodeContentRaw
+      content = primary as LayerConfigNodeContentRaw
     }
   }
   if (nestedNode) {
     if (nested === 'content') {
-      contentRaw = nestedNode as LayerConfigNodeContentRaw
+      content = nestedNode as LayerConfigNodeContentRaw
     } else {
-      containerRaw = nestedNode as LayerConfigNodeContainerRaw
+      container = nestedNode as LayerConfigNodeContainerRaw
     }
   }
 
-  const container = normalizeNodeContainer(containerRaw)
-  const content = normalizeNodeContent(contentRaw)
-
-  const fragment: LayerConfigFragment = {}
-  if (container && Object.keys(container).length > 0) {
-    fragment.container = container
-  }
-  if (content && Object.keys(content).length > 0) {
-    fragment.content = content
-  }
-  return fragment
+  return normalizeFragment({ container, content })
 }
 
 export function toFragmentFromContainer(
@@ -66,6 +56,37 @@ export function toFragmentFromContent(
   config: LayerConfigContent = {},
 ): LayerConfigFragment {
   return toFragment(config, 'content')
+}
+
+/**
+ * Normalize a fragment's container/content (copy: markRaw + props.ref + closeOn).
+ * Input is Raw (or Canonical, which is assignable to Raw); output is Canonical.
+ * Use after peel, or when a Canonical-typed fragment may still carry Raw-ish
+ * fields (e.g. adapter return value).
+ */
+export function normalizeFragment(fragment: {
+  container?: LayerConfigNodeContainerRaw
+  content?: LayerConfigNodeContentRaw
+}): LayerConfigFragment {
+  const container = normalizeNodeContainer(fragment.container)
+  const content = normalizeNodeContent(fragment.content)
+
+  const result: LayerConfigFragment = {}
+  if (container && Object.keys(container).length > 0) {
+    result.container = container
+  }
+  if (content && Object.keys(content).length > 0) {
+    result.content = content
+  }
+  return result
+}
+
+/** Wrap user adapter so its return value is always Canonical; pass through undefined. */
+export function normalizeAdapter(
+  adapter: LayerAdapter | undefined,
+): LayerAdapter | undefined {
+  if (!adapter) return undefined
+  return (fragment) => normalizeFragment(adapter(fragment))
 }
 
 /** Merge fragments; later sources win per side. Only content/container participate. */

@@ -2,6 +2,7 @@ import { inject } from 'vue'
 import type { LayerConfigContainer, LayerDefine } from '@/types'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
+import { noop } from '@/shared/noop'
 import { hasSetupContext, type MaybeRefOrGetter } from '@/compat'
 
 /**
@@ -42,7 +43,7 @@ export function defineLayer(
       if (!ctx) {
         return {
           render: () => render({}),
-          dispose: () => {},
+          dispose: noop,
         }
       }
 

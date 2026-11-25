@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isRef, ref } from 'vue'
+import { defineComponent, isReactive, isRef, reactive, ref } from 'vue'
 import {
   mergeFragment,
+  normalizeAdapter,
+  normalizeFragment,
   stripFragment,
   toFragmentFromContent,
   toFragmentFromContainer,
@@ -61,6 +63,70 @@ describe('toFragmentFromContent', () => {
     expect(typeof fragment.content?.props?.ref).toBe('function')
     expect(typeof fragment.container?.props?.ref).toBe('function')
     expect(fragment.content?.props?.ref).not.toBe(userRef)
+  })
+})
+
+describe('normalizeFragment', () => {
+  it('should markRaw components so reactive getters keep identity', () => {
+    const Shell = defineComponent({ name: 'Shell', setup: () => () => null })
+    const Body = defineComponent({ name: 'Body', setup: () => () => null })
+    const normalized = normalizeFragment({
+      container: { component: Shell },
+      content: { component: Body },
+    })
+
+    const store = reactive({
+      get use() {
+        return normalized
+      },
+    })
+    expect(store.use.container?.component).toBe(Shell)
+    expect(store.use.content?.component).toBe(Body)
+    expect(isReactive(store.use.container?.component)).toBe(false)
+    expect(isReactive(store.use.content?.component)).toBe(false)
+  })
+
+  it('should normalize props.ref and closeOn without mutating input', () => {
+    const userRef = ref(null)
+    const input = {
+      content: {
+        props: { ref: userRef },
+        closeOn: ['done'] as string[],
+      },
+    }
+    const normalized = normalizeFragment(input)
+
+    expect(input.content.props.ref).toBe(userRef)
+    expect(typeof normalized.content?.props?.ref).toBe('function')
+    expect(normalized.content?.closeOn).toEqual({
+      done: { when: 'always', confirmed: false },
+    })
+  })
+})
+
+describe('normalizeAdapter', () => {
+  it('should pass through undefined', () => {
+    expect(normalizeAdapter(undefined)).toBeUndefined()
+  })
+
+  it('should normalize adapter return value', () => {
+    const Shell = defineComponent({ name: 'Shell', setup: () => () => null })
+    const adapter = normalizeAdapter((fragment) => ({
+      ...fragment,
+      container: { component: Shell, props: { ref: ref(null) } },
+    }))!
+
+    const out = adapter({})
+    expect(out.container?.component).toBe(Shell)
+    expect(typeof out.container?.props?.ref).toBe('function')
+
+    const store = reactive({
+      get use() {
+        return out
+      },
+    })
+    expect(store.use.container?.component).toBe(Shell)
+    expect(isReactive(store.use.container?.component)).toBe(false)
   })
 })
 

@@ -1,53 +1,55 @@
-import type { ComputedRef, UnwrapNestedRefs, VNode } from 'vue'
+import type { ComputedRef, UnwrapNestedRefs } from 'vue'
 import type {
   LayerConfigFragment,
   LayerConfigFragmentCreate,
-  LayerTemplateEntry,
+  LayerSlotRender,
 } from './config'
 import type { LayerConfigContainer } from './config-raw'
 import type { MaybeRefOrGetter } from './instance'
 
-export type TemplateSlotKey =
-  | 'use:template.container'
-  | 'use:template.content'
-  | 'define:template.container'
+export type LayerStoreKey = 'use' | 'define'
+
+export type LayerConfigFragmentSide = 'container' | 'content'
+
+/**
+ * Writes one slot on the current `setup` owner. Noop after a newer `setup` overwrites.
+ * Returns a dispose.
+ */
+export type LayerStoreTemplate = (opts: {
+  name: string
+  side: LayerConfigFragmentSide
+  render: LayerSlotRender
+}) => () => void
 
 /**
  * Raw config sources held by a layer instance.
  *
- * - `create` / `use`: read-only derived buckets (ComputedRef); never assigned after init.
- * - `open`: snapshot tier; assigned by open(plain).
- * - `use:template` / `refs`: mutable plain fragments (template() / framework refs).
+ * - `create` / `open` / `refs`: ordinary fields. `create` is a ComputedRef; `open` is assigned.
+ * - `use` / `use:template`: getters over the single active pair (plain fragment values, not
+ *   ComputedRef). `setup('use')` overwrites them.
  */
 export interface LayerInstanceStore {
   create: ComputedRef<LayerConfigFragmentCreate>
-  use: ComputedRef<LayerConfigFragment>
+  use: LayerConfigFragment
   open: LayerConfigFragment
   'use:template': LayerConfigFragment
   refs: LayerConfigFragment
 }
 
 /**
- * defineLayer / creator LayerTemplate sources owned by LayerView.
- * `define` may be plain (reset) or ComputedRef (live defineLayer source).
+ * defineLayer sources owned by LayerView.
+ * Getters follow the single active `setup('define')` pair (plain fragments). They are not assigned.
  */
 export interface LayerViewStore {
-  define: LayerConfigFragment | ComputedRef<LayerConfigFragment>
+  define: LayerConfigFragment
   'define:template': LayerConfigFragment
 }
 
-export interface LayerInstanceStoreInit {
-  create: ComputedRef<LayerConfigFragmentCreate>
-  use: ComputedRef<LayerConfigFragment>
-  refs: LayerConfigFragment
-}
-
 export type LayerStoreMethods = {
-  template: (opts: {
-    key: TemplateSlotKey
-    name: string
-    entry: LayerTemplateEntry
-  }) => () => void
+  setup: (
+    key: LayerStoreKey,
+    source: ComputedRef<LayerConfigFragment>,
+  ) => { template: LayerStoreTemplate }
 }
 
 export type LayerInstanceStoreWithTemplate = UnwrapNestedRefs<LayerInstanceStore> &
@@ -61,7 +63,7 @@ export type LayerDefineContext = {
   config: (source: MaybeRefOrGetter<LayerConfigContainer>) => void
   template: (opts: {
     name: string
-    render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null
+    render: LayerSlotRender
   }) => () => void
 }
 

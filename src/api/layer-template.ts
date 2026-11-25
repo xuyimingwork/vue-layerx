@@ -14,6 +14,7 @@ import {
   type LayerTemplateTo,
   type TemplateToContent,
 } from '@/shared/layer-template-to'
+import { noop } from '@/shared/noop'
 
 export type { LayerTemplateTo }
 
@@ -68,7 +69,7 @@ export const LayerTemplate = defineComponent({
 
     const content = shallowRef<TemplateToContent>({
       render: renderless,
-      dispose: () => {},
+      dispose: noop,
     })
 
     watch(

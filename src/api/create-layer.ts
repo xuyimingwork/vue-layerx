@@ -10,6 +10,7 @@ import type {
 } from '@/types'
 import {
   mergeFragment,
+  normalizeAdapter,
   toFragmentFromContent,
   toFragmentFromContainer,
 } from '@/config/fragment'
@@ -46,9 +47,9 @@ export function createLayer<Container extends AnyComponent>(
     return {
       ...mergeFragment(
         toFragmentFromContainer(containerConfig),
-        { container: { component: Container as Component } },
+        toFragmentFromContainer({ component: Container as Component }),
       ),
-      ...(adapter !== undefined ? { adapter } : {}),
+      adapter: normalizeAdapter(adapter),
     }
   })
 
@@ -60,7 +61,7 @@ export function createLayer<Container extends AnyComponent>(
       mergeFragment(
         toFragmentFromContent(toValue(useConfig)),
         Content
-          ? { content: { component: Content as Component } }
+          ? toFragmentFromContent({ component: Content as Component })
           : undefined,
       ),
     )

@@ -11,8 +11,6 @@ import type {
   LayerConfigFragmentCreate,
   LayerInstance,
   LayerConfigContent,
-  LayerInstanceStoreInit,
-  LayerInstanceStoreWithTemplate,
   LayerCloseOptions,
   LayerClosePayload,
   LayerConfirmResult,
@@ -23,7 +21,7 @@ import {
   stripFragment,
 } from '@/config/fragment'
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
-import { createLayerStore } from '@/shared/layer-store'
+import { createLayerStore } from '@/runtime/layer-store'
 import {
   getSetupInstance,
   hasSetupContext,
@@ -49,9 +47,9 @@ export function createLayerInstance({
 }): LayerInstance {
   const containerEl = shallowRef<ComponentPublicInstance | null>(null)
   const contentEl = shallowRef<ComponentPublicInstance | null>(null)
-  const store = createLayerInstanceStore({
+  const store = createLayerStore({
     create,
-    use,
+    open: {} as LayerConfigFragment,
     refs: {
       container: {
         props: {
@@ -69,6 +67,7 @@ export function createLayerInstance({
       },
     } as LayerConfigFragment,
   })
+  const { template } = store.setup('use', use)
   const state = reactive({
     visible: false,
   })
@@ -189,26 +188,12 @@ export function createLayerInstance({
 
   return withTemplateTo(instance, {
     template({ name, container, render }) {
-      const dispose = store.template({
-        key: container ? 'use:template.container' : 'use:template.content',
+      const dispose = template({
         name,
-        entry: {
-          render: (slotProps: Record<string, unknown> = {}) => render(slotProps),
-        },
+        side: container ? 'container' : 'content',
+        render: (slotProps: Record<string, unknown> = {}) => render(slotProps),
       })
       return { render: renderless, dispose }
     },
-  })
-}
-
-export function createLayerInstanceStore(
-  init: LayerInstanceStoreInit,
-): LayerInstanceStoreWithTemplate {
-  return createLayerStore({
-    create: init.create,
-    use: init.use,
-    'use:template': {},
-    open: {},
-    refs: init.refs,
   })
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { defineComponent, isReactive, reactive, ref } from 'vue'
 import {
   mergeProps,
   mergeNode,
@@ -10,6 +10,18 @@ import {
 describe('normalizeNode', () => {
   it('should return undefined for empty input', () => {
     expect(normalizeNode(undefined)).toBeUndefined()
+  })
+
+  it('should markRaw component so reactive getters keep identity', () => {
+    const Comp = defineComponent({ name: 'N', setup: () => () => null })
+    const normalized = normalizeNode({ component: Comp })
+    const store = reactive({
+      get frag() {
+        return { content: { component: normalized!.component } }
+      },
+    })
+    expect(store.frag.content.component).toBe(Comp)
+    expect(isReactive(store.frag.content.component)).toBe(false)
   })
 
   it('should not mutate input props.ref', () => {

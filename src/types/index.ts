@@ -55,10 +55,8 @@ export type {
 } from './confirm'
 
 export type {
-  TemplateSlotKey,
   LayerInstanceStore,
   LayerViewStore,
-  LayerInstanceStoreInit,
   LayerInstanceStoreWithTemplate,
   LayerViewStoreWithTemplate,
   LayerViewBridge,

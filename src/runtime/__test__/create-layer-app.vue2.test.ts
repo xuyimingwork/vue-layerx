@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vue2'
 import Vue from 'vue2'
 import { describe, expect, it } from 'vitest'
-import { createLayerInstanceStore } from '@/runtime/layer-instance'
+import { createLayerStore } from '@/runtime/layer-store'
 import { createLayerApp } from '../create-layer-app'
 import type { LayerHost } from '@/types/instance'
 import { withoutDom } from '@tests-vue2/helpers/dom'
@@ -12,10 +12,14 @@ import { Container } from '@tests-vue2/fixtures/components'
  * Runs via vitest.vue2-coverage.config.ts.
  */
 function createTestApp() {
-  const store = createLayerInstanceStore({
+  const store = createLayerStore({
     create: computed(() => ({ container: { component: Container } })),
-    use: computed(() => ({})),
+    open: {},
   })
+  store.setup(
+    'use',
+    computed(() => ({})),
+  )
   const state = reactive({ visible: false })
   const host = shallowRef<LayerHost | null>(null)
   const layerApp = createLayerApp({

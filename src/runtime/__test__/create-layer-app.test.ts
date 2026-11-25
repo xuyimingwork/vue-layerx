@@ -1,17 +1,21 @@
 import { computed, defineComponent, h, nextTick, reactive, shallowRef } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import { createLayerInstanceStore } from '@/runtime/layer-instance'
+import { createLayerStore } from '@/runtime/layer-store'
 import { createLayerApp } from '@/runtime/create-layer-app'
 import type { LayerHost } from '@/types/instance'
 import { Container } from '@tests/fixtures/components'
 import { withoutDom } from '@tests/helpers/dom'
 
 function createTestApp() {
-  const store = createLayerInstanceStore({
+  const store = createLayerStore({
     create: computed(() => ({ container: { component: Container } })),
-    use: computed(() => ({})),
+    open: {},
   })
+  store.setup(
+    'use',
+    computed(() => ({})),
+  )
   const state = reactive({ visible: false })
   const host = shallowRef<LayerHost | null>(null)
   const close = (payload?: { source?: string }) => {
@@ -212,10 +216,14 @@ describe('createLayerApp / SSR', () => {
   })
 
   it('should mount on create when visible and DOM are both available', () => {
-    const store = createLayerInstanceStore({
+    const store = createLayerStore({
       create: computed(() => ({ container: { component: Container } })),
-      use: computed(() => ({})),
+      open: {},
     })
+    store.setup(
+      'use',
+      computed(() => ({})),
+    )
     const state = reactive({ visible: true })
     const host = shallowRef<LayerHost | null>(null)
     const layerApp = createLayerApp({

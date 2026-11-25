@@ -6,27 +6,21 @@ import {
   watch,
   type ComputedRef,
   type PropType,
-  type VNode,
 } from 'vue'
 import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type {
-  LayerBound,
-  LayerConfigContainer,
-  LayerConfigFragment,
-  LayerSlotRender,
-} from '@/types'
+import type { LayerBound, LayerConfigContainer } from '@/types'
 import type { LayerClosePayload } from '@/types/confirm'
 import type {
   LayerInstanceStoreWithTemplate,
+  LayerStoreTemplate,
   LayerViewStoreWithTemplate,
 } from '@/types/store'
-import { createLayerStore } from '@/shared/layer-store'
+import { createLayerStore } from '@/runtime/layer-store'
 import { LAYER_VIEW_KEY } from '@/shared/injection-keys'
+import { noop } from '@/shared/noop'
 import {
-  toComponentRoot,
   getSetupInstance,
-  h,
   isLayerContent,
   toValue,
   useLayerViewRender,
@@ -75,10 +69,12 @@ function useLayerBound({
   )
 }
 
-/** Increment on each false→true open so content remounts with a fresh key. */
-function useOpenId(
-  visible: ComputedRef<boolean>
-): ComputedRef<string> {
+/**
+ * Open counter: ++ on each visible false→true.
+ * Distinct from `contentId` (content vnode key). LayerView currently feeds this
+ * value to `useLayerViewRender` as contentId; slot keys use setup generation instead.
+ */
+function useOpenId(visible: ComputedRef<boolean>): ComputedRef<string> {
   const openId = ref(0)
   watch(
     visible,
@@ -86,74 +82,36 @@ function useOpenId(
       if (!current || prev) return
       openId.value++
     },
-    { 
+    {
       flush: 'sync',
-      immediate: true
+      immediate: true,
     },
   )
   return computed(() => `${openId.value}`)
 }
 
-/**
- * Keyed parent for one open. Passthrough default slot; Vue 2 multi-child gets a
- * `<layer-fragment>` shell via `toComponentRoot` (no Fragment).
- */
-const LayerSlotFragment = defineComponent({
-  name: 'LayerSlotFragment',
-  setup(_, { slots }) {
-    return () => toComponentRoot(slots.default?.() ?? null)
-  },
-})
-
 /** Inject bridge for defineLayer / creator LayerTemplate → defineStore. */
-function provideLayerViewBridge(
-  defineStore: LayerViewStoreWithTemplate,
-  contentId: ComputedRef<string>,
-) {
-  const toRender = (
-    name: string,
-    render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null,
-  ): LayerSlotRender =>
-    (slotProps = {}) =>
-      h(LayerSlotFragment, { key: `${contentId.value}:slot:${name}` }, () =>
-        render(slotProps),
-      )
-
-  /** defineLayer top-level slots are container slots. Content slots remount with content. */
-  const toFragment = (source: LayerConfigContainer): LayerConfigFragment => {
-    const fragment = toFragmentFromContainer(source)
-    const slots = fragment.container?.slots
-    if (!slots) return fragment
-    const rendered: Record<string, LayerSlotRender> = {}
-    for (const [name, render] of Object.entries(slots)) {
-      rendered[name] = toRender(name, render)
-    }
-    return {
-      ...fragment,
-      container: { ...fragment.container, slots: rendered },
-    }
-  }
-
+function provideLayerViewBridge(defineStore: LayerViewStoreWithTemplate) {
   provide(LAYER_VIEW_KEY, {
     getDefineContext() {
       const instance = getSetupInstance()
       if (!isLayerContent(instance)) return null
 
+      let template: LayerStoreTemplate | undefined
       return {
         config(source: MaybeRefOrGetter<LayerConfigContainer>) {
-          defineStore.define = computed(() => toFragment(toValue(source))) as never
+          // Slot keying / LayerSlotFragment lives in store.setup (generation id).
+          template = defineStore.setup(
+            'define',
+            computed(() => toFragmentFromContainer(toValue(source))),
+          ).template
         },
-        template({
-          name,
-          render,
-        }: {
-          name: string
-          render: (slotProps?: Record<string, unknown>) => VNode | VNode[] | null
-        }) {
-          return defineStore.template({
-            key: 'define:template.container',
+        template({ name, render }) {
+          if (!template) return noop
+          return template({
             name,
-            entry: { render: toRender(name, render) },
+            side: 'container',
+            render,
           })
         },
       }
@@ -178,14 +136,11 @@ export const LayerView = defineComponent({
   },
   setup(props, { emit }) {
     const visible = computed(() => props.visible)
-    const defineStore = createLayerStore({
-      define: computed(() => ({})),
-      'define:template': {},
-    })
+    const defineStore = createLayerStore({})
 
     const openId = useOpenId(visible)
 
-    provideLayerViewBridge(defineStore, openId)
+    provideLayerViewBridge(defineStore)
 
     const bound = useLayerBound({
       store: props.store,
@@ -195,6 +150,7 @@ export const LayerView = defineComponent({
     })
 
     const render = useLayerViewRender(bound, visible)
+    // contentId arg: today = openId only (not a full content-identity scheme).
     return () => render(openId.value)
   },
 })

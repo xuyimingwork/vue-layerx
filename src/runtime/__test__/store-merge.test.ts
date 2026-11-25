@@ -1,53 +1,48 @@
 import { computed } from 'vue'
 import { describe, expect, it } from 'vitest'
-import type {
-  LayerConfigFragment,
-  LayerTemplateEntry,
-} from '@/types/config'
-import type {
-  LayerInstanceStoreWithTemplate,
-  LayerViewStoreWithTemplate,
-} from '@/types/store'
+import type { LayerConfigFragment } from '@/types/config'
 import {
   mergeFragment,
   toFragmentFromContent,
   toFragmentFromContainer,
 } from '@/config/fragment'
-import { createLayerInstanceStore } from '@/runtime/layer-instance'
-import { createLayerStore } from '@/shared/layer-store'
+import { createLayerStore } from '@/runtime/layer-store'
 
 function slotMarker(_label: string) {
   return () => null as never
 }
 
-function entry(label: string): LayerTemplateEntry {
-  return { render: slotMarker(label) }
+function defineFragment(
+  viewStore: ReturnType<typeof createDefineStore>,
+  fragment: LayerConfigFragment,
+) {
+  return viewStore.setup('define', computed(() => fragment)).template
 }
 
-function createDefineStore(): LayerViewStoreWithTemplate {
-  return createLayerStore({
-    define: {},
-    'define:template': {},
-  })
+function createDefineStore() {
+  return createLayerStore({})
 }
 
 function createTestInstanceStore(overrides: {
   create?: LayerConfigFragment
   use?: LayerConfigFragment
   open?: LayerConfigFragment
-} = {}): LayerInstanceStoreWithTemplate {
-  const store = createLayerInstanceStore({
+} = {}) {
+  const store = createLayerStore({
     create: computed(() => overrides.create ?? {}),
-    use: computed(() => overrides.use ?? {}),
-    refs: {}
+    open: overrides.open ?? {},
+    refs: {},
   })
-  if (overrides.open) store.open = overrides.open
-  return store
+  const { template } = store.setup(
+    'use',
+    computed(() => overrides.use ?? {}),
+  )
+  return Object.assign(store, { template })
 }
 
 function mergeLayerStores(
-  instanceStore: LayerInstanceStoreWithTemplate,
-  viewStore: LayerViewStoreWithTemplate,
+  instanceStore: ReturnType<typeof createTestInstanceStore>,
+  viewStore: ReturnType<typeof createDefineStore>,
 ) {
   const fragment = mergeFragment(
     instanceStore.create,
@@ -71,7 +66,7 @@ describe('layer store merge', () => {
       open: toFragmentFromContent({ container: { props: { title: 'Open' } } }),
     })
     const viewStore = createDefineStore()
-    viewStore.define = toFragmentFromContainer({ props: { title: 'Defined' } })
+    defineFragment(viewStore, toFragmentFromContainer({ props: { title: 'Defined' } }))
 
     const merged = mergeLayerStores(instanceStore, viewStore)
 
@@ -118,7 +113,10 @@ describe('layer store merge', () => {
       ).content.closeOn,
     ).toEqual({ done: { when: 'always', confirmed: false } })
 
-    viewStore.define = toFragmentFromContainer({ content: { closeOn: ['submit'] } })
+    defineFragment(
+      viewStore,
+      toFragmentFromContainer({ content: { closeOn: ['submit'] } }),
+    )
     expect(
       mergeLayerStores(
         createTestInstanceStore({
@@ -153,7 +151,7 @@ describe('layer store merge', () => {
       open: toFragmentFromContent({ container: { model: 'modelValue' } }),
     })
     const viewStore = createDefineStore()
-    viewStore.define = toFragmentFromContainer({ model: 'visible' })
+    defineFragment(viewStore, toFragmentFromContainer({ model: 'visible' }))
 
     expect(mergeLayerStores(instanceStore, viewStore).container.model).toBe('modelValue')
   })
@@ -165,12 +163,19 @@ describe('layer store merge', () => {
       use: toFragmentFromContent({ slots: { header: contentSlot } }),
     })
     const viewStore = createDefineStore()
-    viewStore.define = { container: { slots: { footer: containerSlot } } }
+    defineFragment(viewStore, { container: { slots: { footer: containerSlot } } })
 
     const merged = mergeLayerStores(instanceStore, viewStore)
 
-    expect(merged.content.slots).toEqual({ header: contentSlot })
-    expect(merged.container.slots).toEqual({ footer: containerSlot })
+    // setup() wraps source slots; merge keeps sides apart and preserves wrapped refs.
+    expect(merged.content.slots?.header).toBe(
+      instanceStore.use.content?.slots?.header,
+    )
+    expect(merged.container.slots?.footer).toBe(
+      viewStore.define.container?.slots?.footer,
+    )
+    expect(merged.content.slots?.header).not.toBe(contentSlot)
+    expect(merged.container.slots?.footer).not.toBe(containerSlot)
   })
 
   it('should merge container slots with unified template tier priority', () => {
@@ -186,14 +191,17 @@ describe('layer store merge', () => {
       open: toFragmentFromContent({ container: { slots: { footer: open } } }),
     })
     instanceStore.template({
-      key: 'use:template.container',
       name: 'footer',
-      entry: entry('caller'),
+      side: 'container',
+      render: slotMarker('caller'),
     })
 
     const viewStore = createDefineStore()
-    viewStore.define = { container: { slots: { footer: define } } }
-    viewStore['define:template'] = { container: { slots: { footer: creator } } }
+    defineFragment(viewStore, { container: { slots: { footer: define } } })({
+      name: 'footer',
+      side: 'container',
+      render: creator,
+    })
 
     expect(mergeLayerStores(instanceStore, viewStore).container.slots?.footer).toBe(open)
   })
@@ -206,14 +214,17 @@ describe('layer store merge', () => {
       create: { container: { slots: { footer: () => null } } },
     })
     instanceStore.template({
-      key: 'use:template.container',
       name: 'footer',
-      entry: entry('caller'),
+      side: 'container',
+      render: slotMarker('caller'),
     })
 
     const viewStore = createDefineStore()
-    viewStore.define = { container: { slots: { footer: define } } }
-    viewStore['define:template'] = { container: { slots: { footer: creator } } }
+    defineFragment(viewStore, { container: { slots: { footer: define } } })({
+      name: 'footer',
+      side: 'container',
+      render: creator,
+    })
 
     const footer = mergeLayerStores(instanceStore, viewStore).container.slots?.footer
     expect(footer).toBeTypeOf('function')
@@ -227,10 +238,15 @@ describe('layer store merge', () => {
 
     const instanceStore = createTestInstanceStore()
     const viewStore = createDefineStore()
-    viewStore.define = { container: { slots: { footer: define } } }
-    viewStore['define:template'] = { container: { slots: { footer: creator } } }
+    defineFragment(viewStore, { container: { slots: { footer: define } } })({
+      name: 'footer',
+      side: 'container',
+      render: creator,
+    })
 
-    expect(mergeLayerStores(instanceStore, viewStore).container.slots?.footer).toBe(define)
+    const merged = mergeLayerStores(instanceStore, viewStore).container.slots?.footer
+    expect(merged).toBe(viewStore.define.container?.slots?.footer)
+    expect(merged).not.toBe(viewStore['define:template'].container?.slots?.footer)
   })
 
   it('should let use:template content win over create defaults but lose to use', () => {
@@ -241,12 +257,14 @@ describe('layer store merge', () => {
       use: toFragmentFromContent({ slots: { extra: useX } }),
     })
     instanceStore.template({
-      key: 'use:template.content',
       name: 'extra',
-      entry: entry('caller'),
+      side: 'content',
+      render: slotMarker('caller'),
     })
     const viewStore = createDefineStore()
 
-    expect(mergeLayerStores(instanceStore, viewStore).content.slots?.extra).toBe(useX)
+    const merged = mergeLayerStores(instanceStore, viewStore).content.slots?.extra
+    expect(merged).toBe(instanceStore.use.content?.slots?.extra)
+    expect(merged).not.toBe(instanceStore['use:template'].content?.slots?.extra)
   })
 })

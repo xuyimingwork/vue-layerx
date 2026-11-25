@@ -56,7 +56,7 @@ UserDialog = MyDialog + UserForm
 - **adapt**：在 **LayerConfigFragment** 上整形；`open` 已反映在入参中。实例由哪个工厂创建，就跑该工厂 `createLayer` 注册时的**那一个** `adapter`。可换 `container.component`、滤 props、搬 slot key、改 `model`。
 - **refs**：`store.refs` 桶在 adapter 之后合并；`props.ref` 链式 compose，internal 先于各 tier 用户 ref。
 - **bind**：把 runtime 投影进 props：`closeOn` → content `onXxx`；`visible` → container `[model]` + 更新监听（Vue 3 默认 `onUpdate:modelValue`；Vue 2.7 默认 `onInput`）；产出 `LayerBound`。
-- **render**：`compat.useLayerViewRender` 产出 vnode 树；**close 后再 open**，或已打开时 `content.component` 变化，`contentId` 递增并 remount content。已打开时再次 `open()` 且组件不变，只更新 merge/props。
+- **render**：`compat.useLayerViewRender` 产出 vnode 树。**close 后再 open**：`openId`++，目前作为 `contentId` 传入作 content `key` 并 remount。**已打开时换 `content.component`**：靠组件身份 remount（不涨 `openId`）。已打开时再次 `open()` 且组件不变，只更新 merge/props。`openId` 与 `contentId` 是两套概念；后者是 render 侧 content key，前者是打开计数，当前由 LayerView 把前者喂给后者。
 
 使用者配置 **片段** 在 merge 汇入；**adapt 所见即配置域 fragment**；**bind 产出 LayerBound**（可直接 `h()`）。
 
@@ -75,9 +75,9 @@ src/
 ├── index.ts                 # 包入口 barrel
 ├── api/                     # createLayer / defineLayer / LayerTemplate
 ├── types/                   # 纯类型契约（config-raw / config / bound / instance / store / confirm）
-├── shared/                  # 跨层、无大版本分叉的运行时（Symbol、store、template-to、公开组件）
+├── shared/                  # 跨层、无大版本分叉的运行时（Symbol、template-to、公开组件）
 ├── config/                  # fragment 构造、merge、bind
-├── runtime/                 # instance 生命周期、LayerView 编排、createLayerApp
+├── runtime/                 # store、instance 生命周期、LayerView 编排、createLayerApp
 └── compat/                  # Vue 大版本分端（env / vue2 / vue3 / polyfill）
 
 # 各层 __test__/ 与模块同目录（unit）
@@ -88,10 +88,10 @@ tests-vue2/                  # Vue 2.7 关键路径：只消费 dist（ADR 0008�
 | 层 | 职责 | 主要文件 |
 |----|------|----------|
 | **types/** | 配置 Raw / Canonical / Bound；实例 / Store；confirm | `config-raw.ts`、`config.ts`、`bound.ts`、`instance.ts`、`store.ts`、`confirm.ts` |
-| **shared/** | inject key、content 根标记、store 工厂、template-to、warn、公开运行时符号 | `injection-keys.ts`、`layer-content.ts`、`layer-store.ts`、`layer-template-to.ts`、`layer-no-container.ts`、`layer-confirm-error.ts`、`warn.ts` |
+| **shared/** | inject key、content 根标记、template-to、warn、公开运行时符号 | `injection-keys.ts`、`layer-content.ts`、`layer-template-to.ts`、`layer-no-container.ts`、`layer-confirm-error.ts`、`warn.ts` |
 | **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts`、`close-on.ts` |
 | **compat/** | 按 Vue 大版本选实现：挂载、视图树、默认 model、Host、`h` 翻译 | `env.ts`、`index.ts`、`types.ts`、`polyfill/to-value.ts`、`vue2/*`、`vue3/*` |
-| **runtime/** | instance 生命周期、LayerApp 挂载、`LayerView`（merge → adapt → bind → render） | `layer-instance.ts`、`create-layer-app.ts`、`layer-view.ts` |
+| **runtime/** | store、instance 生命周期、LayerApp 挂载、`LayerView`（merge → adapt → bind → render） | `layer-store.ts`、`layer-instance.ts`、`create-layer-app.ts`、`layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
 集成测：`tests-vue3/` / `tests-vue2/`（`import from 'vue-layerx'`，须先 `pnpm build`）。
@@ -153,13 +153,13 @@ flowchart TB
 | **shared** | ✓ | — | — | — | — |
 | **types** | — | — | — | — | — |
 
-**runtime**：`createLayerApp`（经 `compat.createPlatformRoot`）挂载 `runtime/layer-view.ts`（`LayerView`）；`layer-instance` 持有 instance store 并委托 LayerApp。`LayerView` 内部用 `shared/layer-store` 的 `createLayerStore` 创建 define / define:template store；render 调用 `compat.useLayerViewRender(bound, visible)`。
+**runtime**：`createLayerApp`（经 `compat.createPlatformRoot`）挂载 `runtime/layer-view.ts`（`LayerView`）；`layer-instance` 持有 instance store 并委托 LayerApp。`LayerView` 内部用 `runtime/layer-store` 的 `createLayerStore` 创建 define / define:template store；render 调用 `compat.useLayerViewRender(bound, visible)`。
 
-**shared/injection-keys.ts**：`LAYER_VIEW_KEY`（LayerView provide；`defineLayer` inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`；`define:template.container` key 与 fragment 转换留在 LayerView 闭包。
+**shared/injection-keys.ts**：`LAYER_VIEW_KEY`（LayerView provide；`defineLayer` inject）。类型 `LayerViewBridge` / `LayerDefineContext` 在 `types/store.ts`。LayerView `provide` 的 bridge 暴露 setup-only 的 `getDefineContext()`：仅 content 根返回 `{ config, template }`，否则 `null`。`config()` 调用 `setup('define')` 并把返回的 template 记在这次 context 上；`template()` 用它登记，side 固定为 container。fragment 转换与插槽 `LayerSlotFragment` key（setup 代际 id）在 `runtime/layer-store`；content `key`（`contentId`）由 LayerView 传入 render。
 
 **shared/layer-content.ts**：共用 `LAYER_CONTENT` Symbol。`compat` 的 `markLayerContent` / `isLayerContent` 写入与读取：Vue 3 在 `vnode.props`；Vue 2.7 在 `$vnode.data`（不进 `props/`）。
 
-**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力；`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：`exists` 时委托 `getDefineContext().template(...)`，caller 路径闭包 `store.template(...)`。
+**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力。`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：`exists` 时委托 `getDefineContext().template(...)`；caller 路径闭包 `setup('use')` 返回的 template。
 
 ### 与核心管线的对应
 
@@ -191,8 +191,8 @@ LayerView → useLayerViewRender                    runtime/ + compat/
 
 UserForm 等业务 content **不由业务 template 直接挂进 MyDialog**，而由 vue-layerx 在 `render` 阶段 `h(content, …)` 托管。
 
-- **`close()` 后再 `open()`**：强制重建 content 子树（`contentId` 递增作为 content `key`），content `setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。
-- **已打开时换 `content.component`**：同样递增 `contentId`。content 与内容注册的容器插槽一起换新实例。
+- **`close()` 后再 `open()`**：`openId` 递增；LayerView 目前把它当作 `contentId` 作 content `key`，强制重建 content 子树，`setup` 重跑，`defineLayer` / creator `LayerTemplate` 在当次上下文重新 register。上一轮容器插槽随旧 setup 代际卸掉（或被新 `setup` 覆盖），不会把旧 footer 补到新 content 上。
+- **已打开时换 `content.component`**：组件身份变化触发 remount（当前不涨 `openId`）；content 与内容注册的容器插槽一起换新实例（store 代际覆盖 / 旧 teardown）。
 - **已打开时再次 `open(config?)` 且组件不变**：只更新 `store.open` tier 并下发新 props，**不** remount content。
 - 弹层**已打开期间**，UserList 等父级响应式变化**不自动同步**进弹层；再次 `open({ props })` 可更新当次 payload。
 
@@ -769,7 +769,7 @@ open > use > use:template > define > define:template > create
 
 ### 内部 Layer store
 
-每个 layer 实例维护 **`createLayerInstanceStore`**（`runtime/layer-instance.ts`，底层 `shared/layer-store.ts` 的 `createLayerStore`；bucket：`create` / `use` / `open` / `use:template` / **`refs`**）；**LayerView 内部 `createLayerStore`**（bucket：`define` / `define:template`）。LayerView setup 以 `computed` 派生 `merged → adapted → bound`（`mergeFragment` 汇总各桶，再 adapter → **`mergeFragment(refs, adapted)`** → bind）；render 调用 `compat.useLayerViewRender`。creator 路径：`defineLayer` → `getDefineContext().config` / `.template` 写入 define store（template key 固定为 `define:template.container`）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `store.template({ key: 'use:template.*', ... })`。
+每个 layer 实例经 `createLayerStore`（`runtime/layer-store.ts`）持有字段：`create` / `use` / `open` / `use:template` / **`refs`**；**LayerView 另建一份**（字段：`define` / `define:template`）。`use` / `define` 与对应的 `*:template` 是 getter，每个 key 只保留 **一对** fragment（source + template），不对这些字段赋值。`setup(key, source)` **覆盖** source 并 reset template；旧代不保留。旧的 teardown / `template()` 仅在仍持有当前 source 时生效，否则 noop，不回到上一份。`dispose` 仅在 `slots[name] === render` 且仍属当前代时删除。`LayerSlotFragment` key 为 setup 代际 `` `${id}:slot:${name}` ``；`contentId` 只作 content vnode `key`（LayerView 目前传入 `openId`），与插槽 key / store 覆盖无关。LayerView setup 以 `computed` 派生 `merged → adapted → bound`（`mergeFragment` 汇总各桶，再 adapter → **`mergeFragment(refs, adapted)`** → bind）；render 调用 `compat.useLayerViewRender`。creator 路径：`defineLayer` → `getDefineContext().config()` / `.template()`（`config` 里 `setup('define')`，template side 固定 container）；caller 路径：`:to` 经 `withTemplateTo` 闭包 `setup('use')` 的 template，`container` 决定 side。`setup()` 在有 setup 上下文时把「仍是自己则赋空」登记到 `onUnmounted`；模块顶层调用没有上下文，记录保留到下次覆盖。
 
 `mergeProps` 对 `props.ref` **链式 compose**（各 tier 与 `refs` 桶均参与）；其它 props key 仍为后写覆盖。
 
