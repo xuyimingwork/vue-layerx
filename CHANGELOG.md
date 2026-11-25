@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`defineLayer` 重复调用 dev warn** — 同一 content `setup` 内多次 `defineLayer` 时提示 latter wins（挂在 LayerView bridge；换内容各调一次不告警）。
+- **`LayerConfigFragmentAdapted`** — adapter 入出契约类型（要求有可渲染的 `container.component`）；公开导出。
+
+### Fixed
+
+- **`createLayerApp` 挂载失败残留 DOM** — `createPlatformRoot` / `mount` 抛错时清理已插入 `document.body` 的节点并 warn，不再留下孤儿元素。
+- **adapter 去掉 `container.component` 时崩溃** — bind / render 跳过；visible 时 warn；不再因缺失容器炸渲染。
+- **`closeOn` 空事件名** — 空字符串事件静默忽略，同配置里其它合法项仍生效（不再 warn）。
+
+### Changed
+
+- **`LayerAdapter`** — 入出类型收紧为 `LayerConfigFragmentAdapted`（须保留可渲染 `container.component`；换成 `LayerNoContainer` 可以）。
 
 ## [1.2.6] - 2026-11-25
 
