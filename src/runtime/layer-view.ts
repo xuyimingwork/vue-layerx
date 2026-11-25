@@ -9,7 +9,11 @@ import {
 } from 'vue'
 import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
 import { bindLayer } from '@/config/bind-layer'
-import type { LayerBound, LayerConfigContainer } from '@/types'
+import type {
+  LayerBound,
+  LayerConfigContainer,
+  LayerConfigFragmentAdapted,
+} from '@/types'
 import type { LayerClosePayload } from '@/types/confirm'
 import type {
   LayerInstanceStoreWithTemplate,
@@ -54,7 +58,10 @@ function useLayerBound({
   const adapted = computed(() => {
     const adapter = store.create.adapter
     const fragment = merged.value
-    return adapter ? adapter(fragment) : fragment
+    // Merge result is LayerConfigFragment; adapter authors type against Adapted.
+    return adapter
+      ? adapter(fragment as LayerConfigFragmentAdapted)
+      : fragment
   })
 
   const withRefs = computed(() => mergeFragment(store.refs, adapted.value))
@@ -65,6 +72,27 @@ function useLayerBound({
       visible: visible.value,
       close,
     }),
+  )
+}
+
+/**
+ * Dev warn when the layer is open but bind produced no container
+ * (typically createLayer adapter dropped container.component).
+ * immediate: LayerView often mounts after open(), when visible is already true.
+ */
+function useWarnMissingContainer(
+  visible: ComputedRef<boolean>,
+  bound: ComputedRef<LayerBound>,
+) {
+  watch(
+    [visible, () => bound.value.container],
+    ([isVisible, container]) => {
+      if (!isVisible || container) return
+      warn(
+        'layer is visible but has no container.component (check createLayer adapter); skip render',
+      )
+    },
+    { flush: 'post', immediate: true },
   )
 }
 
@@ -154,6 +182,7 @@ export const LayerView = defineComponent({
       visible,
       onUpdateVisible: (value, payload) => emit('update:visible', value, payload),
     })
+    useWarnMissingContainer(visible, bound)
 
     const render = useLayerViewRender(bound, visible)
     // contentId arg: today = openId only (not a full content-identity scheme).

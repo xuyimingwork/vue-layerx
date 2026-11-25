@@ -9,6 +9,8 @@ function createLayerViewVNode({
   content,
   contentId,
 }: LayerBound & { contentId?: string }): VNode | null {
+  if (!container?.component) return null
+
   const noContainer = container.component === LayerNoContainer
 
   if (noContainer) {

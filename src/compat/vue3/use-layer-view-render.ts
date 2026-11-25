@@ -42,7 +42,7 @@ function useContentPlacement(
     set: (el) => {
       anchor.value = el as HTMLUnknownElement | null
       const same = toRaw(active.value) === toRaw(container.value)
-      active.value = !el && same ? null : container.value
+      active.value = !el && same ? null : container.value ?? null
     },
   })
 }
@@ -76,6 +76,8 @@ function createLayerViewVNode({
   contentId?: string
   refContentTo?: Ref<HTMLUnknownElement | undefined | null>
 }): VNode | (VNode | null)[] | null {
+  if (!container?.component) return null
+
   const noContainer = container.component === LayerNoContainer
   const containerSlots = toPlatformSlots({
     ...container.slots,

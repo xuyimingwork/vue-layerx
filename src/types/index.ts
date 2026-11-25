@@ -4,6 +4,7 @@ export type {
   CloseOnWhen,
   LayerAdapter,
   LayerConfigFragment,
+  LayerConfigFragmentAdapted,
   LayerConfigFragmentCreate,
   LayerConfigNode,
   LayerConfigNodeContainer,

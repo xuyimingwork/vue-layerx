@@ -57,7 +57,19 @@ export interface LayerConfigFragment {
   container?: LayerConfigNodeContainer
 }
 
-export type LayerAdapter = (fragment: LayerConfigFragment) => LayerConfigFragment
+/**
+ * Fragment with a renderable container — adapter in/out contract.
+ * Swapping `container.component` (including LayerNoContainer) is fine; omitting it is not.
+ */
+export type LayerConfigFragmentAdapted = Omit<LayerConfigFragment, 'container'> & {
+  container: Omit<LayerConfigNodeContainer, 'component'> & {
+    component: Component
+  }
+}
+
+export type LayerAdapter = (
+  fragment: LayerConfigFragmentAdapted,
+) => LayerConfigFragmentAdapted
 
 /**
  * Instance store `create` tier: merge fragment + optional factory adapter.

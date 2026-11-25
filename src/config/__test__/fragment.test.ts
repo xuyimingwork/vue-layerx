@@ -116,7 +116,7 @@ describe('normalizeAdapter', () => {
       container: { component: Shell, props: { ref: ref(null) } },
     }))!
 
-    const out = adapter({})
+    const out = adapter({ container: { component: Shell } })
     expect(out.container?.component).toBe(Shell)
     expect(typeof out.container?.props?.ref).toBe('function')
 

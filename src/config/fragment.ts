@@ -1,4 +1,8 @@
-import type { LayerAdapter, LayerConfigFragment } from '@/types/config'
+import type {
+  LayerAdapter,
+  LayerConfigFragment,
+  LayerConfigFragmentAdapted,
+} from '@/types/config'
 import type {
   LayerConfigContent,
   LayerConfigContainer,
@@ -86,7 +90,7 @@ export function normalizeAdapter(
   adapter: LayerAdapter | undefined,
 ): LayerAdapter | undefined {
   if (!adapter) return undefined
-  return (fragment) => normalizeFragment(adapter(fragment))
+  return (fragment) => normalizeFragment(adapter(fragment)) as LayerConfigFragmentAdapted
 }
 
 /** Merge fragments; later sources win per side. Only content/container participate. */

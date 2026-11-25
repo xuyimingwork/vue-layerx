@@ -78,6 +78,43 @@ describe('createLayerApp', () => {
     expect(() => layerApp.unmount()).not.toThrow()
   })
 
+  it('should warn when visible but adapter drops container.component', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const store = createLayerStore({
+      create: computed(() => ({
+        container: { component: markRaw(Container) },
+        // Bypass LayerAdapter return contract to exercise runtime warn.
+        adapter: (() => ({})) as never,
+      })),
+      open: {},
+    })
+    store.setup(
+      'use',
+      computed(() => ({})),
+    )
+    const state = reactive({ visible: false })
+    const host = shallowRef<LayerHost | null>(null)
+    const layerApp = createLayerApp({
+      store,
+      state,
+      host,
+      onUpdateVisible: (value) => {
+        if (value) return
+        state.visible = false
+      },
+    })
+
+    state.visible = true
+    await nextTick()
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('no container.component'),
+    )
+
+    layerApp.unmount()
+    warn.mockRestore()
+  })
+
   it('should hide layer without unmounting when visible becomes false', async () => {
     const { state, layerApp } = createTestApp()
     state.visible = true

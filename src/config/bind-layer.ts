@@ -14,11 +14,14 @@ export function bindLayer(ctx: {
   const container = fragment.container ?? {}
   const content = fragment.content ?? {}
 
+  const containerComponent = container.component
+  if (!containerComponent) return {}
+
   const contentComponent = content.component
   const model = container.model ?? DEFAULT_CONTAINER_MODEL
 
   const containerBound = {
-    component: container.component!,
+    component: containerComponent,
     props: bindContainerModel(container.props ?? {}, visible, model, close),
     slots: container.slots ?? {},
   }

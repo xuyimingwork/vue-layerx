@@ -10,5 +10,6 @@ export interface LayerBoundNode {
 
 export interface LayerBound {
   content?: LayerBoundNode
-  container: LayerBoundNode
+  /** Absent when merge produced no container.component — renderers return null. */
+  container?: LayerBoundNode
 }
