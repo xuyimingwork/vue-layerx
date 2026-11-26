@@ -20,8 +20,8 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
     "prepublishOnly": "run-p test:unit test:integration:all",
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "pnpm test:unit",
     "test:unit": "run-p test:unit:run typecheck",
@@ -86,12 +86,12 @@
     "npm-run-all2": "^9.0.4",
     "repomix": "^1.19.0",
     "shiki": "^2.5.0",
-    "tsup": "^8.5.0",
+    "tsdown": "0.23.7",
     "typescript": "^5.8.3",
     "vitepress": "^1.6.3",
     "vitest": "^3.2.4",
     "vue": "^3.5.16",
-    "vue2": "npm:vue@^2.7.16",
-    "vue-asyncx": "^1.11.3"
+    "vue-asyncx": "^1.11.3",
+    "vue2": "npm:vue@^2.7.16"
   }
 }
