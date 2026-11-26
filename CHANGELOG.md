@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-11-26
+
 ### Added
 
 - **`defineLayer` 重复调用 dev warn** — 同一 content `setup` 内多次 `defineLayer` 时提示 latter wins（挂在 LayerView bridge；换内容各调一次不告警）。
@@ -22,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **`LayerAdapter`** — 入出类型收紧为 `LayerConfigFragmentAdapted`（须保留可渲染 `container.component`；换成 `LayerNoContainer` 可以）。
+
+### Notes
+
+- Install: `pnpm add vue-layerx@1.2.7` or `vue-layerx@latest`
+- TypeScript：`LayerAdapter` 出参须保留可渲染的 `container.component`（或换成 `LayerNoContainer`）；去掉组件会导致类型不通过，运行时也会跳过渲染并 warn。
 
 ## [1.2.6] - 2026-11-25
 
@@ -355,7 +362,8 @@ First usable public release. **Not API-frozen** — pre-1.0; minor 0.x releases 
 
 - Placeholder only; use **0.1.0+** for real usage
 
-[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.6...HEAD
+[Unreleased]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.7...HEAD
+[1.2.7]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.6...v1.2.7
 [1.2.6]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/xuyimingwork/vue-layerx/compare/v1.2.3...v1.2.4
