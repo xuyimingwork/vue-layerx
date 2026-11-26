@@ -5,7 +5,6 @@ coverage
 docs/.vitepress/cache
 docs/.vitepress/dist
 docs/data/test-stats.json
-docs/guide/_bundle.md
 reports/
 smoke/node_modules
 smoke/dist

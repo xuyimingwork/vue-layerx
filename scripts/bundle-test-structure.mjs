@@ -2,8 +2,8 @@
  * Bundle describe / it / test titles from Vitest files into one markdown tree
  * (no bodies) for AI review of test coverage design.
  *
- * Usage: node scripts/bundle-test-structure.mjs
- * Output: dist/test-structure-bundle.md
+ * Usage: pnpm bundle:tests
+ * Output: reports/bundle/tests.md
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const outFile = join(root, 'dist/test-structure-bundle.md')
+const outFile = join(root, 'reports/bundle/tests.md')
 
 /** @type {{ title: string, roots: string[] }[]} */
 const SECTIONS = [
@@ -223,7 +223,7 @@ function main() {
   const out = [
     '# Test Structure Bundle',
     '',
-    '> 由 `pnpm test:bundle`（`scripts/bundle-test-structure.mjs`）生成：仅保留 `describe` / `it` / `test` 标题树，不含用例实现。',
+    '> 由 `pnpm bundle:tests`（`scripts/bundle-test-structure.mjs`）生成：仅保留 `describe` / `it` / `test` 标题树，不含用例实现。',
     '',
     `> generatedAt: ${new Date().toISOString()}`,
     '',

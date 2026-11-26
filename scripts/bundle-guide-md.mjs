@@ -2,8 +2,8 @@
  * Bundle guide sidebar markdown (开始 / 基础 / 进阶 / 实践) into one file,
  * including example sources referenced by each page (and their local imports).
  *
- * Usage: node scripts/bundle-guide-md.mjs
- * Output: docs/guide/_bundle.md (gitignored)
+ * Usage: pnpm bundle:docs
+ * Output: reports/bundle/docs.md (gitignored via reports/)
  *
  * Keep SECTIONS in sync with docs/.vitepress/config.ts → sidebar['/guide/'].
  */
@@ -15,7 +15,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const docsDir = join(root, 'docs')
 const docsGuide = join(docsDir, 'guide')
 const docsExamples = join(docsDir, 'examples')
-const outFile = join(docsGuide, '_bundle.md')
+const outFile = join(root, 'reports/bundle/docs.md')
 
 /** @type {{ title: string, pages: { title: string, link: string }[] }[]} */
 const SECTIONS = [
@@ -230,7 +230,7 @@ function loadPage(page) {
 const parts = [
   '# Vue Layerx 指南合集',
   '',
-  '> 由 `pnpm docs:bundle`（`scripts/bundle-guide-md.mjs`）根据侧栏「开始 / 基础 / 进阶 / 实践」生成。',
+  '> 由 `pnpm bundle:docs`（`scripts/bundle-guide-md.mjs`）根据侧栏「开始 / 基础 / 进阶 / 实践」生成。',
   '> 含各篇引用的 `docs/examples/**` 源码（及示例内相对引用）；同一文件只全文收录一次。',
   '> 勿手改；已 gitignore。站内链接仍指向原路径，合集内不一定可点。',
   '',
