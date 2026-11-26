@@ -1,4 +1,4 @@
-import Vue, { defineComponent, h } from 'vue'
+import Vue, { defineComponent, h, nextTick, ref } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { createLayer, defineLayer, LayerTemplate } from 'vue-layerx'
 import { flushPromises, mountComponent, mountSetup } from '../helpers/dom'
@@ -260,6 +260,63 @@ describe('LayerTemplate (Vue 2.7)', () => {
     await flushPromises()
 
     expect(footerSetups).toBe(1)
+    host.destroy()
+  })
+
+  /**
+   * Regression: Vue 2.7 `reactive()` cannot track property add/delete.
+   * `addTemplateSlot` used to assign/delete `slots[name]` in place; after the
+   * layer is already open, mounting a caller LayerTemplate never re-merged, so
+   * the footer stayed missing until an unrelated update (e.g. close/open).
+   */
+  it('should deliver caller LayerTemplate footer when mounted after the layer is already open', async () => {
+    const showCaller = ref(false)
+    let dialog!: ReturnType<ReturnType<typeof createLayer>>
+
+    const Content = defineComponent({
+      name: 'PlainLateTemplateContent',
+      setup() {
+        return () => h('div', { class: 'body' }, 'body')
+      },
+    })
+
+    const Host = defineComponent({
+      name: 'LateCallerTemplateHost',
+      setup() {
+        dialog = createLayer(ElementUiLikeDialog)(Content)
+        return () =>
+          h('div', { class: 'test-host' }, [
+            showCaller.value
+              ? h(
+                  LayerTemplate,
+                  { props: { to: dialog, name: 'footer', container: true } },
+                  [h('button', { class: 'late-footer' }, 'late')],
+                )
+              : null,
+          ])
+      },
+    })
+
+    const host = mountComponent(Host)
+
+    dialog.open()
+    await flushPromises()
+    expect(document.body.querySelector('.body')).toBeTruthy()
+    expect(document.body.querySelector('.late-footer')).toBeNull()
+
+    showCaller.value = true
+    await nextTick()
+    await flushPromises()
+
+    expect(document.body.querySelector('.dialog-footer .late-footer')?.textContent).toBe(
+      'late',
+    )
+
+    showCaller.value = false
+    await nextTick()
+    await flushPromises()
+
+    expect(document.body.querySelector('.late-footer')).toBeNull()
     host.destroy()
   })
 

@@ -14,7 +14,7 @@ import type {
   LayerStoreTemplate,
   LayerStoreMethods,
 } from '@/types/store'
-import { hasSetupContext, h, toComponentRoot } from '@/compat'
+import { del, hasSetupContext, h, set, toComponentRoot } from '@/compat'
 import { noop } from '@/shared/noop'
 import { warn } from '@/shared/warn'
 
@@ -69,13 +69,17 @@ type Scope = {
 
 function createLayerStoreScope(key: LayerStoreKey): Scope {
   const source = shallowRef<ComputedRef<LayerConfigFragment> | null>(null)
-  const template: LayerConfigFragment = reactive({})
+  // Pre-declare side keys so Vue 2 can track set/del (missing keys collect no deps).
+  const template: LayerConfigFragment = reactive({
+    container: undefined,
+    content: undefined,
+  })
   let _id: number | null = null
   let toRender: SlotToRender | null = null
 
   function clearTemplate() {
-    delete template.container
-    delete template.content
+    set(template, 'container', undefined)
+    set(template, 'content', undefined)
   }
 
   function is(id: number) {
@@ -85,9 +89,9 @@ function createLayerStoreScope(key: LayerStoreKey): Scope {
   function getTemplateSlotsOrCreate(
     side: LayerConfigFragmentSide,
   ): Record<string, LayerSlotRender> {
-    if (!template[side]) template[side] = {}
-    if (!template[side].slots) template[side].slots = {}
-    return template[side].slots
+    if (!template[side]) set(template, side, {})
+    if (!template[side]!.slots) set(template[side]!, 'slots', {})
+    return template[side]!.slots!
   }
 
   return {
@@ -132,11 +136,11 @@ function createLayerStoreScope(key: LayerStoreKey): Scope {
       const slotRender: LayerSlotRender = wrap(name, (slotProps) =>
         render(slotProps ?? {}),
       )
-      slots[name] = slotRender
+      set(slots, name, slotRender)
       return () => {
         if (!is(id)) return
         if (slots[name] !== slotRender) return
-        delete slots[name]
+        del(slots, name)
       }
     },
   }

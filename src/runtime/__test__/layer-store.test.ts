@@ -7,7 +7,8 @@ describe('createLayerStore', () => {
   it('should point getters at the latest setup record', () => {
     const store = createLayerStore({})
     expect(store.define).toEqual({})
-    expect(store['define:template']).toEqual({})
+    expect(store['define:template'].container).toBeUndefined()
+    expect(store['define:template'].content).toBeUndefined()
 
     store.setup(
       'define',
@@ -60,7 +61,8 @@ describe('createLayerStore', () => {
     second.unmount()
 
     expect(store.define).toEqual({})
-    expect(store['define:template']).toEqual({})
+    expect(store['define:template'].container).toBeUndefined()
+    expect(store['define:template'].content).toBeUndefined()
   })
 
   it('should leave config in place when one template slot is disposed', () => {
@@ -121,7 +123,8 @@ describe('createLayerStore', () => {
     dispose()
 
     expect(store.define).toEqual({ container: { props: { title: 'B' } } })
-    expect(store['define:template']).toEqual({})
+    expect(store['define:template'].container).toBeUndefined()
+    expect(store['define:template'].content).toBeUndefined()
   })
 
   it('should track template slot writes and live config', () => {

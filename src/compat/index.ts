@@ -1,5 +1,6 @@
 import { isVue2 } from './env'
 import { toValue, type MaybeRefOrGetter } from './polyfill/to-value'
+import { set, del } from './polyfill/set'
 import type { LayerHost, PlatformRootHandle } from './types'
 
 import * as vue3Platform from './vue3/platform'
@@ -11,7 +12,7 @@ import { createPlatformRoot as createPlatformRootVue2 } from './vue2/create-plat
 import { useLayerViewRender as useLayerViewRenderVue3 } from './vue3/use-layer-view-render'
 import { useLayerViewRender as useLayerViewRenderVue2 } from './vue2/use-layer-view-render'
 
-export { isVue2, toValue }
+export { isVue2, toValue, set, del }
 export type { MaybeRefOrGetter, LayerHost, PlatformRootHandle }
 
 function compat<V2, V3>(v2: V2, v3: V3): V2 | V3 {

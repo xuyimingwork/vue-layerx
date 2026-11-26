@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Vue 2 `LayerTemplate` 晚挂载不刷新** — 弹层已打开后再挂/卸 caller `LayerTemplate` 时，footer 等插槽不更新。`layer-store` 对 template slots 改用 compat `set`/`del`，并预声明 `container`/`content`，以适配 Vue 2.7 无法追踪属性增删的限制。
 - **`createLayerApp` 挂载失败残留 DOM** — `createPlatformRoot` / `mount` 抛错时清理已插入 `document.body` 的节点并 warn，不再留下孤儿元素。
 - **adapter 去掉 `container.component` 时崩溃** — bind / render 跳过；visible 时 warn；不再因缺失容器炸渲染。
 - **`closeOn` 空事件名** — 空字符串事件静默忽略，同配置里其它合法项仍生效（不再 warn）。
