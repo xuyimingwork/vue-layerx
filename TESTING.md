@@ -172,7 +172,7 @@ pnpm test:coverage:merge                   # → coverage/
 pnpm test:coverage:all                     # 上面四步
 
 # Docs site stats（Deploy Pages / site:build 前置）
-pnpm docs:stats                            # 实测 unit+vue3+vue2 用例数与合并覆盖率 → docs/data/test-stats.json
+pnpm docs:stats                            # 实测 unit+vue3+vue2 用例数、合并覆盖率、源码/测试 SLOC → docs/data/test-stats.json
 pnpm docs:stats:ensure                     # 仅在缺文件时写占位，供本地 docs:dev / docs:build
 ```
 

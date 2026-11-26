@@ -8,6 +8,8 @@ const colSum = (key) =>
   (stats.suites.unit?.[key] ?? 0) +
   (stats.suites.vue3?.[key] ?? 0) +
   (stats.suites.vue2?.[key] ?? 0)
+const loc = (n) => (typeof n === 'number' && n > 0 ? n.toLocaleString('en-US') : '—')
+const ratio = (n) => (typeof n === 'number' && n > 0 ? String(n) : '—')
 
 const generatedLabel = stats.generatedAt
   ? new Date(stats.generatedAt).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC')
@@ -27,12 +29,14 @@ const generatedLabel = stats.generatedAt
 
 vue-layerx 通过不同层级合计 **{{ stats.total }}** 个测试用例，保障源码测试覆盖率达到 **{{ pct(stats.coverage.lines) }}**。
 
+> 源码有效代码 {{ loc(stats.loc?.source) }} 行，测试有效代码 {{ loc(stats.loc?.test) }} 行，测试与源码比达到 {{ ratio(stats.loc?.testPerSource) }}:1，远超常规开源项目 1:1 ~ 1.5:1 的平均水平，确保项目的高可靠性。
+
 每个版本发布、每一次 CI，都会完整跑一遍测试流水线：
 
 1. **单元测试**——对着源码测内部模块（含类型测试）。
 2. **集成测试**——先 `build` 出产物（`dist`），再以 Vue 3、Vue 2.7 各自的**独立项目**模拟真实用户，只通过公开 API 消费该产物（含类型测试）。
 
-本页数字在文档站构建时重新实测（`pnpm docs:stats`），口径与发布前的 `prepublishOnly` 一致。
+本页数字在文档站构建时重新实测（`pnpm docs:stats`）：用例数与覆盖率口径与发布前的 `prepublishOnly` 一致；源码 / 测试行数为 SLOC（去掉空行与注释后的有效行；`src` 库代码 vs `src/**/__test__` + `tests*`）。
 
 <p v-if="stats.placeholder" class="stats-placeholder">
   本地若尚未跑过 <code>pnpm docs:stats</code>，这里是占位数据。正式站点由

@@ -1,5 +1,5 @@
 /**
- * Collect Vitest suite counts (+ merged coverage) for the docs testing page.
+ * Collect Vitest suite counts (+ merged coverage + SLOC) for the docs testing page.
  *
  * Usage:
  *   node scripts/collect-test-stats.mjs              # run suites, write real stats
@@ -8,7 +8,14 @@
  * Output: docs/data/test-stats.json
  */
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -18,6 +25,8 @@ const outFile = join(outDir, 'test-stats.json')
 const reportsDir = join(root, 'reports/test-stats')
 
 const placeholder = process.argv.includes('--placeholder')
+
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'coverage', '.git'])
 
 function emptyTier() {
   return { runtime: 0, types: 0 }
@@ -34,6 +43,7 @@ function emptyStats(isPlaceholder) {
       vue2: emptyTier(),
     },
     coverage: { lines: 0, statements: 0, functions: 0, branches: 0 },
+    loc: { source: 0, test: 0, testPerSource: 0 },
   }
 }
 
@@ -117,6 +127,83 @@ function readCoverage() {
   }
 }
 
+/**
+ * SLOC: non-blank lines after stripping block / line comments (and HTML comments in `.vue`).
+ * Strings are protected so `//` / `/*` inside literals are not treated as comments.
+ */
+function slocOf(file) {
+  const text = readFileSync(file, 'utf8')
+  if (!text) return 0
+
+  const held = []
+  let s = text.replace(/(['"`])(?:\\.|(?!\1)[\s\S])*\1/g, (m) => {
+    held.push(m)
+    return `\0STR${held.length - 1}\0`
+  })
+  s = s.replace(/\/\*[\s\S]*?\*\//g, '')
+  s = s.replace(/(^|[^:])\/\/.*$/gm, '$1')
+  if (file.endsWith('.vue')) s = s.replace(/<!--[\s\S]*?-->/g, '')
+  s = s.replace(/\0STR(\d+)\0/g, (_, i) => held[Number(i)])
+
+  return s.split(/\r?\n/).filter((line) => line.trim().length > 0).length
+}
+
+function isCodeFile(name) {
+  // Keep `.test-d.ts` type tests; drop ambient `*.d.ts` / configs.
+  if (/\.test-d\.[cm]?[jt]sx?$/.test(name)) return true
+  if (/\.d\.[cm]?[jt]sx?$/.test(name)) return false
+  if (/\.config\.[cm]?[jt]sx?$/.test(name)) return false
+  return /\.(?:[cm]?[jt]sx?|vue)$/.test(name)
+}
+
+function walkFiles(dir, out = []) {
+  if (!existsSync(dir)) return out
+  for (const name of readdirSync(dir)) {
+    if (SKIP_DIRS.has(name)) continue
+    const full = join(dir, name)
+    const st = statSync(full)
+    if (st.isDirectory()) walkFiles(full, out)
+    else if (isCodeFile(name)) out.push(full)
+  }
+  return out
+}
+
+function isUnderTestDir(rel) {
+  return (
+    rel.includes('/__test__/') ||
+    rel.startsWith('tests/') ||
+    rel.startsWith('tests-vue3/') ||
+    rel.startsWith('tests-vue2/')
+  )
+}
+
+/**
+ * Source / test SLOC (effective lines: no blanks, no comment-only).
+ * Source = `src/**` library code (no `__test__`).
+ * Test = unit (`src/**/__test__`, `tests/`) + vue3/vue2 integration packages.
+ */
+function readLoc() {
+  const srcFiles = walkFiles(join(root, 'src')).filter((file) => {
+    const rel = relative(root, file).replaceAll('\\', '/')
+    return !isUnderTestDir(rel)
+  })
+
+  const testFiles = [
+    ...walkFiles(join(root, 'src')).filter((file) =>
+      isUnderTestDir(relative(root, file).replaceAll('\\', '/')),
+    ),
+    ...walkFiles(join(root, 'tests')),
+    ...walkFiles(join(root, 'tests-vue3')),
+    ...walkFiles(join(root, 'tests-vue2')),
+  ]
+
+  const source = srcFiles.reduce((sum, file) => sum + slocOf(file), 0)
+  const test = testFiles.reduce((sum, file) => sum + slocOf(file), 0)
+  const testPerSource = source > 0 ? Math.round((test / source) * 10) / 10 : 0
+
+  return { source, test, testPerSource }
+}
+
 mkdirSync(reportsDir, { recursive: true })
 
 const unitReport = join(reportsDir, 'unit.json')
@@ -165,12 +252,15 @@ const suites = {
   vue2: readVitestJson(vue2Report),
 }
 
+const loc = readLoc()
+
 const stats = {
   generatedAt: new Date().toISOString(),
   placeholder: false,
   total: tierTotal(suites.unit) + tierTotal(suites.vue3) + tierTotal(suites.vue2),
   suites,
   coverage: readCoverage(),
+  loc,
 }
 
 writeStats(stats)
@@ -179,5 +269,6 @@ console.log(
     ` (unit=${suites.unit.runtime}+${suites.unit.types}` +
     `, vue3=${suites.vue3.runtime}+${suites.vue3.types}` +
     `, vue2=${suites.vue2.runtime}+${suites.vue2.types})` +
-    `; lines=${stats.coverage.lines}%`,
+    `; lines=${stats.coverage.lines}%` +
+    `; loc source=${loc.source} test=${loc.test} (${loc.testPerSource}:1)`,
 )
