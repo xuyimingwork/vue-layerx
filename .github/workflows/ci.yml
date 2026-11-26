@@ -42,6 +42,6 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          report-type: test_results
+          report_type: test_results
           files: reports/unit.junit.xml,reports/vue3.junit.xml,reports/vue2.junit.xml
           fail_ci_if_error: false
