@@ -129,7 +129,7 @@ function readCoverage() {
 
 /**
  * SLOC: non-blank lines after stripping block / line comments (and HTML comments in `.vue`).
- * Strings are protected so `//` / `/*` inside literals are not treated as comments.
+ * Strings are protected so comment markers inside literals are not stripped.
  */
 function slocOf(file) {
   const text = readFileSync(file, 'utf8')
@@ -179,8 +179,8 @@ function isUnderTestDir(rel) {
 
 /**
  * Source / test SLOC (effective lines: no blanks, no comment-only).
- * Source = `src/**` library code (no `__test__`).
- * Test = unit (`src/**/__test__`, `tests/`) + vue3/vue2 integration packages.
+ * Source = src library code (excluding __test__ dirs).
+ * Test = unit (__test__ under src, tests/) + vue3/vue2 integration packages.
  */
 function readLoc() {
   const srcFiles = walkFiles(join(root, 'src')).filter((file) => {
