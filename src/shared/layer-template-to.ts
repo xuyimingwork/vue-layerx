@@ -23,37 +23,27 @@ export type LayerTemplateToCapabilities = {
 
 export type LayerTemplateTo = LayerDefine | LayerInstance
 
-export type LayerTemplateToResolved = LayerTemplateTo & LayerTemplateToCapabilities
+export type LayerTemplateToResolved = LayerTemplateToCapabilities
 
-const TEMPLATE_TO_KEYS = {
-  template: Symbol('vue-layerx:template-to:template'),
-} as const satisfies Record<keyof LayerTemplateToCapabilities, symbol>
+const TEMPLATE_KEY = Symbol('vue-layerx:template')
 
 export function withTemplateTo<T extends LayerTemplateTo>(
   base: T,
-  capabilities: LayerTemplateToCapabilities,
+  { template }: LayerTemplateToCapabilities,
 ): T {
-  for (const key of Object.keys(capabilities) as (keyof LayerTemplateToCapabilities)[]) {
-    Object.defineProperty(base, TEMPLATE_TO_KEYS[key], {
-      value: capabilities[key],
-      enumerable: false,
-      writable: false,
-      configurable: false,
-    })
-  }
+  Object.defineProperty(base, TEMPLATE_KEY, {
+    value: template,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  })
   return base
 }
 
 export function resolveTemplateTo(to: LayerTemplateTo): LayerTemplateToResolved {
-  return new Proxy(to, {
-    get(target, prop, receiver) {
-      return Reflect.get(
-        target,
-        typeof prop === 'string' && prop in TEMPLATE_TO_KEYS
-          ? TEMPLATE_TO_KEYS[prop as keyof typeof TEMPLATE_TO_KEYS]
-          : prop,
-        receiver,
-      )
-    },
-  }) as LayerTemplateToResolved
+  const template = (to as unknown as Record<
+    symbol,
+    LayerTemplateToCapabilities['template']
+  >)[TEMPLATE_KEY]
+  return { template }
 }

@@ -10,7 +10,7 @@ describe('layer-template-to', () => {
     expect(renderless()).toBeNull()
   })
 
-  it('should attach capabilities as non-enumerable Symbol properties', () => {
+  it('should attach template as a non-enumerable Symbol property', () => {
     const base = { exists: false }
     withTemplateTo(base, {
       template: () => ({ render: renderless, dispose: () => {} }),
@@ -20,7 +20,7 @@ describe('layer-template-to', () => {
     expect(resolveTemplateTo(base).template).toBeTypeOf('function')
   })
 
-  it('should resolve template capability via proxy', () => {
+  it('should resolve template capability via Symbol', () => {
     const template = () => ({ render: () => 'vnode' as never, dispose: () => {} })
     const base = withTemplateTo({ exists: true }, { template })
 
@@ -41,15 +41,5 @@ describe('layer-template-to', () => {
         render: renderless,
       }),
     ).toThrow(TypeError)
-  })
-
-  it('should forward non-capability properties through the proxy', () => {
-    const base = withTemplateTo(
-      { exists: true },
-      { template: () => ({ render: renderless, dispose: () => {} }) },
-    )
-    const resolved = resolveTemplateTo(base)
-
-    expect(resolved.exists).toBe(true)
   })
 })

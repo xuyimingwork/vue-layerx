@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bindCloseOn } from '../bind-close-on'
+import { bindCloseOn } from '../bind'
 import { mergeCloseOn, normalizeCloseOn } from '../close-on'
 import type { CloseOn } from '@/types/config'
 

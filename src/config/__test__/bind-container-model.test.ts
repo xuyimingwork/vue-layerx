@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { DEFAULT_CONTAINER_MODEL } from '@/compat'
-import { bindContainerModel } from '../bind-container-model'
+import { bindContainerModel } from '../bind'
 
 type UpdateFn = (...args: unknown[]) => void
 

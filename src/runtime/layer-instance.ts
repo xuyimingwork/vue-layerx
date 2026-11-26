@@ -18,7 +18,7 @@ import type {
 import {
   toFragmentFromContent,
   mergeFragment,
-  stripFragment,
+  omitRefs,
 } from '@/config/fragment'
 import { renderless, withTemplateTo } from '@/shared/layer-template-to'
 import { createLayerStore } from '@/runtime/layer-store'
@@ -173,7 +173,7 @@ export function createLayerInstance({
         create,
         use: computed(() =>
           mergeFragment(
-            stripFragment(use.value, (path) => path.endsWith('.props.ref')),
+            omitRefs(use.value),
             toFragmentFromContent(toValue(config)),
           ),
         ),

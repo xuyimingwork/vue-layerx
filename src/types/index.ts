@@ -12,7 +12,6 @@ export type {
   LayerProps,
   LayerRefCallback,
   LayerSlotRender,
-  LayerTemplateEntry,
 } from './config'
 
 export type {

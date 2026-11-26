@@ -11,7 +11,6 @@ import type {
   LayerConfigNodeContent,
   LayerProps,
   LayerRefCallback,
-  LayerSlotRender,
 } from '@/types/config'
 import type {
   LayerConfigNodeContainerRaw,
@@ -158,72 +157,5 @@ export function mergeNodeContent(
   const result: LayerConfigNodeContent = mergeNode(...sources)
   const closeOn = mergeCloseOn(...sources.map((s) => s?.closeOn))
   if (closeOn !== undefined) result.closeOn = closeOn
-  return result
-}
-
-function stripNodeProps(
-  props: LayerProps | undefined,
-  prefix: string,
-  shouldStrip: (path: string) => boolean,
-): LayerProps | undefined {
-  if (!props) return undefined
-  const result: LayerProps = {}
-  for (const [key, value] of Object.entries(props)) {
-    const path = `${prefix}.props.${key}`
-    if (!shouldStrip(path)) result[key] = value
-  }
-  return Object.keys(result).length > 0 ? result : undefined
-}
-
-function stripNode(
-  node: LayerConfigNode,
-  prefix: string,
-  shouldStrip: (path: string) => boolean,
-): LayerConfigNode {
-  const result: LayerConfigNode = {}
-
-  if (node.component !== undefined) {
-    const path = `${prefix}.component`
-    if (!shouldStrip(path)) result.component = node.component
-  }
-
-  const props = stripNodeProps(node.props, prefix, shouldStrip)
-  if (props) result.props = props
-
-  if (node.slots) {
-    const slots: Record<string, LayerSlotRender> = {}
-    for (const [name, fn] of Object.entries(node.slots)) {
-      const path = `${prefix}.slots.${name}`
-      if (!shouldStrip(path)) slots[name] = fn
-    }
-    if (Object.keys(slots).length > 0) result.slots = slots
-  }
-
-  return result
-}
-
-export function stripContainerNode(
-  node: LayerConfigNodeContainer,
-  shouldStrip: (path: string) => boolean,
-  prefix = 'container',
-): LayerConfigNodeContainer {
-  const result = stripNode(node, prefix, shouldStrip) as LayerConfigNodeContainer
-  if (node.model !== undefined) {
-    const path = `${prefix}.model`
-    if (!shouldStrip(path)) result.model = node.model
-  }
-  return result
-}
-
-export function stripContentNode(
-  node: LayerConfigNodeContent,
-  shouldStrip: (path: string) => boolean,
-  prefix = 'content',
-): LayerConfigNodeContent {
-  const result = stripNode(node, prefix, shouldStrip) as LayerConfigNodeContent
-  if (node.closeOn !== undefined) {
-    const path = `${prefix}.closeOn`
-    if (!shouldStrip(path)) result.closeOn = { ...node.closeOn }
-  }
   return result
 }

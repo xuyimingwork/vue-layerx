@@ -1,6 +1,10 @@
-import { isVue2 } from './env'
-import { toValue, type MaybeRefOrGetter } from './polyfill/to-value'
-import { set, del } from './polyfill/set'
+import {
+  isVue2,
+  toValue,
+  set,
+  del,
+  type MaybeRefOrGetter,
+} from './polyfill'
 import type { LayerHost, PlatformRootHandle } from './types'
 
 import * as vue3Platform from './vue3/platform'

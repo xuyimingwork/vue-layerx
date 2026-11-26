@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **内部结构精简**（无公开 API 变更）— 合并超薄模块：`config/bind.ts`、`compat/polyfill.ts`；`stripFragment` 收敛为 `omitRefs`；`layer-template-to` 去掉 Proxy，改用 Symbol；删除未使用的 `LayerTemplateEntry`。
+
 ## [1.2.7] - 2026-11-26
 
 ### Added

@@ -70,7 +70,7 @@ MaybeRefOrGetter
 clone(config: MaybeRefOrGetter<LayerConfigContent> = {}) {
   use: computed(() =>
     mergeFragment(
-      stripFragment(toValue(parentStore.use), (p) => p.endsWith('.props.ref')),
+      omitRefs(toValue(parentStore.use)),
       toFragmentFromContent(toValue(config)),
     ),
   )
@@ -81,7 +81,7 @@ clone(config: MaybeRefOrGetter<LayerConfigContent> = {}) {
 |------|------|
 | 父 `store.use` | **持续** `toValue`：未覆盖字段（如 `locale`）跟父 live |
 | `clone(config)` | 可为 getter；覆盖字段（如 `id: otherId`）由子自己绑 |
-| `props.ref` | 仍 strip 父 use 段，避免多 instance 共享用户 ref |
+| `props.ref` | 仍 `omitRefs` 父 use 段，避免多 instance 共享用户 ref |
 
 **意图对齐**（偏覆盖）：
 

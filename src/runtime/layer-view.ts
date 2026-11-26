@@ -8,7 +8,7 @@ import {
   type PropType,
 } from 'vue'
 import { mergeFragment, toFragmentFromContainer } from '@/config/fragment'
-import { bindLayer } from '@/config/bind-layer'
+import { bindLayer } from '@/config/bind'
 import type {
   LayerBound,
   LayerConfigContainer,

@@ -1,5 +1,20 @@
 import * as Vue from 'vue'
-import { isVue2 } from '../env'
+import { isRef, version } from 'vue'
+import type { MaybeRefOrGetter } from '@/types/instance'
+
+export type { MaybeRefOrGetter }
+
+/** True when running under Vue 2.x (incl. 2.7). Bound once at module load. */
+export const isVue2 = version.startsWith('2.')
+
+/** Polyfill of Vue 3 `toValue` (D0.9). Do not named-import `toValue` from `vue`. */
+export function toValue<T>(source: MaybeRefOrGetter<T>): T {
+  return typeof source === 'function'
+    ? (source as () => T)()
+    : isRef(source)
+      ? source.value
+      : source
+}
 
 /** Vue 2.7 named `set` / `del` (absent on Vue 3). */
 type Vue2ReactiveApi = {

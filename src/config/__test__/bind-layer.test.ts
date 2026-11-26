@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import { bindLayer } from '../bind-layer'
+import { bindLayer } from '../bind'
 
 const Container = defineComponent({ name: 'Container', setup: () => () => null })
 const Content = defineComponent({ name: 'Content', setup: () => () => null })

@@ -90,12 +90,12 @@
 
 ```text
 src/
-  core/                 # fragment、store、bind-*、instance 编排等（无 isVue2）
+  config/ runtime/      # fragment、store、bind、instance 编排等（无 isVue2 分支）
   compat/
-    env.ts              # isVue2（读 vue.version / 约定探测；不引 vue-demi）
-    vue3/               # 现行 createLayerApp、createLayerViewVNode、toPlatformVNodeData(identity)…
+    polyfill.ts         # isVue2（读 vue.version）、toValue / set / del
+    vue3/               # 现行 createPlatformRoot、useLayerViewRender、toPlatformVNodeData(identity)…
     vue2/               # extend+parent、嵌套树、toPlatformVNodeData、data[LAYER_CONTENT]…
-    index.ts            # 聚合：createLayerApp = isVue2 ? vue2 : vue3（只选函数引用）
+    index.ts            # 聚合：createPlatformRoot = isVue2 ? vue2 : vue3（只选函数引用）
   api/                  # 只 import compat 聚合，不直连 vue2/vue3
 ```
 
@@ -110,7 +110,7 @@ src/
 **D0.11 `h` 适配落点**
 
 - 库内调 `h(` 的只有 `createLayerViewVNode`（container/content）与 `createLayerApp`（`LayerView` + 挂载）。
-- **`bind-container-model` / `bind-close-on` 不维护两套文件**：继续产出 Vue 3 flat props（`onDone`、`onUpdate:…` / 在 D0.20 下也可能是 `onInput`），可作共享 core；**不**在 bind 内写大段 `if (isVue2)`。
+- **`config/bind.ts`（`bindContainerModel` / `bindCloseOn`）不维护两套文件**：继续产出 Vue 3 flat props（`onDone`、`onUpdate:…` / 在 D0.20 下也可能是 `onInput`），可作共享 core；**不**在 bind 内写大段 `if (isVue2)`。
 - 与 **D0.20** 配合：默认 `model` 与「应产出的 flat 更新键」已由 compat 选好；本层 **只**做 flat props / slots / ref / `LAYER_CONTENT` → 平台 `h` data，**不**再二次猜测 `value` / `input`。
 - Vue 2.7：在 `h` 前把 flat props 拆成 `{ props, on, scopedSlots, … }`（建议抽共用 `toPlatformVNodeData`）；顺带处理 `ref`、`LAYER_CONTENT`→`data`、slots 形态（D2.6）。
 - Vue 3：翻译层 identity，避免误伤现行路径。
@@ -516,7 +516,7 @@ Vue 3：`getCurrentInstance()` + `isMounted`。2.7 的 setup 实例是 proxy，�
 
 - **决策**：**C**（并入 **D0.6**；实现见 **D0.20**）— Vue 3 → `modelValue`；Vue 2.7 → `value`；Element UI 等用 `visible` 时显式 `model: 'visible'`。由 compat 注入 `DEFAULT_CONTAINER_MODEL`，bind 不读 `isVue2`。
 
-#### D4.2 更新事件命名（bind-container-model）
+#### D4.2 更新事件命名（`bindContainerModel` / `config/bind.ts`）
 
 Vue 3：`props['onUpdate:visible']`。Vue 2 `.sync`：`on: { 'update:visible': fn }`，另有人用 `input` + `value`。
 
@@ -528,7 +528,7 @@ Vue 3：`props['onUpdate:visible']`。Vue 2 `.sync`：`on: { 'update:visible': f
 
 - **决策**：**A**（并入 **D0.6**；实现见 **D0.20**）— Vue 3：flat `onUpdate:${model}`；Vue 2.7：`model === 'value'` 时 flat `onInput`（对应 `input`），否则 `onUpdate:${model}`。不采用公开 `event` 字段（否决 C）。`toPlatformVNodeData` 不再二次特判。
 
-#### D4.3 `closeOn` / 普通 listeners（bind-close-on）
+#### D4.3 `closeOn` / 普通 listeners（`bindCloseOn` / `config/bind.ts`）
 
 Vue 3：`onDone` camelCase 进 props。Vue 2：`on: { done: fn }` 或 `nativeOn`。
 

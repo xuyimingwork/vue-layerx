@@ -4,7 +4,7 @@ import {
   mergeFragment,
   normalizeAdapter,
   normalizeFragment,
-  stripFragment,
+  omitRefs,
   toFragmentFromContent,
   toFragmentFromContainer,
 } from '../fragment'
@@ -163,19 +163,16 @@ describe('mergeFragment', () => {
   })
 })
 
-describe('stripFragment', () => {
-  it('should remove fields matching path predicate', () => {
+describe('omitRefs', () => {
+  it('should remove props.ref from both sides', () => {
     expect(
-      stripFragment(
-        {
-          container: { props: { title: 'x', ref: vi.fn() } },
-          content: {
-            props: { message: 'hi', ref: vi.fn() },
-            closeOn: { done: { when: 'always', confirmed: false } },
-          },
+      omitRefs({
+        container: { props: { title: 'x', ref: vi.fn() } },
+        content: {
+          props: { message: 'hi', ref: vi.fn() },
+          closeOn: { done: { when: 'always', confirmed: false } },
         },
-        (path) => path.endsWith('.props.ref'),
-      ),
+      }),
     ).toEqual({
       container: { props: { title: 'x' } },
       content: {
@@ -187,20 +184,17 @@ describe('stripFragment', () => {
 
   it('should not mutate input', () => {
     const input = { content: { props: { ref: vi.fn(), a: 1 } } }
-    stripFragment(input, (path) => path.endsWith('.props.ref'))
+    omitRefs(input)
     expect(input.content?.props?.ref).toBeTypeOf('function')
     expect(input.content?.props?.a).toBe(1)
   })
 
   it('should preserve model and closeOn when node has no props', () => {
     expect(
-      stripFragment(
-        {
-          container: { model: 'open' },
-          content: { closeOn: { done: { when: 'always', confirmed: false } } },
-        },
-        (path) => path.endsWith('.props.ref'),
-      ),
+      omitRefs({
+        container: { model: 'open' },
+        content: { closeOn: { done: { when: 'always', confirmed: false } } },
+      }),
     ).toEqual({
       container: { model: 'open' },
       content: { closeOn: { done: { when: 'always', confirmed: false } } },

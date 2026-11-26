@@ -10,7 +10,7 @@ import {
   type WritableComputedRef,
 } from 'vue'
 import type { LayerBound, LayerBoundNode } from '@/types'
-import { toValue } from '@/compat/polyfill/to-value'
+import { toValue } from '@/compat/polyfill'
 import { LayerNoContainer } from '@/shared/layer-no-container'
 import { markLayerContent, toPlatformSlots, toPlatformVNodeData } from './platform'
 

@@ -89,8 +89,8 @@ tests-vue2/                  # Vue 2.7 关键路径：只消费 dist（ADR 0008�
 |----|------|----------|
 | **types/** | 配置 Raw / Canonical / Bound；实例 / Store；confirm | `config-raw.ts`、`config.ts`、`bound.ts`、`instance.ts`、`store.ts`、`confirm.ts` |
 | **shared/** | inject key、content 根标记、template-to、warn、公开运行时符号 | `injection-keys.ts`、`layer-content.ts`、`layer-template-to.ts`、`layer-no-container.ts`、`layer-confirm-error.ts`、`warn.ts` |
-| **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind-*.ts`、`close-on.ts` |
-| **compat/** | 按 Vue 大版本选实现：挂载、视图树、默认 model、Host、`h` 翻译 | `env.ts`、`index.ts`、`types.ts`、`polyfill/to-value.ts`、`vue2/*`、`vue3/*` |
+| **config/** | 配置片段 → merge → bind | `fragment.ts`、`node.ts`、`bind.ts`、`close-on.ts` |
+| **compat/** | 按 Vue 大版本选实现：挂载、视图树、默认 model、Host、`h` 翻译 | `index.ts`、`polyfill.ts`、`types.ts`、`vue2/*`、`vue3/*` |
 | **runtime/** | store、instance 生命周期、LayerApp 挂载、`LayerView`（merge → adapt → bind → render） | `layer-store.ts`、`layer-instance.ts`、`create-layer-app.ts`、`layer-view.ts` |
 | **api/** | 公共 API 入口 | `create-layer.ts`、`define-layer.ts`、`layer-template.ts` |
 
@@ -159,7 +159,7 @@ flowchart TB
 
 **shared/layer-content.ts**：共用 `LAYER_CONTENT` Symbol。`compat` 的 `markLayerContent` / `isLayerContent` 写入与读取：Vue 3 在 `vnode.props`；Vue 2.7 在 `$vnode.data`（不进 `props/`）。
 
-**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；能力按 string→Symbol map 挂到 `to` 上，`resolveTemplateTo` 经 Proxy 暴露内部能力。`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：`exists` 时委托 `define(config).template(...)`；caller 路径闭包 `setup('use')` 返回的 template。
+**shared/layer-template-to.ts**：`LayerTemplateTo` / `LayerTemplateToResolved` + `withTemplateTo` / `resolveTemplateTo`（`:to` 模板协议）；`template` 以非枚举 Symbol 挂到 `to` 上，`resolveTemplateTo` 直接读该 Symbol。`defineLayer` / `createLayerInstance` 各自 `withTemplateTo`：`exists` 时委托 `define(config).template(...)`；caller 路径闭包 `setup('use')` 返回的 template。
 
 ### 与核心管线的对应
 
@@ -172,15 +172,15 @@ createLayerInstance + createLayerApp      runtime/ + compat/
         ▼
 LayerView → useLayerViewRender                    runtime/ + compat/
         │
-        ├── mergeFragment / toFragment*            config/fragment.ts
-        ├── mergeNode / strip*Node                 config/node.ts
+        ├── mergeFragment / toFragment* / omitRefs  config/fragment.ts
+        ├── mergeNode / normalize*                 config/node.ts
         ├── adapter（可选）                          api/create-layer 注册
-        ├── bindLayer                              config/bind-layer.ts
+        ├── bindLayer                              config/bind.ts
         └── useLayerViewRender → h(...)            compat/vue3|vue2
 ```
 
-- **merge**：`config/fragment.ts`（`toFragmentFrom*`、`mergeFragment`、`stripFragment`）+ `config/node.ts`（node 级 normalize / merge / strip 原语）。
-- **bind**：`config/bind-layer.ts` 编排 `bind-container-model`、`bind-close-on`；默认 `model` / flat 更新键来自 `compat`（Vue 3：`modelValue`；Vue 2.7：`value` + `onInput`）。
+- **merge**：`config/fragment.ts`（`toFragmentFrom*`、`mergeFragment`、`omitRefs`）+ `config/node.ts`（node 级 normalize / merge 原语）。
+- **bind**：`config/bind.ts`（`bindContainerModel` + `bindCloseOn` + `bindLayer`）；默认 `model` / flat 更新键来自 `compat`（Vue 3：`modelValue`；Vue 2.7：`value` + `onInput`）。
 - **render**：`LayerView`（`runtime/layer-view.ts`）是唯一的 merge → adapter → bind → render 编排点；实际 `h()` 树由 `compat.useLayerViewRender` 产出（Vue 3：Teleport + parking；Vue 2.7：容器 default 嵌套 content，见 [ADR 0008](docs/adr/0008-vue-2-7-adaptation.md)）。
 
 ---
@@ -742,7 +742,7 @@ interface LayerInstance {
 
 ```ts
 use: mergeFragment(
-  stripFragment(parent.use, (path) => path.endsWith('.props.ref')),
+  omitRefs(parent.use),
   toFragmentFromContent(config),
 )
 ```
@@ -765,7 +765,7 @@ open > use > use:template > define > define:template > create
 
 `LayerTemplate` 与命令式 `slots` **同构**：均为 `SlotRenderFn`，在 merge 阶段按 tier 合并。adapter 在 `fragment.*.slots` 上整形；bind 透传 slots 并写入 props 绑定。
 
-`clone()` 派生实例：**无独立 `clone` tier**；`clone(config)` 时用 `stripFragment` + `mergeFragment` 写入新实例的 `use`（等效 clone 默认高于原 `use`、低于 `open`）。`props.ref` 不继承，见上。
+`clone()` 派生实例：**无独立 `clone` tier**；`clone(config)` 时用 `omitRefs` + `mergeFragment` 写入新实例的 `use`（等效 clone 默认高于原 `use`、低于 `open`）。`props.ref` 不继承，见上。
 
 ### 内部 Layer store
 

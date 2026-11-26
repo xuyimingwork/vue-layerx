@@ -29,10 +29,6 @@ export interface LayerProps {
   [key: string]: unknown
 }
 
-export interface LayerTemplateEntry {
-  render: LayerSlotRender
-}
-
 /** Canonical merge / store building block */
 export interface LayerConfigNode {
   component?: Component

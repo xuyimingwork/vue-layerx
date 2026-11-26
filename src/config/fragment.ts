@@ -2,6 +2,8 @@ import type {
   LayerAdapter,
   LayerConfigFragment,
   LayerConfigFragmentAdapted,
+  LayerConfigNodeContainer,
+  LayerConfigNodeContent,
 } from '@/types/config'
 import type {
   LayerConfigContent,
@@ -14,8 +16,6 @@ import {
   mergeNodeContent,
   normalizeNodeContainer,
   normalizeNodeContent,
-  stripContainerNode,
-  stripContentNode,
 } from './node'
 
 /**
@@ -105,25 +105,26 @@ export function mergeFragment(
   return fragment
 }
 
+/** Shallow copy a node without `props.ref`. Does not mutate input. */
+function omitNodeRef<T extends LayerConfigNodeContainer | LayerConfigNodeContent>(
+  node: T,
+): T {
+  if (!node.props || !('ref' in node.props)) return { ...node }
+  const { ref: _, ...props } = node.props
+  if (Object.keys(props).length === 0) {
+    const { props: __, ...rest } = node
+    return { ...rest } as T
+  }
+  return { ...node, props }
+}
+
 /**
- * Shallow copy fragment; remove fields where shouldStrip(path) is true.
+ * Shallow copy fragment without `props.ref` on either side (clone does not inherit refs).
  * Does not mutate input.
  */
-export function stripFragment(
-  fragment: LayerConfigFragment,
-  shouldStrip: (path: string) => boolean,
-): LayerConfigFragment {
+export function omitRefs(fragment: LayerConfigFragment): LayerConfigFragment {
   const result: LayerConfigFragment = {}
-
-  if (fragment.container) {
-    const container = stripContainerNode(fragment.container, shouldStrip)
-    if (Object.keys(container).length > 0) result.container = container
-  }
-
-  if (fragment.content) {
-    const content = stripContentNode(fragment.content, shouldStrip)
-    if (Object.keys(content).length > 0) result.content = content
-  }
-
+  if (fragment.container) result.container = omitNodeRef(fragment.container)
+  if (fragment.content) result.content = omitNodeRef(fragment.content)
   return result
 }

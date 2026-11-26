@@ -47,7 +47,7 @@ mergeFragment(...sources) {
 
 已是开放的：任意 key 可进 `container.props` / `content.props`，bind 后进入 `h()`。**组件 props 级扩展今天已支持**，无需改 merge。
 
-### bind（[`bind-layer.ts`](../../src/config/bind-layer.ts)）
+### bind（[`bind.ts`](../../src/config/bind.ts)）
 
 只消费 `component` / `props` / `slots` / `model` / `closeOn`，产出 `LayerBound`（可 `h()`）。节点上若残留未知键，**当前不会**传到 vnode（因 bind 重建对象）；但若将来 merge 保留未知键却忘记在 bind 剥离，有泄漏风险。
 
@@ -159,4 +159,4 @@ interface LayerConfigFragment {
 
 - [ADR 0003 §5 adapter → store.create](./0003-reactive-layer-config.md)
 - [DESIGN.md 核心管线](../../DESIGN.md)
-- [`src/config/fragment.ts`](../../src/config/fragment.ts) / [`node.ts`](../../src/config/node.ts) / [`bind-layer.ts`](../../src/config/bind-layer.ts)
+- [`src/config/fragment.ts`](../../src/config/fragment.ts) / [`node.ts`](../../src/config/node.ts) / [`bind.ts`](../../src/config/bind.ts)

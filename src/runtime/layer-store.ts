@@ -15,7 +15,6 @@ import type {
   LayerStoreMethods,
 } from '@/types/store'
 import { del, hasSetupContext, h, set, toComponentRoot } from '@/compat'
-import { noop } from '@/shared/noop'
 import { warn } from '@/shared/warn'
 
 export type {
@@ -124,7 +123,7 @@ function createLayerStoreScope(key: LayerStoreKey): Scope {
       clearTemplate()
     },
     addTemplateSlot(id, { name, side, render }) {
-      if (!is(id) || !toRender) return noop
+      if (!is(id) || !toRender) return () => {}
 
       const slots = getTemplateSlotsOrCreate(side)
       if (slots[name]) {
