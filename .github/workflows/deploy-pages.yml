@@ -27,7 +27,8 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # tsdown 0.22+ requires Node ^22.18 (native TS) or an explicit unrun/tsx loader
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile

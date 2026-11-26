@@ -72,7 +72,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # Trusted Publisher 要求 Node >= 22.14；npm@latest(12) 要求 Node ^22.22.2 || ^24.15
+          # Trusted Publisher 要求 Node >= 22.14；tsdown 要求 ^22.18；npm@latest(12) 要求 Node ^22.22.2 || ^24.15
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
