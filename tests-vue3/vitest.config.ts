@@ -8,6 +8,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./setup.ts'],
     include: ['./integration/**/*.test.ts'],
+    reporters: ['default', 'junit'],
+    outputFile: {
+      junit: '../reports/vue3.junit.xml',
+    },
     typecheck: {
       enabled: true,
       include: ['./typecheck/**/*.test-d.ts'],

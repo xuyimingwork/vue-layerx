@@ -17,6 +17,10 @@ export default defineConfig({
     include: ['src/**/__test__/**/*.test.ts'],
     // Vue 2.7-only: needs vue@2.7 — covered by vitest.vue2-coverage.config.ts
     exclude: ['src/**/__test__/**/*.vue2.test.ts'],
+    reporters: ['default', 'junit'],
+    outputFile: {
+      junit: './reports/unit.junit.xml',
+    },
     typecheck: {
       enabled: true,
       include: ['src/**/__test__/**/*.test-d.ts'],

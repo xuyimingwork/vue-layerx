@@ -29,8 +29,19 @@ jobs:
       - run: pnpm test:ci
 
       - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info
+          fail_ci_if_error: false
+
+      # Test Analytics (JUnit): unit + vue3/vue2 gate suites
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report-type: test_results
+          files: reports/unit.junit.xml,reports/vue3.junit.xml,reports/vue2.junit.xml
           fail_ci_if_error: false
